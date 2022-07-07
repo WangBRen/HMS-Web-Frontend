@@ -248,25 +248,26 @@ export default {
       })
     },
     loginSuccess (res) {
-      // check res.homePage define, set $router.push name res.homePage
-      // Why not enter onComplete
-      /*
-      this.$router.push({ name: 'analysis' }, () => {
-        console.log('onComplete')
-        this.$notification.success({
-          message: '欢迎',
-          description: `${timeFix()}，欢迎回来`
-        })
-      })
-      */
-      this.$router.push({ path: '/' })
-      // 延迟 1 秒显示欢迎信息
-      setTimeout(() => {
-        this.$notification.success({
-          message: '欢迎',
-          description: res?.message || `${timeFix()}，欢迎回来`
-        })
-      }, 1000)
+      if (res.status === 200) {
+        this.$router.push({ path: '/' })
+        // 延迟 1 秒显示欢迎信息
+        setTimeout(() => {
+          this.$notification.success({
+            message: '欢迎',
+            description: res?.message || `${timeFix()}，欢迎回来`
+          })
+        }, 1000)
+      } else if (res.status === 201) {
+        // 用户首次登录，跳转到个人信息修改页面
+        this.$router.push({ path: '/xxxxxxxxxxpage' })
+        // 延迟 1 秒显示欢迎信息
+        setTimeout(() => {
+          this.$notification.success({
+            message: '账号激活成功',
+            description: '请及时修改密码及个人信息'
+          })
+        }, 1000)
+      }
       this.isLoginError = false
     },
     requestFailed (err) {
