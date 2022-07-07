@@ -183,13 +183,14 @@ export default {
 
       const validateFieldsKey = customActiveKey === 'tab1' ? ['username', 'password'] : ['mobile', 'captcha']
 
-      validateFields(validateFieldsKey, { force: true }, (err, values) => {
+      validateFields([...validateFieldsKey, 'rememberMe'], { force: true }, (err, values) => {
         if (!err) {
           console.log('login form', values)
           const loginParams = { ...values }
           delete loginParams.username
           loginParams[!state.loginType ? 'email' : 'username'] = values.username
           loginParams.password = values.password // md5(values.password)
+          loginParams.rememberMe = !!values.rememberMe
           Login(loginParams)
             .then((res) => this.loginSuccess(res))
             .catch(err => this.requestFailed(err))
@@ -247,7 +248,6 @@ export default {
       })
     },
     loginSuccess (res) {
-      console.log(res)
       // check res.homePage define, set $router.push name res.homePage
       // Why not enter onComplete
       /*
@@ -264,7 +264,7 @@ export default {
       setTimeout(() => {
         this.$notification.success({
           message: '欢迎',
-          description: `${timeFix()}，欢迎回来`
+          description: res?.message || `${timeFix()}，欢迎回来`
         })
       }, 1000)
       this.isLoginError = false
