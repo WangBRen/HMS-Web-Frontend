@@ -329,6 +329,25 @@ export const asyncRouterMap = [
             ]
           }
         ]
+      },
+      {
+        path: '/system',
+        name: 'systemPage',
+        component: RouteView,
+        meta: { title: 'menu.system', icon: 'slack', permission: ['account'] },
+        children: [
+          {
+            path: '/system/account-manage',
+            name: 'healthAccountManagePage',
+            component: () => import('@/views/system/AccountList'),
+            meta: {
+              title: 'menu.system.health-account-manage',
+              icon: 'tool',
+              keepAlive: true,
+              permission: ['account']
+            }
+          }
+        ]
       }
     ]
   },
