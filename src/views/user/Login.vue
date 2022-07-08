@@ -7,6 +7,7 @@
       :form="form"
       @submit="handleSubmit"
     >
+    <div>1</div>
       <a-tabs
         :activeKey="customActiveKey"
         :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
