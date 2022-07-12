@@ -103,6 +103,39 @@
         <router-link class="register" :to="{ name: 'register' }">{{ $t('user.login.signup') }}</router-link>
       </div>
     </a-form>
+    <!-- 修改个人信息弹窗 -->
+    <!-- <a-button @click="openmodal">点击</a-button> -->
+    <a-modal v-model="visible" title="首次登陆请修改用户信息" @ok="handleOk" @cancel="handleOff" destroyOnClose >
+      <a-form-model ref="ruleForm" :model="formdata" :rules="info_rules" :label-col="labelCol" :wrapper-col="wrapperCol">
+        <a-form-model-item label="证件类型" prop="idType">
+          <a-select v-model="formdata.idType" placeholder="请选择证件类型">
+            <a-select-option v-for="(item,index) in arr_idType" :key="index" :value="item">
+              {{ item }}
+            </a-select-option>
+          </a-select>
+        </a-form-model-item>
+        <a-form-model-item label="证件号" ref="idNo" prop="idNo">
+          <a-input v-model="formdata.idNo"/>
+        </a-form-model-item>
+        <a-form-model-item label="姓名" ref="name" prop="name">
+          <a-input v-model="formdata.name"/>
+        </a-form-model-item>
+        <a-form-model-item label="电话号码" ref="telephone" prop="telephone">
+          <a-input v-model="formdata.telephone"/>
+        </a-form-model-item>
+        <a-form-model-item label="验证码" ref="code" prop="code">
+          <a-input style="width: 65%;" v-model="formdata.code"/>
+          <a-button v-if="codeShow" style="width: 35%;" @click="getuserCode(formdata.telephone)">{{ codebtnword }}</a-button>
+          <a-button :disabled="!codeShow" v-if="!codeShow" style="width: 35%;" @click="getuserCode(formdata.telephone)">{{ count }}秒后重试</a-button>
+        </a-form-model-item>
+        <a-form-model-item label="新密码" ref="oldPassword" prop="oldPassword">
+          <a-input v-model="formdata.oldPassword"/>
+        </a-form-model-item>
+        <a-form-model-item label="再次输入密码" ref="newPassword" prop="newPassword">
+          <a-input v-model="formdata.newPassword"/>
+        </a-form-model-item>
+      </a-form-model>
+    </a-modal>
 
     <two-step-captcha
       v-if="requiredTwoStepCaptcha"
@@ -118,7 +151,7 @@
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
-import { getSmsCaptcha, get2step } from '@/api/login'
+import { getSmsCaptcha, get2step, getuserCode, UserMsg } from '@/api/login'
 
 export default {
   components: {
@@ -126,6 +159,63 @@ export default {
   },
   data () {
     return {
+      // 验证码
+      codebtnword: '获取验证码', // 获取验证码按钮文字
+      codeShow: true,
+      count: '',
+      timer: null,
+      // 表单样式
+      labelCol: { span: 6 },
+      wrapperCol: { span: 16 },
+      visible: false, // 弹窗判断
+      CODE: 200,
+      // 弹窗表单数据
+      formdata: {
+        idType: '', // 证件类型
+        idNo: '', // 证据号码
+        name: '', // 姓名
+        telephone: '', // 电话
+        code: '', // 验证码
+        oldPassword: '', // 旧密码
+        newPassword: '', // 新密码
+        token: ''
+      },
+      // 证件类型
+      arr_idType: [
+         '居民身份证', '居民户口簿', '护照', '军官证', '驾驶证', '港涣居民来往内地通行证', '台湾居民来往内地通行证', '其他法定有效证件'
+      ],
+      // 用户信息规则
+      info_rules: {
+        idType: [
+          { required: true, message: '请选择证件类型', trigger: 'blur' }
+        ],
+        idNo: [
+           { required: true, message: '请输入证件号码', trigger: 'blur' },
+           { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
+           { pattern: /^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$/ | /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9X]$/, message: '请输入正确的证件号码' }
+        ],
+        name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' }
+        ],
+        code: [
+           { required: true, message: '请输入验证码', trigger: 'blur' }
+        ],
+        telephone: [
+          { required: true, message: '请输入电话号码', trigger: 'blur' },
+          { len: 11, message: '请输入正确的电话号码' },
+          { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
+        ],
+        oldPassword: [
+           { required: true, message: '请输入密码', trigger: 'blur' },
+           { min: 8, max: 12, message: '密码长度至少8位', trigger: 'blur' },
+           { pattern: /(.[^a-z0-9])/g, message: '密码需包含大写字母,小写字母,数字' }
+        ],
+        newPassword: [
+          { required: true, message: '请再次输入密码', trigger: 'blur' },
+          { min: 8, max: 12, message: '密码长度至少8位', trigger: 'blur' },
+          { pattern: /(.[^a-z0-9])/g, message: '密码需包含大写字母,小写字母,数字' }
+        ]
+      },
       customActiveKey: 'tab1',
       loginBtn: false,
       // login type: 0 email, 1 username, 2 telephone
@@ -154,6 +244,77 @@ export default {
     // this.requiredTwoStepCaptcha = true
   },
   methods: {
+    // 获取验证码
+    getuserCode (i) {
+      var Reg = /^[1][34578][0-9]{9}$/
+      if (Reg.test(this.formdata.telephone)) {
+         this.$message.info('验证码发送成功')
+        getuserCode(i).then(res => {
+        console.log(res.data.token)
+        this.formdata.token = res.data.token
+        const TIME_COUNT = 60
+        if (!this.timer) {
+          this.count = TIME_COUNT
+          this.codeShow = false
+          this.timer = setInterval(() => {
+           if (this.count > 0 && this.count <= TIME_COUNT) {
+               this.count--
+            } else {
+               this.codeShow = true
+               clearInterval(this.timer)
+               this.timer = null
+            }
+        }, 1000)
+      }
+      })
+      } else {
+         this.$message.info('手机号码格式不正确')
+      }
+    },
+    // 触发弹窗
+    openmodal () {
+      this.visible = true
+    },
+    // 点击确定
+    handleOk (e) {
+      e.preventDefault()
+      if (this.formdata.newPassword === this.formdata.oldPassword) {
+        console.log('密码相同，可修改')
+        // 满足校验规则提交
+        this.$refs.ruleForm.validate(valid => {
+        if (valid) {
+          // 修改信息成功后
+          var userinfo = this.formdata
+          this.$delete(userinfo, 'oldPassword')
+          console.log('提交的信息', userinfo)
+          UserMsg(this.formdata).then(res => {
+              console.log('成功'.res)
+              if (res.status === 200) {
+                this.$message.info('修改成功，请重新登陆')
+                // window.location.reload()// 刷新页面
+                this.visible = false
+              } else {
+                this.$message.info('修改失败')
+              }
+          })
+        } else {
+          console.log('err')
+          return false
+        }
+      })
+      } else {
+        this.$message.info('两次输入的密码不同,请修改')
+      }
+    },
+    // 取消
+    handleOff () {
+      this.resetForm()
+      console.log('1')
+    },
+    // 重置表单
+    resetForm () {
+      this.$refs.ruleForm.resetFields()
+    },
     ...mapActions(['Login', 'Logout']),
     // handler
     handleUsernameOrEmail (rule, value, callback) {
@@ -258,14 +419,17 @@ export default {
           })
         }, 1000)
       } else if (res.status === 201) {
-        // 用户首次登录，跳转到个人信息修改页面
-        this.$router.push({ path: '/xxxxxxxxxxpage' })
+        // 用户首次登录，弹出窗口修改个人信息
+        // this.$router.push({ path: '/xxxxxxxxxxpage' })
         // 延迟 1 秒显示欢迎信息
         setTimeout(() => {
           this.$notification.success({
-            message: '账号激活成功',
+            message: '账号首次登陆，请修改信息后登陆',
             description: '请及时修改密码及个人信息'
           })
+          setTimeout(() => {
+            this.visible = true
+          }, 2000)
         }, 1000)
       }
       this.isLoginError = false
