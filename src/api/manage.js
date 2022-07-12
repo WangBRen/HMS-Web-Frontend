@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
 const api = {
-  user: '/user',
-  role: '/role',
+  user: '/users',
+  role: '/roles',
   service: '/service',
   permission: '/permission',
   permissionNoPager: '/permission/no-pager',

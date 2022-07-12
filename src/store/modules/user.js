@@ -42,7 +42,7 @@ const user = {
           const result = response.data
           storage.set(ACCESS_TOKEN, result.access_token, new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.access_token)
-          resolve()
+          resolve(response)
         }).catch(error => {
           reject(error)
         })
@@ -83,7 +83,7 @@ const user = {
           //   reject(new Error('getInfo: roles must be a non-null array !'))
           // }
 
-          commit('SET_NAME', { name: user.name, welcome: welcome() })
+          commit('SET_NAME', { name: user.nickname || user.account, welcome: welcome() })
           commit('SET_AVATAR', user.avatar)
 
           resolve(response)
