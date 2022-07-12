@@ -125,8 +125,8 @@
         </a-form-model-item>
         <a-form-model-item label="验证码" ref="code" prop="code">
           <a-input style="width: 65%;" v-model="formdata.code"/>
-          <a-button v-if="codeShow" style="width: 35%;" @click="getuserCode(formdata.telephone)">{{ codebtnword }}</a-button>
-          <a-button :disabled="!codeShow" v-if="!codeShow" style="width: 35%;" @click="getuserCode(formdata.telephone)">{{ count }}秒后重试</a-button>
+          <a-button v-if="codeShow" style="width: 35%;" @click="getUserCode(formdata.telephone)">{{ codebtnWord }}</a-button>
+          <a-button :disabled="!codeShow" v-if="!codeShow" style="width: 35%;" @click="getUserCode(formdata.telephone)">{{ count }}秒后重试</a-button>
         </a-form-model-item>
         <a-form-model-item label="新密码" ref="oldPassword" prop="oldPassword">
           <a-input v-model="formdata.oldPassword"/>
@@ -151,7 +151,7 @@
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
-import { getSmsCaptcha, get2step, getuserCode, UserMsg } from '@/api/login'
+import { getSmsCaptcha, get2step, getCode, UserMsg } from '@/api/login'
 
 export default {
   components: {
@@ -160,9 +160,9 @@ export default {
   data () {
     return {
       // 验证码
-      codebtnword: '获取验证码', // 获取验证码按钮文字
+      codebtnWord: '获取验证码', // 获取验证码按钮文字
       codeShow: true,
-      count: '',
+      count: '', // 刷新秒数提示
       timer: null,
       // 表单样式
       labelCol: { span: 6 },
@@ -192,7 +192,7 @@ export default {
         idNo: [
            { required: true, message: '请输入证件号码', trigger: 'blur' },
            { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
-           { pattern: /^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$/ | /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9X]$/, message: '请输入正确的证件号码' }
+           { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' }
         ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
@@ -245,30 +245,68 @@ export default {
   },
   methods: {
     // 获取验证码
-    getuserCode (i) {
+    getUserCode (i) {
       var Reg = /^[1][34578][0-9]{9}$/
+      // 满足规则获取
       if (Reg.test(this.formdata.telephone)) {
-         this.$message.info('验证码发送成功')
-        getuserCode(i).then(res => {
-        console.log(res.data.token)
-        this.formdata.token = res.data.token
-        const TIME_COUNT = 60
-        if (!this.timer) {
-          this.count = TIME_COUNT
-          this.codeShow = false
-          this.timer = setInterval(() => {
-           if (this.count > 0 && this.count <= TIME_COUNT) {
-               this.count--
+        // 获取验证码
+        getCode(i).then(res => {
+        console.log(res)
+        if (res.status === 200) {
+          this.$message.info('验证码发送成功')
+          console.log(res.data.token)
+          this.formdata.token = res.data.token // 保存token到data中
+          // 60秒刷新
+          const TIME_COUNT = 60
+          if (!this.timer) {
+            this.count = TIME_COUNT
+            this.codeShow = false
+            this.timer = setInterval(() => {
+            if (this.count > 0 && this.count <= TIME_COUNT) {
+              this.count--
             } else {
-               this.codeShow = true
-               clearInterval(this.timer)
-               this.timer = null
-            }
-        }, 1000)
-      }
+              this.codeShow = true
+              clearInterval(this.timer)
+              this.timer = null
+              }
+            }, 1000)
+          }
+        } else if (res.status === 400) {
+          this.$message.error(res.message || '获取验证码失败')
+          const TIME_COUNT = 60
+          if (!this.timer) {
+            this.count = TIME_COUNT
+            this.codeShow = false
+            this.timer = setInterval(() => {
+            if (this.count > 0 && this.count <= TIME_COUNT) {
+              this.count--
+            } else {
+              this.codeShow = true
+              clearInterval(this.timer)
+              this.timer = null
+              }
+            }, 1000)
+          }
+        } else {
+          const TIME_COUNT = 60
+          if (!this.timer) {
+            this.count = TIME_COUNT
+            this.codeShow = false
+            this.timer = setInterval(() => {
+            if (this.count > 0 && this.count <= TIME_COUNT) {
+              this.count--
+            } else {
+              this.codeShow = true
+              clearInterval(this.timer)
+              this.timer = null
+              }
+            }, 1000)
+          }
+          this.$message.error(res.message)
+        }
       })
       } else {
-         this.$message.info('手机号码格式不正确')
+        this.$message.info('输入的手机号格式不正确')
       }
     },
     // 触发弹窗
@@ -278,38 +316,39 @@ export default {
     // 点击确定
     handleOk (e) {
       e.preventDefault()
-      if (this.formdata.newPassword === this.formdata.oldPassword) {
+      if (this.formdata.newPassword === this.formdata.oldPassword && this.formdata.newPassword !== '' && this.formdata.oldPassword !== '') {
         console.log('密码相同，可修改')
         // 满足校验规则提交
         this.$refs.ruleForm.validate(valid => {
         if (valid) {
           // 修改信息成功后
-          var userinfo = this.formdata
+          const userinfo = this.formdata
           this.$delete(userinfo, 'oldPassword')
           console.log('提交的信息', userinfo)
           UserMsg(this.formdata).then(res => {
               console.log('成功'.res)
               if (res.status === 200) {
                 this.$message.info('修改成功，请重新登陆')
-                // window.location.reload()// 刷新页面
+                alert('修改成功，请重新登陆')
+                localStorage.removeItem('Authorization')
+                window.location.reload()// 刷新页面
                 this.visible = false
               } else {
-                this.$message.info('修改失败')
+                this.$message.error(res.message || '修改失败')
               }
           })
         } else {
-          console.log('err')
+          this.$message.error('请按要求填写信息')
           return false
         }
       })
       } else {
-        this.$message.info('两次输入的密码不同,请修改')
+        this.$message.error('两次输入的密码不同,请修改')
       }
     },
     // 取消
     handleOff () {
       this.resetForm()
-      console.log('1')
     },
     // 重置表单
     resetForm () {

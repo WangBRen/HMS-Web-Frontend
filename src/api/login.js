@@ -84,11 +84,10 @@ export function get2step (parameter) {
 }
 
 // 手机验证码
-export function getuserCode (phone) {
+export function getCode (phone) {
   // console.log('11', userApi.UserCode)
   return request({
     url: userApi.UserCode(phone),
-    // url: '/api/mailbox/phone/15678596260/valid-code',
     method: 'post'
   })
 }
