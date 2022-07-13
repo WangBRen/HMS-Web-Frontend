@@ -1,10 +1,7 @@
 <template>
   <div class="forgetContent">
     <div class="title"><h1>密码找回</h1></div>
-    <a-steps :current="current">
-      <a-step v-for="item in steps" :key="item.title" :title="item.title" />
-    </a-steps>
-    <div class="steps-content" v-if="current===0">
+    <div class="steps-content" v-if="current">
       <div class="input">
         <a-form-model ref="ruleForm" :model="form" :rules="rules">
           <!-- 手机号 -->
@@ -30,59 +27,58 @@
               ></a-button>
             </a-col>
           </a-row>
+          <a-row :gutter="16">
+            <a-col class="gutter-row" :span="24">
+              <a-form-model-item ref="newPassword" prop="newPassword" @submit="next">
+                <a-input-password
+                  v-model="form.newPassword"
+                  size="large"
+                  placeholder="设置您新的密码"
+                >
+                  <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                </a-input-password>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-row :gutter="16">
+            <a-col class="gutter-row" :span="24">
+              <a-form-model-item ref="oldPassword" prop="oldPassword" @submit="next">
+                <a-input
+                  type="password"
+                  v-model="form.oldPassword"
+                  size="large"
+                  placeholder="再次输入新密码，确保两次密码一致"
+                >
+                  <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                </a-input>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-form-model-item >
+            <a-button type="primary" @click="fixPassword"> 确认修改 </a-button>
+            <a-button style="margin-left: 10px;" @click="resetForm">
+              重置表单
+            </a-button>
+          </a-form-model-item>
         </a-form-model>
       </div>
     </div>
-    <div class="steps-content" v-if="current===1">
-      <div class="input">
-        <a-form-model ref="ruleForm" :model="form" :rules="rules">
-          <!-- 第一次密码 -->
-          <a-form-model-item ref="newPassword" prop="newPassword" @submit="next">
-            <a-input-password
-              v-model="form.newPassword"
-              size="large"
-              placeholder="设置您新的密码"
-            >
-              <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-            </a-input-password>
-          </a-form-model-item>
-          <!-- 第二次确认密码 -->
-          <a-form-model-item ref="oldPassword" prop="oldPassword" @submit="next">
-            <a-input
-              type="password"
-              v-model="form.oldPassword"
-              size="large"
-              placeholder="再次输入新密码，确保两次密码一致"
-            >
-              <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-            </a-input>
-          </a-form-model-item>
-        </a-form-model>
-      </div>
-    </div>
-    <div class="steps-content" v-if="current===2">
+    <div class="steps-content" v-if="!current">
       <div class="input">
         <!-- 提示语 -->
         <a-divider style=" margin-bottom: 15%">密码重置成功，请重新登录！</a-divider>
         <!-- 跳转登录页按钮 -->
-        <a-button size="large" type="primary">重新登录</a-button>
+        <a-button size="large" type="primary" @click="toLogin">重新登录</a-button>
       </div>
-    </div>
-    <div class="steps-action">
-      <a-button v-if="current !=1 && current !=2" type="primary" @click="next"> 完成 </a-button>
-      <a-button v-if="current == steps.length - 2" type="primary" @click="fixPassword">
-        完成
-      </a-button>
-      <!-- <a-button v-if="current > 0" style="margin-left: 8px" @click="prev"> 上一步 </a-button> -->
     </div>
   </div>
 </template>
 <script>
-import { getCode } from '@/api/forgetPassword'
+import { getCode, forgetPassword } from '@/api/forgetPassword'
 export default {
   data () {
     return {
-      current: 0,
+      current: true,
       customActiveKey: 'mobile',
       steps: [
         {
@@ -129,12 +125,12 @@ export default {
         ],
         newPassword: [
            { required: true, message: '请输入密码', trigger: 'blur' },
-           { min: 8, max: 12, message: '密码长度至少8位', trigger: 'blur' },
+           { min: 8, max: 12, message: '密码不少于8,不大于12位', trigger: 'blur' },
            { pattern: /(.[^a-z0-9])/g, message: '密码需包含大写字母,小写字母,数字' }
         ],
         oldPassword: [
           { required: true, message: '请再次输入密码', trigger: 'blur' },
-          { min: 8, max: 12, message: '密码长度至少8位', trigger: 'blur' },
+          { min: 8, max: 12, message: '密码不少于8,不大于12位', trigger: 'blur' },
           { pattern: /(.[^a-z0-9])/g, message: '密码需包含大写字母,小写字母,数字' }
         ]
       }
@@ -144,6 +140,7 @@ export default {
   },
   methods: {
     next (e) {
+      console.log(this.form)
        e.preventDefault()
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
@@ -161,9 +158,10 @@ export default {
     getUserCode (p) {
       console.log(p)
      var Reg = /^[1][34578][0-9]{9}$/
-      if (Reg.test(this.form.telephone)) {
+      if (this.form.telephone === '') {
+        this.$message.error('请输入手机密码')
+      } else if (Reg.test(this.form.telephone)) {
                getCode(p).then(res => {
-                console.log('==================>', res)
                 if (res.status === 200) {
                   this.$message.success(res.message || '验证码发送成功')
                   this.form.token = res.data.token
@@ -175,23 +173,42 @@ export default {
                       window.clearInterval(interval)
                     }
                 }, 1000)
+                } else if (res.status === 400) {
+                  this.$message.error(res.message || '发送验证码失败')
                 }
-            }).catch(err => {
-              console.log({ err })
             })
             } else {
               this.$message.warning('手机号码格式不正确')
             }
     },
     fixPassword (e) {
+      console.log(this.form)
       e.preventDefault()
-       console.log('进入提交密码阶段', this.form)
-      if (this.form.onePassword === this.form.towPassword) {
-         this.current++
-        console.log('两次密码一直')
-      } else {
-        this.$message.error('两次输入的密码不同,请修改')
-      }
+       this.$refs.ruleForm.validate(valid => {
+        if (valid) {
+          if (this.form.newPassword === this.form.oldPassword) {
+             forgetPassword(this.form).then(res => {
+              console.log(res)
+              if (res.status === 200) {
+                 this.$message.success(res.$message || '修改密码成功')
+                 this.current = false
+              } else if (res.status === 400) {
+                this.$message.error(res.message || '修改密码不成功,请重新尝试')
+              }
+             })
+            } else {
+              this.$message.error('两次输入的密码不同,请修改')
+          }
+        } else {
+          return false
+        }
+      })
+    },
+    resetForm () {
+      this.$refs.ruleForm.resetFields()
+    },
+    toLogin () {
+      this.$router.push({ path: '/user/login' })
     }
   }
 }
@@ -199,7 +216,7 @@ export default {
 <style scoped>
 .title{
   text-align: center;
-  margin-bottom: 10%;
+  margin-bottom: 4%;
   /* font-size: 2em; */
 }
 .forgetContent {
