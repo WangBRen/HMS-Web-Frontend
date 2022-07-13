@@ -383,11 +383,6 @@ export const constantRouterMap = [
         path: 'register-result',
         name: 'registerResult',
         component: () => import(/* webpackChunkName: "user" */ '@/views/user/RegisterResult')
-      },
-      {
-        path: 'recover',
-        name: 'recover',
-        component: undefined
       }
     ]
   },
@@ -395,5 +390,11 @@ export const constantRouterMap = [
   {
     path: '/404',
     component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/404')
+  },
+
+  {
+    path: '/forget-password',
+    name: 'forget-password',
+    component: () => import(/* webpackChunkName: "user" */ '@/views/user/ForgetPassword')
   }
 ]
