@@ -54,7 +54,7 @@
               </a-form-model-item>
             </a-col>
           </a-row>
-          <a-form-model-item >
+          <a-form-model-item style="text-align: center;">
             <a-button type="primary" @click="fixPassword"> 确认修改 </a-button>
             <a-button style="margin-left: 10px;" @click="resetForm">
               重置表单
@@ -233,7 +233,7 @@ export default {
   border-radius: 6px;
   background-color: #fafafa;
   min-height: 200px;
-  text-align: center;
+  /* text-align: center; */
   padding-top: 80px;
 }
 .steps-action {
