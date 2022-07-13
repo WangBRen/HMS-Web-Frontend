@@ -129,10 +129,10 @@
           <a-button :disabled="!codeShow" v-if="!codeShow" style="width: 35%;" @click="getUserCode(formdata.telephone)">{{ count }}秒后重试</a-button>
         </a-form-model-item>
         <a-form-model-item label="新密码" ref="oldPassword" prop="oldPassword">
-          <a-input v-model="formdata.oldPassword"/>
+          <a-input-password v-model="formdata.oldPassword"/>
         </a-form-model-item>
         <a-form-model-item label="再次输入密码" ref="newPassword" prop="newPassword">
-          <a-input v-model="formdata.newPassword"/>
+          <a-input-password v-model="formdata.newPassword"/>
         </a-form-model-item>
       </a-form-model>
     </a-modal>
@@ -158,6 +158,43 @@ export default {
     TwoStepCaptcha
   },
   data () {
+    // 身份证校验
+    var checkIdno = (rule, value, callback) => {
+    if (value) {
+        // 加权因子
+        var weightfactor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+        // 校验码
+        var checkcode = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
+        var code = value + ''
+        var last = value[17] // 最后一个
+        var seventeen = code.substring(0, 17)
+        // 判断最后一位校验码是否正确
+        var arr = seventeen.split('')
+        var len = arr.length
+        var num = 0
+        for (var i = 0; i < len; i++) {
+          num = num + arr[i] * weightfactor[i]
+        }
+        // 获取余数
+        var resisue = num % 11
+        var lastno = checkcode[resisue]
+        // 正则判断
+        var idcardpatter = /^[1-9][0-9]{5}([1][9][0-9]{2}|[2][0][0|1][0-9])([0][1-9]|[1][0|1|2])([0][1-9]|[1|2][0-9]|[3][0|1])[0-9]{3}([0-9]|[X])$/
+        // 判断格式是否正确
+        var format = idcardpatter.test(value)
+        // 返回验证结果，校验码和格式同时正确才算是合法的身份证号码
+        var idCode = last === lastno && format ? 1 : false
+        // 根据结果判断
+        if (!idCode) {
+          // console.log('>>>>>>>', idCode)
+          callback(new Error('输入证件号有误'))
+        } else {
+          callback()
+        }
+      } else if (!value) {
+        callback(new Error('请输入证件号'))
+      }
+    }
     return {
       // 验证码
       codebtnWord: '获取验证码', // 获取验证码按钮文字
@@ -190,9 +227,10 @@ export default {
           { required: true, message: '请选择证件类型', trigger: 'blur' }
         ],
         idNo: [
-           { required: true, message: '请输入证件号码', trigger: 'blur' },
-           { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
-           { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' }
+          //  { required: true, message: '请输入证件号码', trigger: 'blur' },
+          //  { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
+          //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
+           { validator: checkIdno, trigger: 'change' }
         ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
@@ -251,10 +289,10 @@ export default {
       if (Reg.test(this.formdata.telephone)) {
         // 获取验证码
         getCode(i).then(res => {
-        console.log(res)
+        // console.log(res)
         if (res.status === 200) {
           this.$message.info('验证码发送成功')
-          console.log(res.data.token)
+          // console.log(res.data.token)
           this.formdata.token = res.data.token // 保存token到data中
           // 60秒刷新
           const TIME_COUNT = 60
@@ -317,16 +355,16 @@ export default {
     handleOk (e) {
       e.preventDefault()
       if (this.formdata.newPassword === this.formdata.oldPassword && this.formdata.newPassword !== '' && this.formdata.oldPassword !== '') {
-        console.log('密码相同，可修改')
+        // console.log('密码相同，可修改')
         // 满足校验规则提交
         this.$refs.ruleForm.validate(valid => {
         if (valid) {
           // 修改信息成功后
-          const userinfo = this.formdata
-          this.$delete(userinfo, 'oldPassword')
-          console.log('提交的信息', userinfo)
           UserMsg(this.formdata).then(res => {
-              console.log('成功'.res)
+              // console.log('成功'.res)
+              const userinfo = this.formdata
+              this.$delete(userinfo, 'oldPassword')
+              // console.log('提交的信息', userinfo)
               if (res.status === 200) {
                 this.$message.info('修改成功，请重新登陆')
                 alert('修改成功，请重新登陆')
