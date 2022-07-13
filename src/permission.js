@@ -18,9 +18,7 @@ const forgetPasswordPath = '/forget-password'
 router.beforeEach((to, from, next) => {
   NProgress.start() // start progress bar
   to.meta && typeof to.meta.title !== 'undefined' && setDocumentTitle(`${i18nRender(to.meta.title)} - ${domTitle}`)
-  console.log('进来了1')
   if (to.path === forgetPasswordPath) {
-    console.log('进来了2')
     next()
     NProgress.done()
     return
@@ -73,9 +71,7 @@ router.beforeEach((to, from, next) => {
       }
     }
   } else {
-    console.log('白名单1')
     if (allowList.includes(to.name)) {
-      console.log('白名单2')
       // 在免登录名单，直接进入
       next()
     } else {
