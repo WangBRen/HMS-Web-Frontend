@@ -50,7 +50,12 @@ request.interceptors.request.use(config => {
   if (token) {
     config.headers[ACCESS_TOKEN] = 'Bearer ' + token
   }
-  return config
+  return {
+    ...config,
+    validateStatus: function (status) {
+      return status >= 200 && status <= 400
+    }
+  }
 }, errorHandler)
 
 // response interceptor
