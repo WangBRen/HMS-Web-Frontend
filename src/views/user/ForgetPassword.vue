@@ -124,14 +124,15 @@ export default {
           { required: true, message: '请输入验证码', trigger: 'blur' }
         ],
         newPassword: [
-           { required: true, message: '请输入密码', trigger: 'blur' },
-           { min: 8, max: 12, message: '密码不少于8,不大于12位', trigger: 'blur' },
-           { pattern: /(.[^a-z0-9])/g, message: '密码需包含大写字母,小写字母,数字' }
+           { min: 8, message: '密码长度至少8位', trigger: 'blur' },
+           { max: 16, message: '密码长度最高16位', trigger: 'blur' },
+           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
         ],
         oldPassword: [
-          { required: true, message: '请再次输入密码', trigger: 'blur' },
-          { min: 8, max: 12, message: '密码不少于8,不大于12位', trigger: 'blur' },
-          { pattern: /(.[^a-z0-9])/g, message: '密码需包含大写字母,小写字母,数字' }
+           { required: true, message: '请再次输入密码', trigger: 'blur' },
+           { min: 8, message: '密码长度至少8位', trigger: 'blur' },
+           { max: 16, message: '密码长度最高16位', trigger: 'blur' },
+           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
         ]
       }
     }
