@@ -37,5 +37,6 @@ export default {
     'menu.account.trigger': '触发报错',
     'menu.account.logout': '退出登录',
     'menu.system': '系统管理',
-    'menu.system.health-account-manage': '健康师账户管理'
+    'menu.system.health-account-manage': '健康师账户管理',
+    'menu.user-management': '用户管理'
 }
