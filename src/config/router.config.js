@@ -346,6 +346,17 @@ export const asyncRouterMap = [
               keepAlive: true,
               permission: ['account']
             }
+          },
+          {
+            path: '/system/permission-manage',
+            name: '权限管理',
+            component: () => import('@/views/system/PermissionList'),
+            meta: {
+              title: '权限管理',
+              icon: 'tool',
+              keepAlive: true,
+              permission: ['account']
+            }
           }
         ]
       }
