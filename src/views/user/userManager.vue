@@ -26,14 +26,14 @@
     <a-table
       :columns="columns"
       :data-source="data"
-      class="tableContent">
+      class="table-content">
       <span slot="action" slot-scope="text, record">
         <a @click="handleEdit(record)">新建用户</a>
         <a-divider type="vertical" />
         <a @click="handleEdit(record)">编辑群组</a>
       </span>
       <a-table
-        class="towTables"
+        class="child-table"
         slot="expandedRowRender"
         slot-scope="inner"
         :columns="innerColumns"
@@ -136,13 +136,25 @@ export default {
 .search{
   text-align: center;
 }
-.tableContent{
-    text-align: center;
-}
 </style>
 
 <style lang="less">
 .actvs{
   background-color: #b9e1f8;
+}
+.table-content tr.ant-table-expanded-row {
+  background: #54a3ed !important;
+}
+
+.child-table {
+  background: white;
+}
+.child-table th {
+  line-height: 24px;
+  padding: 4px 16px !important;
+}
+.child-table td {
+  line-height: 24px;
+  padding: 4px 16px !important;
 }
 </style>
