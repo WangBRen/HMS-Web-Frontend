@@ -31,13 +31,29 @@
     <!-- 新建窗口 -->
     <a-modal destroyOnClose title="新建窗口" :visible="addVisible" @ok="addOk" @cancel="addCancel">
       <div style="display: flex; flex-direction: column;">
-        <h1>我是新建</h1>
-        <p> 角色名:<a-input style="width: 100%;" placeholder="输入角色名" @change="onChange"></a-input></p>
-        <p>描述:<a-textarea placeholder="textarea with clear icon" allow-clear /></p>
-        <a-table :data-source="addTabData" :columns="addColumns" :row-key="record => record.permission">
-          <!-- <span slot="canCreate" slot-scope="text, record">
-            <a>{{ record }}</a>
-          </span> -->
+        <!-- <h1>我是新建</h1> -->
+        <p> 角色名:<a-input v-model="addData.displayName" style="width: 100%;" placeholder="输入角色名" @change="onChange" @blur.native.capture="myFunction()"></a-input></p>
+        <p>描述:<a-textarea v-model="addData.description" placeholder="输入描述" allow-clear /></p>
+        <a-table :data-source="addData.addTabData" :columns="addColumns" :row-key="record => record.permission">
+          <span slot="canCreate" slot-scope="text, record">
+            <a-checkbox v-model="record.canCreate" :defaultChecked="record.canCreate" @change="onChange">
+            </a-checkbox>
+          </span>
+          <span slot="canDelete" slot-scope="text, record">
+            <a-checkbox v-model="record.canDelete" :defaultChecked="record.canDelete" @change="onChange">
+            </a-checkbox>
+          </span>
+          <span slot="canView" slot-scope="text, record">
+            <a-checkbox v-model="record.canView" :defaultChecked="record.canView" @change="onChange">
+            </a-checkbox>
+          </span>
+          <span slot="canEdit" slot-scope="text, record">
+            <a-checkbox v-model="record.canEdit" :defaultChecked="record.canEdit" @change="onChange">
+            </a-checkbox>
+          </span>
+          <span slot="all" slot-scope="text, record">
+            <a @click="onCheckAll(record)">全选</a>
+          </span>
         </a-table>
       </div>
     </a-modal>
@@ -50,7 +66,7 @@
       @ok="editOk"
       @cancel="editCancel">
       <div class="editModal">
-        <p>角色名：<a-input style="width: 50%;" placeholder="输入角色名" v-model="editData.displayName "></a-input></p>
+        <p>角色名：<a-input placeholder="输入角色名" v-model="editData.displayName "></a-input></p>
         <p>描述：<a-textarea v-model="editData.description" placeholder="描述"/></p>
         <a-table :data-source="editTabData" :columns="editColumns" :row-key="record => record.permission">
           <span slot="canCreate" slot-scope="text, record">
@@ -146,18 +162,6 @@ export default {
         permissions: []
       },
       addTabData: [
-        {
-          id: '1',
-          displayName: '超级管理员',
-          name: 'suproot',
-          description: '我是超级管理员的描述',
-          permissions: [
-            { permission: '主页', describe: '我是介绍1', canView: true, canEdit: true, canCreate: true, canDelete: true },
-            { permission: '其他页1', describe: '我是介绍2', canView: false, canEdit: true, canCreate: true, canDelete: false },
-            { permission: '其他页2', describe: '我是介绍3', canView: true, canEdit: false, canCreate: false, canDelete: true },
-            { permission: '其他页3', describe: '我是介绍4', canView: false, canEdit: false, canCreate: true, canDelete: true }
-          ]
-        }
       ],
       // 初始化编辑权限表
       editPerTab: [
@@ -198,30 +202,44 @@ export default {
               scopedSlots: { customRender: 'all' }
             }
       ],
+      addData: {
+          displayName: '',
+          description: '',
+          addTabData: []
+      },
       addColumns: [
         {
-          dataIndex: 'displayName',
-          key: 'displayName',
-          // slots: { title: 'customTitle' },
-          title: '角色',
-          scopedSlots: { customRender: 'displayName' }
-        },
-        {
-          title: '描述',
-          dataIndex: 'description',
-          key: 'description'
-        },
-        {
-          title: '权限',
-          key: 'permissions',
-          dataIndex: 'permissions',
-          scopedSlots: { customRender: 'permissions' }
-        },
-        {
-          title: '操作',
-          key: 'action',
-          scopedSlots: { customRender: 'action' }
-        }
+              title: '',
+              dataIndex: 'name',
+              key: 'name'
+            },
+            {
+              title: '增',
+              key: 'canCreate',
+              scopedSlots: { customRender: 'canCreate' }
+            },
+            {
+              title: '删',
+              key: 'canDelete',
+              dataIndex: 'canDelete',
+              scopedSlots: { customRender: 'canDelete' }
+            },
+            {
+              title: '查',
+              key: 'canView',
+              dataIndex: 'canView',
+              scopedSlots: { customRender: 'canView' }
+            },
+            {
+              title: '改',
+              key: 'canEdit',
+              scopedSlots: { customRender: 'canEdit' }
+            },
+            {
+              title: 'All',
+              key: 'all',
+              scopedSlots: { customRender: 'all' }
+            }
       ],
       delData: ''
     }
@@ -269,6 +287,9 @@ export default {
     })
   },
   methods: {
+    myFunction () {
+      console.log('1')
+    },
     onChange (e) {
       console.log('========')
     },
@@ -307,14 +328,14 @@ export default {
       console.log('删除的数据', delData)
     },
     showAddModal () {
-      // this.addVisible = true
-      console.log('1', this.editTabData)
-      this.editData.displayName = ''
-      this.editData.description = ''
-      this.editVisible = true
-      this.editTabData = this.haha
+      this.addVisible = true
+      // this.addData.displayName = ''
+      // this.addData.description = ''
+      this.addData.addTabData = JSON.parse(JSON.stringify(this.haha))
+      console.log(this.addData)
     },
     addOk () {
+      console.log(this.addData)
       this.addVisible = false
     },
     addCancel () {
@@ -349,10 +370,10 @@ export default {
 
 <style>
 .editModal{
-  text-align: center;
+  /* text-align: center; */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
 }
 .delModal{
   text-align: center;
