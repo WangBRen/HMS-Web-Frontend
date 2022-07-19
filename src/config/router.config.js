@@ -19,7 +19,7 @@ export const asyncRouterMap = [
       {
         path: '/system/user-manage',
             name: 'healthAccountManagePage',
-            component: () => import('@/views/user/UserManager'),
+            component: () => import('@/views/customer/CustomerManager'),
             meta: {
               title: 'menu.user-management',
               icon: 'team',

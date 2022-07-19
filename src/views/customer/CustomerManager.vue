@@ -1,64 +1,68 @@
 <template>
-  <a-card :bordered="false" class="search">
-    <div class="table-page-search-wrapper">
-      <a-form layout="inline">
-        <a-row :gutter="48">
-          <a-col :md="8" :sm="24">
-            <a-form-item >
-              <a-input-search
-                placeholder="请输入关键字"
-                enter-button="查询"
-                :loading="loadingShow"
-                @search="onSearch"
-              />
-            </a-form-item>
-          </a-col>
-          <a-col :md="13" :sm="24"/>
-          <a-col :md="3" :sm="24">
-            <span class="table-page-search-submitButtons">
-              <!-- <a-button type="primary">查询</a-button> -->
-              <a-button type="primary " style="margin-left: 8px">新建</a-button>
-            </span>
-          </a-col>
-        </a-row>
-      </a-form>
-    </div>
-    <a-table
-      :columns="columns"
-      :data-source="data"
-      class="table-content">
-      <span slot="action" slot-scope="text, record">
-        <a @click="handleEdit(record)">新建用户</a>
-        <a-divider type="vertical" />
-        <a @click="handleEdit(record)">编辑群组</a>
-      </span>
+  <div>
+    <a-card :bordered="false" class="search">
+      <div class="table-page-search-wrapper">
+        <a-form layout="inline">
+          <a-row :gutter="48">
+            <a-col :md="8" :sm="24">
+              <a-form-item >
+                <a-input-search
+                  placeholder="请输入关键字"
+                  enter-button="查询"
+                  :loading="loadingShow"
+                  @search="onSearch"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :md="13" :sm="24"/>
+            <a-col :md="3" :sm="24">
+              <span class="table-page-search-submitButtons">
+                <!-- <a-button type="primary">查询</a-button> -->
+                <a-button type="primary " style="margin-left: 8px" @click="handleOpen">新建</a-button>
+              </span>
+            </a-col>
+          </a-row>
+        </a-form>
+      </div>
       <a-table
-        class="child-table"
-        slot="expandedRowRender"
-        slot-scope="inner"
-        :columns="innerColumns"
-        :data-source="inner.members"
-        :pagination="false"
-      >
-        <span slot="operation" class="table-operation">
-          <a-dropdown>
-            <a-menu slot="overlay">
-              <a-menu-item>编辑用户信息</a-menu-item>
-              <a-menu-item>移除用户</a-menu-item>
-            </a-menu>
-            <a>
-              更多
-              <a-icon type="down" />
-            </a>
-          </a-dropdown>
+        :columns="columns"
+        :data-source="data"
+        class="table-content">
+        <span slot="action" slot-scope="text, record">
+          <a @click="handleEdit(record)">新建用户</a>
+          <a-divider type="vertical" />
+          <a @click="handleEdit(record)">编辑群组</a>
         </span>
+        <a-table
+          class="child-table"
+          slot="expandedRowRender"
+          slot-scope="inner"
+          :columns="innerColumns"
+          :data-source="inner.members"
+          :pagination="false"
+        >
+          <span slot="operation" class="table-operation">
+            <a-dropdown>
+              <a-menu slot="overlay">
+                <a-menu-item>编辑用户信息</a-menu-item>
+                <a-menu-item>移除用户</a-menu-item>
+              </a-menu>
+              <a>
+                更多
+                <a-icon type="down" />
+              </a>
+            </a-dropdown>
+          </span>
+        </a-table>
       </a-table>
-    </a-table>
-  </a-card>
+    </a-card>
+    <CustomerInfoForm ref="child"/>
+  </div>
 </template>
 <script>
 import { customerSearch } from '@/api/customer'
 import moment from 'moment'
+import CustomerInfoForm from './components/CustomerInfoForm.vue'
 
 const columns = [
   { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
@@ -99,7 +103,11 @@ const innerColumns = [
     align: 'center'
   }
 ]
+
 export default {
+   components: {
+    CustomerInfoForm
+  },
   data () {
     return {
       loadingShow: true,
@@ -116,6 +124,9 @@ export default {
     this.onSearch()
   },
   methods: {
+    handleOpen () {
+      this.$refs.child.openModel()
+    },
     async onSearch (value) {
       console.log(value)
        await customerSearch(value, this.pages).then(res => {
