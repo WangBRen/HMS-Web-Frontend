@@ -3,7 +3,6 @@
     <a-row>
       <a-col>
         <a-button type="primary" @click="showAddModal">新建</a-button>
-        <a-button @click="jiekou">点</a-button>
       </a-col>
     </a-row>
 
@@ -16,14 +15,13 @@
         >
           <a-tooltip>
             <template slot="title">
-              {{ tag.des }}
+              {{ tag.describe }}
             </template>
             {{ tag.permission }}
           </a-tooltip>
         </a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
-        <!-- <a>Invite {{ record.name }}</a> -->
         <a @click="showEditModal(record)">编辑</a>
         <a-divider type="vertical" />
         <a @click="showDelModal(record)">删除</a>
@@ -32,7 +30,16 @@
 
     <!-- 新建窗口 -->
     <a-modal destroyOnClose title="新建窗口" :visible="addVisible" @ok="addOk" @cancel="addCancel">
-      <h1>我是新建</h1>
+      <div style="display: flex; flex-direction: column;">
+        <h1>我是新建</h1>
+        <p> 角色名:<a-input style="width: 100%;" placeholder="输入角色名" @change="onChange"></a-input></p>
+        <p>描述:<a-textarea placeholder="textarea with clear icon" allow-clear /></p>
+        <a-table :data-source="addTabData" :columns="addColumns" :row-key="record => record.permission">
+          <!-- <span slot="canCreate" slot-scope="text, record">
+            <a>{{ record }}</a>
+          </span> -->
+        </a-table>
+      </div>
     </a-modal>
 
     <!-- 编辑窗口 -->
@@ -43,9 +50,8 @@
       @ok="editOk"
       @cancel="editCancel">
       <div class="editModal">
-        <h1>{{ this.editData.displayName }}</h1>
-        <a>{{ this.editData.description }}</a>
-        <!-- <a>{{ this.editData.permissions[0] }}</a> -->
+        <p>角色名：<a-input style="width: 50%;" placeholder="输入角色名" v-model="editData.displayName "></a-input></p>
+        <p>描述：<a-textarea v-model="editData.description" placeholder="描述"/></p>
         <a-table :data-source="editTabData" :columns="editColumns" :row-key="record => record.permission">
           <span slot="canCreate" slot-scope="text, record">
             <a-checkbox v-model="record.canCreate" :defaultChecked="record.canCreate" @change="onChange">
@@ -84,46 +90,26 @@
 </template>
 <script>
 
-import { GetPermissionRoles, GetPermissionPermissions } from '@/api/permission'
+import { GetPermissionRoles, GetPermissionPermissions, EditPermission } from '@/api/permission'
 
 export default {
   data () {
     return {
+      haha: [],
       // 权限表数据
       data: [
-        {
-          id: '1',
-          displayName: '超级管理员',
-          name: 'suproot',
-          description: '我是超级管理员的描述',
-          permissions: [
-            { permission: '主页', des: '我是介绍1', canView: true, canEdit: true, canCreate: true, canDelete: true },
-            { permission: '其他页1', des: '我是介绍2', canView: false, canEdit: true, canCreate: true, canDelete: false },
-            { permission: '其他页2', des: '我是介绍3', canView: true, canEdit: false, canCreate: false, canDelete: true },
-            { permission: '其他页3', des: '我是介绍4', canView: false, canEdit: false, canCreate: true, canDelete: true }
-          ]
-        },
-        {
-          id: '2',
-          displayName: '管理员',
-          name: 'root',
-          description: '我是管理员的描述',
-          permissions: [
-            { permission: '主页', canView: true, canEdit: true, canCreate: true, canDelete: true },
-            { permission: '其他页1', canView: false, canEdit: true, canCreate: true, canDelete: false },
-            { permission: '其他页2', canView: true, canEdit: false, canCreate: false, canDelete: true }
-          ]
-        },
-        {
-          id: '3',
-          displayName: '健康师',
-          name: 'teacher',
-          description: '我是健康师的描述',
-          permissions: [
-            { key: '1', permission: '主页', canView: true, canEdit: true, canCreate: true, canDelete: true },
-            { key: '2', permission: '其他页1', canView: false, canEdit: true, canCreate: true, canDelete: false }
-          ]
-        }
+        // {
+        //   id: '1',
+        //   displayName: '超级管理员',
+        //   name: 'suproot',
+        //   description: '我是超级管理员的描述',
+        //   permissions: [
+        //     { permission: '主页', describe: '我是介绍1', canView: true, canEdit: true, canCreate: true, canDelete: true },
+        //     { permission: '其他页1', describe: '我是介绍2', canView: false, canEdit: true, canCreate: true, canDelete: false },
+        //     { permission: '其他页2', describe: '我是介绍3', canView: true, canEdit: false, canCreate: false, canDelete: true },
+        //     { permission: '其他页3', describe: '我是介绍4', canView: false, canEdit: false, canCreate: true, canDelete: true }
+        //   ]
+        // }
       ],
       // 权限表列属性
       columns: [
@@ -154,21 +140,35 @@ export default {
       addVisible: false,
       editVisible: false,
       delVisible: false,
-      addData: '',
       editData: {
+        displayName: '',
+        description: '',
         permissions: []
       },
+      addTabData: [
+        {
+          id: '1',
+          displayName: '超级管理员',
+          name: 'suproot',
+          description: '我是超级管理员的描述',
+          permissions: [
+            { permission: '主页', describe: '我是介绍1', canView: true, canEdit: true, canCreate: true, canDelete: true },
+            { permission: '其他页1', describe: '我是介绍2', canView: false, canEdit: true, canCreate: true, canDelete: false },
+            { permission: '其他页2', describe: '我是介绍3', canView: true, canEdit: false, canCreate: false, canDelete: true },
+            { permission: '其他页3', describe: '我是介绍4', canView: false, canEdit: false, canCreate: true, canDelete: true }
+          ]
+        }
+      ],
       // 初始化编辑权限表
       editPerTab: [
-        { permission: '', des: '', canView: false, canEdit: false, canCreate: false, canDelete: false }
       ],
       editTabData: [
       ],
       editColumns: [
             {
               title: '',
-              dataIndex: 'permission',
-              key: 'permission'
+              dataIndex: 'name',
+              key: 'name'
             },
             {
               title: '增',
@@ -198,42 +198,108 @@ export default {
               scopedSlots: { customRender: 'all' }
             }
       ],
+      addColumns: [
+        {
+          dataIndex: 'displayName',
+          key: 'displayName',
+          // slots: { title: 'customTitle' },
+          title: '角色',
+          scopedSlots: { customRender: 'displayName' }
+        },
+        {
+          title: '描述',
+          dataIndex: 'description',
+          key: 'description'
+        },
+        {
+          title: '权限',
+          key: 'permissions',
+          dataIndex: 'permissions',
+          scopedSlots: { customRender: 'permissions' }
+        },
+        {
+          title: '操作',
+          key: 'action',
+          scopedSlots: { customRender: 'action' }
+        }
+      ],
       delData: ''
     }
   },
   mounted () {
+    // 获取表格初始数据
     GetPermissionRoles().then(res => {
-        if (res.status === 200) {
-          console.log(res)
-          this.data = res.data
-        }
+      if (res.status === 200) {
+        // 最终输出数据
+        var PerRolesData = res.data
+        // this.data = PerRolesData
+        console.log('用户权限', PerRolesData)
+        GetPermissionPermissions().then(res => {
+          const editPerResTab = res.data
+          // console.log('权限基础表', editPerResTab)
+          const editPerTab = []
+          const editPerTemTab = { canView: false, canEdit: false, canCreate: false, canDelete: false }
+          for (var arr1 of editPerResTab) {
+            editPerTab.push(Object.assign(arr1, editPerTemTab))
+          }
+          console.log('拼接好的表 ，所以用户从这开始', editPerTab)
+          // const editPerTab2 = JSON.parse(JSON.stringify(editPerTab))
+          for (var arr2 of PerRolesData) {
+            const editPerTab2 = JSON.parse(JSON.stringify(editPerTab))
+            for (var arr3 of arr2.permissions) {
+              for (var arr4 of editPerTab2) {
+                if (arr3.permission === arr4.permission) {
+                  arr4.canCreate = arr3.canCreate
+                  arr4.canDelete = arr3.canDelete
+                  arr4.canEdit = arr3.canEdit
+                  arr4.canView = arr3.canView
+                }
+              }
+            }
+            arr2.permissions = JSON.parse(JSON.stringify(editPerTab2))
+            // console.log(arr2.name, JSON.parse(JSON.stringify(editPerTab2)))
+          }
+          this.data = JSON.parse(JSON.stringify(PerRolesData))
+          this.haha = JSON.parse(JSON.stringify(editPerTab))
+          // this.addTabData = JSON.parse(JSON.stringify(editPerTab))
+          console.log('权限基础表arr4', this.haha)
+          console.log('最终表arr2', PerRolesData)
+        })
+      }
     })
   },
   methods: {
     onChange (e) {
-      console.log('========', e.target.checked)
+      console.log('========')
     },
+    // 全选
     onCheckAll (e) {
       if (e.canCreate && e.canDelete && e.canEdit && e.canView) {
-        console.log('全不选')
+        // console.log('全不选')
         e.canCreate = false
         e.canDelete = false
         e.canEdit = false
         e.canView = false
+        // console.log('选择后', this.editTabData)
       } else {
-        console.log('全选')
+        // console.log('全选')
         e.canCreate = true
         e.canDelete = true
         e.canEdit = true
         e.canView = true
+        // console.log('选择后', this.editTabData)
       }
     },
-    showEditModal (editData) {
+    showEditModal (record) {
+      console.log('传入修改的数据', record)
       this.editVisible = true
-      this.editData = editData
-      this.editTabData = editData.permissions
-      console.log('传入修改的数据', this.editData)
-      console.log('表格数据', this.editTabData)
+      this.editData = record
+      this.editTabData = record.permissions
+      // this.editData.name = record.name
+      // this.editTabData = this.editPerTab
+      // console.log('传入修改的数据', this.editData)
+      // console.log('表格数据', this.editTabData)
+      // console.log('表格数据', editData)
     },
     showDelModal (delData) {
       this.delVisible = true
@@ -241,7 +307,12 @@ export default {
       console.log('删除的数据', delData)
     },
     showAddModal () {
-      this.addVisible = true
+      // this.addVisible = true
+      console.log('1', this.editTabData)
+      this.editData.displayName = ''
+      this.editData.description = ''
+      this.editVisible = true
+      this.editTabData = this.haha
     },
     addOk () {
       this.addVisible = false
@@ -250,8 +321,17 @@ export default {
       this.addVisible = false
     },
     editOk () {
+      console.log('编辑接口进入,传入后端数据为', this.editData)
+      EditPermission(this.editData).then(res => {
+        if (res.status === 200) {
+          console.log('编辑成功', res)
+          this.$forceUpdate()
+        }
+      })
+      console.log('点击确定修改', this.editData)
       this.editVisible = false
     },
+    // 点击取消编辑，数据还原
     editCancel () {
       this.editVisible = false
     },
@@ -260,15 +340,6 @@ export default {
     },
     delCancel () {
       this.delVisible = false
-    },
-    jiekou () {
-      GetPermissionPermissions().then(res => {
-        console.log('1', res)
-        console.log('==', this.editPerTab)
-        // console.log(this.editData.permissions)
-        // for (var i = 0; i < res.data.length; i++) {
-        // }
-      })
     }
   },
   computed: {
