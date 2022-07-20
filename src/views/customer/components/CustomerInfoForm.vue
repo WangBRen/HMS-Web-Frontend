@@ -104,8 +104,8 @@
           </a-col>
           <a-row>
             <a-col :span="12">
-              <a-row>
-                <a-col :span="8" >
+              <a-row type="flex" justify="space-between">
+                <a-col :span="8">
                   <a-form-model-item label="住址:">
                     <a-select
                       placeholder="全部省份"
@@ -138,7 +138,7 @@
               </a-row>
             </a-col>
             <a-col :span="12">
-              <a-form-model-item v-model="form.area" label="详细地址"><a-input></a-input></a-form-model-item>
+              <a-form-model-item v-model="form.area" label="详细地址:"><a-input placeholder="详细地址"></a-input></a-form-model-item>
             </a-col>
           </a-row>
         </a-row>
