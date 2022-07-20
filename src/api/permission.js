@@ -3,10 +3,10 @@ import request from '@/utils/request'
 const userApi = {
     GetPermissionRoles: '/role-permission/roles',
     GetPermissionPermissions: '/role-permission/permissions',
-    EditPermission: roleName => { return `/role-permission/roles/${roleName}` },
-    AddPermission: roleName => { return `/role-permission/roles/${roleName}` },
-    DelPermission: roleName => { return `/role-permission/roles/${roleName}` }
-    // EditPermission: '/role-permission/roles'
+    EditRole: roleName => { return `/role-permission/roles/${roleName}` },
+    AddRole: roleName => { return `/role-permission/roles/${roleName}` },
+    DeleteRole: roleName => { return `/role-permission/roles/${roleName}` }
+    // EditRole: '/role-permission/roles'
 }
 
 export function GetPermissionRoles () {
@@ -24,28 +24,27 @@ export function GetPermissionPermissions () {
 }
 
 // 编辑修改权限
-export function EditPermission (parameter) {
+export function EditRole (parameter) {
     return request({
-        url: userApi.EditPermission(parameter.name),
+        url: userApi.EditRole(parameter.name),
         method: 'put',
         data: parameter
     })
 }
 
 // 新建用户
-export function AddPermission (parameter) {
+export function AddRole (parameter) {
     return request({
-        url: userApi.AddPermission(parameter.name),
+        url: userApi.AddRole(parameter.name),
         method: 'post',
         data: parameter
     })
 }
 
 // 删除用户
-export function DelPermission (parameter) {
+export function DeleteRole (name) {
     return request({
-        url: userApi.DelPermission(parameter.name),
-        method: 'delete',
-        data: parameter
+        url: userApi.DeleteRole(name),
+        method: 'delete'
     })
 }
