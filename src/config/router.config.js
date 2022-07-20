@@ -15,6 +15,18 @@ export const asyncRouterMap = [
     meta: { title: 'menu.home' },
     redirect: '/dashboard/workplace',
     children: [
+       // 用户管理
+      {
+        path: '/system/user-manage',
+            name: 'healthAccountManagePage',
+            component: () => import('@/views/customer/CustomerManager'),
+            meta: {
+              title: 'menu.user-management',
+              icon: 'team',
+              keepAlive: true,
+              permission: ['customer']
+            }
+      },
       // dashboard
       {
         path: '/dashboard',
