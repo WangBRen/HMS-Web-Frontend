@@ -29,7 +29,7 @@
         :data-source="data"
         class="table-content">
         <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">新建用户</a>
+          <a @click="handleEdit(record)">新增用户</a>
           <a-divider type="vertical" />
           <a @click="handleEdit(record)">编辑群组</a>
         </span>
@@ -57,12 +57,14 @@
       </a-table>
     </a-card>
     <CustomerInfoForm ref="child"/>
+    <AddNewUserVue @handleCancel="handleCancel" :visible="visible" :title="addTitle" ref="addUser"/>
   </div>
 </template>
 <script>
 import { customerSearch } from '@/api/customer'
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
+import AddNewUserVue from './components/AddNewUser.vue'
 
 const columns = [
   { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
@@ -106,7 +108,8 @@ const innerColumns = [
 
 export default {
    components: {
-    CustomerInfoForm
+    CustomerInfoForm,
+    AddNewUserVue
   },
   data () {
     return {
@@ -114,18 +117,37 @@ export default {
       data: [],
       columns,
       innerColumns,
+      visible: false,
       pages: {
         page: 1,
         size: 10
-      }
+      },
+      addTitle: '新增用户'
     }
   },
   created () {
     this.onSearch()
   },
   methods: {
+    handleOk (e) {
+    this.loading = true
+    this.ModalText = 'The modal will be closed after two seconds'
+    this.confirmLoading = true
+    setTimeout(() => {
+        this.visible = false
+        this.confirmLoading = false
+        this.loading = false
+        this.selectedRowKeys = []
+    }, 2000)
+  },
+    handleCancel (e) {
+      this.visible = false
+    },
     handleOpen () {
       this.$refs.child.openModel()
+    },
+    handleEdit (record) {
+      this.visible = true
     },
     async onSearch (value) {
       console.log(value)
@@ -134,7 +156,6 @@ export default {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         }
-        console.log(res)
       })
     }
   }
