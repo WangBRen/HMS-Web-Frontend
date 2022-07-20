@@ -33,8 +33,9 @@
       <div style="display: flex; flex-direction: column;">
         <!-- <h1>我是新建</h1> -->
         <p> 角色名:<a-input v-model="addData.displayName" style="width: 100%;" placeholder="输入角色名" @change="onChange" @blur.native.capture="myFunction()"></a-input></p>
+        <p> 英文:<a-input v-model="addData.name" style="width: 100%;" placeholder="输入角色名" @change="onChange" @blur.native.capture="myFunction()"></a-input></p>
         <p>描述:<a-textarea v-model="addData.description" placeholder="输入描述" allow-clear /></p>
-        <a-table :data-source="addData.addTabData" :columns="addColumns" :row-key="record => record.permission">
+        <a-table :data-source="addData.permissions" :columns="addColumns" :row-key="record => record.permission">
           <span slot="canCreate" slot-scope="text, record">
             <a-checkbox v-model="record.canCreate" :defaultChecked="record.canCreate" @change="onChange">
             </a-checkbox>
@@ -106,7 +107,7 @@
 </template>
 <script>
 
-import { GetPermissionRoles, GetPermissionPermissions, EditPermission } from '@/api/permission'
+import { GetPermissionRoles, GetPermissionPermissions, EditPermission, AddPermission, DelPermission } from '@/api/permission'
 
 export default {
   data () {
@@ -161,8 +162,6 @@ export default {
         description: '',
         permissions: []
       },
-      addTabData: [
-      ],
       // 初始化编辑权限表
       editPerTab: [
       ],
@@ -203,9 +202,10 @@ export default {
             }
       ],
       addData: {
+          name: '',
           displayName: '',
           description: '',
-          addTabData: []
+          permissions: []
       },
       addColumns: [
         {
@@ -241,7 +241,9 @@ export default {
               scopedSlots: { customRender: 'all' }
             }
       ],
-      delData: ''
+      delData: {
+        name: ''
+      }
     }
   },
   mounted () {
@@ -331,11 +333,17 @@ export default {
       this.addVisible = true
       // this.addData.displayName = ''
       // this.addData.description = ''
-      this.addData.addTabData = JSON.parse(JSON.stringify(this.haha))
+      this.addData.permissions = JSON.parse(JSON.stringify(this.haha))
       console.log(this.addData)
     },
     addOk () {
       console.log(this.addData)
+      const addData2 = JSON.parse(JSON.stringify(this.addData))
+      AddPermission(addData2).then(res => {
+        if (res.status === 200) {
+          console.log('添加成功')
+        }
+      })
       this.addVisible = false
     },
     addCancel () {
@@ -357,6 +365,13 @@ export default {
       this.editVisible = false
     },
     delOk () {
+      console.log('1', this.delData.name)
+      const delData2 = this.delData.name
+      DelPermission(delData2).then(res => {
+        if (res.status === 200) {
+          console.log('删除成功')
+        }
+      })
       this.delVisible = false
     },
     delCancel () {
