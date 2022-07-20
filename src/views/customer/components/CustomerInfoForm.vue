@@ -12,31 +12,24 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="姓名" ref="name" prop="name">
-              <a-input v-model="form.baseInfo.name"/>
+              <a-input v-model="form.name"/>
             </a-form-model-item>
           </a-col>
           <a-col :span="12" >
             <a-form-model-item label="民族" ref="ethnicGroups" prop="ethnicGroups">
-              <a-input v-model="form.baseInfo.ethnicGroups"/>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="12" >
-            <a-form-model-item label="证件类型" prop="idType">
-              <a-select v-model="form.baseInfo.idType" placeholder="请选择证件类型">
-                <a-select-option v-for="(item) in idTypeEnum" :key="item" :value="item">
+              <!-- <a-input v-model="form.ethnicGroups"/> -->
+              <a-select v-model="form.ethnicGroups" show-search>
+                <a-select-option v-for="(item,index) in nationData" :key="index" :value="item">
                   {{ item }}
                 </a-select-option>
               </a-select>
             </a-form-model-item>
           </a-col>
+        </a-row>
+        <a-row>
           <a-col :span="12" >
-            <a-form-model-item label="证件号" ref="idNo" prop="idNo">
-              <a-input v-model="form.baseInfo.idNo"/>
-            </a-form-model-item>
-          </a-col>
-          <a-col :span="12" >
-            <a-form-model-item label="性别" prop="gender">
-              <a-select v-model="form.baseInfo.gender" placeholder="请选择性别">
+            <a-form-model-item label="证件类型" prop="idType">
+              <a-select v-model="form.idType" placeholder="请选择证件类型">
                 <a-select-option v-for="(item,index) in idTypeEnum" :key="index" :value="item">
                   {{ item }}
                 </a-select-option>
@@ -44,18 +37,43 @@
             </a-form-model-item>
           </a-col>
           <a-col :span="12" >
-            <a-form-model-item label="出生年月日" required prop="birthDate">
+            <a-form-model-item label="证件号" ref="idNo" prop="idNo">
+              <a-input v-model="form.idNo"/>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12" >
+            <a-form-model-item label="性别" prop="gender">
+              <a-select v-model="form.gender" placeholder="请选择性别">
+                <a-select-option v-for="(item,index) in genderEnum" :key="index" :value="item">
+                  {{ item }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+          <a-col :span="12" >
+            <a-form-model-item label="出生日期" required prop="birthDate">
               <a-date-picker
-                v-model="form.baseInfo.birthDate"
+                v-model="form.birthDate"
                 type="date"
-                placeholder="请选择你的出生年月份"
+                placeholder="请选择你的出生七日"
                 style="width: 100%;"
               />
             </a-form-model-item>
           </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12">
+            <a-form-model-item label="年龄" ref="age" prop="age">
+              <a-input v-model="form.age"/>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
           <a-col :span="12">
             <a-form-model-item label="手机号码" ref="phoneNumber" prop="phoneNumber">
-              <a-input v-model="form.baseInfo.phoneNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
+              <a-input v-model="form.phoneNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
             </a-form-model-item>
           </a-col>
           <a-col :span="12">
@@ -81,72 +99,76 @@
           </a-col>
         </a-row>
         <a-row>
-          <a-row>
-            <a-col :span="12">
-              <a-form-model-item label="教育背景" prop="eduBG">
-                <a-select v-model="form.baseInfo.eduBG" placeholder="请选择教育背景">
-                  <a-select-option v-for="(item,index) in eduBgEnum" :key="index" :value="item">
-                    {{ item }}
-                  </a-select-option>
-                </a-select>
-              </a-form-model-item>
-            </a-col>
-          </a-row>
           <a-col :span="12">
-            <a-form-model-item label="联系人" ref="contactName" prop="contactName">
-              <a-input v-model="form.baseInfo.contactName"/>
+            <a-form-model-item label="教育背景" prop="eduBG">
+              <a-select v-model="form.eduBG" placeholder="请选择教育背景">
+                <a-select-option v-for="(item,index) in eduBgEnum" :key="index" :value="item">
+                  {{ item }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12">
+            <a-form-model-item label="紧急联系人" ref="contactName" prop="contactName">
+              <a-input v-model="form.contactName"/>
             </a-form-model-item>
           </a-col>
           <a-col :span="12">
             <a-form-model-item label="联系人手机号码" ref="contactNumber" prop="contactNumber">
-              <a-input v-model="form.baseInfo.contactNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
+              <a-input v-model="form.contactNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
             </a-form-model-item>
           </a-col>
-          <a-row>
-            <a-col :span="12">
-              <a-row type="flex" justify="space-between">
-                <a-col :span="8">
-                  <a-form-model-item label="住址:">
-                    <a-select
-                      placeholder="全部省份"
-                      v-model="form.provinceId"
-                    >
-                    </a-select>
-                  </a-form-model-item>
-                </a-col>
-                <a-col :span="8">
-                  <a-form-model-item v-model="form.city">
-                    <a-select
-                      placeholder="全部城市"
-                      notFoundContent="暂无数据"
-                      v-model="form.municipalityId"
-                    >
-                    </a-select>
-                  </a-form-model-item>
-                </a-col>
-                <a-col :span="8">
-                  <a-form-model-item v-model="form.area">
-                    <a-select
-                      allowClear
-                      placeholder="全部地区"
-                      notFoundContent="暂无数据"
-                      v-model="form.districtId"
-                    >
-                    </a-select>
-                  </a-form-model-item>
-                </a-col>
-              </a-row>
-            </a-col>
-            <a-col :span="12">
-              <a-form-model-item v-model="form.area" label="详细地址:"><a-input placeholder="详细地址"></a-input></a-form-model-item>
-            </a-col>
-          </a-row>
+        </a-row>
+        <a-row>
+          <a-col :span="12" :push="2">
+            <a-row type="flex" justify="space-between">
+              <a-col :span="8" >
+                <a-form-model-item label="住址:">
+                  <a-select
+                    placeholder="全部省份"
+                    v-model="form.provinceId"
+                  >
+                  </a-select>
+                </a-form-model-item>
+              </a-col>
+              <a-col :span="8">
+                <a-form-model-item v-model="form.city">
+                  <a-select
+                    placeholder="全部城市"
+                    notFoundContent="暂无数据"
+                    v-model="form.municipalityId"
+                  >
+                  </a-select>
+                </a-form-model-item>
+              </a-col>
+              <a-col :span="8" :pull="2">
+                <a-form-model-item v-model="form.area">
+                  <a-select
+                    allowClear
+                    placeholder="全部地区"
+                    notFoundContent="暂无数据"
+                    v-model="form.districtId"
+                  >
+                  </a-select>
+                </a-form-model-item>
+              </a-col>
+            </a-row>
+          </a-col>
+          <a-col :span="12">
+            <a-form-model-item v-model="form.area" label="详细地址:">
+              <a-input placeholder="详细地址"></a-input>
+            </a-form-model-item>
+          </a-col>
         </a-row>
       </a-form-model>
     </a-modal>
   </div>
 </template>
 <script>
+import moment from 'moment'
+import { nation } from '../nation'
 export default {
   data () {
     // 身份证校验
@@ -177,16 +199,60 @@ export default {
         var idCode = last === lastno && format ? 1 : false
         // 根据结果判断
         if (!idCode) {
-          // console.log('>>>>>>>', idCode)
+          console.log('>>>>>>>', idCode)
           callback(new Error('输入证件号有误'))
         } else {
+          console.log('>>>>>>>', idCode)
+          // 如果输入了证件号,自动填写信息
+          var gender = value[16]
+          var year = value.slice(6, 10)
+          var month = value.slice(10, 12)
+          var day = value.slice(12, 14)
+          if (this.form.gender === '') {
+            if (gender % 2 === 0) {
+              this.form.gender = '女'
+            } else {
+              this.form.gender = '男'
+            }
+          }
+          if (this.form.birthDate === '') {
+            this.form.birthDate = moment(year + month + day, 'YYYY-MM-DD')
+          }
+          if (this.form.age === '') {
+            var nowDate = new Date()
+            var nowMonth = nowDate.getMonth() + 1
+            var nowDay = nowDate.getDate
+            var age = nowDate.getFullYear() - year
+            if (nowMonth < month || (month === nowMonth && nowDay < day)) {
+              age--
+              this.form.age = age
+            } else {
+              console.log(age)
+              this.form.age = age
+            }
+          }
+          // console.log(age, '证件号正确')
           callback()
         }
       } else if (!value) {
-        callback(new Error('请输入证件号'))
+        callback(new Error('请输入证件号码'))
+      }
+    }
+    var checkCode = (rule, value, callback) => {
+      if (value) {
+        callback()
+      } else if (!value) {
+        if (this.form.phoneNumber === '') {
+          // console.log('1', this.form.phoneNumber)
+          callback()
+        } else {
+          // console.log('2', this.form.phoneNumber)
+          callback(new Error('请输入验证码'))
+        }
       }
     }
     return {
+      nationData: nation(),
       visible: false,
        /**
        * 验证码转化
@@ -210,6 +276,10 @@ export default {
          '台湾居民来往内地通行证',
          '其他法定有效证件'
       ],
+      genderEnum: [
+        '男',
+        '女'
+      ],
       eduBgEnum: [
           '研究生及以上',
           '本科',
@@ -217,33 +287,32 @@ export default {
           '初中',
           '小学',
           '其他'
-          ],
+      ],
       form: {
         nickname: '',
         avatar: '',
         account: '',
         telephone: '',
         code: '',
-        baseInfo: {
-          name: '',
-          gender: '',
-          birthDate: '',
-          idType: '',
-          eduBG: '',
-          aboBloodType: '',
-          rhBloodType: '',
-          idNo: '',
-          phoneNumber: '',
-          contactName: '',
-          contactNumber: '',
-          ethnicGroups: '',
-          province: '',
-          city: '',
-          area: '',
-          street: '',
-          village: '',
-          homeAddress: ''
-        },
+        name: '',
+        gender: '',
+        birthDate: '',
+        idType: '',
+        eduBG: '',
+        aboBloodType: '',
+        rhBloodType: '',
+        idNo: '',
+        phoneNumber: '',
+        contactName: '',
+        contactNumber: '',
+        ethnicGroups: '',
+        province: '',
+        city: '',
+        area: '',
+        street: '',
+        village: '',
+        age: '',
+        homeAddress: '',
         provinceList: [],
         municipalityList: [],
         districtList: []
@@ -254,7 +323,7 @@ export default {
           { required: true, message: '请选择证件类型', trigger: 'blur' }
         ],
         idNo: [
-          //  { required: true, message: '请输入证件号码', trigger: 'blur' },
+           { required: true, message: '请输入证件号码', trigger: 'blur' },
           //  { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
           //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
            { validator: checkIdno, trigger: 'change' }
@@ -263,24 +332,30 @@ export default {
           { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
         code: [
-           { required: true, message: '请输入验证码', trigger: 'blur' }
+          //  { required: true, message: '请输入验证码', trigger: 'blur' }
+           { validator: checkCode, trigger: 'change' }
         ],
-        telephone: [
-          { required: true, message: '请输入电话号码', trigger: 'blur' },
+        phoneNumber: [
+          // { required: true, message: '请输入电话号码', trigger: 'blur' },
           { len: 11, message: '请输入正确的电话号码' },
           { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
         ],
-        oldPassword: [
-           { required: true, message: '请输入密码', trigger: 'blur' },
-           { min: 8, message: '密码长度至少8位', trigger: 'blur' },
-           { max: 16, message: '密码长度最高16位', trigger: 'blur' },
-           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
+        contactName: [
+          { required: true, message: '请输入紧急联系人', trigger: 'blur' }
         ],
-        newPassword: [
-           { required: true, message: '请再次输入密码', trigger: 'blur' },
-           { min: 8, message: '密码长度至少8位', trigger: 'blur' },
-           { max: 16, message: '密码长度最高16位', trigger: 'blur' },
-           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
+        contactNumber: [
+          { required: true, message: '请输入紧急联系人电话号码', trigger: 'blur' },
+          { len: 11, message: '请输入正确的电话号码' },
+          { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
+        ],
+        gender: [
+          { required: true, message: '请选择性别', trigger: 'blur' }
+        ],
+        age: [
+          { required: true, message: '请选择年龄', trigger: 'blur' }
+        ],
+        birthDate: [
+          { required: true, message: '请选择出生日期', trigger: 'blur' }
         ]
       }
     }
@@ -296,7 +371,12 @@ export default {
       this.visible = true
     },
     handleOk (e) {
-      console.log('点击了确定')
+      this.$refs.ruleForm.validate(valid => {
+        if (valid) {
+          console.log('点击了确定,且信息确定', this.form)
+        }
+      })
+      console.log('点击了确定,且信息确定', this.form)
     },
     // 取消
     handleOff () {
