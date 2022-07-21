@@ -35,7 +35,7 @@
       :visible="modalVisible"
       @ok="handleOkClick"
       @cancel="closeModal">
-      <div class="editModal">
+      <div>
         <p v-if="current.mode === 'create'">唯一标识：<a-input placeholder="输入唯一标识，如：admin" v-model="current.name "></a-input></p>
         <p>角色名：<a-input placeholder="输入角色名，如：公众号推送者" v-model="current.displayName "></a-input></p>
         <p>角色描述：<a-textarea v-model="current.description" placeholder="该角色的权限、职责等"/></p>
@@ -60,7 +60,6 @@
     </a-modal>
     <!-- 删除窗口 -->
     <a-modal
-      class="delModal"
       title="删除窗口"
       :visible="deleteVisible"
       @ok="handleDeleteClick"
@@ -89,6 +88,12 @@ export default {
           key: 'displayName',
           title: '角色',
           scopedSlots: { customRender: 'displayName' }
+        },
+        {
+          title: '唯一标识',
+          dataIndex: 'name',
+          key: 'name',
+          width: 100
         },
         {
           title: '描述',
@@ -235,8 +240,8 @@ export default {
       if (this.current.mode === 'create') {
         const payload = this.toPayload(JSON.parse(JSON.stringify(this.current)))
         AddRole(payload).then(res => {
-          if (res.status === 200) {
-            console.log('添加成功')
+          if (res.status === 201) {
+            this.$message.success('添加成功')
           }
         }).then(_ => { this.loadPage() })
         this.closeModal()
@@ -244,8 +249,7 @@ export default {
         const payload = this.toPayload(JSON.parse(JSON.stringify(this.current)))
         EditRole(payload).then(res => {
           if (res.status === 200) {
-            console.log('编辑成功', res)
-            this.$forceUpdate()
+            this.$message.success('修改成功')
           }
         }).then(_ => { this.loadPage() })
         this.closeModal()
@@ -258,8 +262,8 @@ export default {
     handleDeleteClick () {
       const name = this.current.name
       DeleteRole(name).then(res => {
-        if (res.status === 200) {
-          console.log('删除成功')
+        if (res.status === 204) {
+          this.$message.success('删除成功')
         }
       }).then(_ => { this.loadPage() })
       this.closeDeleteModal()
@@ -274,13 +278,4 @@ export default {
 </script>
 
 <style>
-.editxModal{
-  /* text-align: center; */
-  display: flex;
-  flex-direction: column;
-  /* justify-content: center; */
-}
-.delModal{
-  text-align: center;
-}
 </style>
