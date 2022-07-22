@@ -3,7 +3,7 @@
     <a-row>
       <a-col :span="10">
         <a-form-model-item label="住址:">
-          <a-select :default-value="provinceData[0].name" style="" @change="handleProvinceChange">
+          <a-select v-model="checkPro" :default-value="provinceData[0].name" style="" @change="handleProvinceChange">
             <a-select-option v-for="province in provinceData" :key="province.code">
               {{ province.name }}
             </a-select-option>
@@ -41,6 +41,7 @@ export default {
     data () {
         return {
             provinceData: provinces,
+            checkPro: '',
             cityData: cities,
             cityArr: [],
             areaArr: [],
@@ -57,16 +58,24 @@ export default {
     methods: {
         handleProvinceChange (value) {
             var that = this
+            console.log(this.provinceData)
+            this.provinceData.forEach(function (val) {
+              if (val.code === value) {
+                console.log('==', val)
+                that.checkPro = val.name
+              }
+            })
             this.cityArr.length = 0
             this.cityData.forEach(function (value2) {
                 if (value2.provinceCode === value) {
                     const obj = { code: '', name: '' }
                     obj.code = value2.code
                     obj.name = value2.name
-                    console.log(obj)
+                    // console.log(obj)
                     that.cityArr.push(obj)
                 }
             })
+            // that.checkPro = value
             that.checkCity = that.cityArr[0].name
             that.checkArea = ''
         },
@@ -78,13 +87,16 @@ export default {
                     const obj = { code: '', name: '' }
                     obj.code = value3.code
                     obj.name = value3.name
-                    console.log(obj)
+                    // console.log(obj)
                     that.areaArr.push(obj)
                 }
             })
+            that.checkCity = value
             that.checkArea = that.areaArr[0].name
         },
         handleAreaChange (value) {
+          this.checkArea = value
+          console.log(this.checkPro + this.checkCity + this.checkArea)
         }
     }
 }
