@@ -1,6 +1,5 @@
 <template>
   <div>
-    <a-button type="primary" @click="showModal"> Open Modal with async logic </a-button>
     <a-modal
       :title="title"
       :visible="isVisible"
@@ -16,7 +15,6 @@
           :loading="loading"
           @search="onSearch"
         />
-        <!-- <a-button type="primary" :disabled="!hasSelected" :loading="loading" @click="start"> 确定新增 </a-button> -->
         <span style="margin-left: 8px">
           <template v-if="hasSelected">
             <!-- {{ `当前选中了 ${selectedRowKeys.length} 用户` }} -->
@@ -24,39 +22,61 @@
         </span>
       </div>
       <a-table
-        :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+        :row-selection="{
+          selectedRowKeys: selectedRowKeys,
+          onChange: onSelectChange,
+          getCheckboxProps: getCheckboxProps
+        }"
         :columns="columns"
         :data-source="data"
-      />
+      >
+        <span slot="pic" slot-scope="text, record">
+          <img style="width:50px;heigth:50px" :src="record.avatar" />
+        </span>
+      </a-table>
     </a-modal>
   </div>
 </template>
 <script>
-import { addCustomerSearch } from '@/api/customer'
+import { addCustomerSearch as apiAdd, createCustomerG as apiCreatCg } from '@/api/customer'
 const columns = [
+  { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   {
-    title: 'Name',
-    dataIndex: 'name'
+    title: '头像',
+    dataIndex: 'avatar',
+    key: 'avatar',
+    align: 'center',
+   scopedSlots: { customRender: 'pic' }
   },
   {
-    title: 'Age',
-    dataIndex: 'age'
+    title: '姓名',
+    dataIndex: 'baseInfo.contactName',
+    key: 'baseInfo.contactName',
+    align: 'center'
   },
   {
-    title: 'Address',
-    dataIndex: 'address'
+    title: '性别',
+    dataIndex: 'baseInfo.gender',
+    key: 'baseInfo.gender',
+    align: 'center'
+  },
+  {
+    title: '手机号码',
+    dataIndex: 'baseInfo.contactNumber',
+    key: 'baseInfo.contactNumber',
+    align: 'center'
   }
 ]
 
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    name: `Edward King ${i}`,
-    age: 32,
-    address: `London, Park Lane no. ${i}`
-  })
-}
+// const data = []
+// for (let i = 0; i < 46; i++) {
+//   data.push({
+//     key: i,
+//     name: `Edward King ${i}`,
+//     age: 32,
+//     address: `London, Park Lane no. ${i}`
+//   })
+// }
 export default {
   props: {
     title: {
@@ -66,15 +86,20 @@ export default {
     visible: {
       type: Boolean,
       default: false
+    },
+    selectId: {
+      type: Number,
+      default: 0
     }
   },
   data () {
     return {
-      data,
+      data: [],
       columns,
       ModalText: this.title,
       confirmLoading: false,
-      selectedRowKeys: [], // Check here to configure the default column
+      customersId: [],
+      selectedRowKeys: [], // 选中的key
       loading: false,
        pages: {
         page: 1,
@@ -84,7 +109,7 @@ export default {
   },
   created () {
     this.onSearch()
-    console.log('qqqq')
+    console.log('触发了子组件')
   },
   computed: {
     hasSelected () {
@@ -96,8 +121,7 @@ export default {
   },
   methods: {
     async onSearch (value) {
-      console.log(value)
-       await addCustomerSearch(value, this.pages).then(res => {
+       await apiAdd(value, this.pages).then(res => {
         console.log(res)
         if (res.status === 200) {
           this.loadingShow = false
@@ -109,36 +133,50 @@ export default {
         // console.log('子组件接收的id', record)
         this.visible = true
     },
-    handleOk (e) {
+    async handleOk (e) {
+        const cId = this.customersId
+        const gId = this.selectId
         this.loading = true
-        this.ModalText = 'The modal will be closed after two seconds'
         this.confirmLoading = true
-        setTimeout(() => {
-            this.visible = false
-            this.confirmLoading = false
-            this.loading = false
-            this.selectedRowKeys = []
+        await apiCreatCg(gId, cId).then(res => {
+          if (res.status === 200) {
+            this.$message.success(res.message || '添加用户成功')
+            setTimeout(() => {
+              this.handleCancel()
+              this.confirmLoading = false
+              this.loading = false
+              this.selectedRowKeys = []
         }, 2000)
+          } else {
+            this.message.console.error(res.message || '添加不成功')
+          }
+        })
     },
     handleCancel (e) {
         this.$emit('handleCancel')
+        this.selectedRowKeys = []
     },
      start (value) {
       this.loading = true
       console.log(value)
-      // ajax request after empty completing
       setTimeout(() => {
         this.loading = false
         this.selectedRowKeys = []
+        this.customersId = []
       }, 1000)
     },
     onSelectChange (selectedRowKeys, selectedRows) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys, selectedRows)
-      const id = selectedRows.map(record => {
-        return record.key
-      })
-      console.log(id)
+      const id = selectedRows.map(record => record.key)
       this.selectedRowKeys = selectedRowKeys
+      this.customersId = id
+    },
+    getCheckboxProps (record) {
+      const _this = this
+      const gId = record.groups.map(r => r.group.id)
+      // 如果已加入，就不可以选
+      return {
+        props: { disabled: gId.includes(_this.selectId), defaultChecked: gId.includes(_this.selectId) }
+      }
     }
   }
 }

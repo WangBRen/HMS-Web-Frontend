@@ -26,12 +26,11 @@
       </div>
       <a-table
         :columns="columns"
+        @expand="selectGroup"
         :data-source="data"
         class="table-content">
         <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">新增用户</a>
-          <a-divider type="vertical" />
-          <a @click="handleEdit(record)">编辑群组</a>
+          <a @click="handleEdit(record)">添加用户</a>
         </span>
         <a-table
           class="child-table"
@@ -41,11 +40,11 @@
           :data-source="inner.members"
           :pagination="false"
         >
-          <span slot="operation" class="table-operation">
+          <span slot="operation" class="table-operation" slot-scope="text, record">
             <a-dropdown>
               <a-menu slot="overlay">
-                <a-menu-item>编辑用户信息</a-menu-item>
-                <a-menu-item>移除用户</a-menu-item>
+                <a-menu-item> 编辑用户信息 </a-menu-item>
+                <a-menu-item @click="removeCustomer(record)" > 移除用户 </a-menu-item>
               </a-menu>
               <a>
                 更多
@@ -57,11 +56,17 @@
       </a-table>
     </a-card>
     <CustomerInfoForm ref="child"/>
-    <AddNewUserVue @handleCancel="handleCancel" :visible="visible" :title="addTitle" ref="addUser"/>
+    <AddNewUserVue
+      @findCustomerInfo="findCustomerInfo"
+      @handleCancel="handleCancel"
+      :visible="visible"
+      :title="addTitle"
+      :selectId="selectId"
+      ref="addUser"/>
   </div>
 </template>
 <script>
-import { customerSearch } from '@/api/customer'
+import { customerSearch, addCustomerSearch, removeCustomerG } from '@/api/customer'
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
@@ -122,7 +127,9 @@ export default {
         page: 1,
         size: 10
       },
-      addTitle: '新增用户'
+      addTitle: '添加用户',
+      selectId: -1,
+      selectGroupId: ''
     }
   },
   created () {
@@ -131,7 +138,6 @@ export default {
   methods: {
     handleOk (e) {
     this.loading = true
-    this.ModalText = 'The modal will be closed after two seconds'
     this.confirmLoading = true
     setTimeout(() => {
         this.visible = false
@@ -141,20 +147,41 @@ export default {
     }, 2000)
   },
     handleCancel (e) {
+      this.onSearch()
       this.visible = false
     },
     handleOpen () {
       this.$refs.child.openModel()
     },
-    handleEdit (record) {
-      this.visible = true
+    async handleEdit (record, value) {
+      const _this = this
+      _this.selectId = record.id
+      _this.visible = true
+      _this.$refs.addUser.onSearch()
+    },
+    async findCustomerInfo (value) {
+      await addCustomerSearch(value, this.pages)
     },
     async onSearch (value) {
-      console.log(value)
        await customerSearch(value, this.pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+        }
+      })
+    },
+    selectGroup (expanded, record) {
+      this.selectGroupId = record.id
+    },
+    async removeCustomer (record) {
+      const cId = record.member.id
+      const gId = this.selectGroupId
+      await removeCustomerG(gId, cId).then(error => {
+        if (!error) {
+          this.$message.success('移除成功')
+          this.onSearch()
+        } else {
+          this.$message.error(error.message || '移除失败')
         }
       })
     }
