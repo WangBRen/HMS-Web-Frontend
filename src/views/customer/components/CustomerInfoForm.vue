@@ -17,7 +17,6 @@
           </a-col>
           <a-col :span="12" >
             <a-form-model-item label="民族" ref="ethnicGroups" prop="ethnicGroups">
-              <!-- <a-input v-model="form.ethnicGroups"/> -->
               <a-select v-model="form.ethnicGroups" show-search>
                 <a-select-option v-for="(item,index) in nationData" :key="index" :value="item">
                   {{ item }}
@@ -57,7 +56,7 @@
               <a-date-picker
                 v-model="form.birthDate"
                 type="date"
-                placeholder="请选择你的出生七日"
+                placeholder="请选择你的出生日期"
                 style="width: 100%;"
               />
             </a-form-model-item>
@@ -122,7 +121,10 @@
           </a-col>
         </a-row>
         <a-row>
-          <a-col :span="12" :push="2">
+          <a-col :span="19" :push="1" >
+            <Address/>
+          </a-col>
+          <!-- <a-col :span="12" :push="2">
             <a-row type="flex" justify="space-between">
               <a-col :span="8" >
                 <a-form-model-item label="住址:">
@@ -160,6 +162,13 @@
             <a-form-model-item v-model="form.area" label="详细地址:">
               <a-input placeholder="详细地址"></a-input>
             </a-form-model-item>
+          </a-col> -->
+        </a-row>
+        <a-row>
+          <a-col :span="12">
+            <a-form-model-item v-model="form.area" label="详细地址:">
+              <a-input placeholder="详细地址"></a-input>
+            </a-form-model-item>
           </a-col>
         </a-row>
       </a-form-model>
@@ -169,7 +178,14 @@
 <script>
 import moment from 'moment'
 import { nation } from '../nation'
+import Address from '@/components/CheckAddress/CheckAddress.vue'
+// import AddressInfo from '../components/AddressInfo.vue'
+import { customerRepeat as apiCustomerRepeat } from '@/api/customer'
 export default {
+  components: {
+    // AddressInfo
+    Address
+  },
   data () {
     // 身份证校验
     var checkIdno = (rule, value, callback) => {
@@ -202,42 +218,57 @@ export default {
           console.log('>>>>>>>', idCode)
           callback(new Error('输入证件号有误'))
         } else {
-          console.log('>>>>>>>', idCode)
-          // 如果输入了证件号,自动填写信息
-          var gender = value[16]
-          var year = value.slice(6, 10)
-          var month = value.slice(10, 12)
-          var day = value.slice(12, 14)
-          if (this.form.gender === '') {
-            if (gender % 2 === 0) {
-              this.form.gender = '女'
+          // console.log('>>>>>>>', value)
+          apiCustomerRepeat('id_number', value).then(res => {
+            if (res.status === 200) {
+              // 根据接口返回data判断,true为已被注册
+              if (res.data) {
+                callback(new Error('证件号已被注册'))
+              } else {
+                // console.log('可注册证件号', res)
+                var gender = value[16]
+                var year = value.slice(6, 10)
+                var month = value.slice(10, 12)
+                var day = value.slice(12, 14)
+                // 自动填写性别
+                if (this.form.gender === '') {
+                  if (gender % 2 === 0) {
+                    this.form.gender = '女'
+                  } else {
+                    this.form.gender = '男'
+                  }
+                }
+                // 自动填写出生日期
+                if (this.form.birthDate === '') {
+                  this.form.birthDate = moment(year + month + day, 'YYYY-MM-DD')
+                }
+                // 自动填写年龄
+                if (this.form.age === '') {
+                  var nowDate = new Date()
+                  var nowMonth = nowDate.getMonth() + 1
+                  var nowDay = nowDate.getDate
+                  var age = nowDate.getFullYear() - year
+                  if (nowMonth < month || (month === nowMonth && nowDay < day)) {
+                    age--
+                    this.form.age = age
+                  } else {
+                    console.log(age)
+                    this.form.age = age
+                  }
+                }
+                callback()
+              }
             } else {
-              this.form.gender = '男'
+              callback()
             }
-          }
-          if (this.form.birthDate === '') {
-            this.form.birthDate = moment(year + month + day, 'YYYY-MM-DD')
-          }
-          if (this.form.age === '') {
-            var nowDate = new Date()
-            var nowMonth = nowDate.getMonth() + 1
-            var nowDay = nowDate.getDate
-            var age = nowDate.getFullYear() - year
-            if (nowMonth < month || (month === nowMonth && nowDay < day)) {
-              age--
-              this.form.age = age
-            } else {
-              console.log(age)
-              this.form.age = age
-            }
-          }
-          // console.log(age, '证件号正确')
+          })
           callback()
         }
       } else if (!value) {
         callback(new Error('请输入证件号码'))
       }
     }
+    // 验证码校验
     var checkCode = (rule, value, callback) => {
       if (value) {
         callback()
@@ -249,6 +280,26 @@ export default {
           // console.log('2', this.form.phoneNumber)
           callback(new Error('请输入验证码'))
         }
+      }
+    }
+    // 手机号校验
+    var checkPhone = (rule, value, callback) => {
+      if (value) {
+        apiCustomerRepeat('telephone', value).then(res => {
+          if (res.status === 200) {
+            // 根据接口返回data判断,true为已被注册
+            if (res.data) {
+              callback(new Error('手机号已被注册'))
+            } else {
+              console.log('可注册手机号')
+              callback()
+            }
+          } else {
+            callback()
+          }
+        })
+      } else {
+        callback()
       }
     }
     return {
@@ -323,22 +374,23 @@ export default {
           { required: true, message: '请选择证件类型', trigger: 'blur' }
         ],
         idNo: [
-           { required: true, message: '请输入证件号码', trigger: 'blur' },
+          { required: true, message: '请输入证件号码', trigger: 'blur' },
           //  { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
           //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
-           { validator: checkIdno, trigger: 'change' }
+          { validator: checkIdno, trigger: 'change' }
         ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
         code: [
           //  { required: true, message: '请输入验证码', trigger: 'blur' }
-           { validator: checkCode, trigger: 'change' }
+          { validator: checkCode, trigger: 'change' }
         ],
         phoneNumber: [
           // { required: true, message: '请输入电话号码', trigger: 'blur' },
           { len: 11, message: '请输入正确的电话号码' },
-          { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
+          { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' },
+          { validator: checkPhone, trigger: 'change' }
         ],
         contactName: [
           { required: true, message: '请输入紧急联系人', trigger: 'blur' }
@@ -371,12 +423,18 @@ export default {
       this.visible = true
     },
     handleOk (e) {
+      // e.preventDefault()
+      console.log('111')
       this.$refs.ruleForm.validate(valid => {
+        console.log('valid', valid)
         if (valid) {
           console.log('点击了确定,且信息确定', this.form)
+          this.visible = false
+        } else {
+          console.log('信息确定', this.form)
         }
       })
-      console.log('点击了确定,且信息确定', this.form)
+      // console.log('点击了确定,且信息确定', this.form)
     },
     // 取消
     handleOff () {
