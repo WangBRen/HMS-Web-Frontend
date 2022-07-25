@@ -30,8 +30,11 @@
         @expand="selectGroup"
         :data-source="data"
         class="table-content">
-        <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">添加用户</a>
+        <span slot="action" slot-scope="text, grecord">
+          <a @click="handleEdit(grecord)">添加用户</a>
+        </span>
+        <span slot="avatar" slot-scope="text, grecord">
+          <img style="width:50px;heigth:50px" :src="grecord.avatar" />
         </span>
         <a-table
           :rowKey="(record,index)=>{return index}"
@@ -42,6 +45,9 @@
           :data-source="inner.members"
           :pagination="false"
         >
+          <span slot="cavatar" slot-scope="text, record">
+            <img style="width:50px;heigth:50px" :src="record.member.avatar" />
+          </span>
           <span slot="operation" class="table-operation" slot-scope="text, record">
             <a-dropdown>
               <a-menu slot="overlay">
@@ -50,7 +56,7 @@
                   <a-popconfirm
                     v-if="data.length"
                     title="是否移除该用户？"
-                    @confirm="() => removeCustomer(record)"
+                    @confirm="() => removeCustomer(inner, record)"
                   >
                     <a href="javascript:;">移除用户</a>
                   </a-popconfirm>
@@ -67,16 +73,17 @@
     </a-card>
     <CustomerInfoForm ref="child"/>
     <AddNewUserVue
-      @findCustomerInfo="findCustomerInfo"
+      :key="openKey"
       @handleCancel="handleCancel"
       :visible="visible"
+      :checkedRowKeys="checkedRowKeys"
       :title="addTitle"
       :selectId="selectId"
-      ref="addUser"/>
+      ref="addUserRef"/>
   </div>
 </template>
 <script>
-import { customerSearch, addCustomerSearch, removeCustomerG } from '@/api/customer'
+import { customerSearch as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
@@ -92,8 +99,9 @@ const columns = [
     customRender: (text, record, index) => {
     return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
   }
- },
+  },
   { title: '群主', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
   { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
   { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
   { title: '操作', dataIndex: '', key: 'x', align: 'center', scopedSlots: { customRender: 'action' } }
@@ -101,6 +109,7 @@ const columns = [
 
 const innerColumns = [
   { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.nickname', key: 'member.nickname', align: 'center' },
   { title: '手机号', dataIndex: 'member.account', key: 'member.account', align: 'center' },
   {
@@ -139,23 +148,15 @@ export default {
       },
       addTitle: '添加用户',
       selectId: -1,
-      selectGroupId: ''
+      selectGroupId: '',
+      checkedRowKeys: [],
+      openKey: 0
     }
   },
   created () {
     this.onSearch()
   },
   methods: {
-    handleOk (e) {
-    this.loading = true
-    this.confirmLoading = true
-    setTimeout(() => {
-        this.visible = false
-        this.confirmLoading = false
-        this.loading = false
-        this.selectedRowKeys = []
-    }, 2000)
-  },
     handleCancel (e) {
       this.onSearch()
       this.visible = false
@@ -163,17 +164,15 @@ export default {
     handleOpen () {
       this.$refs.child.openModel()
     },
-    async handleEdit (record, value) {
-      const _this = this
-      _this.selectId = record.id
-      _this.visible = true
-      _this.$refs.addUser.onSearch()
+    handleEdit (record, value) {
+      this.selectId = record.id
+      this.visible = true
+      this.$refs.addUserRef.onSearch()
+      this.openKey++
+      this.checkedRowKeys = []
     },
-    async findCustomerInfo (value) {
-      await addCustomerSearch(value, this.pages)
-    },
-    async onSearch (value) {
-       await customerSearch(value, this.pages).then(res => {
+    onSearch (value) {
+       apiCustomerSearch(value, this.pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
@@ -183,11 +182,11 @@ export default {
     selectGroup (expanded, record) {
       this.selectGroupId = record.id
     },
-    async removeCustomer (record) {
+    removeCustomer (inner, record) {
       const that = this
       const cId = record.member.id
-      const gId = that.selectGroupId
-      await removeCustomerG(gId, cId).then(res => {
+      const gId = inner.id
+      apiRemoveCustomerGroup(gId, cId).then(res => {
         if (res.status === 200) {
           that.$message.success('移除成功')
           that.onSearch()

@@ -2,9 +2,9 @@ import request from '@/utils/request'
 
 const customerApi = {
     search: '/groups/search',
-    searchCustomers: '/groups/search-customers',
+    searchCustomerUnderGroup: '/groups/search-customers',
     createCustomerJoinGroup: groupId => { return `/groups/${groupId}/customers/append-many` },
-    removeCustomerJoinGroup: '/groups/'
+    removeCustomerJoinGroup: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/remove`
 }
 
 export function customerSearch (values, pages) {
@@ -19,9 +19,9 @@ export function customerSearch (values, pages) {
     })
 }
 
-export function addCustomerSearch (values, pages) {
+export function searchCustomers (values, pages) {
     return request({
-        url: customerApi.searchCustomers,
+        url: customerApi.searchCustomerUnderGroup,
         method: 'get',
         params: {
             word: values || '',
@@ -31,7 +31,7 @@ export function addCustomerSearch (values, pages) {
     })
 }
 
-export function createCustomerG (groupId, customersId) {
+export function createGroupCustomer (groupId, customersId) {
     return request({
         url: customerApi.createCustomerJoinGroup(groupId),
         method: 'put',
@@ -41,9 +41,9 @@ export function createCustomerG (groupId, customersId) {
     })
 }
 
-export function removeCustomerG (groupId, customersId) {
+export function removeCustomerGroup (groupId, customersId) {
     return request({
-        url: customerApi.removeCustomerJoinGroup + groupId + '/customers/' + customersId + '/remove',
+        url: customerApi.removeCustomerJoinGroup(groupId, customersId),
         method: 'put'
     })
 }

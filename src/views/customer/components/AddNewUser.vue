@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="isVisible">
     <a-modal
       :title="title"
       :visible="isVisible"
@@ -38,7 +38,7 @@
   </div>
 </template>
 <script>
-import { addCustomerSearch as apiAdd, createCustomerG as apiCreatCg } from '@/api/customer'
+import { searchCustomers as apiAdd, createGroupCustomer as apiCreateGroupCustomer } from '@/api/customer'
 const columns = [
   { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   {
@@ -46,7 +46,7 @@ const columns = [
     dataIndex: 'avatar',
     key: 'avatar',
     align: 'center',
-   scopedSlots: { customRender: 'pic' }
+    scopedSlots: { customRender: 'pic' }
   },
   {
     title: '姓名',
@@ -90,6 +90,12 @@ export default {
     selectId: {
       type: Number,
       default: 0
+    },
+    checkedRowKeys: {
+      type: Array,
+      default: function () {
+      return []
+     }
     }
   },
   data () {
@@ -99,9 +105,9 @@ export default {
       ModalText: this.title,
       confirmLoading: false,
       customersId: [],
-      selectedRowKeys: [], // 选中的key
+      selectedRowKeys: this.checkedRowKeys, // 选中的key
       loading: false,
-       pages: {
+      pages: {
         page: 1,
         size: 10
       }
@@ -115,43 +121,38 @@ export default {
       return this.selectedRowKeys.length > 0
     },
     isVisible () {
-    return this.visible
+      return this.visible
     }
   },
   methods: {
     async onSearch (value) {
-       await apiAdd(value, this.pages).then(res => {
+      await apiAdd(value, this.pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         }
       })
     },
-    showModal (record) {
-        this.visible = true
-    },
-    async handleOk (e) {
-        const cId = this.customersId
-        const gId = this.selectId
-        this.loading = true
-        this.confirmLoading = true
-        await apiCreatCg(gId, cId).then(res => {
-          if (res.status === 200) {
-            this.$message.success(res.message || '添加用户成功')
-            setTimeout(() => {
-              this.handleCancel()
-              this.confirmLoading = false
-              this.loading = false
-              this.selectedRowKeys = []
-        }, 1000)
-          } else {
-            this.message.console.error(res.message || '添加不成功')
-          }
-        })
+   handleOk () {
+      const cId = this.customersId
+      const gId = this.selectId
+      this.loading = true
+      this.confirmLoading = true
+      apiCreateGroupCustomer(gId, cId).then(res => {
+        if (res.status === 200) {
+          this.$message.success(res.message || '添加用户成功')
+          setTimeout(() => {
+            this.handleCancel()
+            this.confirmLoading = false
+            this.loading = false
+      }, 1000)
+        } else {
+          this.message.console.error(res.message || '添加不成功')
+        }
+      })
     },
     handleCancel (e) {
-        this.$emit('handleCancel')
-        this.selectedRowKeys = []
+      this.$emit('handleCancel')
     },
     onSelectChange (selectedRowKeys, selectedRows) {
       const id = selectedRows.map(record => record.key)
@@ -159,11 +160,10 @@ export default {
       this.customersId = id
     },
     getCheckboxProps (record) {
-      const _this = this
       const gId = record.groups.map(r => r.group.id)
       // 如果已加入，就不可以选
       return {
-        props: { disabled: gId.includes(_this.selectId), defaultChecked: gId.includes(_this.selectId) }
+        props: { disabled: gId.includes(this.selectId), defaultChecked: gId.includes(this.selectId) }
       }
     }
   }
