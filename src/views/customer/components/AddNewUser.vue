@@ -143,7 +143,7 @@ export default {
               this.confirmLoading = false
               this.loading = false
               this.selectedRowKeys = []
-        }, 2000)
+        }, 1000)
           } else {
             this.message.console.error(res.message || '添加不成功')
           }
