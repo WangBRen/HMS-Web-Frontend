@@ -34,7 +34,9 @@
           <a @click="handleEdit(grecord)">添加用户</a>
         </span>
         <span slot="avatar" slot-scope="text, grecord">
-          <img style="width:50px;heigth:50px" :src="grecord.avatar" />
+          <a-avatar size="large" icon="user" :src="grecord.avatar" v-if="grecord.avatar"/>
+          <a-avatar size="large" icon="user" v-else/>
+          <!-- <img style="width:50px;heigth:50px" :src="grecord.avatar" /> -->
         </span>
         <a-table
           :rowKey="(record,index)=>{return index}"
@@ -46,7 +48,9 @@
           :pagination="false"
         >
           <span slot="cavatar" slot-scope="text, record">
-            <img style="width:50px;heigth:50px" :src="record.member.avatar" />
+            <a-avatar :src="record.member.avatar"  v-if="record.member.avatar"/>
+            <a-avatar icon="user" v-else/>
+            <!-- <img style="width:50px;heigth:50px" :src="record.member.avatar" /> -->
           </span>
           <span slot="operation" class="table-operation" slot-scope="text, record">
             <a-dropdown>
@@ -90,7 +94,11 @@ import AddNewUserVue from './components/AddNewUser.vue'
 
 const columns = [
   { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
   { title: '群名', dataIndex: 'name', key: 'name', align: 'center' },
+  { title: '群主', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
+  { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
   {
     title: '创建时间',
     dataIndex: 'createdAt',
@@ -98,12 +106,8 @@ const columns = [
     align: 'center',
     customRender: (text, record, index) => {
     return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
-  }
+   }
   },
-  { title: '群主', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
-  { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
-  { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
-  { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
   { title: '操作', dataIndex: '', key: 'x', align: 'center', scopedSlots: { customRender: 'action' } }
 ]
 
