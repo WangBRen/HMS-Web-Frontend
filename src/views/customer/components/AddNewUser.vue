@@ -109,7 +109,6 @@ export default {
   },
   created () {
     this.onSearch()
-    console.log('触发了子组件')
   },
   computed: {
     hasSelected () {

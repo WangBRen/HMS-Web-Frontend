@@ -25,6 +25,7 @@
         </a-form>
       </div>
       <a-table
+        :rowKey="(record,index)=>{return index}"
         :columns="columns"
         @expand="selectGroup"
         :data-source="data"
@@ -33,6 +34,7 @@
           <a @click="handleEdit(record)">添加用户</a>
         </span>
         <a-table
+          :rowKey="(record,index)=>{return index}"
           class="child-table"
           slot="expandedRowRender"
           slot-scope="inner"
@@ -43,8 +45,16 @@
           <span slot="operation" class="table-operation" slot-scope="text, record">
             <a-dropdown>
               <a-menu slot="overlay">
-                <a-menu-item> 编辑用户信息 </a-menu-item>
-                <a-menu-item @click="removeCustomer(record)" > 移除用户 </a-menu-item>
+                <!-- <a-menu-item> 编辑用户信息 </a-menu-item> -->
+                <a-menu-item>
+                  <a-popconfirm
+                    v-if="data.length"
+                    title="是否移除该用户？"
+                    @confirm="() => removeCustomer(record)"
+                  >
+                    <a href="javascript:;">移除用户</a>
+                  </a-popconfirm>
+                </a-menu-item>
               </a-menu>
               <a>
                 更多
