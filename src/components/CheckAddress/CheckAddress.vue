@@ -1,32 +1,33 @@
 <template>
   <div>
     <a-row>
-      <a-col :span="10">
-        <a-form-model-item label="住址:">
-          <a-select v-model="checkPro" :default-value="provinceData[0].name" style="" @change="handleProvinceChange">
-            <a-select-option v-for="province in provinceData" :key="province.code">
-              {{ province.name }}
-            </a-select-option>
-          </a-select>
-        </a-form-model-item>
+      <a-col :span="6">
+        <a-select v-model="checkPro" :default-value="provinceData[0].name" style="" @change="handleProvinceChange">
+          <a-select-option v-for="province in provinceData" :key="province.code">
+            {{ province.name }}
+          </a-select-option>
+        </a-select>
       </a-col>
       <a-col :span="6">
-        <a-form-model-item>
-          <a-select v-model="checkCity" style="" @change="handleCityChange">
-            <a-select-option v-for="city in cityArr" :key="city.code">
-              {{ city.name }}
-            </a-select-option>
-          </a-select>
-        </a-form-model-item>
+        <a-select v-model="checkCity" style="" @change="handleCityChange">
+          <a-select-option v-for="city in cityArr" :key="city.code">
+            {{ city.name }}
+          </a-select-option>
+        </a-select>
       </a-col>
       <a-col :span="6">
-        <a-form-model-item>
-          <a-select v-model="checkArea" style="" @change="handleAreaChange">
-            <a-select-option v-for="area in areaArr" :key="area.code">
-              {{ area.name }}
-            </a-select-option>
-          </a-select>
-        </a-form-model-item>
+        <a-select v-model="checkArea" style="" @change="handleAreaChange">
+          <a-select-option v-for="area in areaArr" :key="area.code">
+            {{ area.name }}
+          </a-select-option>
+        </a-select>
+      </a-col>
+      <a-col :span="6">
+        <a-select v-model="checkStreet" style="" @change="handleStreetChange">
+          <a-select-option v-for="street in streetArr" :key="street.code">
+            {{ street.name }}
+          </a-select-option>
+        </a-select>
       </a-col>
     </a-row>
   </div>
@@ -36,18 +37,22 @@
 import provinces from './AddressFile/provinces.json'
 import cities from './AddressFile/cities.json'
 import areas from './AddressFile/areas.json'
+import streets from './AddressFile/streets.json'
 
 export default {
     data () {
         return {
             provinceData: provinces,
-            checkPro: '',
             cityData: cities,
+            areaData: areas,
+            streetsData: streets,
             cityArr: [],
             areaArr: [],
+            streetArr: [],
+            checkPro: '',
             checkCity: '',
-            areaData: areas,
-            checkArea: ''
+            checkArea: '',
+            checkStreet: ''
         }
     },
     mounted () {
@@ -58,45 +63,86 @@ export default {
     methods: {
         handleProvinceChange (value) {
             var that = this
-            console.log(this.provinceData)
+            // console.log(this.provinceData)
+            // 循环省级
             this.provinceData.forEach(function (val) {
               if (val.code === value) {
-                console.log('==', val)
                 that.checkPro = val.name
               }
             })
             this.cityArr.length = 0
+            this.areaArr.length = 0
+            this.streetArr.length = 0
+            // 循环市级,根据选择的省构造市级数组
             this.cityData.forEach(function (value2) {
                 if (value2.provinceCode === value) {
                     const obj = { code: '', name: '' }
                     obj.code = value2.code
                     obj.name = value2.name
-                    // console.log(obj)
                     that.cityArr.push(obj)
                 }
             })
-            // that.checkPro = value
+            // 默认市
             that.checkCity = that.cityArr[0].name
             that.checkArea = ''
+            that.checkStreet = ''
         },
         handleCityChange (value) {
             var that = this
             this.areaArr.length = 0
+            this.streetArr.length = 0
+            // 循环区级,根据选择的省构造区级表
             this.areaData.forEach(function (value3) {
                 if (value3.cityCode === value) {
                     const obj = { code: '', name: '' }
                     obj.code = value3.code
                     obj.name = value3.name
-                    // console.log(obj)
                     that.areaArr.push(obj)
                 }
             })
-            that.checkCity = value
+            // 循环市级
+            this.cityArr.forEach(function (value2) {
+              if (value2.code === value) {
+                that.checkCity = value2.name
+              }
+            })
+            // console.log(this.checkCity)
             that.checkArea = that.areaArr[0].name
+            that.checkStreet = ''
         },
         handleAreaChange (value) {
-          this.checkArea = value
-          console.log(this.checkPro + this.checkCity + this.checkArea)
+            var that = this
+            this.streetArr.length = 0
+            // 循环区级
+            this.areaArr.forEach(function (value2) {
+              if (value2.code === value) {
+                that.checkArea = value2.name
+              }
+            })
+            this.streetsData.forEach(function (value3) {
+              if (value3.areaCode === value) {
+                const obj = { code: '', name: '' }
+                obj.code = value3.code
+                obj.name = value3.name
+                that.streetArr.push(obj)
+              }
+            })
+            this.checkStreet = this.streetArr[0].name
+        },
+        handleStreetChange (value) {
+          // console.log(value)
+          var that = this
+          this.streetArr.forEach(function (value2) {
+            if (value2.code === value) {
+              that.checkStreet = value2.name
+            }
+          })
+          const address = { pro: '', city: '', area: '', street: '' }
+          address.pro = this.checkPro
+          address.city = this.checkCity
+          address.area = this.checkArea
+          address.street = this.checkStreet
+          this.$emit('changes', address)
         }
     }
 }

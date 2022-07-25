@@ -11,6 +11,17 @@
       <a-form-model ref="ruleForm" :model="form" :rules="info_rules" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row>
           <a-col :span="12">
+            <a-form-model-item label="群组" ref="groupId" prop="groupId">
+              <a-select v-model="form.groupId" show-search allowClear>
+                <a-select-option v-for="(item) in groupIdArr" :key="item.id" :value="item.id">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12">
             <a-form-model-item label="姓名" ref="name" prop="name">
               <a-input v-model="form.name"/>
             </a-form-model-item>
@@ -71,13 +82,33 @@
         </a-row>
         <a-row>
           <a-col :span="12">
+            <a-form-model-item label="血型" ref="aboBloodType" prop="aboBloodType">
+              <a-select v-model="form.aboBloodType" placeholder="请选择血型">
+                <a-select-option v-for="(item,index) in aboBloodTypeArr" :key="index" :value="item">
+                  {{ item }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-model-item label="Rh血型" ref="rhBloodType" prop="rhBloodType">
+              <a-select v-model="form.rhBloodType" placeholder="请选择Rh血型">
+                <a-select-option v-for="(item,index) in rhBloodTypeArr" :key="index" :value="item">
+                  {{ item }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12">
             <a-form-model-item label="手机号码" ref="phoneNumber" prop="phoneNumber">
               <a-input v-model="form.phoneNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
             </a-form-model-item>
           </a-col>
           <a-col :span="12">
             <a-row >
-              <a-col :span="11" :offset="6">
+              <a-col :span="10" :pull="1">
                 <!-- 输入验证码 -->
                 <a-form-model-item ref="code" prop="code">
                   <a-input v-model="form.code" placeholder="请输入验证码">
@@ -86,13 +117,17 @@
                 </a-form-model-item>
               </a-col>
               <!-- 验证码按钮 -->
-              <a-col class="gutter-row" :span="5">
-                <a-button
+              <a-col class="gutter-row" :span="5" :pull="4">
+                <a-form-model-item>
+                  <a-button v-if="codeShow" @click="getUserCode(form.phoneNumber)">{{ codebtnWord }}</a-button>
+                  <a-button :disabled="!codeShow" v-if="!codeShow">{{ count }}秒后重试</a-button>
+                </a-form-model-item>
+                <!-- <a-button
                   :disabled="state.smsSendBtn"
-                  @click="getUserCode(form.telephone)"
+                  @click="getUserCode(form.phoneNumber)"
                   class="getCaptcha"
                   v-text="!state.smsSendBtn && ( state.name ) || (state.time+' s')"
-                ></a-button>
+                ></a-button> -->
               </a-col>
             </a-row>
           </a-col>
@@ -121,53 +156,16 @@
           </a-col>
         </a-row>
         <a-row>
-          <a-col :span="19" :push="1" >
-            <Address/>
-          </a-col>
-          <!-- <a-col :span="12" :push="2">
-            <a-row type="flex" justify="space-between">
-              <a-col :span="8" >
-                <a-form-model-item label="住址:">
-                  <a-select
-                    placeholder="全部省份"
-                    v-model="form.provinceId"
-                  >
-                  </a-select>
-                </a-form-model-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-model-item v-model="form.city">
-                  <a-select
-                    placeholder="全部城市"
-                    notFoundContent="暂无数据"
-                    v-model="form.municipalityId"
-                  >
-                  </a-select>
-                </a-form-model-item>
-              </a-col>
-              <a-col :span="8" :pull="2">
-                <a-form-model-item v-model="form.area">
-                  <a-select
-                    allowClear
-                    placeholder="全部地区"
-                    notFoundContent="暂无数据"
-                    v-model="form.districtId"
-                  >
-                  </a-select>
-                </a-form-model-item>
-              </a-col>
-            </a-row>
-          </a-col>
-          <a-col :span="12">
-            <a-form-model-item v-model="form.area" label="详细地址:">
-              <a-input placeholder="详细地址"></a-input>
+          <a-col :span="20" :pull="2" >
+            <a-form-model-item label="住址:">
+              <Address @changes="getAddress($event)" />
             </a-form-model-item>
-          </a-col> -->
+          </a-col>
         </a-row>
         <a-row>
           <a-col :span="12">
-            <a-form-model-item v-model="form.area" label="详细地址:">
-              <a-input placeholder="详细地址"></a-input>
+            <a-form-model-item label="详细地址:">
+              <a-input v-model="form.homeAddress" placeholder="详细地址"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -180,7 +178,8 @@ import moment from 'moment'
 import { nation } from '../nation'
 import Address from '@/components/CheckAddress/CheckAddress.vue'
 // import AddressInfo from '../components/AddressInfo.vue'
-import { customerRepeat as apiCustomerRepeat } from '@/api/customer'
+import { customerRepeat as apiCustomerRepeat, customerSearch, customerAdd } from '@/api/customer'
+import { getCode } from '@/api/login'
 export default {
   components: {
     // AddressInfo
@@ -220,12 +219,13 @@ export default {
         } else {
           // console.log('>>>>>>>', value)
           apiCustomerRepeat('id_number', value).then(res => {
+            console.log('res', res)
             if (res.status === 200) {
               // 根据接口返回data判断,true为已被注册
               if (res.data) {
                 callback(new Error('证件号已被注册'))
               } else {
-                // console.log('可注册证件号', res)
+                console.log('可注册证件号', res)
                 var gender = value[16]
                 var year = value.slice(6, 10)
                 var month = value.slice(10, 12)
@@ -259,10 +259,9 @@ export default {
                 callback()
               }
             } else {
-              callback()
+              callback(new Error('!!'))
             }
           })
-          callback()
         }
       } else if (!value) {
         callback(new Error('请输入证件号码'))
@@ -303,11 +302,16 @@ export default {
       }
     }
     return {
+      pages: {
+        page: 1,
+        size: 10
+      },
+      codebtnWord: '获取验证码', // 获取验证码按钮文字
+      codeShow: true,
+      count: '', // 刷新秒数提示
+      timer: null,
       nationData: nation(),
       visible: false,
-       /**
-       * 验证码转化
-       */
       state: {
         smsSendBtn: false,
         time: 60,
@@ -339,34 +343,63 @@ export default {
           '小学',
           '其他'
       ],
+      aboBloodTypeArr: [
+        'A型', 'B型', 'O型', 'AB型'
+      ],
+      rhBloodTypeArr: [
+        'Rh阴型', 'Rh阳型'
+      ],
+      groupIdArr: [],
       form: {
-        nickname: '',
-        avatar: '',
-        account: '',
+        groupId: '',
+        token: '',
         telephone: '',
         code: '',
         name: '',
         gender: '',
         birthDate: '',
         idType: '',
-        eduBG: '',
-        aboBloodType: '',
-        rhBloodType: '',
+        eduBG: null,
         idNo: '',
         phoneNumber: '',
         contactName: '',
         contactNumber: '',
-        ethnicGroups: '',
+        ethnicGroups: null,
         province: '',
         city: '',
         area: '',
         street: '',
-        village: '',
         age: '',
         homeAddress: '',
-        provinceList: [],
-        municipalityList: [],
-        districtList: []
+        address: '',
+        aboBloodType: null, // 血型
+        rhBloodType: null
+      },
+      apiForm: {
+        nickname: '',
+        groupId: '',
+        telephone: '',
+        token: '',
+        code: '',
+        baseInfo: {
+          name: '',
+          gender: '',
+          birthDate: '',
+          idType: '',
+          eduBG: '',
+          aboBloodType: '',
+          rhBloodType: '',
+          idNo: '',
+          phoneNumber: '',
+          contactName: '',
+          contactNumber: '',
+          ethnicGroups: '',
+          province: '',
+          city: '',
+          area: '',
+          street: '',
+          homeAddress: ''
+        }
       },
       // 用户信息规则
       info_rules: {
@@ -414,6 +447,16 @@ export default {
   },
   created () {
   },
+  mounted () {
+      customerSearch('', this.pages).then(res => {
+        if (res.status === 200) {
+          this.loadingShow = false
+          this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+        }
+        this.groupIdArr = res.data.content
+        console.log('群众', this.groupIdArr)
+      })
+  },
   methods: {
     // 重置表单
     resetForm () {
@@ -424,21 +467,123 @@ export default {
     },
     handleOk (e) {
       // e.preventDefault()
-      console.log('111')
+      // console.log('111')
       this.$refs.ruleForm.validate(valid => {
-        console.log('valid', valid)
         if (valid) {
-          console.log('点击了确定,且信息确定', this.form)
+          const baseInfo = this.apiForm.baseInfo
+          const form = JSON.parse(JSON.stringify(this.form))
+          this.apiForm.telephone = form.telephone
+          baseInfo.name = form.name
+          this.apiForm.nickname = form.name
+          baseInfo.gender = form.gender
+          baseInfo.idType = form.idType
+          baseInfo.eduBG = form.eduBG
+          baseInfo.aboBloodType = form.aboBloodType
+          baseInfo.rhBloodType = form.rhBloodType
+          baseInfo.idNo = form.idNo
+          baseInfo.phoneNumber = form.phoneNumber
+          baseInfo.contactName = form.contactName
+          baseInfo.contactNumber = form.contactNumber
+          baseInfo.ethnicGroups = form.ethnicGroups
+          baseInfo.province = form.province
+          baseInfo.city = form.city
+          baseInfo.area = form.area
+          baseInfo.street = form.street
+          baseInfo.homeAddress = form.homeAddress
+          baseInfo.birthDate = form.birthDate
+          if (form.groupId) {
+            this.apiForm.groupId = form.groupId
+          } else {
+            this.apiForm.groupId = -1
+          }
+          console.log('点击了确定,且信息确定', this.apiForm)
+          const groupId = this.apiForm.groupId
+          const apiForm = this.apiForm
+          customerAdd(groupId, apiForm).then(res => {
+            if (res.status === 200) {
+              console.log('添加成功', apiForm)
+            }
+          })
           this.visible = false
         } else {
           console.log('信息确定', this.form)
         }
       })
-      // console.log('点击了确定,且信息确定', this.form)
+      console.log('点击了确定,且信息确定', this.form)
     },
     // 取消
     handleOff () {
       this.resetForm()
+    },
+    // 获取子组件地址
+    getAddress (value) {
+      this.form.province = value.pro
+      this.form.city = value.city
+      this.form.area = value.area
+      this.form.street = value.street
+      console.log('address', value)
+    },
+    getUserCode (i) {
+      var Reg = /^[1][34578][0-9]{9}$/
+      if (Reg.test(this.form.phoneNumber)) {
+        getCode(i).then(res => {
+          this.$message.info('验证码发送成功')
+          if (res.status === 200) {
+            // console.log('验证码', res)
+            this.form.token = res.data.token
+            this.$message.info('验证码发送成功')
+            // console.log(res.data.token)
+            this.form.token = res.data.token // 保存token到data中
+            // 60秒刷新
+            const TIME_COUNT = 60
+            if (!this.timer) {
+              this.count = TIME_COUNT
+              this.codeShow = false
+              this.timer = setInterval(() => {
+              if (this.count > 0 && this.count <= TIME_COUNT) {
+                this.count--
+              } else {
+                this.codeShow = true
+                clearInterval(this.timer)
+                this.timer = null
+                }
+              }, 1000)
+            }
+          } else if (res.status === 400) {
+            this.$message.error(res.message || '获取验证码失败')
+            const TIME_COUNT = 60
+            if (!this.timer) {
+              this.count = TIME_COUNT
+              this.codeShow = false
+              this.timer = setInterval(() => {
+              if (this.count > 0 && this.count <= TIME_COUNT) {
+                this.count--
+              } else {
+                this.codeShow = true
+                clearInterval(this.timer)
+                this.timer = null
+                }
+              }, 1000)
+            }
+          } else {
+            const TIME_COUNT = 60
+            if (!this.timer) {
+              this.count = TIME_COUNT
+              this.codeShow = false
+              this.timer = setInterval(() => {
+              if (this.count > 0 && this.count <= TIME_COUNT) {
+                this.count--
+              } else {
+                this.codeShow = true
+                clearInterval(this.timer)
+                this.timer = null
+                }
+              }, 1000)
+            }
+            this.$message.error(res.message)
+          }
+        })
+      }
     }
   }
 }
