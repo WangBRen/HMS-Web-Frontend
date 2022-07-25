@@ -43,7 +43,7 @@ export function createCustomerG (groupId, customersId) {
 
 export function removeCustomerG (groupId, customersId) {
     return request({
-        url: customerApi.removeCustomerJoinGroup + groupId + '/customers/' + customersId,
-        method: 'delete'
+        url: customerApi.removeCustomerJoinGroup + groupId + '/customers/' + customersId + '/remove',
+        method: 'put'
     })
 }

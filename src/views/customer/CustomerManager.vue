@@ -184,14 +184,15 @@ export default {
       this.selectGroupId = record.id
     },
     async removeCustomer (record) {
+      const that = this
       const cId = record.member.id
-      const gId = this.selectGroupId
-      await removeCustomerG(gId, cId).then(error => {
-        if (!error) {
-          this.$message.success('移除成功')
-          this.onSearch()
+      const gId = that.selectGroupId
+      await removeCustomerG(gId, cId).then(res => {
+        if (res.status === 200) {
+          that.$message.success('移除成功')
+          that.onSearch()
         } else {
-          this.$message.error(error.message || '移除失败')
+          that.$message.error(res.message || '移除失败')
         }
       })
     }
