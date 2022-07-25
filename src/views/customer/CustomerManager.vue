@@ -48,7 +48,7 @@
           :pagination="false"
         >
           <span slot="cavatar" slot-scope="text, record">
-            <a-avatar :src="record.member.avatar"  v-if="record.member.avatar"/>
+            <a-avatar :src="record.member.avatar" v-if="record.member.avatar"/>
             <a-avatar icon="user" v-else/>
             <!-- <img style="width:50px;heigth:50px" :src="record.member.avatar" /> -->
           </span>
