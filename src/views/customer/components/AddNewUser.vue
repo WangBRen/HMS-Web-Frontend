@@ -1,6 +1,7 @@
 <template>
-  <div v-if="isVisible">
+  <div>
     <a-modal
+      :maskClosable="false"
       :title="title"
       :visible="isVisible"
       :confirm-loading="confirmLoading"
@@ -8,9 +9,9 @@
       @cancel="handleCancel"
       :width="800"
     >
-      <div style="margin-bottom: 16px">
+      <div style="margin-bottom: 16px;width: 60%;">
         <a-input-search
-          placeholder="请输入姓名"
+          placeholder="请输入关键字"
           enter-button="查询"
           :loading="loading"
           @search="onSearch"
@@ -110,7 +111,8 @@ export default {
       pages: {
         page: 1,
         size: 10
-      }
+      },
+      closeRefresh: true
     }
   },
   created () {
@@ -140,6 +142,7 @@ export default {
       apiCreateGroupCustomer(gId, cId).then(res => {
         if (res.status === 200) {
           this.$message.success(res.message || '添加用户成功')
+          this.$emit('onSearch')
           setTimeout(() => {
             this.handleCancel()
             this.confirmLoading = false

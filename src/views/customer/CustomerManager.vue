@@ -52,7 +52,7 @@
             <a-avatar icon="user" v-else/>
             <!-- <img style="width:50px;heigth:50px" :src="record.member.avatar" /> -->
           </span>
-          <span slot="operation" class="table-operation" slot-scope="text, record">
+          <span slot="operation" slot-scope="text, record">
             <a-dropdown>
               <a-menu slot="overlay">
                 <!-- <a-menu-item> 编辑用户信息 </a-menu-item> -->
@@ -76,12 +76,14 @@
       </a-table>
     </a-card>
     <CustomerInfoForm ref="child"/>
+    <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
+      @onSearch="onSearch"
       @handleCancel="handleCancel"
       :visible="visible"
       :checkedRowKeys="checkedRowKeys"
-      :title="addTitle"
+      :title="title"
       :selectId="selectId"
       ref="addUserRef"/>
   </div>
@@ -93,10 +95,10 @@ import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
 
 const columns = [
-  { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
-  { title: '群名', dataIndex: 'name', key: 'name', align: 'center' },
-  { title: '群主', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  { title: '群组名称', dataIndex: 'name', key: 'name', align: 'center' },
+  { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
   { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
   { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
   {
@@ -112,7 +114,7 @@ const columns = [
 ]
 
 const innerColumns = [
-  { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.nickname', key: 'member.nickname', align: 'center' },
   { title: '手机号', dataIndex: 'member.account', key: 'member.account', align: 'center' },
@@ -150,19 +152,22 @@ export default {
         page: 1,
         size: 10
       },
-      addTitle: '添加用户',
+      title: '',
       selectId: -1,
       selectGroupId: '',
       checkedRowKeys: [],
-      openKey: 0
+      openKey: 0 // 为了重新渲染子组件
     }
   },
   created () {
     this.onSearch()
   },
   methods: {
+    /**
+     * 取消按钮
+     * @param {e} e
+     */
     handleCancel (e) {
-      this.onSearch()
       this.visible = false
     },
     handleOpen () {
@@ -171,6 +176,7 @@ export default {
     handleEdit (record, value) {
       this.selectId = record.id
       this.visible = true
+      this.addtitle = '添加用户'
       this.$refs.addUserRef.onSearch()
       this.openKey++
       this.checkedRowKeys = []
@@ -216,7 +222,7 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #54a3ed !important;
+  background: #e7ebee !important;
 }
 
 .child-table {
