@@ -17,7 +17,6 @@
             <a-col :md="13" :sm="24"/>
             <a-col :md="3" :sm="24">
               <span class="table-page-search-submitButtons">
-                <!-- <a-button type="primary">查询</a-button> -->
                 <a-button type="primary " style="margin-left: 8px" @click="handleOpen">新建</a-button>
               </span>
             </a-col>
@@ -36,7 +35,6 @@
         <span slot="avatar" slot-scope="text, grecord">
           <a-avatar size="large" icon="user" :src="grecord.avatar" v-if="grecord.avatar"/>
           <a-avatar size="large" icon="user" v-else/>
-          <!-- <img style="width:50px;heigth:50px" :src="grecord.avatar" /> -->
         </span>
         <a-table
           :rowKey="(record,index)=>{return index}"
@@ -50,12 +48,10 @@
           <span slot="cavatar" slot-scope="text, record">
             <a-avatar :src="record.member.avatar" v-if="record.member.avatar"/>
             <a-avatar icon="user" v-else/>
-            <!-- <img style="width:50px;heigth:50px" :src="record.member.avatar" /> -->
           </span>
           <span slot="operation" slot-scope="text, record">
             <a-dropdown>
               <a-menu slot="overlay">
-                <!-- <a-menu-item> 编辑用户信息 </a-menu-item> -->
                 <a-menu-item>
                   <a-popconfirm
                     v-if="data.length"
@@ -85,7 +81,8 @@
       :checkedRowKeys="checkedRowKeys"
       :title="title"
       :selectId="selectId"
-      ref="addUserRef"/>
+      ref="addUserRef"
+    />
   </div>
 </template>
 <script>
@@ -106,9 +103,7 @@ const columns = [
     dataIndex: 'createdAt',
     key: 'createdAt',
     align: 'center',
-    customRender: (text, record, index) => {
-    return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
-   }
+    customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
   },
   { title: '操作', dataIndex: '', key: 'x', align: 'center', scopedSlots: { customRender: 'action' } }
 ]
@@ -119,12 +114,12 @@ const innerColumns = [
   { title: '名字', dataIndex: 'member.nickname', key: 'member.nickname', align: 'center' },
   { title: '手机号', dataIndex: 'member.account', key: 'member.account', align: 'center' },
   {
-      title: '加入时间',
-      dataIndex: 'member.createdAt',
-      key: 'member.createdAt',
-      align: 'center',
-      customRender: (text, record, index) => {
-        return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+    title: '加入时间',
+    dataIndex: 'member.createdAt',
+    key: 'member.createdAt',
+    align: 'center',
+    customRender: (text, record, index) => {
+      return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
     }
   },
   {
@@ -182,7 +177,7 @@ export default {
       this.checkedRowKeys = []
     },
     onSearch (value) {
-       apiCustomerSearch(value, this.pages).then(res => {
+      apiCustomerSearch(value, this.pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
