@@ -18,7 +18,7 @@ export const asyncRouterMap = [
        // 用户管理
       {
         path: '/system/user-manage',
-            name: 'healthAccountManagePage',
+            name: 'customerManager',
             component: () => import('@/views/customer/CustomerManager'),
             meta: {
               title: 'menu.user-management',

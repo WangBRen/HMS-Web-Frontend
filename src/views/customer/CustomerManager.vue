@@ -17,7 +17,6 @@
             <a-col :md="13" :sm="24"/>
             <a-col :md="3" :sm="24">
               <span class="table-page-search-submitButtons">
-                <!-- <a-button type="primary">查询</a-button> -->
                 <a-button type="primary " style="margin-left: 8px" @click="handleOpen">新建</a-button>
               </span>
             </a-col>
@@ -25,15 +24,20 @@
         </a-form>
       </div>
       <a-table
+        :rowKey="(record,index)=>{return index}"
         :columns="columns"
+        @expand="selectGroup"
         :data-source="data"
         class="table-content">
-        <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">新建用户</a>
-          <a-divider type="vertical" />
-          <a @click="handleEdit(record)">编辑群组</a>
+        <span slot="action" slot-scope="text, grecord">
+          <a @click="handleEdit(grecord)">添加用户</a>
+        </span>
+        <span slot="avatar" slot-scope="text, grecord">
+          <a-avatar size="large" icon="user" :src="grecord.avatar" v-if="grecord.avatar"/>
+          <a-avatar size="large" icon="user" v-else/>
         </span>
         <a-table
+          :rowKey="(record,index)=>{return index}"
           class="child-table"
           slot="expandedRowRender"
           slot-scope="inner"
@@ -41,11 +45,22 @@
           :data-source="inner.members"
           :pagination="false"
         >
-          <span slot="operation" class="table-operation">
+          <span slot="cavatar" slot-scope="text, record">
+            <a-avatar :src="record.member.avatar" v-if="record.member.avatar"/>
+            <a-avatar icon="user" v-else/>
+          </span>
+          <span slot="operation" slot-scope="text, record">
             <a-dropdown>
               <a-menu slot="overlay">
-                <a-menu-item>编辑用户信息</a-menu-item>
-                <a-menu-item>移除用户</a-menu-item>
+                <a-menu-item>
+                  <a-popconfirm
+                    v-if="data.length"
+                    title="是否移除该用户？"
+                    @confirm="() => removeCustomer(inner, record)"
+                  >
+                    <a href="javascript:;">移除用户</a>
+                  </a-popconfirm>
+                </a-menu-item>
               </a-menu>
               <a>
                 更多
@@ -57,42 +72,54 @@
       </a-table>
     </a-card>
     <CustomerInfoForm ref="child"/>
+    <!-- 群组管理 -->
+    <AddNewUserVue
+      :key="openKey"
+      @onSearch="onSearch"
+      @handleCancel="handleCancel"
+      :visible="visible"
+      :checkedRowKeys="checkedRowKeys"
+      :title="title"
+      :selectId="selectId"
+      ref="addUserRef"
+    />
   </div>
 </template>
 <script>
-import { customerSearch } from '@/api/customer'
+import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
+import AddNewUserVue from './components/AddNewUser.vue'
 
 const columns = [
-  { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
-  { title: '群名', dataIndex: 'name', key: 'name', align: 'center' },
+  // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
+  { title: '群组名称', dataIndex: 'name', key: 'name', align: 'center' },
+  { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
+  { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
   {
     title: '创建时间',
     dataIndex: 'createdAt',
     key: 'createdAt',
     align: 'center',
-    customRender: (text, record, index) => {
-    return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
-  }
- },
-  { title: '群主', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
-  { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
-  { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
+    customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+  },
   { title: '操作', dataIndex: '', key: 'x', align: 'center', scopedSlots: { customRender: 'action' } }
 ]
 
 const innerColumns = [
-  { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
+  { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.nickname', key: 'member.nickname', align: 'center' },
   { title: '手机号', dataIndex: 'member.account', key: 'member.account', align: 'center' },
   {
-      title: '加入时间',
-      dataIndex: 'member.createdAt',
-      key: 'member.createdAt',
-      align: 'center',
-      customRender: (text, record, index) => {
-        return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+    title: '加入时间',
+    dataIndex: 'member.createdAt',
+    key: 'member.createdAt',
+    align: 'center',
+    customRender: (text, record, index) => {
+      return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
     }
   },
   {
@@ -106,7 +133,8 @@ const innerColumns = [
 
 export default {
    components: {
-    CustomerInfoForm
+    CustomerInfoForm,
+    AddNewUserVue
   },
   data () {
     return {
@@ -114,27 +142,62 @@ export default {
       data: [],
       columns,
       innerColumns,
+      visible: false,
       pages: {
         page: 1,
         size: 10
-      }
+      },
+      title: '',
+      selectId: -1,
+      selectGroupId: '',
+      checkedRowKeys: [],
+      openKey: 0 // 为了重新渲染子组件
     }
   },
   created () {
     this.onSearch()
   },
   methods: {
+    /**
+     * 取消按钮
+     * @param {e} e
+     */
+    handleCancel (e) {
+      this.visible = false
+    },
     handleOpen () {
       this.$refs.child.openModel()
     },
-    async onSearch (value) {
-      console.log(value)
-       await customerSearch(value, this.pages).then(res => {
+    handleEdit (record, value) {
+      this.selectId = record.id
+      this.visible = true
+      this.addtitle = '添加用户'
+      this.$refs.addUserRef.onSearch()
+      this.openKey++
+      this.checkedRowKeys = []
+    },
+    onSearch (value) {
+      apiCustomerSearch(value, this.pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         }
-        console.log(res)
+      })
+    },
+    selectGroup (expanded, record) {
+      this.selectGroupId = record.id
+    },
+    removeCustomer (inner, record) {
+      const that = this
+      const cId = record.member.id
+      const gId = inner.id
+      apiRemoveCustomerGroup(gId, cId).then(res => {
+        if (res.status === 200) {
+          that.$message.success('移除成功')
+          that.onSearch()
+        } else {
+          that.$message.error(res.message || '移除失败')
+        }
       })
     }
   }
@@ -154,7 +217,7 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #54a3ed !important;
+  background: #e7ebee !important;
 }
 
 .child-table {
