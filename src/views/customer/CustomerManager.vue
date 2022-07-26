@@ -95,7 +95,7 @@ const columns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
   { title: '群组名称', dataIndex: 'name', key: 'name', align: 'center' },
-  { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  { title: '管理员', dataIndex: 'manager.baseInfo.name', key: 'manager.baseInfo.name', align: 'center' },
   { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
   { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
   {
@@ -111,8 +111,8 @@ const columns = [
 const innerColumns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
-  { title: '名字', dataIndex: 'member.nickname', key: 'member.nickname', align: 'center' },
-  { title: '手机号', dataIndex: 'member.account', key: 'member.account', align: 'center' },
+  { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
+  { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
