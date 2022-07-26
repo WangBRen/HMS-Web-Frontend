@@ -125,13 +125,12 @@ export default {
     }
   },
   methods: {
-    async onSearch (value) {
-      await apiAdd(value, this.pages).then(res => {
-        if (res.status === 200) {
-          this.loadingShow = false
-          this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-        }
-      })
+   async onSearch (value) {
+      const res = await apiAdd(value, this.pages)
+      if (res.status === 200) {
+        this.loadingShow = false
+        this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+      }
     },
    handleOk () {
       const cId = this.customersId
