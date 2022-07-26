@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 const customerApi = {
-    search: '/groups/search',
-    searchCustomerUnderGroup: '/groups/search-customers',
+    searchCustomerUnderGroup: '/groups/search',
+    searchCustomers: '/groups/search-customers',
     createCustomerJoinGroup: groupId => { return `/groups/${groupId}/customers/append-many` },
     removeCustomerJoinGroup: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/remove`
 }
 
-export function customerSearch (values, pages) {
+export function searchCustomerUnderGroup (values, pages) {
     return request({
-        url: customerApi.search,
+        url: customerApi.searchCustomerUnderGroup,
         method: 'get',
         params: {
             word: values || '',
@@ -21,7 +21,7 @@ export function customerSearch (values, pages) {
 
 export function searchCustomers (values, pages) {
     return request({
-        url: customerApi.searchCustomerUnderGroup,
+        url: customerApi.searchCustomers,
         method: 'get',
         params: {
             word: values || '',

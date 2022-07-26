@@ -87,7 +87,7 @@
   </div>
 </template>
 <script>
-import { customerSearch as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
+import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
