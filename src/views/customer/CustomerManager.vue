@@ -105,7 +105,7 @@ const columns = [
     align: 'center',
     customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
   },
-  { title: '操作', dataIndex: '', key: 'x', align: 'center', scopedSlots: { customRender: 'action' } }
+  { title: '操作', dataIndex: '', key: 'operation', align: 'center', scopedSlots: { customRender: 'action' } }
 ]
 
 const innerColumns = [
