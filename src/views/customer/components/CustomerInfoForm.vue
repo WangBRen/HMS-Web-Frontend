@@ -12,7 +12,7 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="群组" ref="groupId" prop="groupId">
-              <a-select v-model="form.groupId" show-search allowClear>
+              <a-select :disabled="groupShow" v-model="form.groupId" show-search allowClear>
                 <a-select-option v-for="(item) in groupIdArr" :key="item.id" :value="item.name">
                   {{ item.name }}
                 </a-select-option>
@@ -160,7 +160,6 @@
           <a-col :span="12">
             <a-form-model-item label="详细地址:">
               <a-input v-model="form.homeAddress" placeholder="详细地址"></a-input>
-              <a-button @click="jiekou()"></a-button>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -311,6 +310,7 @@ export default {
       },
       codebtnWord: '获取验证码', // 获取验证码按钮文字
       codeShow: true,
+      groupShow: false,
       count: '', // 刷新秒数提示
       timer: null,
       nationData: nation(),
@@ -450,6 +450,9 @@ export default {
   created () {
   },
   mounted () {
+  },
+  methods: {
+    addComponent () {
       searchCustomerUnderGroup('', this.pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
@@ -458,12 +461,30 @@ export default {
         this.groupIdArr = res.data.content
         console.log('群众', this.groupIdArr)
       })
-      // this.form.name = this.dataTypesTemp.data.name
-      console.log('+++', this.dataTypesTemp.data)
-  },
-  methods: {
-    jiekou () {
-      console.log('111', this.dataTypesTemp.data.name)
+      console.log('---', this.form)
+      const form = this.form
+      for (var keys in form) {
+        form[keys] = ''
+      }
+      this.groupShow = false
+      this.form.groupId = ''
+    },
+    initComponent () {
+      searchCustomerUnderGroup('', this.pages).then(res => {
+        if (res.status === 200) {
+          this.loadingShow = false
+          this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+        }
+        this.groupIdArr = res.data.content
+        console.log('群众', this.groupIdArr)
+      })
+      const form = this.form
+      for (var keys in form) {
+        form[keys] = ''
+      }
+      console.log('loding', this.dataTypesTemp.data)
+      this.groupShow = true
+      this.form.groupId = this.dataTypesTemp.data.name
     },
     // 重置表单
     resetForm () {
@@ -516,6 +537,7 @@ export default {
           const apiForm = this.apiForm
           customerAdd(groupId, apiForm).then(res => {
             if (res.status === 200) {
+              this.$message.info(res.message)
               console.log('添加成功', apiForm)
             }
           })

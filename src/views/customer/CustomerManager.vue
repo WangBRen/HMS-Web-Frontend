@@ -75,7 +75,7 @@
         </a-table>
       </a-table>
     </a-card>
-    <Customer-InfoForm :dataTypes="dataTypes" :key="openInfo" ref="child"/>
+    <Customer-InfoForm :dataTypes="dataTypes"ref="child"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
@@ -156,7 +156,6 @@ export default {
       selectId: -1,
       selectGroupId: '',
       checkedRowKeys: [],
-      openInfo: 100,
       openKey: 0 // 为了重新渲染子组件
     }
   },
@@ -174,6 +173,7 @@ export default {
     handleOpen () {
       console.log('弹窗')
       this.$refs.child.openModel()
+      this.$refs.child.addComponent()
     },
     handleEdit (record, value) {
       this.selectId = record.id
@@ -184,9 +184,9 @@ export default {
       this.checkedRowKeys = []
     },
     handleAdd (grecord) {
-      this.openInfo++
       this.$refs.child.openModel()
-      // this.dataTypes.data = grecord
+      this.dataTypes.data = JSON.parse(JSON.stringify(grecord))
+      this.$refs.child.initComponent(this.dataTypes.data)
       console.log('???', JSON.parse(JSON.stringify(grecord)))
     },
     onSearch (value) {
