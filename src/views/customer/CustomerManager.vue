@@ -171,7 +171,7 @@ export default {
       this.visible = false
     },
     handleOpen () {
-      console.log('弹窗')
+      // console.log('弹窗')
       this.$refs.child.openModel()
       this.$refs.child.addComponent()
     },
@@ -187,7 +187,7 @@ export default {
       this.$refs.child.openModel()
       this.dataTypes.data = JSON.parse(JSON.stringify(grecord))
       this.$refs.child.initComponent(this.dataTypes.data)
-      console.log('???', JSON.parse(JSON.stringify(grecord)))
+      // console.log('???', JSON.parse(JSON.stringify(grecord)))
     },
     onSearch (value) {
       apiCustomerSearch(value, this.pages).then(res => {

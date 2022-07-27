@@ -215,18 +215,18 @@ export default {
         var idCode = last === lastno && format ? 1 : false
         // 根据结果判断
         if (!idCode) {
-          console.log('>>>>>>>', idCode)
+          // console.log('>>>>>>>', idCode)
           callback(new Error('输入证件号有误'))
         } else {
           // console.log('>>>>>>>', value)
           apiCustomerRepeat('id_number', value).then(res => {
-            console.log('res', res)
+            // console.log('res', res)
             if (res.status === 200) {
               // 根据接口返回data判断,true为已被注册
               if (res.data) {
                 callback(new Error('证件号已被注册'))
               } else {
-                console.log('可注册证件号', res)
+                // console.log('可注册证件号', res)
                 var gender = value[16]
                 var year = value.slice(6, 10)
                 var month = value.slice(10, 12)
@@ -253,7 +253,7 @@ export default {
                     age--
                     this.form.age = age
                   } else {
-                    console.log(age)
+                    // console.log(age)
                     this.form.age = age
                   }
                 }
@@ -291,7 +291,7 @@ export default {
             if (res.data) {
               callback(new Error('手机号已被注册'))
             } else {
-              console.log('可注册手机号')
+              // console.log('可注册手机号')
               callback()
             }
           } else {
@@ -459,9 +459,9 @@ export default {
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         }
         this.groupIdArr = res.data.content
-        console.log('群众', this.groupIdArr)
+        // console.log('群众', this.groupIdArr)
       })
-      console.log('---', this.form)
+      // console.log('---', this.form)
       const form = this.form
       for (var keys in form) {
         form[keys] = ''
@@ -476,13 +476,13 @@ export default {
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         }
         this.groupIdArr = res.data.content
-        console.log('群众', this.groupIdArr)
+        // console.log('群众', this.groupIdArr)
       })
       const form = this.form
       for (var keys in form) {
         form[keys] = ''
       }
-      console.log('loding', this.dataTypesTemp.data)
+      // console.log('loding', this.dataTypesTemp.data)
       this.groupShow = true
       this.form.groupId = this.dataTypesTemp.data.name
     },
@@ -531,22 +531,22 @@ export default {
           } else {
             this.apiForm.groupId = -1
           }
-          console.log('点击了确定,我是传回后端的数据', this.apiForm)
-          console.log('点击了确定,我是前端的数据', this.form)
+          // console.log('点击了确定,我是传回后端的数据', this.apiForm)
+          // console.log('点击了确定,我是前端的数据', this.form)
           const groupId = this.apiForm.groupId
           const apiForm = this.apiForm
           customerAdd(groupId, apiForm).then(res => {
             if (res.status === 200) {
               this.$message.info(res.message)
-              console.log('添加成功', apiForm)
+              // console.log('添加成功', apiForm)
             }
           })
           this.visible = false
         } else {
-          console.log('信息确定', this.form)
+          // console.log('信息确定', this.form)
         }
       })
-      console.log('点击了确定,且信息确定', this.form)
+      // console.log('点击了确定,且信息确定', this.form)
     },
     // 取消
     handleOff () {
@@ -558,7 +558,7 @@ export default {
       this.form.city = value.city
       this.form.area = value.area
       this.form.street = value.street
-      console.log('address', value)
+      // console.log('address', value)
     },
     getUserCode (i) {
       var Reg = /^[1][34578][0-9]{9}$/
