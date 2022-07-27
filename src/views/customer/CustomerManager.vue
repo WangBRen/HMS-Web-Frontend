@@ -28,7 +28,9 @@
         :columns="columns"
         @expand="selectGroup"
         :data-source="data"
-        class="table-content">
+        class="table-content"
+        :pagination="pagination"
+      >
         <span slot="action" slot-scope="text, grecord">
           <a @click="handleAdd(grecord)">新增用户</a>|
           <a @click="handleEdit(grecord)">添加用户</a>
@@ -148,21 +150,37 @@ export default {
       columns,
       innerColumns,
       visible: false,
-      pages: {
-        page: 1,
-        size: 10
-      },
+      pages: {},
       title: '',
       selectId: -1,
       selectGroupId: '',
       checkedRowKeys: [],
-      openKey: 0 // 为了重新渲染子组件
+      openKey: 0, // 为了重新渲染子组件
+      pagination: {
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 条`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+      }
     }
   },
   created () {
     this.onSearch()
   },
   methods: {
+    onPageChange (page, pageSize) {
+      this.pagination.current = page
+       this.onSearch()
+    },
+    onSizeChange (current, pageSize) {
+        this.pagination.current = 1
+        this.pagination.pageSize = pageSize
+        this.onSearch()
+    },
     /**
      * 取消按钮
      * @param {e} e
@@ -190,10 +208,15 @@ export default {
       // console.log('???', JSON.parse(JSON.stringify(grecord)))
     },
     onSearch (value) {
-      apiCustomerSearch(value, this.pages).then(res => {
+      const pages = {
+        page: this.pagination.current,
+        size: this.pagination.pageSize
+      }
+      apiCustomerSearch(value, pages).then(res => {
         if (res.status === 200) {
           this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+          this.pagination.total = res.data.totalElements
         }
       })
     },
