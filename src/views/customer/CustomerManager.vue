@@ -75,7 +75,7 @@
         </a-table>
       </a-table>
     </a-card>
-    <Customer-InfoForm v-bind:dataTypes="dataTypes" :key="openInfo" ref="child"/>
+    <Customer-InfoForm :dataTypes="dataTypes" :key="openInfo" ref="child"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
