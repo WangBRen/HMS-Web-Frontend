@@ -30,9 +30,11 @@
         }"
         :columns="columns"
         :data-source="data"
+        :pagination="pagination"
       >
         <span slot="pic" slot-scope="text, record">
-          <img style="width:50px;heigth:50px" :src="record.avatar" />
+          <a-avatar size="large" icon="user" :src="record.avatar" v-if="record.avatar"/>
+          <a-avatar size="large" icon="user" v-else/>
         </span>
       </a-table>
     </a-modal>
@@ -41,7 +43,6 @@
 <script>
 import { searchCustomers as apiAdd, createGroupCustomer as apiCreateGroupCustomer } from '@/api/customer'
 const columns = [
-  { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   {
     title: '头像',
     dataIndex: 'avatar',
@@ -51,8 +52,8 @@ const columns = [
   },
   {
     title: '姓名',
-    dataIndex: 'baseInfo.contactName',
-    key: 'baseInfo.contactName',
+    dataIndex: 'baseInfo.name',
+    key: 'baseInfo.name',
     align: 'center'
   },
   {
@@ -63,8 +64,8 @@ const columns = [
   },
   {
     title: '手机号码',
-    dataIndex: 'baseInfo.contactNumber',
-    key: 'baseInfo.contactNumber',
+    dataIndex: 'baseInfo.phoneNumber',
+    key: 'baseInfo.phoneNumber',
     align: 'center'
   }
 ]
@@ -108,11 +109,17 @@ export default {
       customersId: [],
       selectedRowKeys: this.checkedRowKeys, // 选中的key
       loading: false,
-      pages: {
-        page: 1,
-        size: 10
-      },
-      closeRefresh: true
+      closeRefresh: true,
+      pagination: {
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 条`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+      }
     }
   },
   created () {
@@ -128,11 +135,25 @@ export default {
   },
   methods: {
    async onSearch (value) {
-      const res = await apiAdd(value, this.pages)
+    const pages = {
+        page: this.pagination.current,
+        size: this.pagination.pageSize
+      }
+      const res = await apiAdd(value, pages)
       if (res.status === 200) {
         this.loadingShow = false
         this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+        this.pagination.total = res.data.totalElements
       }
+    },
+    onPageChange (page, pageSize) {
+      this.pagination.current = page
+       this.onSearch()
+    },
+    onSizeChange (current, pageSize) {
+        this.pagination.current = 1
+        this.pagination.pageSize = pageSize
+        this.onSearch()
     },
    handleOk () {
       const cId = this.customersId
