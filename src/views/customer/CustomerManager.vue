@@ -30,8 +30,12 @@
         :data-source="data"
         class="table-content">
         <span slot="action" slot-scope="text, grecord">
+          <a @click="handleAdd(grecord)">新增用户</a>|
           <a @click="handleEdit(grecord)">添加用户</a>
         </span>
+        <!-- <span slot="action" slot-scope="text, grecord">
+          <a @click="handleEdit(grecord)">添加用户</a>
+        </span> -->
         <span slot="avatar" slot-scope="text, grecord">
           <a-avatar size="large" icon="user" :src="grecord.avatar" v-if="grecord.avatar"/>
           <a-avatar size="large" icon="user" v-else/>
@@ -71,7 +75,7 @@
         </a-table>
       </a-table>
     </a-card>
-    <CustomerInfoForm ref="child"/>
+    <Customer-InfoForm :dataTypes="dataTypes"ref="child"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
@@ -138,6 +142,7 @@ export default {
   },
   data () {
     return {
+      dataTypes: {},
       loadingShow: true,
       data: [],
       columns,
@@ -166,7 +171,9 @@ export default {
       this.visible = false
     },
     handleOpen () {
+      // console.log('弹窗')
       this.$refs.child.openModel()
+      this.$refs.child.addComponent()
     },
     handleEdit (record, value) {
       this.selectId = record.id
@@ -175,6 +182,12 @@ export default {
       this.$refs.addUserRef.onSearch()
       this.openKey++
       this.checkedRowKeys = []
+    },
+    handleAdd (grecord) {
+      this.$refs.child.openModel()
+      this.dataTypes.data = JSON.parse(JSON.stringify(grecord))
+      this.$refs.child.initComponent(this.dataTypes.data)
+      // console.log('???', JSON.parse(JSON.stringify(grecord)))
     },
     onSearch (value) {
       apiCustomerSearch(value, this.pages).then(res => {
