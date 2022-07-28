@@ -48,8 +48,7 @@
           :pagination="false"
         >
           <span slot="cavatar" slot-scope="text, record">
-            <a-avatar :src="record.member.avatar" v-if="record.member.avatar"/>
-            <a-avatar icon="user" v-else/>
+            <a-avatar :src="record.member.avatar" />
           </span>
           <span slot="operation" slot-scope="text, record">
             <a-dropdown>
