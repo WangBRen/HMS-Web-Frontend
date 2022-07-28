@@ -23,6 +23,7 @@
         </span>
       </div>
       <a-table
+        class="table"
         :row-selection="{
           selectedRowKeys: selectedRowKeys,
           onChange: onSelectChange,
@@ -33,8 +34,7 @@
         :pagination="pagination"
       >
         <span slot="pic" slot-scope="text, record">
-          <a-avatar size="large" icon="user" :src="record.avatar" v-if="record.avatar"/>
-          <a-avatar size="large" icon="user" v-else/>
+          <a-avatar icon="user" :src="record.avatar" />
         </span>
       </a-table>
     </a-modal>
@@ -192,3 +192,13 @@ export default {
   }
 }
 </script>
+<style lang="less">
+.table th {
+  line-height: 24px;
+  padding: 4px 16px !important;
+}
+.table td {
+  line-height: 24px;
+  padding: 4px 16px !important;
+}
+</style>
