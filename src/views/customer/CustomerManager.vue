@@ -52,10 +52,11 @@
           :pagination="false"
         >
           <span slot="cavatar" slot-scope="text, record">
-            <a-avatar :src="record.member.avatar" v-if="record.member.avatar"/>
-            <a-avatar icon="user" v-else/>
+            <a-avatar :src="record.member.avatar" />
           </span>
           <span slot="operation" slot-scope="text, record">
+            <a @click="handleHealthData(record)">查看健康信息</a>
+            <a-divider type="vertical" />
             <a-dropdown>
               <a-menu slot="overlay">
                 <a-menu-item>
@@ -89,6 +90,11 @@
       :selectId="selectId"
       ref="addUserRef"
     />
+    <!-- 查看健康信息 -->
+    <HealthDataManagmentFormVue
+      :openHealthvisible="openHealthvisible"
+      @handleCancel="handleCancel"
+    />
   </div>
 </template>
 <script>
@@ -96,6 +102,7 @@ import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as a
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
+import HealthDataManagmentFormVue from './components/HealthDataManagmentForm.vue'
 
 const columns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
@@ -140,7 +147,8 @@ const innerColumns = [
 export default {
    components: {
     CustomerInfoForm,
-    AddNewUserVue
+    AddNewUserVue,
+    HealthDataManagmentFormVue
   },
   data () {
     return {
@@ -165,7 +173,8 @@ export default {
         showTotal: total => `共 ${total} 条`, // 显示总数
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-      }
+      },
+      openHealthvisible: false
     }
   },
   created () {
@@ -181,12 +190,17 @@ export default {
         this.pagination.pageSize = pageSize
         this.onSearch()
     },
+    handleHealthData (record) {
+      this.openHealthvisible = true
+    },
+
     /**
      * 取消按钮
      * @param {e} e
      */
     handleCancel (e) {
       this.visible = false
+      this.openHealthvisible = false
     },
     handleOpen () {
       // console.log('弹窗')
