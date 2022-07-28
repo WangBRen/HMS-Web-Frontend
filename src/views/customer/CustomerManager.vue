@@ -78,7 +78,7 @@
         </a-table>
       </a-table>
     </a-card>
-    <Customer-InfoForm :dataTypes="dataTypes"ref="child"/>
+    <Customer-InfoForm :dataTypes="dataTypes" ref="child"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
