@@ -38,5 +38,7 @@ export default {
     'menu.account.logout': '退出登录',
     'menu.system': '系统管理',
     'menu.system.health-account-manage': '健康师账户管理',
-    'menu.user-management': '用户管理'
+    'menu.user-management': '用户管理',
+    'menu.health': '健康资料管理',
+    'menu.health.indexes': '指标管理'
 }
