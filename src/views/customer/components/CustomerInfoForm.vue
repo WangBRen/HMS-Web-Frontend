@@ -291,7 +291,6 @@ export default {
             if (res.data) {
               callback(new Error('手机号已被注册'))
             } else {
-              // console.log('可注册手机号')
               callback()
             }
           } else {
@@ -410,22 +409,22 @@ export default {
         ],
         idNo: [
           { required: true, message: '请输入证件号码', trigger: 'blur' },
-          //  { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
+          //  { max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
           //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
-          { validator: checkIdno, trigger: 'change' }
+          { validator: checkIdno, trigger: 'blur' }
         ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
         code: [
           //  { required: true, message: '请输入验证码', trigger: 'blur' }
-          { validator: checkCode, trigger: 'change' }
+          { validator: checkCode, trigger: 'blur' }
         ],
         phoneNumber: [
           // { required: true, message: '请输入电话号码', trigger: 'blur' },
           { len: 11, message: '请输入正确的电话号码' },
           { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' },
-          { validator: checkPhone, trigger: 'change' }
+          { validator: checkPhone, trigger: 'blur' }
         ],
         contactName: [
           { required: true, message: '请输入紧急联系人', trigger: 'blur' }
