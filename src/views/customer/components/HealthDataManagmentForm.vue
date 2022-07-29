@@ -27,7 +27,7 @@
               <span class="table-page-search-submitButtons">
                 <!-- <a-button type="primary">查询</a-button> -->
                 <a-button type="primary " @click="handleFiltrateTitle">筛选</a-button>
-                <a-button type="primary " style="margin-left: 8px">新建</a-button>
+                <a-button type="primary " @click="handOpenHealthAdd" style="margin-left: 8px">新建</a-button>
               </span>
             </a-col>
           </a-row>
@@ -44,10 +44,12 @@
       :filtersVisible="filtersVisible"
       @handleCancel="handleCancel"
     />
+    <AddHealthData ref="child" />
   </div>
 </template>
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
+import AddHealthData from './AddHealthData.vue'
 const columns = [
   {
     title: '检验号',
@@ -132,7 +134,8 @@ const data = [
 
 export default {
    components: {
-    FiltersHealthDataTableHeadersVue
+    FiltersHealthDataTableHeadersVue,
+    AddHealthData
   },
   props: {
     openHealthvisible: {
@@ -176,6 +179,9 @@ export default {
       this.filtersVisible = true
     },
     async onSearch (value) {
+    },
+    handOpenHealthAdd () {
+      this.$refs.child.openModel()
     }
   }
 }
