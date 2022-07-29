@@ -37,5 +37,7 @@ export default {
     'menu.account.trigger': 'Trigger Error',
     'menu.account.logout': 'Logout',
     'menu.system': 'System',
-    'menu.system.health-account-manage': 'Account Manage'
+    'menu.system.health-account-manage': 'Account Manage',
+    'menu.health': 'Health Management',
+    'menu.health.indexes': 'Health Indexes'
 }
