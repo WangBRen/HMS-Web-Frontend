@@ -335,7 +335,9 @@ export default {
       ],
       genderEnum: [
         '男',
-        '女'
+        '女',
+        '未知的性别',
+        '未说明的性别'
       ],
       eduBgEnum: [
           '研究生及以上',
@@ -346,10 +348,10 @@ export default {
           '其他'
       ],
       aboBloodTypeArr: [
-        'A型', 'B型', 'O型', 'AB型'
+        'A型', 'B型', 'O型', 'AB型', '不详'
       ],
       rhBloodTypeArr: [
-        'Rh阴型', 'Rh阳型'
+        'Rh阴型', 'Rh阳型', '不详'
       ],
       groupIdArr: [],
       form: {
@@ -357,15 +359,15 @@ export default {
         token: '',
         code: '',
         name: '',
-        gender: '',
+        gender: null,
         birthDate: '',
-        idType: '',
+        idType: null,
         eduBG: null,
         idNo: '',
         phoneNumber: '',
         contactName: '',
         contactNumber: '',
-        ethnicGroups: null,
+        ethnicGroups: '',
         province: '',
         city: '',
         area: '',
@@ -531,7 +533,6 @@ export default {
             this.apiForm.groupId = -1
           }
           // console.log('点击了确定,我是传回后端的数据', this.apiForm)
-          // console.log('点击了确定,我是前端的数据', this.form)
           const groupId = this.apiForm.groupId
           const apiForm = this.apiForm
           customerAdd(groupId, apiForm).then(res => {
