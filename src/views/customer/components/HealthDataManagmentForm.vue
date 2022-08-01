@@ -23,11 +23,11 @@
               </a-form-item>
             </a-col>
             <a-col :md="12" :sm="24"/>
-            <a-col :md="4" :sm="24">
+            <a-col :md="4" :sm="24" :pull="1">
               <span class="table-page-search-submitButtons">
                 <!-- <a-button type="primary">查询</a-button> -->
                 <a-button type="primary " @click="handleFiltrateTitle">筛选</a-button>
-                <a-button type="primary " style="margin-left: 8px">新建</a-button>
+                <a-button type="primary " style="margin-left: 12px">新建</a-button>
               </span>
             </a-col>
           </a-row>
@@ -40,17 +40,49 @@
         </span>
       </a-table>
     </a-modal>
-    <FiltersHealthDataTableHeadersVue
-      :filtersVisible="filtersVisible"
-      @handleCancel="handleCancel"
-    />
+    <a-modal
+      destroyOnClose
+      :width="1200"
+      title="健康指标"
+      :visible="filtersVisible"
+      :confirm-loading="confirmLoading"
+      @ok="selectHealthTitleOk"
+      @cancel="selectHealthTitleCancel"
+    >
+      <FiltersHealthDataTableHeadersVue
+        @filterTitlie="filterTitlie"
+        :filtersVisible="filtersVisible"
+        @handleCancel="handleCancel"
+        ref="filterRef"
+      />
+    </a-modal>
   </div>
 </template>
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
-const columns = [
+import { gethealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
+const info = [
   {
-    title: '检验号',
+    title: '头像',
+    dataIndex: 'id',
+    key: 'id',
+    fixed: 'left',
+    width: 100,
+    align: 'center'
+  },
+  {
+    title: '姓名',
+    dataIndex: 'name',
+    key: 'name',
+    fixed: 'left',
+    width: 100,
+    scopedSlots: { customRender: 'name' },
+    align: 'center'
+  }
+]
+const columns = [
+   {
+    title: '头像',
     dataIndex: 'id',
     key: 'id',
     fixed: 'left',
@@ -67,13 +99,13 @@ const columns = [
     align: 'center'
   },
   {
-    title: '疟原虫抗体和抗原',
+    title: '舒张压',
     dataIndex: 'age',
     key: 'age',
     align: 'center'
   },
   {
-    title: '人类免疫缺陷病毒抗体',
+    title: '收缩压',
     dataIndex: 'address',
     key: 'address 1',
     align: 'center'
@@ -148,13 +180,28 @@ export default {
     return {
       data,
       columns,
+      info,
       confirmLoading: false,
-      filtersVisible: false
+      filtersVisible: false,
+      saveTableTitle: []
     }
   },
   created () {
+    this.onSearch()
   },
   methods: {
+    async onSearch () {
+      const res = await apiGethealthIndexes()
+      const datas = (res.data || []).map(item => item.items).flat().map(col => {
+        return {
+          key: col.name,
+          name: col.name,
+          dataIndex: col.name,
+          align: 'center'
+        }
+      })
+      console.log(datas)
+    },
     /**
      * 点击了确定
      */
@@ -169,13 +216,42 @@ export default {
       this.filtersVisible = false
     },
     /**
-     * 筛选表头
+     * 点开筛选表头
      */
     handleFiltrateTitle () {
-      console.log('11111')
       this.filtersVisible = true
+      // this.$refs.filterRef.open()
+      // this.$refs.filterRef.onSearch()
     },
-    async onSearch (value) {
+    /**
+     * 确定筛选
+     */
+    selectHealthTitleOk (sTableTitle) {
+      this.filtersVisible = false
+      this.$refs.filterRef.handleOk()
+      this.saveTableTitle = sTableTitle
+    },
+    /**
+     *取消筛选
+     */
+    selectHealthTitleCancel () {
+      this.filtersVisible = false
+    },
+    filterTitlie (data) {
+     console.log(data)
+     const c = data
+     const a = columns.filter(item =>
+        c.includes(item.title)
+      )
+     this.columns = info.concat(a).concat({
+        title: '操作',
+        dataIndex: 'action',
+        key: 'x',
+        align: 'center',
+        fixed: 'right',
+        width: 200,
+        scopedSlots: { customRender: 'action' }
+      })
     }
   }
 }
