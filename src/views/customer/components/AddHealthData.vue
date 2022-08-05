@@ -16,11 +16,15 @@
                 <div>
                   <a @click="onSc('用户症状信息')" key="用户症状信息" class="leftTitle">用户症状信息</a>
                 </div>
+                <!-- 回到顶部 -->
                 <div>
-                  <a @click="onSc(objData.data[0].name)">点击回到顶部</a>
+                  <!-- <a @click="onSc(objData.data[0].name)">点击回到顶部</a> -->
+                  <a-icon :style="{fontSize: '25px'}" @click="onSc(objData.data[0].name)" type="up-square" theme="filled" />
                 </div>
+                <!-- 清空 -->
                 <div>
-                  <a-button @click="clearData()">清空</a-button>
+                  <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
+                  <!-- <a-button style="" @click="clearData()">清空</a-button> -->
                 </div>
               </div>
             </a-col>
@@ -41,21 +45,30 @@
                   <a-row>
                     <a-col span="24">
                       <a-form-model-item>
-                        <a-input v-model="items.value" :addonBefore="items.name" :addonAfter="items.unit" style="width: 200px"></a-input>
-                        诊断结果:
-                        <a-select v-model="items.diaResult" style="width: 150px">
-                          <a-select-option v-for="(ranges,index) in items.result" :key="index" :value="ranges.name">
-                            {{ ranges.name }}
-                          </a-select-option>
-                        </a-select>
+                        <div>
+                          <a-input v-model="items.value" :addonBefore="items.name" :addonAfter="items.unit" style="width: 200px"></a-input>
+                          诊断结果:
+                          <a-select v-model="items.diaResult" style="width: 150px">
+                            <a-select-option v-for="(ranges,index) in items.result" :key="index" :value="ranges.name">
+                              {{ ranges.name }}
+                            </a-select-option>
+                          </a-select>
+                        </div>
+                        <!-- <div v-if="items.unit !== null">
+                          <a-input v-model="items.value" :addonBefore="items.name" style="width: 200px"></a-input>
+                          <a-input v-model="items.diaResult" addonBefore="诊断结果" style="width: 200px"></a-input>
+                        </div> -->
                         <a-collapse style="width: 90%;">
                           <a-collapse-panel header="点击展开">
                             <div>
                               <a class="exTitle">数据拓展:</a>
-                              <a style="pointer-events:none;" v-for="(ranges,index) in items.result" :key="index">
+                              <a v-if="ranges.type === 'range'" style="pointer-events:none;" v-for="(ranges,index) in items.result" :key="index">
                                 {{ ranges | getRange }}
                                 <!-- {{ ranges }} -->
                               </a>
+                              <!-- <a v-if="ranges.type === 'simple'" style="pointer-events:none;" v-for="(ranges,index) in items.result" :key="index">
+                                {{ ranges | getRange }}
+                              </a> -->
                             </div>
                             <div>
                               <a class="exTitle">检查方式:</a>
@@ -144,16 +157,19 @@ export default {
     },
     filters: {
       getRange: function (value) {
+        // 范围或数值
         if (value.type === 'range') {
-          if (value.ltUnequal != null && value.gtEqual === null) {
-            return value.name + '<' + value.ltUnequal
-          } else if (value.ltUnequal != null && value.gtEqual != null) {
-            return value.gtEqual + '≤' + value.name + '<' + value.ltUnequal
-          } else if (value.ltUnequal === null && value.gtEqual != null) {
-            return value.name + '≥' + value.gtEqual
-          } else {
-            return '1'
+          // 范围
+          if (value.end != null && value.start === null) {
+            return value.name + '<' + value.end
+          } else if (value.end != null && value.start != null) {
+            return value.start + '≤' + value.name + '<' + value.end
+          } else if (value.end === null && value.start != null) {
+            return value.name + '≥' + value.start
           }
+        } else if (value.type === 'simple') {
+          // 数值
+          return value.value
         }
       }
     },
@@ -477,17 +493,21 @@ export default {
       // 新建触发事件
       AddHealthCom (cusmId) {
         this.customerId = cusmId
-        const csid = 7
-        // 如果cusmid不一样则清空已填写的表单
-        if (cusmId === csid) {
-          console.log('不清空')
-        } else {
-          this.$nextTick(() => {
-            this.clearData()
-          })
-          console.log('清空')
-        }
+        // 进入新建时，如果custId和上次不同，则清空报告单
+        // const csid = 7
+        // // 如果cusmid不一样则清空已填写的表单
+        // if (cusmId === csid) {
+        //   // console.log('不清空')
+        // } else {
+        //   this.$nextTick(() => {
+        //     this.clearData()
+        //   })
+        //   // console.log('清空')
+        // }
         console.log('我是点击新建触发的时间,传入custmoerId', this.customerId)
+      },
+      seeHealthCom (data) {
+        console.log('点击查看报告单', data)
       },
       handleOk () {
         const apiData = this.apiData
@@ -525,11 +545,11 @@ export default {
         })
       },
       onSc (value) {
-        console.log('11', value)
+        // console.log('11', value)
         document.getElementById(value).scrollIntoView({ behavior: 'smooth' })
       },
       clearData () {
-        // console.log('清空')
+        console.log('清空')
         getHealthIndex().then(res => {
         if (res.status === 200) {
           const formdata = res.data
@@ -540,7 +560,7 @@ export default {
             }
           }
           this.objData.data = formdata
-          console.log(this.objData.data)
+          // console.log(this.objData.data)
         }
         })
         this.$refs.childDia.clearDia()
@@ -548,6 +568,25 @@ export default {
         this.objData.diagnosisTime = null
         this.objData.symptomData = null
         this.objData.symptomTime = null
+      },
+      // 初始化
+      getHealth () {
+        getHealthIndex().then(res => {
+        if (res.status === 200) {
+          const formdata = res.data
+          for (var i = 0; i < formdata.length; i++) {
+            // console.log(formdata[i])
+            formdata[i].testAt = null
+            for (var j = 0; j < formdata[i].items.length; j++) {
+              formdata[i].items[j].value = null
+              formdata[i].items[j].diaResult = null
+              // console.log(formdata[i].items[j])
+            }
+          }
+          this.objData.data = formdata
+          console.log(this.objData.data)
+        }
+      })
       }
     }
 }

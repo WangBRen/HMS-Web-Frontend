@@ -50,6 +50,7 @@
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import AddHealthData from './AddHealthData.vue'
+import { getHealthReport } from '@/api/health'
 const columns = [
   {
     title: '检验号',
@@ -158,15 +159,11 @@ export default {
   created () {
   },
   methods: {
-    /**
-     * 点击了确定
-     */
+    // 点击了确定
     handleOk () {
       console.log('1111')
     },
-    /**
-     * 点击了取消
-     */
+    // 点击了取消
     handleCancel () {
       this.$emit('handleCancel')
       this.filtersVisible = false
@@ -185,6 +182,17 @@ export default {
       // 在这传custmoerId
       const cusmId = 50
       this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
+    },
+    handleViewingTheTeportForm (data) {
+      // console.log(data)
+      // this.$refs.child.openModel()
+      // this.$refs.child.seeHealthCom(data)
+      const custmoerId = 50
+      getHealthReport(custmoerId).then(res => {
+        if (res.status === 200) {
+          console.log(res)
+        }
+      })
     }
   }
 }
