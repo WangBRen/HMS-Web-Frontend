@@ -40,27 +40,20 @@
         </span>
       </a-table>
     </a-modal>
-    <a-modal
-      destroyOnClose
-      :width="1200"
-      title="健康指标"
-      :visible="filtersVisible"
-      :confirm-loading="confirmLoading"
-      @ok="selectHealthTitleOk"
-      @cancel="selectHealthTitleCancel"
-    >
-      <FiltersHealthDataTableHeadersVue
-        @filterTitlie="filterTitlie"
-        :filtersVisible="filtersVisible"
-        @handleCancel="handleCancel"
-        ref="filterRef"
-      />
-    </a-modal>
+    <FiltersHealthDataTableHeadersVue
+      ref="filterRef"
+      @selectHealthTitleCancel="selectHealthTitleCancel"
+      @filterTitlie="filterTitlie"
+      :filtersVisible="filtersVisible"
+      @handleCancel="handleCancel"
+      :saveTableTitle="saveTableTitle"
+    />
   </div>
 </template>
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import { gethealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
+import { gethealthReports as apiGethealthReports } from '@/api/customer'
 const info = [
   {
     title: '头像',
@@ -183,7 +176,17 @@ export default {
       info,
       confirmLoading: false,
       filtersVisible: false,
-      saveTableTitle: []
+      saveTableTitle: [],
+      pagination: {
+      total: 0,
+      current: 1,
+      pageSize: 10, // 默认每页显示数量
+      showSizeChanger: true, // 显示可改变每页数量
+      pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+      showTotal: total => `共 ${total} 条`, // 显示总数
+      onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+      onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+    }
     }
   },
   created () {
@@ -193,14 +196,63 @@ export default {
     async onSearch () {
       const res = await apiGethealthIndexes()
       const datas = (res.data || []).map(item => item.items).flat().map(col => {
+        const field = 'field_' + col.id
         return {
-          key: col.name,
-          name: col.name,
-          dataIndex: col.name,
-          align: 'center'
+          title: col.name,
+          key: col.id,
+          dataIndex: field + '.value',
+          align: 'center',
+          scopedSlots: { customRender: field + '.value' }
+          // customRender: (text, record) => {
+          //   console.log(record[field])
+          //   // return text
+          //   // return `${text.value}(${text.result})`
+          // }
         }
+      }).concat({
+        title: '操作',
+        dataIndex: 'action',
+        key: 'x',
+        align: 'center',
+        fixed: 'right',
+        width: 200,
+        scopedSlots: { customRender: 'action' }
       })
-      console.log(datas)
+      this.columns = datas
+      console.log('columns', datas)
+    },
+    /**
+     * 查找用户自己的指标
+     */
+    async findCustomerHealthReports (customersId) {
+      console.log('查找', customersId)
+      const pages = {
+        page: this.pagination.current,
+        size: this.pagination.pageSize
+      }
+      const res = await apiGethealthReports(customersId, pages)
+      console.log(res)
+      const items = (res.data.content || [])
+        .map(record => record.projects).flat().map(project => {
+          return (project.items || []).map(item => {
+            return { ...item, projectId: project.id, projectName: project.indexProjectName }
+          }).reduce((acc, item) => {
+            // const key = item.projectName + '-' + item.healthIndexItem.name
+            const key = 'field_' + item.healthIndexItem.id
+            acc[key] = item
+            return acc
+          }, {})
+        })
+      this.data = items
+      // .map(projects => projects.items).flat().map(item => {
+      //   return {
+      //     key: item.healthIndexItem.id,
+      //     name: item.healthIndexItem.name,
+      //     dataIndex: item.healthIndexItem.id,
+      //     align: 'center'
+      //   }
+      // })
+      console.log('==================>:', items)
     },
     /**
      * 点击了确定
@@ -220,16 +272,24 @@ export default {
      */
     handleFiltrateTitle () {
       this.filtersVisible = true
-      // this.$refs.filterRef.open()
-      // this.$refs.filterRef.onSearch()
+      this.$refs.filterRef.open() // 伪双向绑定
+      // // this.$refs.filterRef.onSearch()
+      // console.log(this.$refs.filterRef.open())
     },
     /**
      * 确定筛选
      */
-    selectHealthTitleOk (sTableTitle) {
+    selectHealthTitleOk () {
       this.filtersVisible = false
       this.$refs.filterRef.handleOk()
+    },
+    /**
+     * 子组件传过来的列名
+     */
+    selectHealthTitles (sTableTitle) {
+      console.log('子组件传过来的列名', sTableTitle)
       this.saveTableTitle = sTableTitle
+      this.filterTitlie() // 调用过滤方法
     },
     /**
      *取消筛选
@@ -237,13 +297,16 @@ export default {
     selectHealthTitleCancel () {
       this.filtersVisible = false
     },
-    filterTitlie (data) {
-     console.log(data)
-     const c = data
-     const a = columns.filter(item =>
-        c.includes(item.title)
+    /**
+     * @param {过滤表头}
+     */
+    filterTitlie () {
+     const titles = this.saveTableTitle
+     console.log(titles)
+     const dataSource = columns.filter(item =>
+        titles.includes(item.title)
       )
-     this.columns = info.concat(a).concat({
+     this.columns = info.concat(dataSource).concat({
         title: '操作',
         dataIndex: 'action',
         key: 'x',

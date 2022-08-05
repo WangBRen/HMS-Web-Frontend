@@ -6,7 +6,8 @@ const customerApi = {
     createCustomerJoinGroup: groupId => { return `/groups/${groupId}/customers/append-many` },
     removeCustomerJoinGroup: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/remove`,
     repeat: '/groups/duplicated/',
-    addCustomer: value => { return `/groups/${value}/customers` }
+    addCustomer: value => { return `/groups/${value}/customers` },
+    healthReports: customerId => { return `/health-reports/${customerId}/reports` }
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -62,5 +63,16 @@ export function customerAdd (value, params) {
         url: customerApi.addCustomer(value),
         method: 'post',
         data: params
+    })
+}
+
+export function gethealthReports (customerId, pages) {
+    return request({
+        url: customerApi.healthReports(customerId),
+        method: 'get',
+        params: {
+            page: pages.page || 1,
+            size: pages.size || 10
+        }
     })
 }

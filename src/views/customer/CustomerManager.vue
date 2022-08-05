@@ -93,6 +93,7 @@
     <HealthDataManagmentFormVue
       :openHealthvisible="openHealthvisible"
       @handleCancel="handleCancel"
+      ref="healthDataManagmentRef"
     />
   </div>
 </template>
@@ -191,6 +192,7 @@ export default {
     },
     handleHealthData (record) {
       this.openHealthvisible = true
+      this.$refs.healthDataManagmentRef.findCustomerHealthReports(record.member.id)
     },
 
     /**

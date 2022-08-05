@@ -1,37 +1,46 @@
 <template>
-  <a-card :bordered="false" class="search">
-    <div>
-      <div v-for="(tag,index) in tags" :key="index" class="tags-layout">
-        <a-row>
-          <a-col :span="4">
-            <span class="span1">{{ tag.name }}:</span>
-          </a-col>
-          <a-col :span="20" :push="1.6">
-            <span v-for="(item,i) in tag.items" :key="i" class="span2">
-              <a-checkable-tag
-                v-model="checkArray[item.id]"
-                :key="i"
-                :checked="selectedTags.indexOf(item) > -1"
-                @change="checked => handleChange(item, checked)"
-              >
-                {{ item.name }}
-              </a-checkable-tag>
-            </span>
-          </a-col>
-        </a-row>
-        <!-- <span :style="{ marginRight: 8}" class="span1">{{ tag.name }}:</span>
-        <span v-for="(item,id) in tag.items" :key="id" class="span2">
-          <a-checkable-tag
-            :key="id"
-            :checked="selectedTags.indexOf(item) > -1"
-            @change="checked => handleChange(item, checked)"
-          >
-            {{ item.name }}
-          </a-checkable-tag>
-        </span> -->
+  <a-modal
+    :width="1200"
+    title="筛选需要查看的健康指标"
+    :visible="filtersVisible"
+    :confirm-loading="confirmLoading"
+    @ok="handleOk"
+    @cancel="handleCancel"
+  >
+    <a-card :bordered="false" class="search">
+      <div>
+        <div v-for="(tag,index) in tags" :key="index" class="tags-layout">
+          <a-row>
+            <a-col :span="4">
+              <span class="span1">{{ tag.name }}:</span>
+            </a-col>
+            <a-col :span="20" :push="1.6">
+              <span v-for="(item,i) in tag.items" :key="i" class="span2">
+                <a-checkable-tag
+                  v-model="checkArray[item.id]"
+                  :key="i"
+                  :checked="selectedTags.indexOf(item) > -1"
+                  @change="checked => handleChange(item, checked)"
+                >
+                  {{ item.name }}
+                </a-checkable-tag>
+              </span>
+            </a-col>
+          </a-row>
+          <!-- <span :style="{ marginRight: 8}" class="span1">{{ tag.name }}:</span>
+          <span v-for="(item,id) in tag.items" :key="id" class="span2">
+            <a-checkable-tag
+              :key="id"
+              :checked="selectedTags.indexOf(item) > -1"
+              @change="checked => handleChange(item, checked)"
+            >
+              {{ item.name }}
+            </a-checkable-tag>
+          </span> -->
+        </div>
       </div>
-    </div>
-  </a-card>
+    </a-card>
+  </a-modal>
 </template>
 <script>
 import { gethealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
@@ -56,12 +65,14 @@ import { gethealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 //   )
 // }
 export default {
-  // props: {
-  //   filtersVisible: {
-  //     type: Boolean,
-  //     default: false
-  //   }
-  // },
+  props: {
+    saveTableTitle: {
+      type: Array,
+      default: function () {
+      return []
+     }
+    }
+  },
   data () {
     return {
       indeterminate: true,
@@ -75,50 +86,24 @@ export default {
       checkArray: [] // 通过双向绑定去该改变 是否被选中
     }
   },
-  // computed: {
-  // rowSelection () {
-  //   return {
-  //     onSelectChange: (selectedRowKeys, selectedRows) => {
-  //       // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-  //       const selectTitles = (selectedRows || []).map(item =>
-  //         item.name
-  //       )
-  //       this.selectTitle = selectTitles
-  //     },
-  //     getCheckboxProps: record => ({
-  //       props: {
-  //         disabled: record.name === 'Disabled User', // Column configuration not to be checked
-  //         name: record.name
-  //       }
-  //     })
-  //    }
-  //   }
-  // },
   created () {
     this.onSearch()
+    console.log('触发子组件')
   },
   methods: {
     async onSearch () {
       const res = await apiGethealthIndexes()
-      console.log(res)
       this.tags = res.data || []
-      //  const datas = (res.data || []).map(item => item.items).flat().map(col => {
-      //   return {
-      //     itemName: col.name
-      //   }
-      // })
-      // const tagName = (res.data || []).map(item => {
-      //  return {
-      //   name: item.name,
-      //    ...item.items.flat()
-      //  }
-      // })
-      // console.log(tagName)
     },
+    /**
+     * 伪双向绑定
+     */
     open () {
-      // data.forEach(element => {
-      //   this.checkArray[element] = true
-      // })
+      this.filtersVisible = true
+      this.onSearch()
+      this.saveTableTitle.forEach(element => {
+      this.checkArray[element.id] = true // 父组件展示的列名这边显示为True
+      })
     },
     onSelectChange (selectedRowKeys, selectedRows) {
       const selectTitles = (selectedRows || []).map(item =>
@@ -128,11 +113,12 @@ export default {
     },
     handleOk () {
       const selectTitle = (this.selectedTags || []).map(item => item.name)
-      this.$emit('filterTitlie', selectTitle)
-      // this.$emit('',selectTitle)
+         console.log(selectTitle)
+      // this.$emit('filterTitlie', selectTitle)
+      // this.$emit('selectHealthTitles', selectTitle)
     },
     handleCancel () {
-      this.filtersVisible = false()
+      this.filtersVisible = false
     },
     handleChange (tag, checked) {
       const { selectedTags } = this
@@ -140,7 +126,7 @@ export default {
       const nextSelectedTags = checked
         ? [...selectedTags, tag]
         : selectedTags.filter(t => t !== tag)
-      console.log('选择的标签: ', nextSelectedTags)
+      // console.log('选择的标签: ', nextSelectedTags)
       console.log('选择的key:', this.checkArray)
       this.selectedTags = nextSelectedTags
     }
