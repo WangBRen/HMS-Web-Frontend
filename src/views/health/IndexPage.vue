@@ -148,7 +148,7 @@
                     </a-col>
                   </a-col>
                 </a-col>
-                <a-col :span="24">
+                <a-col :span="24" v-if="condition.type">
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定条件： </a-col>
                     <a-col :span="21" v-if="condition.type == 'range'" style="padding-left: 4px;">
@@ -222,12 +222,16 @@
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定结果： </a-col>
                     <a-col :span="24" v-if="current.result.type == 'range'" style="padding-left: 12px;">
-                      <div v-if="current.result.options" v-for="option in current.result.options" :key="option">
+                      <div v-for="option in current.result.options" :key="option">
                         <a-col :span="4" style="padding-left: 0px;">
-                          <a-input type="text" v-model="option.name" placeholder="名称，如：偏高、偏低、正常"/>
+                          <a-input
+                            type="text"
+                            @change="e => { option.name = e.target.value }"
+                            placeholder="名称，如：偏高、偏低、正常"
+                          />
                         </a-col>
                         <a-col :span="19">
-                          <div v-if="current.products" v-for="(prod, index) in current.products" :key="index">
+                          <div v-if="option.products" v-for="prod in option.products" :key="prod.id">
                             <div>
                               <a-row>
                                 <a-col :span="10">
@@ -238,18 +242,44 @@
                                   <span>:</span>
                                 </a-col>
                                 <a-col :span="14" style="display: flex; align-items: center;">
-                                  <a-input type="text" v-model="option.start[index]" placeholder="数值下界" style="width: 40%" :addonAfter="current.unit"/>
+                                  <a-input
+                                    type="text"
+                                    @change="e => { prod.start = e.target.value }"
+                                    :key="prod.id + '-start'"
+                                    placeholder="数值下界"
+                                    style="width: 40%"
+                                    :addonAfter="current.unit"
+                                  />
                                   <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 < </div>
-                                  <a-input type="text" v-model="option.end[index]" placeholder="数值上界" style="width: 40%" :addonAfter="current.unit"/>
+                                  <a-input
+                                    type="text"
+                                    @change="e => { prod.end = e.target.value }"
+                                    :key="prod.id + '-end'"
+                                    placeholder="数值上界"
+                                    style="width: 40%"
+                                    :addonAfter="current.unit"
+                                  />
                                 </a-col>
                               </a-row>
                             </div>
                           </div>
-                          <div v-if="!current.products">
+                          <div v-if="!option.products">
                             <a-col :span="24" style="display: flex; align-items: center;">
-                              <a-input type="text" v-model="option.start" placeholder="数值下界" style="width: 40%" :addonAfter="current.unit"/>
+                              <a-input
+                                type="text"
+                                @change="e => { option.start = e.target.value }"
+                                placeholder="数值下界"
+                                style="width: 40%"
+                                :addonAfter="current.unit"
+                              />
                               <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 < </div>
-                              <a-input type="text" v-model="option.end" placeholder="数值上界" style="width: 40%" :addonAfter="current.unit"/>
+                              <a-input
+                                type="text"
+                                @change="e => { option.end = e.target.value }"
+                                placeholder="数值上界"
+                                style="width: 40%"
+                                :addonAfter="current.unit"
+                              />
                             </a-col>
                           </div>
                         </a-col>
@@ -400,6 +430,10 @@ const columns = [
   }
 ]
 
+const randomId = () => {
+  return (new Date().getTime() + '').substring(6)
+}
+
 export default {
   name: 'IndexPage',
   components: {
@@ -453,6 +487,11 @@ export default {
       this.visible = false
     },
     updateCurrentProducts () {
+      if (this.current.result.type !== 'range') {
+        this.$forceUpdate()
+        return
+      }
+      // redener result/range options
       const descartProduct = (bilist) => {
         const list = bilist.reduce((a, b) => {
           return a.map(item => b.map(i => [i].concat(item).reverse())).reduce((c, d) => c.concat(d), [])
@@ -463,19 +502,31 @@ export default {
         }
         return list
       }
+      const prodId = (prodlist = []) => {
+        return prodlist.map(prod => prod.id).join('-')
+      }
       const conditions = this.current.conditions || []
       // make cross prod, object: {name, type, value, start, end}
       const result = conditions.map(cond => cond.options || []).filter(opts => opts.length > 0)
-      console.log('current products', descartProduct(result))
-      const products = descartProduct(result).map(prod => {
-        return { list: prod, name: 'descart-placeholder', start: null, end: null, value: null }
+      // console.log('current products', descartProduct(result))
+      const products = descartProduct(result).map((prod, index) => {
+        return { id: prodId(prod), list: prod, name: 'descart-placeholder', start: null, end: null, value: null }
       })
-      // if result.type === range
-      const options = this.current.result.options.map(option => {
-        return { ...option, start: [] }
+      // console.log('[range] current products:', products)
+      // console.log('[range] original options:', this.current.result.options)
+      const options = (this.current.result.options || []).map(option => {
+        if (option.products && option.products.length === products.length) {
+          // 保留之前编辑项内容
+          if (option.products.length === 0) return option
+          if (option.products[0].id === products[0].id) return option
+        }
+        return { ...option, products }
       })
-      this.current.products = products
+      // console.log('[range] rendering...', options)
       this.current.result.options = options
+      this.$forceUpdate()
+      // this.current.products = products
+      // this.current.result.options = options
     },
     handleAddNewConditionSelectType (condition) { // reset options
       // console.log(condition)
@@ -514,7 +565,7 @@ export default {
     },
     handleAddNewCondition () {
       const conditions = this.current.conditions || []
-      conditions.push({ id: new Date().getTime(), name: '', type: 'range', options: [] })
+      conditions.push({ id: randomId(), name: '', type: '', options: [] })
       this.current = { ...this.current, conditions }
       this.updateCurrentProducts()
     },
@@ -524,18 +575,18 @@ export default {
     },
     handleAddNewConditionOption (condition) { // type: simple
       if (!condition.pending_value || !condition.pending_value.trim()) {
-        console.log('Value Not Valid')
+        console.warn('Value Not Valid')
         return
       }
       const options = condition.options || []
-      options.push({ id: new Date().getTime(), name: condition.pending_value })
+      options.push({ id: randomId(), name: condition.pending_value })
       condition.options = options
       condition.pending_value = ''
       this.updateCurrentProducts()
     },
     handleAddNewConditionRange (condition) { // type: range
       const options = condition.options || []
-      options.push({ id: new Date().getTime(), name: '', start: null, end: null })
+      options.push({ id: randomId(), name: '', start: null, end: null })
       condition.options = options
       this.updateCurrentProducts()
     },
@@ -546,7 +597,7 @@ export default {
     handleAddNewResultSelectType (condition) {
       switch (condition.type) {
         case 'range':
-          condition.options = [{ id: new Date().getTime(), name: '示例', start: 0, end: 8 }]
+          condition.options = [{ id: randomId(), name: '示例', start: 0, end: 8 }]
           condition.pending_value = ''
           break
         case 'simple':
@@ -558,24 +609,26 @@ export default {
     },
     handleAddNewResultOption (condition) { // type: simple
       if (!condition.pending_value || !condition.pending_value.trim()) {
-        console.log('Value Not Valid')
+        console.warn('Value Not Valid')
         return
       }
       const options = condition.options || []
-      options.push({ id: new Date().getTime(), name: condition.pending_value })
+      options.push({ id: randomId(), name: condition.pending_value })
       condition.options = options
       condition.pending_value = ''
       this.$forceUpdate()
     },
     handleAddNewResultRange (condition) { // type: range
-      console.log({ condition })
+      // console.log('result.options:', { condition })
       const options = condition.options || []
-      options.push({ id: new Date().getTime(), name: '', start: null, end: null })
+      options.push({ id: randomId(), name: '', start: null, end: null })
       condition.options = options
       this.$forceUpdate()
+      this.updateCurrentProducts()
     },
     handleAddNewResultOptionRemove (result, option) {
       result.options = result.options.filter(op => op.id !== option.id)
+      this.$forceUpdate()
     },
     handleOkDone (e) {
       e.preventDefault()
