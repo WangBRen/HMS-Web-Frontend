@@ -481,6 +481,7 @@ export default {
   filters: {
   },
   created () {
+    this.$setPageDataLoader(this.reloadData)
     this.reloadData()
   },
   methods: {
