@@ -20,29 +20,31 @@
           :pagination="false"
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
-          <span slot="range" slot-scope="text">
-            <div v-if="text.length" v-for="range_item in text" :key="range_item">
-              <span v-if="range_item.type === 'simple'"> {{ range_item.name }} </span>
+          <span slot="conditions" slot-scope="text">
+            <div v-if="text.length > 0" v-for="range_item in text" :key="range_item">
+              <a-tag v-if="range_item.type === 'simple'"> {{ range_item.name }} </a-tag>
               <span v-if="range_item.type === 'range'">
                 <div style="font-size: 12px">
                   <a-tag> {{ range_item.name }} </a-tag>:
-                  <span v-if="range_item.gtEqual"> {{ range_item.gtEqual }} ≤ </span>
-                  <span v-if="range_item.gtEqual && range_item.ltUnequal"> 且 </span>
-                  <span v-if="range_item.ltUnequal"> < {{ range_item.ltUnequal }} </span>
+                  <span v-if="range_item.start"> {{ range_item.start }} ≤ </span>
+                  <span v-if="range_item.start && range_item.end"> 且 </span>
+                  <span v-if="range_item.end"> < {{ range_item.end }} </span>
                 </div>
               </span>
             </div>
-            <span v-if="!text.length"> - </span>
+            <div v-if="text.length !== 0"> - </div>
           </span>
           <span slot="result" slot-scope="text">
             <div v-if="text.length" v-for="range_item in text" :key="range_item">
-              <span v-if="range_item.type === 'simple'"> {{ range_item.name }} </span>
+              <a-tag v-if="range_item.type === 'simple'"> {{ range_item.name }} </a-tag>
               <span v-if="range_item.type === 'range'">
                 <div style="font-size: 12px">
-                  <a-tag> {{ range_item.name }} </a-tag>:
-                  <span v-if="range_item.gtEqual"> {{ range_item.gtEqual }} ≤ </span>
-                  <span v-if="range_item.gtEqual && range_item.ltUnequal"> 且 </span>
-                  <span v-if="range_item.ltUnequal"> < {{ range_item.ltUnequal }} </span>
+                  <a-tag> {{ range_item.name }} </a-tag>
+                  <span v-if="range_item.conditionFilters">:
+                    <span v-if="range_item.start"> {{ range_item.start }} ≤ </span>
+                    <span v-if="range_item.start && range_item.end"> 且 </span>
+                    <span v-if="range_item.end"> < {{ range_item.end }} </span>
+                  </span>
                 </div>
               </span>
             </div>
@@ -127,7 +129,7 @@
                   <a-icon type="close" @click="handleAddNewConditionRemove(condition)"/>
                 </div>
                 <a-col :span="24">
-                  <a-col :span="2" style="white-space: nowrap; padding-left: 0;"> 数据类型： </a-col>
+                  <a-col :span="2" style="white-space: nowrap; padding-left: 0;"> 参考条件： </a-col>
                   <a-col :span="8">
                     <a-select v-model="condition.name" @select="handleAddNewConditionSelectType(condition)" style="margin-left: 12px;">
                       <a-select-option value="性别">性别</a-select-option>
@@ -226,6 +228,7 @@
                         <a-col :span="4" style="padding-left: 0px;">
                           <a-input
                             type="text"
+                            :value="option.name"
                             @change="e => { option.name = e.target.value }"
                             placeholder="名称，如：偏高、偏低、正常"
                           />
@@ -234,16 +237,17 @@
                           <div v-if="option.products" v-for="prod in option.products" :key="prod.id">
                             <div>
                               <a-row>
-                                <a-col :span="10">
-                                  <span v-for="(opt, idx) in prod.list" :key="opt">
+                                <a-col :span="10" v-if="prod.conditionFilters.length > 0">
+                                  <span v-for="(opt, idx) in prod.conditionFilters" :key="opt">
                                     <span v-if="idx > 0" style="padding-right: 4px;"> + </span>
                                     <a-tag> {{ opt.name }} </a-tag>
                                   </span>
                                   <span>:</span>
                                 </a-col>
-                                <a-col :span="14" style="display: flex; align-items: center;">
+                                <a-col :span="prod.conditionFilters.length > 0 ? 14 : 24" style="display: flex; align-items: center;">
                                   <a-input
                                     type="text"
+                                    :value="prod.start"
                                     @change="e => { prod.start = e.target.value }"
                                     :key="prod.id + '-start'"
                                     placeholder="数值下界"
@@ -253,6 +257,7 @@
                                   <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 < </div>
                                   <a-input
                                     type="text"
+                                    :value="prod.end"
                                     @change="e => { prod.end = e.target.value }"
                                     :key="prod.id + '-end'"
                                     placeholder="数值上界"
@@ -263,10 +268,11 @@
                               </a-row>
                             </div>
                           </div>
-                          <div v-if="!option.products">
+                          <!-- <div v-if="!option.products">
                             <a-col :span="24" style="display: flex; align-items: center;">
                               <a-input
                                 type="text"
+                                :value="option.start"
                                 @change="e => { option.start = e.target.value }"
                                 placeholder="数值下界"
                                 style="width: 40%"
@@ -275,13 +281,14 @@
                               <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 < </div>
                               <a-input
                                 type="text"
+                                :value="option.end"
                                 @change="e => { option.end = e.target.value }"
                                 placeholder="数值上界"
                                 style="width: 40%"
                                 :addonAfter="current.unit"
                               />
                             </a-col>
-                          </div>
+                          </div> -->
                         </a-col>
                         <a-col :span="1">
                           <a-icon type="close" @click="handleAddNewResultOptionRemove(current.result, option)"/>
@@ -333,9 +340,13 @@
 </template>
 
 <script>
-import pick from 'lodash.pick'
+// import pick from 'lodash.pick'
 // import { STable } from '@/components'
-import { listAllIndexes } from '@/api/health_indexes'
+import {
+  listAllIndexes,
+  createIndexItem as apiCreateIndexItem,
+  updateIndexItem as apiUpdateIndexItem
+} from '@/api/health_indexes'
 import { ref } from 'vue'
 
 const columns = [
@@ -434,6 +445,15 @@ const randomId = () => {
   return (new Date().getTime() + '').substring(6)
 }
 
+const InitialPropOfModel = {
+  type: 'Float',
+  conditions: [],
+  result: {
+    type: 'range',
+    options: []
+  }
+}
+
 export default {
   name: 'IndexPage',
   components: {
@@ -447,6 +467,7 @@ export default {
       visible: false,
       current: {
         // conditions: [{ id: new Date().getTime() }] // {name, options}
+        conditions: [], // {type, unit, options}
         result: {}
       },
       // form
@@ -460,10 +481,10 @@ export default {
   filters: {
   },
   created () {
-    this.loadData()
+    this.reloadData()
   },
   methods: {
-    async loadData () {
+    async reloadData () {
       const resp = await listAllIndexes()
       if (resp.status === 200) {
         // reform data
@@ -476,10 +497,38 @@ export default {
     openModal (mode, record) {
       const reform = (data) => {
         if (!data) return null
-        return { ...data }
+        // conditions:
+        const conditions = data.conditions || []
+        // result:
+        const resultOptions = (data.result || []).reduce((acc, current) => {
+          const item = acc.find(item => item.id === current.id)
+          if (item) {
+            item.products.push(current)
+          } else {
+            acc.push({ id: current.id, name: current.name, type: current.type, products: [current] })
+          }
+          return acc
+        }, [])
+        // const resultOptions = (data.result || []).group(item => item.id)
+        //   .map(item => {
+        //     return { id: index, type: item.type, name: item.name, value: item.value, start: item.gtEqual, end: item.ltUnequal }
+        //   })
+        const resultType = ((options) => {
+          if (options.length === 0) return 'range'
+          return options[0].type || 'range'
+        })(resultOptions)
+        const result = {
+          type: resultType,
+          options: resultOptions,
+          pending_value: ''
+        }
+        // return
+        const view = { ...data, conditions, result }
+        // console.log({ view })
+        return view
       }
       this.mode = mode
-      this.current = reform(record) || { type: 'Float', result: { type: 'range' } }
+      this.current = reform(record) || InitialPropOfModel
       this.visible = true
       this.updateCurrentProducts()
     },
@@ -505,12 +554,17 @@ export default {
       const prodId = (prodlist = []) => {
         return prodlist.map(prod => prod.id).join('-')
       }
-      const conditions = this.current.conditions || []
+      const conditions = (this.current.conditions || []).map(cond => {
+        if (cond.options) {
+          return cond.options.map(op => { return { ...op, conditionId: cond.id } })
+        }
+        return []
+      }).filter(opts => opts.length > 0)
       // make cross prod, object: {name, type, value, start, end}
-      const result = conditions.map(cond => cond.options || []).filter(opts => opts.length > 0)
-      // console.log('current products', descartProduct(result))
-      const products = descartProduct(result).map((prod, index) => {
-        return { id: prodId(prod), list: prod, name: 'descart-placeholder', start: null, end: null, value: null }
+      // console.log('prepared products', descartProduct(conditions))
+      // prepared:
+      const products = descartProduct(conditions).map((prod, index) => { // prod: [{男}, {女}]
+        return { id: 'prod>' + prodId(prod), conditionFilters: prod, name: 'descart-placeholder', start: null, end: null, value: null }
       })
       // console.log('[range] current products:', products)
       // console.log('[range] original options:', this.current.result.options)
@@ -534,26 +588,26 @@ export default {
         case '性别':
           condition.type = 'simple'
           condition.options = [
-            { id: 1, type: 'simple', name: '男' },
-            { id: 2, type: 'simple', name: '女' }
+            { id: 1, name: '男' },
+            { id: 2, name: '女' }
           ]
           break
         case '年龄':
           condition.type = 'range'
           condition.unit = '岁'
           condition.options = [
-            { id: 1, type: 'range', name: '未成年', start: 0, end: 18 },
-            { id: 2, type: 'range', name: '成年', start: 18, end: 100 }
+            { id: 1, name: '未成年', start: 0, end: 18 },
+            { id: 2, name: '成年', start: 18, end: 100 }
           ]
           break
         case '时辰':
           condition.type = 'range'
           condition.unit = '时'
           condition.options = [
-            { id: 1, type: 'range', name: '凌晨', start: 0, end: 6 },
-            { id: 2, type: 'range', name: '上午', start: 6, end: 12 },
-            { id: 3, type: 'range', name: '下午', start: 12, end: 18 },
-            { id: 4, type: 'range', name: '晚上', start: 18, end: 24 }
+            { id: 1, name: '凌晨', start: 0, end: 6 },
+            { id: 2, name: '上午', start: 6, end: 12 },
+            { id: 3, name: '下午', start: 12, end: 18 },
+            { id: 4, name: '晚上', start: 18, end: 24 }
           ]
           break
         case '其它':
@@ -630,56 +684,59 @@ export default {
       result.options = result.options.filter(op => op.id !== option.id)
       this.$forceUpdate()
     },
-    handleOkDone (e) {
+    async handleOkDone (e) {
       e.preventDefault()
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          // download files
-          const a = document.createElement('a')
-          a.id = 'account-gen-a'
-          a.href = `/api/users/generate/${values.roleId}/${values.amount}/自动生成账户（${values.amount}个）.xlsx`
-          a.target = '_blank'
-          document.body.appendChild(a)
-          a.click()
-          document.getElementById('account-gen-a').remove()
-        }
-      })
-    },
-    // 原方法：
-    handleEdit (record) {
-      this.visible = true
-      console.log('record', record)
-
-      const checkboxGroup = {}
-      this.permissions = record.permissions.map(permission => {
-        const groupKey = `permissions.${permission.permissionId}`
-        checkboxGroup[groupKey] = permission.actionList
-        const actionsOptions = permission.actionEntitySet.map(action => {
-          return {
-            label: action.describe,
-            value: action.action,
-            defaultCheck: action.defaultCheck
+      // reform to payload
+      const reform = (payload) => {
+        // if (payload.result.type === 'range') {
+        const result = (payload.result.options || []).map(option => {
+          if (option.products) {
+            return option.products.map(prod => {
+              const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.id } })
+              return {
+                id: option.id,
+                name: option.name,
+                unit: payload.unit, // use main unit, for index
+                type: payload.result.type,
+                start: prod.start,
+                end: prod.end,
+                conditionFilters
+              }
+            })
           }
-        })
-        return {
-          ...permission,
-          actionsOptions
+          return {
+            id: option.id,
+            name: option.name,
+            unit: payload.unit, // use main unit, for index
+            type: payload.result.type,
+            start: option.start,
+            end: option.end,
+            conditionFilters: [] // none
+          }
+        }).flat()
+        return { ...payload, result }
+        // }
+        // return payload
+      }
+      const payload = reform(this.current || {})
+      const projectName = this.data[this.currentTabKey - 1].name
+      let resp = null
+      if (this.mode === 'create') {
+        // create
+        resp = await apiCreateIndexItem(projectName, payload)
+      } else {
+        // update
+        resp = await apiUpdateIndexItem(projectName, payload.id, payload)
+      }
+      if (resp && resp.status) {
+        if (resp.status === 200 || resp.status === 201) {
+          this.$message.info(resp.message)
+          this.reloadData()
+          this.closeModal()
+        } else {
+          this.$message.error(resp.message)
         }
-      })
-
-      this.$nextTick(() => {
-        console.log('permissions', this.permissions)
-        console.log('checkboxGroup', checkboxGroup)
-
-        this.form.setFieldsValue(pick(record, ['id', 'status', 'describe', 'name']))
-        this.form.setFieldsValue(checkboxGroup)
-      })
-    },
-    handleOk (e) {
-      e.preventDefault()
-      this.form.validateFields((err, values) => {
-        console.log(err, values)
-      })
+      }
     }
   },
   watch: {
