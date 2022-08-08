@@ -39,8 +39,7 @@
           <a @click="handleEdit(grecord)">添加用户</a>
         </span> -->
         <span slot="avatar" slot-scope="text, grecord">
-          <a-avatar size="large" icon="user" :src="grecord.avatar" v-if="grecord.avatar"/>
-          <a-avatar size="large" icon="user" v-else/>
+          <a-avatar size="large" icon="user" :src="grecord.avatar"/>
         </span>
         <a-table
           :rowKey="(record,index)=>{return index}"
@@ -52,7 +51,7 @@
           :pagination="false"
         >
           <span slot="cavatar" slot-scope="text, record">
-            <a-avatar :src="record.member.avatar" />
+            <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
           <span slot="operation" slot-scope="text, record">
             <a @click="handleHealthData(record)">查看健康信息</a>
@@ -78,7 +77,7 @@
         </a-table>
       </a-table>
     </a-card>
-    <Customer-InfoForm :dataTypes="dataTypes"ref="child"/>
+    <Customer-InfoForm :dataTypes="dataTypes" ref="child"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
@@ -94,6 +93,7 @@
     <HealthDataManagmentFormVue
       :openHealthvisible="openHealthvisible"
       @handleCancel="handleCancel"
+      ref="healthDataManagmentRef"
     />
   </div>
 </template>
@@ -192,6 +192,7 @@ export default {
     },
     handleHealthData (record) {
       this.openHealthvisible = true
+      this.$refs.healthDataManagmentRef.findCustomerHealthReports(record.member.id)
     },
 
     /**
