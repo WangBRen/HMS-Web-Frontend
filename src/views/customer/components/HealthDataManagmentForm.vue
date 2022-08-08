@@ -55,7 +55,8 @@
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import AddHealthData from './AddHealthData.vue'
-import { getHealthReport } from '@/api/health'
+import { getHealthReport as apiGethealthReports } from '@/api/health'
+import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 const columns = [
   {
     title: '检验号',
@@ -241,8 +242,6 @@ export default {
       this.filtersVisible = false
       this.$refs.filterRef.handleOk()
     },
-    async onSearch (value) {
-    },
     // 新建报告单
     handOpenHealthAdd () {
       this.$refs.child.openModel()
@@ -253,7 +252,7 @@ export default {
     // 查看报告单
     handleViewingTheTeportForm (data) {
       const custmoerId = 50
-      getHealthReport(custmoerId).then(res => {
+      apiGethealthReports(custmoerId).then(res => {
         if (res.status === 200) {
           const report = res.data.content[4]
           // console.log(res.data.content[3])
@@ -261,6 +260,7 @@ export default {
           this.$refs.child.seeHealthCom(report)
         }
       })
+    },
       // console.log('data', data)
     /**
      * 子组件传过来的列名

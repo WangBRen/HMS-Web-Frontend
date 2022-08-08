@@ -3,7 +3,7 @@ import request from '@/utils/request'
 const api = {
   getHealthIndexes: `health-indexes`
 }
-export function gethealthIndexes () {
+export function getHealthIndexes () {
   return request({
     url: api.getHealthIndexes,
     method: 'get'
