@@ -35,8 +35,11 @@
             type="reload"
             style="font-size: 18px;cursor: pointer;"
             @click="() => {
-              $message.info('只是一个DEMO')
-              $reload() // 刷新当前页面的数据内容
+              $reload().then(resp => {
+                if (resp.status === 200) {
+                  $message.info('刷新成功')
+                }
+              }) // 刷新当前页面的数据内容
             }"
           />
         </a-tooltip>
