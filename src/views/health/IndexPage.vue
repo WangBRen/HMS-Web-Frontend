@@ -21,33 +21,62 @@
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
           <span slot="conditions" slot-scope="text">
-            <div v-if="text.length > 0" v-for="range_item in text" :key="range_item">
-              <a-tag v-if="range_item.type === 'simple'"> {{ range_item.name }} </a-tag>
+            <div v-if="text.length > 0" v-for="range_item in text" :key="range_item" style="margin-bottom: 6px;">
+              <span v-if="range_item.type === 'simple'">
+                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
+                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
+                    <a-tag v-for="option in range_item.options" :key="option.id" style="margin-bottom: 2px;">
+                      {{ option.name }}
+                    </a-tag>
+                </div>
+              </span>
               <span v-if="range_item.type === 'range'">
-                <div style="font-size: 12px">
-                  <a-tag> {{ range_item.name }} </a-tag>:
-                  <span v-if="range_item.start"> {{ range_item.start }} ≤ </span>
-                  <span v-if="range_item.start && range_item.end"> 且 </span>
-                  <span v-if="range_item.end"> < {{ range_item.end }} </span>
+                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
+                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
+                  <div v-for="option in range_item.options" :key="option.id" style="padding-top: 2px;">
+                    <a-tag> {{ option.name }} </a-tag>:
+                    <span v-if="option.start">
+                      <span style="text-decoration: underline;"> {{ option.start }}</span>
+                      ≤
+                    </span>
+                    <span v-if="option.start && option.end"> 且 </span>
+                    <span v-if="option.end">
+                      <
+                      <span style="text-decoration: underline;"> {{ option.end }}</span>
+                    </span>
+                    {{ range_item.unit }}
+                  </div>
                 </div>
               </span>
             </div>
-            <div v-if="text.length !== 0"> - </div>
+            <div v-if="text.length === 0"> - </div>
           </span>
           <span slot="result" slot-scope="text">
-            <div v-if="text.length" v-for="range_item in text" :key="range_item">
-              <a-tag v-if="range_item.type === 'simple'"> {{ range_item.name }} </a-tag>
-              <span v-if="range_item.type === 'range'">
-                <div style="font-size: 12px">
-                  <a-tag> {{ range_item.name }} </a-tag>
-                  <span v-if="range_item.conditionFilters">:
-                    <span v-if="range_item.start"> {{ range_item.start }} ≤ </span>
+            <span v-if="text.length" v-for="range_item in text" :key="range_item">
+              <span v-if="range_item.type === 'simple'">
+                <a-tag color="#2db7f5" style="font-weight: 700; margin-bottom: 2px;"> {{ range_item.name }} </a-tag>
+              </span>
+              <div v-if="range_item.type === 'range'">
+                <div style="font-size: 12px; padding-bottom: 2px; white-space: nowrap;">
+                  <a-tag color="#2db7f5" style="font-weight: 700"> {{ range_item.name }} </a-tag>
+                  <span v-if="range_item.conditionFilters">
+                    <a-tag v-for="filter in range_item.conditionFilters" :key="filter.optionId">
+                      {{ filter.option.name }}
+                    </a-tag>:
+                    <span v-if="range_item.start">
+                      <span style="text-decoration: underline;"> {{ range_item.start }}</span>
+                      ≤
+                    </span>
                     <span v-if="range_item.start && range_item.end"> 且 </span>
-                    <span v-if="range_item.end"> < {{ range_item.end }} </span>
+                    <span v-if="range_item.end">
+                      <
+                      <span style="text-decoration: underline;"> {{ range_item.end }}</span>
+                    </span>
+                    {{ range_item.unit }}
                   </span>
                 </div>
-              </span>
-            </div>
+              </div>
+            </span>
             <span v-if="!text.length"> - </span>
           </span>
           <span slot="action" slot-scope="text, record">
@@ -396,9 +425,9 @@ const columns = [
   },
   {
     title: '参考条件',
-    dataIndex: 'range',
+    dataIndex: 'conditions',
     width: 240,
-    scopedSlots: { customRender: 'range' }
+    scopedSlots: { customRender: 'conditions' }
   },
   {
     title: '参考结果',
@@ -489,7 +518,31 @@ export default {
       const resp = await listAllIndexes()
       if (resp.status === 200) {
         // reform data
-        this.data = resp.data || []
+        this.data = (resp.data || []).map(record => {
+          const items = (record.items || []).map(item => {
+            const conditions = item.conditions || []
+            const result = (item.result || []).map(result => {
+              const conditionFilters = (result.conditionFilters || []).map(filter => {
+                const condition = conditions.find(cond => cond.id === filter.conditionId)
+                console.log({ item, conditions, condition })
+                if (condition) {
+                  const option = (condition.options || []).find(op => op.id === filter.optionId)
+                  return {
+                    conditionId: filter.conditionId,
+                    optionId: filter.optionId,
+                    condition, // add field
+                    option // add field
+                  }
+                }
+                console.log({ conditionFilters })
+                return filter
+              })
+              return { ...result, conditionFilters }
+            })
+            return { ...item, result }
+          })
+          return { ...record, items }
+        })
         if (!this.currentTabKey) {
           this.currentTabKey = ref(resp.data[0].id)
         }
