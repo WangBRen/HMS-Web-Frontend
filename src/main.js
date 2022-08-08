@@ -21,8 +21,9 @@ import './permission' // permission control
 import './utils/filter' // global filter
 import './global.less' // global style
 // 表单组件注册
-import { FormModel } from 'ant-design-vue'
+import { FormModel, collapse } from 'ant-design-vue'
 Vue.use(FormModel)
+Vue.use(collapse)
 
 Vue.config.productionTip = false
 
