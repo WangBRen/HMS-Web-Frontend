@@ -4,7 +4,7 @@
     </div>
     <div style="padding-bottom: 8px">
       <a-button type="primary" style="margin-right: 12px"> 新建指标项目 </a-button>
-      <a-button type="primary" @click="openModal('create')"> 新建{{ data[currentTabKey - 1].name }}指标 </a-button>
+      <a-button type="primary" @click="openModal('create')"> 新建{{ data[currentTabKey - 1]?.name }}指标 </a-button>
     </div>
     <a-tabs v-model="currentTabKey">
       <a-tab-pane v-for="tab in data" :key="tab.id" :tab="tab.name" >
@@ -21,33 +21,70 @@
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
           <span slot="conditions" slot-scope="text">
-            <div v-if="text.length > 0" v-for="range_item in text" :key="range_item">
-              <a-tag v-if="range_item.type === 'simple'"> {{ range_item.name }} </a-tag>
+            <div v-if="text.length > 0" v-for="range_item in text" :key="range_item.id" style="margin-bottom: 6px;">
+              <span v-if="range_item.type === 'simple'">
+                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
+                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
+                    <a-tag v-for="option in range_item.options" :key="option.id" style="margin-bottom: 2px;">
+                      {{ option.name }}
+                    </a-tag>
+                </div>
+              </span>
               <span v-if="range_item.type === 'range'">
-                <div style="font-size: 12px">
-                  <a-tag> {{ range_item.name }} </a-tag>:
-                  <span v-if="range_item.start"> {{ range_item.start }} ≤ </span>
-                  <span v-if="range_item.start && range_item.end"> 且 </span>
-                  <span v-if="range_item.end"> < {{ range_item.end }} </span>
+                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
+                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
+                  <div v-for="option in range_item.options" :key="option.id" style="padding-top: 2px;">
+                    <a-tag> {{ option.name }} </a-tag>:
+                    <span v-if="option.start">
+                      <span style="text-decoration: underline;"> {{ option.start }}</span>
+                      ≤
+                    </span>
+                    <span v-if="option.start && option.end"> 且 </span>
+                    <span v-if="option.end">
+                      <
+                      <span style="text-decoration: underline;"> {{ option.end }}</span>
+                    </span>
+                    {{ range_item.unit }}
+                  </div>
                 </div>
               </span>
             </div>
-            <div v-if="text.length !== 0"> - </div>
+            <div v-if="text.length === 0"> - </div>
           </span>
           <span slot="result" slot-scope="text">
-            <div v-if="text.length" v-for="range_item in text" :key="range_item">
-              <a-tag v-if="range_item.type === 'simple'"> {{ range_item.name }} </a-tag>
-              <span v-if="range_item.type === 'range'">
-                <div style="font-size: 12px">
-                  <a-tag> {{ range_item.name }} </a-tag>
-                  <span v-if="range_item.conditionFilters">:
-                    <span v-if="range_item.start"> {{ range_item.start }} ≤ </span>
-                    <span v-if="range_item.start && range_item.end"> 且 </span>
-                    <span v-if="range_item.end"> < {{ range_item.end }} </span>
-                  </span>
-                </div>
+            <span v-if="text.length" v-for="range_item in text" :key="range_item.id">
+              <span v-if="range_item.type === 'simple'">
+                <a-tag color="#2db7f5" style="font-weight: 700; margin-bottom: 2px;"> {{ range_item.name }} </a-tag>
               </span>
-            </div>
+              <div v-if="range_item.type === 'range'">
+                <!-- <div style="font-size: 12px; padding-bottom: 2px; white-space: nowrap;"> -->
+                  <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px; margin-bottom: 6px; white-space: nowrap;">
+                    <a-divider style="font-size: 12px; color: #999; margin: 4px 0; font-weight: 700;" orientation="left">
+                      <a-tag color="#2db7f5" style="font-weight: 700"> {{ range_item.name }} </a-tag>
+                    </a-divider>
+                    <span v-if="range_item.products">
+                      <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
+                        <span v-if="prod.conditionFilters?.length">
+                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
+                            {{ filter.option?.name }}
+                          </a-tag>:
+                        </span>
+                        <span v-if="prod.start">
+                          <span style="text-decoration: underline;"> {{ prod.start }}</span>
+                          ≤
+                        </span>
+                        <span v-if="prod.start && prod.end"> 且 </span>
+                        <span v-if="prod.end">
+                          <
+                          <span style="text-decoration: underline;"> {{ prod.end }}</span>
+                        </span>
+                        {{ prod.unit }}
+                      </div>
+                    </span>
+                  </div>
+                <!-- </div> -->
+              </div>
+            </span>
             <span v-if="!text.length"> - </span>
           </span>
           <span slot="action" slot-scope="text, record">
@@ -99,7 +136,13 @@
           <a-col :span="12">
             <a-form-item label="检测频率">
               <a-input-group compact>
-                <a-input v-model="current.testRateValue" type="number" addon-after="次" style="width: 70%" aria-autocomplete="inline"/>
+                <a-input
+                  v-model="current.testRateValue"
+                  type="number"
+                  addon-after="次"
+                  style="width: 70%"
+                  aria-autocomplete="inline"
+                />
                 <div style="width: 5%; text-align: center; line-height: 2">/</div>
                 <a-select v-model="current.testRateUnit" style="width: 25%; top: -1px">
                   <a-select-option value="年">年</a-select-option>
@@ -154,7 +197,7 @@
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定条件： </a-col>
                     <a-col :span="21" v-if="condition.type == 'range'" style="padding-left: 4px;">
-                      <div v-if="condition.options" v-for="option in condition.options" :key="option">
+                      <div v-if="condition.options" v-for="option in condition.options" :key="option.id">
                         <a-col :span="6" style="padding-left: 0px;">
                           <a-input type="text" v-model="option.name" placeholder="可选择项名称"/>
                         </a-col>
@@ -175,7 +218,7 @@
                           type="text"
                           v-if="condition.options"
                           v-for="option in condition.options"
-                          :key="option"
+                          :key="option.id"
                           closable
                           @close="handleAddNewConditionOptionRemove(condition, option)"
                         >
@@ -224,23 +267,23 @@
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定结果： </a-col>
                     <a-col :span="24" v-if="current.result.type == 'range'" style="padding-left: 12px;">
-                      <div v-for="option in current.result.options" :key="option">
+                      <div v-for="result_option in current.result.options" :key="result_option.id">
                         <a-col :span="4" style="padding-left: 0px;">
                           <a-input
                             type="text"
-                            :value="option.name"
-                            @change="e => { option.name = e.target.value }"
+                            :value="result_option.name"
+                            @change="e => { result_option.name = e.target.value }"
                             placeholder="名称，如：偏高、偏低、正常"
                           />
                         </a-col>
                         <a-col :span="19">
-                          <div v-if="option.products" v-for="prod in option.products" :key="prod.id">
+                          <div v-if="result_option.products" v-for="prod in result_option.products" :key="prod.id">
                             <div>
                               <a-row>
                                 <a-col :span="10" v-if="prod.conditionFilters.length > 0">
-                                  <span v-for="(opt, idx) in prod.conditionFilters" :key="opt">
+                                  <span v-for="(opt, idx) in prod.conditionFilters" :key="idx">
                                     <span v-if="idx > 0" style="padding-right: 4px;"> + </span>
-                                    <a-tag> {{ opt.name }} </a-tag>
+                                    <a-tag> {{ opt.option?.name }} </a-tag>
                                   </span>
                                   <span>:</span>
                                 </a-col>
@@ -268,30 +311,9 @@
                               </a-row>
                             </div>
                           </div>
-                          <!-- <div v-if="!option.products">
-                            <a-col :span="24" style="display: flex; align-items: center;">
-                              <a-input
-                                type="text"
-                                :value="option.start"
-                                @change="e => { option.start = e.target.value }"
-                                placeholder="数值下界"
-                                style="width: 40%"
-                                :addonAfter="current.unit"
-                              />
-                              <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 < </div>
-                              <a-input
-                                type="text"
-                                :value="option.end"
-                                @change="e => { option.end = e.target.value }"
-                                placeholder="数值上界"
-                                style="width: 40%"
-                                :addonAfter="current.unit"
-                              />
-                            </a-col>
-                          </div> -->
                         </a-col>
                         <a-col :span="1">
-                          <a-icon type="close" @click="handleAddNewResultOptionRemove(current.result, option)"/>
+                          <a-icon type="close" @click="handleAddNewResultOptionRemove(current.result, result_option)"/>
                         </a-col>
                       </div>
                       <a-button style="width: 100%" type="dashed" @click="handleAddNewResultRange(current.result)"> 增添一组结果选项 </a-button>
@@ -302,7 +324,7 @@
                           type="text"
                           v-if="current.result.options"
                           v-for="option in current.result.options"
-                          :key="option"
+                          :key="option.id"
                           closable
                           @close="handleAddNewResultOptionRemove(current.result, option)"
                         >
@@ -340,8 +362,12 @@
 </template>
 
 <script>
-// import pick from 'lodash.pick'
-// import { STable } from '@/components'
+// type::
+// result: [{ id, name, type, products: [] }]
+// products: [{ id: 'prod>'+id, conditionFilters, name, type, unit, start, end }]
+// conditionFilters: [{ conditionId, optionId, condition: {}, option: {} }]
+// condition: { id, name, type, unit, options: [] }
+// option: { id, name, start, end }
 import {
   listAllIndexes,
   createIndexItem as apiCreateIndexItem,
@@ -396,9 +422,9 @@ const columns = [
   },
   {
     title: '参考条件',
-    dataIndex: 'range',
+    dataIndex: 'conditions',
     width: 240,
-    scopedSlots: { customRender: 'range' }
+    scopedSlots: { customRender: 'conditions' }
   },
   {
     title: '参考结果',
@@ -412,7 +438,7 @@ const columns = [
     width: 80,
     customRender: (text, record) => {
       if (record.testRateValue > 0) {
-        return `${record.testRateValue}/${record.testRateUnit}`
+        return `${record.testRateValue} 次 / ${record.testRateUnit}`
       }
       return '-'
     }
@@ -443,6 +469,10 @@ const columns = [
 
 const randomId = () => {
   return (new Date().getTime() + '').substring(6)
+}
+
+const prodId = (prodlist = [], index) => {
+  return 'prod>' + prodlist.map(prod => `${prod.conditionId}(${prod.optionId})`).join('-') + (index !== undefined ? index : '')
 }
 
 const InitialPropOfModel = {
@@ -489,7 +519,58 @@ export default {
       const resp = await listAllIndexes()
       if (resp.status === 200) {
         // reform data
-        this.data = resp.data || []
+        const data = (resp.data || []).map(record => {
+          const items = (record.items || []).map(item => {
+            const conditions = item.conditions || []
+            const result = (item.result || []).map(result => {
+              const conditionFilters = (result.conditionFilters || []).map(filter => {
+                const condition = conditions.find(cond => cond.id === filter.conditionId)
+                // console.log({ item, conditions, condition })
+                if (condition) {
+                  const option = (condition.options || []).find(op => op.id === filter.optionId)
+                  return {
+                    conditionId: filter.conditionId,
+                    optionId: filter.optionId,
+                    condition, // add field
+                    option // add field
+                  }
+                }
+                // console.log({ conditionFilters })
+                return filter
+              })
+              return { ...result, conditionFilters }
+            }).reduce((resultOptions, currentResult, currentIndex) => {
+              const resultItem = resultOptions.find(item => item.id === currentResult.id)
+              // const conditionFilters = (currentResult.conditionFilters || []).map(filt => {
+                // return { ...filt } // extract option props
+              // })
+              const id = prodId(currentResult.conditionFilters, currentResult.id)
+              if (resultItem) {
+                resultItem.products.push({
+                  ...currentResult,
+                  id
+                  // conditionFilters
+                })
+              } else {
+                resultOptions.push({
+                  id: currentResult.id,
+                  name: currentResult.name,
+                  type: currentResult.type,
+                  products: [{
+                    ...currentResult,
+                    id
+                    // conditionFilters
+                  }]
+                })
+              }
+              return resultOptions
+            }, [])
+            return { ...item, result }
+          })
+          return { ...record, items }
+        })
+        // console.log({ data })
+        this.data = data
         if (!this.currentTabKey) {
           this.currentTabKey = ref(resp.data[0].id)
         }
@@ -501,19 +582,7 @@ export default {
         // conditions:
         const conditions = data.conditions || []
         // result:
-        const resultOptions = (data.result || []).reduce((acc, current) => {
-          const item = acc.find(item => item.id === current.id)
-          if (item) {
-            item.products.push(current)
-          } else {
-            acc.push({ id: current.id, name: current.name, type: current.type, products: [current] })
-          }
-          return acc
-        }, [])
-        // const resultOptions = (data.result || []).group(item => item.id)
-        //   .map(item => {
-        //     return { id: index, type: item.type, name: item.name, value: item.value, start: item.gtEqual, end: item.ltUnequal }
-        //   })
+        const resultOptions = (data.result || [])
         const resultType = ((options) => {
           if (options.length === 0) return 'range'
           return options[0].type || 'range'
@@ -523,13 +592,14 @@ export default {
           options: resultOptions,
           pending_value: ''
         }
+        // console.log({ resultOptions })
         // return
         const view = { ...data, conditions, result }
         // console.log({ view })
         return view
       }
       this.mode = mode
-      this.current = reform(record) || InitialPropOfModel
+      this.current = reform(JSON.parse(JSON.stringify(record))) || InitialPropOfModel
       this.visible = true
       this.updateCurrentProducts()
     },
@@ -545,38 +615,62 @@ export default {
       const descartProduct = (bilist) => {
         const list = bilist.reduce((a, b) => {
           return a.map(item => b.map(i => [i].concat(item).reverse())).reduce((c, d) => c.concat(d), [])
-        })
+        }, [[]])
         // console.log({ bilist, list }, bilist.length, list.length)
-        if (bilist.length === 1) {
-          return list.map(item => [item])
-        }
+        // if (bilist.length === 1) {
+        //   return list.map(item => [item])
+        // }
         return list
       }
-      const prodId = (prodlist = []) => {
-        return prodlist.map(prod => prod.id).join('-')
-      }
+      // const descartProduct = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())))
       const conditions = (this.current.conditions || []).map(cond => {
         if (cond.options) {
-          return cond.options.map(op => { return { ...op, conditionId: cond.id } })
+          return cond.options.map(op => { return { condition: cond, option: op, conditionId: cond.id, optionId: op.id } })
         }
-        return []
+        return [] // options
       }).filter(opts => opts.length > 0)
       // make cross prod, object: {name, type, value, start, end}
-      // console.log('prepared products', descartProduct(conditions))
+      // console.log('prepared products', conditions, descartProduct(conditions))
       // prepared:
-      const products = descartProduct(conditions).map((prod, index) => { // prod: [{男}, {女}]
-        return { id: 'prod>' + prodId(prod), conditionFilters: prod, name: 'descart-placeholder', start: null, end: null, value: null }
+      const originalProducts = (this.current.result.options || []).map(option => option.products).flat()
+      const options = (this.current.result.options || []).map((option, index) => {
+        const preparedProducts = descartProduct(conditions).map(condFilters => { // prod: [{男}, {女}]
+          return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null }
+        })
+        // 判断原始值是否填写，保留用户填写内容
+        const newProducts = preparedProducts.map(prod => {
+          const original = originalProducts.find(originalProd => originalProd.id === prod.id)
+          if (original) {
+            return { ...prod, name: original.name, start: original.start, end: original.end }
+          }
+          return prod
+        })
+        return { ...option, products: newProducts }
       })
+      // console.log({ originalProducts, options })
       // console.log('[range] current products:', products)
       // console.log('[range] original options:', this.current.result.options)
-      const options = (this.current.result.options || []).map(option => {
-        if (option.products && option.products.length === products.length) {
-          // 保留之前编辑项内容
-          if (option.products.length === 0) return option
-          if (option.products[0].id === products[0].id) return option
-        }
-        return { ...option, products }
-      })
+      // cache original values
+      // const originalProducts = (this.current.result.options || []).map(option => option.products).flat()
+      // console.log({ originalProducts, products })
+      // const options = (this.current.result.options || []).map(option => {
+      //   // if (option.products && option.products.length === products.length) {
+      //   //   // 保留之前编辑项内容
+      //   //   if (option.products.length === 0) return option
+      //   //   if (option.products[0].id === products[0].id) return option
+      //   // }
+      //   // if (products.length === 0) return option
+      //   // console.log('products changed:', { option, products })
+      //   // return { ...option, products }
+      //   const newProducts = products.map(prod => {
+      //     const original = originalProducts.find(originalProd => originalProd.id === prod.id)
+      //     if (original) {
+      //       return { ...prod, name: original.name, start: original.start, end: original.end }
+      //     }
+      //     return prod
+      //   })
+      //   return { ...option, products: newProducts }
+      // })
       // console.log('[range] rendering...', options)
       this.current.result.options = options
       this.$forceUpdate()
@@ -652,7 +746,7 @@ export default {
     handleAddNewResultSelectType (condition) {
       switch (condition.type) {
         case 'range':
-          condition.options = [{ id: randomId(), name: '示例', start: 0, end: 8 }]
+          condition.options = [{ id: randomId(), name: '示例', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, conditionFilters: [] }] }]
           condition.pending_value = ''
           break
         case 'simple':
@@ -676,13 +770,14 @@ export default {
     handleAddNewResultRange (condition) { // type: range
       // console.log('result.options:', { condition })
       const options = condition.options || []
-      options.push({ id: randomId(), name: '', start: null, end: null })
+      options.push({ id: randomId(), name: '', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, conditionFilters: [] }] })
       condition.options = options
       this.$forceUpdate()
       this.updateCurrentProducts()
     },
     handleAddNewResultOptionRemove (result, option) {
       result.options = result.options.filter(op => op.id !== option.id)
+      this.updateCurrentProducts()
       this.$forceUpdate()
     },
     async handleOkDone (e) {
@@ -690,30 +785,42 @@ export default {
       // reform to payload
       const reform = (payload) => {
         // if (payload.result.type === 'range') {
-        const result = (payload.result.options || []).map(option => {
-          if (option.products) {
-            return option.products.map(prod => {
-              const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.id } })
-              return {
-                id: option.id,
-                name: option.name,
-                unit: payload.unit, // use main unit, for index
-                type: payload.result.type,
-                start: prod.start,
-                end: prod.end,
-                conditionFilters
-              }
-            })
-          }
-          return {
-            id: option.id,
-            name: option.name,
-            unit: payload.unit, // use main unit, for index
-            type: payload.result.type,
-            start: option.start,
-            end: option.end,
-            conditionFilters: [] // none
-          }
+        const result = (payload.result.options || []).map(resultOption => {
+          return (resultOption.products || []).map(prod => {
+            // const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
+            return {
+              id: resultOption.id,
+              name: resultOption.name,
+              unit: payload.unit, // use main unit, for index
+              type: payload.result.type,
+              start: prod.start,
+              end: prod.end,
+              conditionFilters: prod.conditionFilters
+            }
+          })
+          // if (resultOption.products) {
+          //   return resultOption.products.map(prod => {
+          //     const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
+          //     return {
+          //       id: resultOption.id,
+          //       name: resultOption.name,
+          //       unit: payload.unit, // use main unit, for index
+          //       type: payload.result.type,
+          //       start: prod.start,
+          //       end: prod.end,
+          //       conditionFilters
+          //     }
+          //   })
+          // }
+          // return {
+          //   id: resultOption.id,
+          //   name: resultOption.name,
+          //   unit: payload.unit, // use main unit, for index
+          //   type: payload.result.type,
+          //   start: resultOption.start,
+          //   end: resultOption.end,
+          //   conditionFilters: [] // none
+          // }
         }).flat()
         return { ...payload, result }
         // }
