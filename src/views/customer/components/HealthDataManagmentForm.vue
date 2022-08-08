@@ -55,7 +55,7 @@
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import AddHealthData from './AddHealthData.vue'
-import { getHealthReport as apiGethealthReports } from '@/api/health'
+import { getHealthReport as apiGetHealthReports } from '@/api/health'
 import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 const columns = [
   {
@@ -141,14 +141,14 @@ export default {
       filtersVisible: false,
       saveTableTitle: [],
       pagination: {
-      total: 0,
-      current: 1,
-      pageSize: 10, // 默认每页显示数量
-      showSizeChanger: true, // 显示可改变每页数量
-      pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-      showTotal: total => `共 ${total} 条`, // 显示总数
-      onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
-      onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 条`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
       actions: {
         title: '操作',
@@ -203,7 +203,7 @@ export default {
         page: this.pagination.current,
         size: this.pagination.pageSize
       }
-      const res = await apiGethealthReports(customersId, pages)
+      const res = await apiGetHealthReports(customersId, pages)
       console.log(res)
       const items = (res.data.content || [])
         .map(record => record.projects).flat().map(project => {
@@ -252,7 +252,7 @@ export default {
     // 查看报告单
     handleViewingTheTeportForm (data) {
       const custmoerId = 50
-      apiGethealthReports(custmoerId).then(res => {
+      apiGetHealthReports(custmoerId).then(res => {
         if (res.status === 200) {
           const report = res.data.content[4]
           // console.log(res.data.content[3])

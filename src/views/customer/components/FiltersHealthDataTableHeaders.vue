@@ -43,7 +43,7 @@
   </a-modal>
 </template>
 <script>
-import { gethealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
+import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 
 /**
  * 测试用的
