@@ -137,8 +137,7 @@
             <a-form-item label="检测频率">
               <a-input-group compact>
                 <a-input
-                  :value="current.testRateValue"
-                  @change="e => { current.testRateValue = e.target.value }"
+                  v-model="current.testRateValue"
                   type="number"
                   addon-after="次"
                   style="width: 70%"
@@ -570,7 +569,7 @@ export default {
           })
           return { ...record, items }
         })
-        console.log({ data })
+        // console.log({ data })
         this.data = data
         if (!this.currentTabKey) {
           this.currentTabKey = ref(resp.data[0].id)
@@ -648,7 +647,7 @@ export default {
         })
         return { ...option, products: newProducts }
       })
-      console.log({ originalProducts, options })
+      // console.log({ originalProducts, options })
       // console.log('[range] current products:', products)
       // console.log('[range] original options:', this.current.result.options)
       // cache original values
