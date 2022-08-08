@@ -335,7 +335,9 @@ export default {
       ],
       genderEnum: [
         '男',
-        '女'
+        '女',
+        '未知的性别',
+        '未说明的性别'
       ],
       eduBgEnum: [
           '研究生及以上',
@@ -346,10 +348,10 @@ export default {
           '其他'
       ],
       aboBloodTypeArr: [
-        'A型', 'B型', 'O型', 'AB型'
+        'A型', 'B型', 'O型', 'AB型', '不详'
       ],
       rhBloodTypeArr: [
-        'Rh阴型', 'Rh阳型'
+        'Rh阴型', 'Rh阳型', '不详'
       ],
       groupIdArr: [],
       form: {
@@ -357,15 +359,15 @@ export default {
         token: '',
         code: '',
         name: '',
-        gender: '',
+        gender: null,
         birthDate: '',
-        idType: '',
+        idType: null,
         eduBG: null,
         idNo: '',
         phoneNumber: '',
         contactName: '',
         contactNumber: '',
-        ethnicGroups: null,
+        ethnicGroups: '',
         province: '',
         city: '',
         area: '',
@@ -384,12 +386,12 @@ export default {
         code: '',
         baseInfo: {
           name: '',
-          gender: '',
+          gender: null,
           birthDate: '',
-          idType: '',
-          eduBG: '',
-          aboBloodType: '',
-          rhBloodType: '',
+          idType: null,
+          eduBG: null,
+          aboBloodType: null,
+          rhBloodType: null,
           idNo: '',
           phoneNumber: '',
           contactName: '',
@@ -492,6 +494,14 @@ export default {
     openModel () {
       this.visible = true
     },
+    // 过滤下拉框数据
+    fitSelect (value) {
+      if (value) {
+        return value
+      } else {
+        return null
+      }
+    },
     handleOk (e) {
       // e.preventDefault()
       // console.log('111')
@@ -500,6 +510,10 @@ export default {
           const that = this
           const baseInfo = this.apiForm.baseInfo
           const form = JSON.parse(JSON.stringify(this.form))
+          baseInfo.eduBG = this.fitSelect(form.eduBG)
+          baseInfo.aboBloodType = this.fitSelect(form.aboBloodType)
+          baseInfo.rhBloodType = this.fitSelect(form.rhBloodType)
+          baseInfo.ethnicGroups = this.fitSelect(form.ethnicGroups)
           this.apiForm.telephone = form.phoneNumber
           this.apiForm.nickname = form.name
           this.apiForm.code = form.code
@@ -507,14 +521,13 @@ export default {
           baseInfo.name = form.name
           baseInfo.gender = form.gender
           baseInfo.idType = form.idType
-          baseInfo.eduBG = form.eduBG
-          baseInfo.aboBloodType = form.aboBloodType
-          baseInfo.rhBloodType = form.rhBloodType
+          // baseInfo.aboBloodType = form.aboBloodType
+          // baseInfo.rhBloodType = form.rhBloodType
           baseInfo.idNo = form.idNo
           baseInfo.phoneNumber = form.phoneNumber
           baseInfo.contactName = form.contactName
           baseInfo.contactNumber = form.contactNumber
-          baseInfo.ethnicGroups = form.ethnicGroups
+          // baseInfo.ethnicGroups = form.ethnicGroups
           baseInfo.province = form.province
           baseInfo.city = form.city
           baseInfo.area = form.area
@@ -531,7 +544,6 @@ export default {
             this.apiForm.groupId = -1
           }
           // console.log('点击了确定,我是传回后端的数据', this.apiForm)
-          // console.log('点击了确定,我是前端的数据', this.form)
           const groupId = this.apiForm.groupId
           const apiForm = this.apiForm
           customerAdd(groupId, apiForm).then(res => {
