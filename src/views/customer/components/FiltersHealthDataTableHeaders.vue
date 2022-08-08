@@ -71,6 +71,12 @@ export default {
       default: function () {
       return []
      }
+    },
+    dataColums: {
+      type: Array,
+      default: function () {
+        return []
+      }
     }
   },
   data () {
@@ -98,12 +104,20 @@ export default {
     /**
      * 伪双向绑定
      */
-    open () {
+    open (columns) {
+      console.log(columns)
       this.filtersVisible = true
       this.onSearch()
-      this.saveTableTitle.forEach(element => {
-      this.checkArray[element.id] = true // 父组件展示的列名这边显示为True
+      columns.forEach(element => {
+        this.checkArray[element.key] = true // 父组件展示的列名这边显示为True
       })
+      const tags = JSON.parse(window.localStorage.getItem('columns'))
+      this.selectedTags = tags.map(i => {
+        return {
+          id: i.key
+        }
+      })
+      console.log(this.selectedTags)
     },
     onSelectChange (selectedRowKeys, selectedRows) {
       const selectTitles = (selectedRows || []).map(item =>
@@ -112,23 +126,43 @@ export default {
         this.selectTitle = selectTitles
     },
     handleOk () {
-      const selectTitle = (this.selectedTags || []).map(item => item.name)
-         console.log(selectTitle)
+    //   const selectTitle = []
+    //   this.selectedTags.forEach(i => {
+    //     selectTitle.push('field_' + i.id + '.value')
+    // })
+    // console.log(selectTitle)
+      // const selectTitle = (this.selectedTags || []).map(item => {
+      //   const field = 'field_' + item.id
+      //   return {
+      //       id: field + '.value'
+      //     }
+      // })
+      const selectTitle = (this.selectedTags || []).map(item => 'field_' + item.id + '.value')
+      window.localStorage.setItem('selectTitle', JSON.stringify(selectTitle) || [])
+      this.$emit('parseColumns')
+      this.filtersVisible = false
       // this.$emit('filterTitlie', selectTitle)
       // this.$emit('selectHealthTitles', selectTitle)
     },
     handleCancel () {
       this.filtersVisible = false
     },
+    // removeDuplicatedTag (selectdTag = []) {
+    //   const newArr = []
+    //   selectdTag.forEach(item => {
+    //     if (!newArr.includes(item)) {
+    //       newArr.push(item)
+    //     }
+    //   })
+    //   return newArr
+    // },
     handleChange (tag, checked) {
       const { selectedTags } = this
-      console.log('selectedTags=====>', selectedTags, 'checked', checked)
       const nextSelectedTags = checked
         ? [...selectedTags, tag]
-        : selectedTags.filter(t => t !== tag)
-      // console.log('选择的标签: ', nextSelectedTags)
-      console.log('选择的key:', this.checkArray)
+        : selectedTags.filter(t => t.id !== tag.id)
       this.selectedTags = nextSelectedTags
+      console.log(nextSelectedTags)
     }
   }
 }

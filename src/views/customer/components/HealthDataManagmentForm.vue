@@ -33,7 +33,7 @@
           </a-row>
         </a-form>
       </div>
-      <a-table :columns="columns" :data-source="data">
+      <a-table :columns="columns" :data-source="data" :rowKey="(record,index)=> index">
         <a slot="name" slot-scope="text">{{ text }}</a>
         <span slot="action" slot-scope="text, record">
           <a @click="handleViewingTheTeportForm(record)">查看报告单</a>
@@ -43,10 +43,11 @@
     <FiltersHealthDataTableHeadersVue
       ref="filterRef"
       @selectHealthTitleCancel="selectHealthTitleCancel"
-      @filterTitlie="filterTitlie"
       :filtersVisible="filtersVisible"
       @handleCancel="handleCancel"
       :saveTableTitle="saveTableTitle"
+      :dataColums="dataColums"
+      @parseColumns="parseColumns"
     />
   </div>
 </template>
@@ -54,106 +55,28 @@
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import { gethealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 import { gethealthReports as apiGethealthReports } from '@/api/customer'
-const info = [
-  {
-    title: '头像',
-    dataIndex: 'id',
-    key: 'id',
-    fixed: 'left',
-    width: 100,
-    align: 'center'
-  },
-  {
-    title: '姓名',
-    dataIndex: 'name',
-    key: 'name',
-    fixed: 'left',
-    width: 100,
-    scopedSlots: { customRender: 'name' },
-    align: 'center'
-  }
-]
-const columns = [
-   {
-    title: '头像',
-    dataIndex: 'id',
-    key: 'id',
-    fixed: 'left',
-    width: 100,
-    align: 'center'
-  },
-  {
-    title: '姓名',
-    dataIndex: 'name',
-    key: 'name',
-    fixed: 'left',
-    width: 100,
-    scopedSlots: { customRender: 'name' },
-    align: 'center'
-  },
-  {
-    title: '舒张压',
-    dataIndex: 'age',
-    key: 'age',
-    align: 'center'
-  },
-  {
-    title: '收缩压',
-    dataIndex: 'address',
-    key: 'address 1',
-    align: 'center'
-  },
-  {
-    title: '遗传筛查',
-    dataIndex: 'address',
-    key: 'address 2',
-    align: 'center'
-  },
-  {
-    title: '唾液肌酐',
-    dataIndex: 'address',
-    key: 'address 3',
-    align: 'center'
-  },
-  {
-    title: '99Tcm-DTPA肺上皮细胞通透性测定',
-    dataIndex: 'address',
-    key: 'address 4',
-    align: 'center'
-  },
-  { title: '操作',
-    dataIndex: 'action',
-    key: 'x',
-    align: 'center',
-    fixed: 'right',
-    width: 200,
-    scopedSlots: { customRender: 'action' }
-  }
-]
+// const info = [
+//   {
+//     title: '头像',
+//     dataIndex: 'id',
+//     key: 'id',
+//     fixed: 'left',
+//     width: 100,
+//     align: 'center'
+//   },
+//   {
+//     title: '姓名',
+//     dataIndex: 'name',
+//     key: 'name',
+//     fixed: 'left',
+//     width: 100,
+//     scopedSlots: { customRender: 'name' },
+//     align: 'center'
+//   }
+// ]
+const columns = []
 
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park, New York No. 1 Lake Park',
-    tags: ['nice', 'developer']
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 2 Lake Park, London No. 2 Lake Park',
-    tags: ['loser']
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park, Sidney No. 1 Lake Park',
-    tags: ['cool', 'teacher']
-  }
-]
+const data = []
 
 export default {
    components: {
@@ -173,7 +96,7 @@ export default {
     return {
       data,
       columns,
-      info,
+      dataColums: [],
       confirmLoading: false,
       filtersVisible: false,
       saveTableTitle: [],
@@ -186,13 +109,31 @@ export default {
       showTotal: total => `共 ${total} 条`, // 显示总数
       onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
       onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-    }
+      },
+      actions: {
+        title: '操作',
+        dataIndex: 'action',
+        key: 'x',
+        align: 'center',
+        fixed: 'right',
+        width: 200,
+        scopedSlots: { customRender: 'action' }
+      }
     }
   },
   created () {
     this.onSearch()
   },
   methods: {
+    // 过滤表头
+    parseColumns () {
+      const userDefinedColumns = this.dataColums || []
+      const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
+      console.log(hideIndexes)
+      hideIndexes.filter(item => { return item.id })
+      this.columns = userDefinedColumns.filter(column => hideIndexes.includes(column.dataIndex)).concat(this.actions)
+      window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
+    },
     async onSearch () {
       const res = await apiGethealthIndexes()
       const datas = (res.data || []).map(item => item.items).flat().map(col => {
@@ -209,23 +150,15 @@ export default {
           //   // return `${text.value}(${text.result})`
           // }
         }
-      }).concat({
-        title: '操作',
-        dataIndex: 'action',
-        key: 'x',
-        align: 'center',
-        fixed: 'right',
-        width: 200,
-        scopedSlots: { customRender: 'action' }
-      })
+      }).concat(this.actions)
+      this.dataColums = datas
       this.columns = datas
-      console.log('columns', datas)
+      window.localStorage.setItem('columns', columns)
     },
     /**
      * 查找用户自己的指标
      */
     async findCustomerHealthReports (customersId) {
-      console.log('查找', customersId)
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
@@ -237,22 +170,12 @@ export default {
           return (project.items || []).map(item => {
             return { ...item, projectId: project.id, projectName: project.indexProjectName }
           }).reduce((acc, item) => {
-            // const key = item.projectName + '-' + item.healthIndexItem.name
             const key = 'field_' + item.healthIndexItem.id
             acc[key] = item
             return acc
           }, {})
         })
       this.data = items
-      // .map(projects => projects.items).flat().map(item => {
-      //   return {
-      //     key: item.healthIndexItem.id,
-      //     name: item.healthIndexItem.name,
-      //     dataIndex: item.healthIndexItem.id,
-      //     align: 'center'
-      //   }
-      // })
-      console.log('==================>:', items)
     },
     /**
      * 点击了确定
@@ -272,9 +195,7 @@ export default {
      */
     handleFiltrateTitle () {
       this.filtersVisible = true
-      this.$refs.filterRef.open() // 伪双向绑定
-      // // this.$refs.filterRef.onSearch()
-      // console.log(this.$refs.filterRef.open())
+      this.$refs.filterRef.open(this.columns) // 伪双向绑定
     },
     /**
      * 确定筛选
@@ -296,25 +217,6 @@ export default {
      */
     selectHealthTitleCancel () {
       this.filtersVisible = false
-    },
-    /**
-     * @param {过滤表头}
-     */
-    filterTitlie () {
-     const titles = this.saveTableTitle
-     console.log(titles)
-     const dataSource = columns.filter(item =>
-        titles.includes(item.title)
-      )
-     this.columns = info.concat(dataSource).concat({
-        title: '操作',
-        dataIndex: 'action',
-        key: 'x',
-        align: 'center',
-        fixed: 'right',
-        width: 200,
-        scopedSlots: { customRender: 'action' }
-      })
     }
   }
 }
