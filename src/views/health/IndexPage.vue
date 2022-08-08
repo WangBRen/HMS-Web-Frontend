@@ -438,7 +438,7 @@ const columns = [
     width: 80,
     customRender: (text, record) => {
       if (record.testRateValue > 0) {
-        return `${record.testRateValue}/${record.testRateUnit}`
+        return `${record.testRateValue} 次 / ${record.testRateUnit}`
       }
       return '-'
     }
