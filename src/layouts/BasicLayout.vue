@@ -31,7 +31,17 @@
     <template v-slot:headerContentRender>
       <div>
         <a-tooltip title="刷新页面">
-          <a-icon type="reload" style="font-size: 18px;cursor: pointer;" @click="() => { $message.info('只是一个DEMO') }" />
+          <a-icon
+            type="reload"
+            style="font-size: 18px;cursor: pointer;"
+            @click="() => {
+              $reload().then(resp => {
+                if (resp.status === 200) {
+                  $message.info('刷新成功')
+                }
+              }) // 刷新当前页面的数据内容
+            }"
+          />
         </a-tooltip>
       </div>
     </template>
