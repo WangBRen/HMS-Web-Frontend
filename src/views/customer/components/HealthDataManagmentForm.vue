@@ -177,22 +177,25 @@ export default {
     },
     async onSearch (value) {
     },
+    // 新建报告单
     handOpenHealthAdd () {
       this.$refs.child.openModel()
       // 在这传custmoerId
       const cusmId = 50
       this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
     },
+    // 查看报告单
     handleViewingTheTeportForm (data) {
-      // console.log(data)
-      // this.$refs.child.openModel()
-      // this.$refs.child.seeHealthCom(data)
       const custmoerId = 50
       getHealthReport(custmoerId).then(res => {
         if (res.status === 200) {
-          console.log(res)
+          const report = res.data.content[4]
+          // console.log(res.data.content[3])
+          this.$refs.child.openModel()
+          this.$refs.child.seeHealthCom(report)
         }
       })
+      // console.log('data', data)
     }
   }
 }

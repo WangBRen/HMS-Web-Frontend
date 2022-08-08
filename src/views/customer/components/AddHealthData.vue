@@ -1,6 +1,14 @@
 <template>
   <div>
-    <a-modal class="modal" v-model="visible" title="健康信息" @ok="handleOk" :width="1200">
+    <a-modal
+      class="modal"
+      v-model="visible"
+      title="健康信息"
+      @ok="handleOk"
+      :width="1200">
+      <template v-if="selectReport" slot="footer">
+        <a-button @click="closeModel">取消</a-button>
+      </template>
       <a-row>
         <a-col :span="5" class="modalLeft">
           <a-row>
@@ -18,13 +26,11 @@
                 </div>
                 <!-- 回到顶部 -->
                 <div>
-                  <!-- <a @click="onSc(objData.data[0].name)">点击回到顶部</a> -->
                   <a-icon :style="{fontSize: '25px'}" @click="onSc(objData.data[0].name)" type="up-square" theme="filled" />
                 </div>
                 <!-- 清空 -->
-                <div>
+                <div v-if="!selectReport">
                   <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
-                  <!-- <a-button style="" @click="clearData()">清空</a-button> -->
                 </div>
               </div>
             </a-col>
@@ -41,11 +47,12 @@
               </a-row>
               <!-- 大标题下的小标题加内容 -->
               <a-row>
-                <a-col class="rightBody" :span="12" v-for="items in item.items" :key="items.id">
+                <a-col v-if="!selectReport" class="rightBody" :span="12" v-for="items in item.items" :key="items.id">
                   <a-row>
                     <a-col span="24">
                       <a-form-model-item>
-                        <div>
+                        <!-- 新建 -->
+                        <div v-if="!selectReport">
                           <a-input v-model="items.value" :addonBefore="items.name" :addonAfter="items.unit" style="width: 200px"></a-input>
                           诊断结果:
                           <a-select v-model="items.diaResult" style="width: 150px">
@@ -54,11 +61,8 @@
                             </a-select-option>
                           </a-select>
                         </div>
-                        <!-- <div v-if="items.unit !== null">
-                          <a-input v-model="items.value" :addonBefore="items.name" style="width: 200px"></a-input>
-                          <a-input v-model="items.diaResult" addonBefore="诊断结果" style="width: 200px"></a-input>
-                        </div> -->
-                        <a-collapse style="width: 90%;">
+                        <!-- 查看 -->
+                        <a-collapse v-if="!selectReport" style="width: 90%;">
                           <a-collapse-panel header="点击展开">
                             <div>
                               <a class="exTitle">数据拓展:</a>
@@ -66,9 +70,6 @@
                                 {{ ranges | getRange }}
                                 <!-- {{ ranges }} -->
                               </a>
-                              <!-- <a v-if="ranges.type === 'simple'" style="pointer-events:none;" v-for="(ranges,index) in items.result" :key="index">
-                                {{ ranges | getRange }}
-                              </a> -->
                             </div>
                             <div>
                               <a class="exTitle">检查方式:</a>
@@ -85,16 +86,22 @@
                     </a-col>
                   </a-row>
                 </a-col>
+                <a-col v-if="selectReport" :span="24" class="rightBody" v-for="items in item.items" :key="items.id">
+                  {{ items.name }}: {{ items.value }} {{ items.unit }} 诊断结果: {{ items.diaResult }}
+                </a-col>
               </a-row>
-              <!-- 选择诊断时间 -->
+              <!-- 选择项目诊断时间 -->
               <a-row>
                 <a-col :span="4">
+                  <!-- 新建 -->
                   <a-date-picker
+                    v-if="!selectReport"
                     v-model="item.testAt"
                     type="date"
                     placeholder="请选择诊断时间"
                     style="width: 100%;"
                   />
+                  <div v-if="selectReport">{{ item.testAt | getMoment }}</div>
                 </a-col>
               </a-row>
             </div>
@@ -103,15 +110,20 @@
               <a-col>
                 <a-form-model-item>
                   <a id="用户诊断信息" class="rightTitle">用户诊断信息</a>
-                  <CheckDia ref="childDia" v-model="objData.diagnosisData" @changes="getDia($event)" />
+                  <!-- 新建 -->
+                  <CheckDia v-if="!selectReport" ref="childDia" v-model="objData.diagnosisData" @changes="getDia($event)" />
+                  <!-- 查看 -->
+                  <div v-if="selectReport">{{ objData.diagnosisData }}</div>
                   <a-row>
                     <a-col :span="4">
                       <a-date-picker
+                        v-if="!selectReport"
                         v-model="objData.diagnosisTime"
                         type="date"
                         placeholder="请选择诊断时间"
                         style="width: 100%;"
                       />
+                      <div v-if="selectReport">{{ objData.diagnosisTime | getMoment }}</div>
                     </a-col>
                   </a-row>
                 </a-form-model-item>
@@ -124,17 +136,20 @@
                   <a-row>
                     <a-col :span="12">
                       <a id="用户症状信息" class="rightTitle">用户症状信息</a>
-                      <a-textarea v-model="objData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                      <a-textarea v-if="!selectReport" v-model="objData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                      <div v-if="selectReport">{{ objData.symptomData }}</div>
                     </a-col>
                   </a-row>
                   <a-row>
                     <a-col :span="4">
                       <a-date-picker
+                        v-if="!selectReport"
                         type="date"
                         v-model="objData.symptomTime"
                         placeholder="请选择诊断时间"
                         style="width: 100%;"
                       />
+                      <div v-if="selectReport">{{ objData.symptomTime | getMoment }}</div>
                     </a-col>
                   </a-row>
                 </a-form-model-item>
@@ -149,6 +164,7 @@
 <script>
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
 import { getHealthIndex, addHealthReport } from '@/api/health'
+import moment from 'moment'
 // import { getHealthIndex } from '@/api/health'
 
 export default {
@@ -171,10 +187,19 @@ export default {
           // 数值
           return value.value
         }
+      },
+      // 过滤时间
+      getMoment: function (value) {
+        if (value === null) {
+          return ''
+        } else {
+          return moment(value).format('YYYY-MM-DD HH:mm')
+        }
       }
     },
     data () {
         return {
+            selectReport: false, // 用于查看报告单v-if
             top: 10,
             visible: false,
             customerId: null,
@@ -477,9 +502,14 @@ export default {
             }
           }
           this.objData.data = formdata
-          console.log(this.objData.data)
+          // console.log('objdata', this.objData.data)
         }
       })
+      // this.$refs.childDia.clearDia()
+      this.objData.diagnosisData = null
+      this.objData.diagnosisTime = null
+      this.objData.symptomData = null
+      this.objData.symptomTime = null
     },
     methods: {
       // 保存五级联动的诊断结果
@@ -490,9 +520,16 @@ export default {
       openModel () {
         this.visible = true
       },
-      // 新建触发事件
+      closeModel () {
+        this.visible = false
+      },
+      // 新建报告
       AddHealthCom (cusmId) {
+        this.selectReport = false
         this.customerId = cusmId
+        this.$nextTick(() => {
+          this.clearData()
+        })
         // 进入新建时，如果custId和上次不同，则清空报告单
         // const csid = 7
         // // 如果cusmid不一样则清空已填写的表单
@@ -506,8 +543,33 @@ export default {
         // }
         console.log('我是点击新建触发的时间,传入custmoerId', this.customerId)
       },
+      // 查看报告
       seeHealthCom (data) {
-        console.log('点击查看报告单', data)
+        this.selectReport = true
+        // console.log('点击查看报告单数据', data.projects)
+        // console.log('查看objdata', this.objData.data)
+        this.objData.symptomData = data.symptom
+        this.objData.symptomTime = data.symptomAt // 有点小问题，会报警告，问题为日期格式初始化
+        this.objData.diagnosisTime = data.diseaseAt
+        this.objData.diagnosisData = data.disease.title
+        this.objData.data.forEach(function (val1) {
+          data.projects.forEach(function (val2) {
+            if (val1.name === val2.indexProjectName) {
+              val1.items.forEach(function (val3) {
+                val2.items.forEach(function (val4) {
+                  if (val3.id === val4.healthIndexItem.id) {
+                    val3.value = val4.value
+                    val3.diaResult = val4.result
+                  }
+                })
+              })
+              console.log(val1, '???', val2)
+              if (val2.testAt) {
+                val1.testAt = val2.testAt
+              }
+            }
+          })
+        })
       },
       handleOk () {
         const apiData = this.apiData
@@ -554,6 +616,7 @@ export default {
         if (res.status === 200) {
           const formdata = res.data
           for (var i = 0; i < formdata.length; i++) {
+            formdata[i].testAt = null
             for (var j = 0; j < formdata[i].items.length; j++) {
               formdata[i].items[j].value = null
               formdata[i].items[j].diaResult = null
