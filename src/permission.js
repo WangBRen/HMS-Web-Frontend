@@ -35,9 +35,9 @@ router.beforeEach((to, from, next) => {
         store
           .dispatch('GetInfo')
           .then(res => {
-            const roles = res.data && res.data.role
+            const role = res.data && res.data.role
             // generate dynamic router
-            store.dispatch('GenerateRoutes', { roles }).then(() => {
+            store.dispatch('GenerateRoutes', { role }).then(() => {
               // 根据roles权限生成可访问的路由表
               // 动态添加可访问路由表
               // VueRouter@3.5.0+ New API
