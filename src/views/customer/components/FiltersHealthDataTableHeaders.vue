@@ -94,7 +94,6 @@ export default {
   },
   created () {
     this.onSearch()
-    console.log('触发子组件')
   },
   methods: {
     async onSearch () {
@@ -105,7 +104,6 @@ export default {
      * 伪双向绑定
      */
     open (columns) {
-      console.log(columns)
       this.filtersVisible = true
       this.onSearch()
       columns.forEach(element => {
