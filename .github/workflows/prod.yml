@@ -31,7 +31,7 @@ jobs:
       - name: Setup Dir
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
+          host: hms.yootane.com
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           password: ${{ secrets.PASSWORD }}
@@ -48,7 +48,7 @@ jobs:
 #        env:
 ##          KEY: ${{ secrets.SSHKEY2 }}
         with:
-          host: ${{ secrets.HOST }}
+          host: hms.yootane.com
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           password: ${{ secrets.PASSWORD }}
