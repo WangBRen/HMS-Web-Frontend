@@ -1,6 +1,7 @@
 <template>
   <div>
     <a-modal
+      :ok-button-props="{ style: { display: 'none' } }"
       :maskClosable="false"
       :width="1200"
       :title="title"
@@ -57,64 +58,8 @@ import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vu
 import AddHealthData from './AddHealthData.vue'
 import { getHealthReport as apiGetHealthReports } from '@/api/health'
 import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
-const columns = [
-  {
-    title: '检验号',
-    dataIndex: 'id',
-    key: 'id',
-    fixed: 'left',
-    width: 100,
-    align: 'center'
-  },
-  {
-    title: '姓名',
-    dataIndex: 'name',
-    key: 'name',
-    fixed: 'left',
-    width: 100,
-    scopedSlots: { customRender: 'name' },
-    align: 'center'
-  },
-  {
-    title: '疟原虫抗体和抗原',
-    dataIndex: 'age',
-    key: 'age',
-    align: 'center'
-  },
-  {
-    title: '人类免疫缺陷病毒抗体',
-    dataIndex: 'address',
-    key: 'address 1',
-    align: 'center'
-  },
-  {
-    title: '遗传筛查',
-    dataIndex: 'address',
-    key: 'address 2',
-    align: 'center'
-  },
-  {
-    title: '唾液肌酐',
-    dataIndex: 'address',
-    key: 'address 3',
-    align: 'center'
-  },
-  {
-    title: '99Tcm-DTPA肺上皮细胞通透性测定',
-    dataIndex: 'address',
-    key: 'address 4',
-    align: 'center'
-  },
-  { title: '操作',
-    dataIndex: 'action',
-    key: 'x',
-    align: 'center',
-    fixed: 'right',
-    width: 200,
-    scopedSlots: { customRender: 'action' }
-  }
-]
 
+const columns = []
 const data = []
 
 export default {
@@ -169,7 +114,6 @@ export default {
     parseColumns () {
       const userDefinedColumns = this.dataColums || []
       const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
-      console.log(hideIndexes)
       hideIndexes.filter(item => { return item.id })
       this.columns = userDefinedColumns.filter(column => hideIndexes.includes(column.dataIndex)).concat(this.actions)
       window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
@@ -193,7 +137,7 @@ export default {
       }).concat(this.actions)
       this.dataColums = datas
       this.columns = datas
-      window.localStorage.setItem('columns', columns)
+      window.localStorage.setItem('columns', JSON.stringify(this.columns || []))
     },
     /**
      * 查找用户自己的指标
@@ -204,7 +148,6 @@ export default {
         size: this.pagination.pageSize
       }
       const res = await apiGetHealthReports(customersId, pages)
-      console.log(res)
       const items = (res.data.content || [])
         .map(record => record.projects).flat().map(project => {
           return (project.items || []).map(item => {
@@ -221,7 +164,6 @@ export default {
      * 点击了确定
      */
     handleOk () {
-      console.log('1111')
     },
     // 点击了取消
     handleCancel () {
@@ -266,7 +208,6 @@ export default {
      * 子组件传过来的列名
      */
     selectHealthTitles (sTableTitle) {
-      console.log('子组件传过来的列名', sTableTitle)
       this.saveTableTitle = sTableTitle
       this.filterTitlie() // 调用过滤方法
     },
