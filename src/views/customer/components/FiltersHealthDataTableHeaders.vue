@@ -117,7 +117,7 @@ export default {
           id: i.key
         }
       })
-      console.log(this.selectedTags)
+      // console.log('this.selectedTags', this.selectedTags)
     },
     onSelectChange (selectedRowKeys, selectedRows) {
       const selectTitles = (selectedRows || []).map(item =>
@@ -126,23 +126,10 @@ export default {
         this.selectTitle = selectTitles
     },
     handleOk () {
-    //   const selectTitle = []
-    //   this.selectedTags.forEach(i => {
-    //     selectTitle.push('field_' + i.id + '.value')
-    // })
-    // console.log(selectTitle)
-      // const selectTitle = (this.selectedTags || []).map(item => {
-      //   const field = 'field_' + item.id
-      //   return {
-      //       id: field + '.value'
-      //     }
-      // })
       const selectTitle = (this.selectedTags || []).map(item => 'field_' + item.id + '.value')
       window.localStorage.setItem('selectTitle', JSON.stringify(selectTitle) || [])
       this.$emit('parseColumns')
       this.filtersVisible = false
-      // this.$emit('filterTitlie', selectTitle)
-      // this.$emit('selectHealthTitles', selectTitle)
     },
     handleCancel () {
       this.filtersVisible = false
@@ -162,7 +149,6 @@ export default {
         ? [...selectedTags, tag]
         : selectedTags.filter(t => t.id !== tag.id)
       this.selectedTags = nextSelectedTags
-      console.log(nextSelectedTags)
     }
   }
 }
