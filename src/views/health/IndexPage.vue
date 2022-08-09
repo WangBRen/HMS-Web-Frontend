@@ -906,6 +906,7 @@ export default {
       const resp = await apiCreateProject(projectName)
       if (resp.status === 201) {
         this.$message.success(resp.message)
+        this.reloadData()
         this.closeCreateProjectModal()
       } else {
         this.$message.warning(resp.message)
