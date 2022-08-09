@@ -3,7 +3,15 @@ import request from '@/utils/request'
 const Api = {
   ListAllIndexes: '/health-indexes',
   CreateIndexItem: (projectName) => `/health-indexes/${projectName}/items`,
-  UpdateIndexItem: (projectName, id) => `/health-indexes/${projectName}/items/${id}`
+  UpdateIndexItem: (projectName, id) => `/health-indexes/${projectName}/items/${id}`,
+  CreateProject: (projectName) => `/health-indexes/${projectName}`
+}
+
+export function createProject (projectName) {
+  return request({
+    url: Api.CreateProject(projectName),
+    method: 'post'
+  })
 }
 
 export function listAllIndexes () {

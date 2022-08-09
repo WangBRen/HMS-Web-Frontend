@@ -3,7 +3,7 @@
     <div class="table-page-search-wrapper">
     </div>
     <div style="padding-bottom: 8px">
-      <a-button type="primary" style="margin-right: 12px"> 新建指标项目 </a-button>
+      <a-button type="primary" @click="openCreateProjectModal" style="margin-right: 12px"> 新建指标项目 </a-button>
       <a-button type="primary" @click="openModal('create')"> 新建{{ data[currentTabKey - 1]?.name }}指标 </a-button>
     </div>
     <a-tabs v-model="currentTabKey">
@@ -97,11 +97,11 @@
     <a-modal
       :title="mode === 'create' ? '新建指标' : '编辑指标'"
       style="top: 20px"
-      :width="800"
+      :width="920"
       v-model="visible"
       @ok="handleOkDone"
       ok-text="确定"
-    >
+      >
       <a-form :form="form" v-model="current">
         <a-row :gutter="48">
           <a-col :span="12">
@@ -358,6 +358,24 @@
         </a-row>
       </a-form>
     </a-modal>
+    <a-modal
+      title="新建指标项目"
+      style="top: 20px"
+      :width="800"
+      v-model="projectVisible"
+      @ok="handleOkProjectCreateDone"
+      ok-text="确认创建"
+      >
+        <a-form v-model="currentProject">
+          <a-row :gutter="48">
+            <a-col :span="18" :offset="3">
+              <a-form-item label="项目名称">
+                <a-input v-model="currentProject.name" type="text" placeholder="如：血常规" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </a-form>
+    </a-modal>
   </a-card>
 </template>
 
@@ -371,7 +389,8 @@
 import {
   listAllIndexes,
   createIndexItem as apiCreateIndexItem,
-  updateIndexItem as apiUpdateIndexItem
+  updateIndexItem as apiUpdateIndexItem,
+  createProject as apiCreateProject
 } from '@/api/health_indexes'
 import { ref } from 'vue'
 
@@ -505,7 +524,10 @@ export default {
       // table
       columns,
       scroll: { x: true },
-      data: []
+      data: [],
+      // create project modal
+      projectVisible: false,
+      currentProject: { name: '' }
     }
   },
   filters: {
@@ -596,10 +618,10 @@ export default {
         // return
         const view = { ...data, conditions, result }
         // console.log({ view })
-        return view
+        return JSON.parse(JSON.stringify(view))
       }
       this.mode = mode
-      this.current = reform(JSON.parse(JSON.stringify(record))) || InitialPropOfModel
+      this.current = reform(record) || InitialPropOfModel
       this.visible = true
       this.updateCurrentProducts()
     },
@@ -828,6 +850,27 @@ export default {
       }
       const payload = reform(this.current || {})
       const projectName = this.data[this.currentTabKey - 1].name
+      // valid payload
+      const validPayload = (payload) => {
+        if (!payload.name) {
+          this.$message.warning('请输入指标名称')
+          return false
+        }
+        if (payload.testRateUnit && !payload.testRateValue) {
+          this.$message.warning('请输入检测频率')
+          return false
+        }
+        if (!payload.testRateUnit && payload.testRateValue) {
+          this.$message.warning('请选择检测频率单位')
+          return false
+        }
+        return true
+      }
+      // check it!
+      if (!validPayload(payload)) {
+        return
+      }
+      // do request
       let resp = null
       if (this.mode === 'create') {
         // create
@@ -842,8 +885,30 @@ export default {
           this.reloadData()
           this.closeModal()
         } else {
-          this.$message.error(resp.message)
+          this.$message.warning(resp.message)
         }
+      }
+    },
+    // create project modal
+    openCreateProjectModal () {
+      this.projectVisible = true
+    },
+    closeCreateProjectModal () {
+      this.projectVisible = false
+    },
+    async handleOkProjectCreateDone (e) {
+      e.preventDefault()
+      const projectName = this.currentProject.name.trim()
+      if (!projectName) {
+        this.$message.warning('请输入项目名称')
+        return
+      }
+      const resp = await apiCreateProject(projectName)
+      if (resp.status === 201) {
+        this.$message.success(resp.message)
+        this.closeCreateProjectModal()
+      } else {
+        this.$message.warning(resp.message)
       }
     }
   },
