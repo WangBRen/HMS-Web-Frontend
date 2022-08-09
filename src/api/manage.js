@@ -2,10 +2,9 @@ import request from '@/utils/request'
 
 const api = {
   user: '/users',
-  role: '/roles',
+  role: '/role-permission/roles',
   service: '/service',
-  permission: '/permission',
-  permissionNoPager: '/permission/no-pager',
+  permission: '/role-permission/permissions',
   orgTree: '/org/tree'
 }
 
@@ -37,7 +36,7 @@ export function getServiceList (parameter) {
 
 export function getPermissions (parameter) {
   return request({
-    url: api.permissionNoPager,
+    url: api.permission,
     method: 'get',
     params: parameter
   })
