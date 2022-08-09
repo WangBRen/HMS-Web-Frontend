@@ -205,278 +205,7 @@ export default {
             customerId: null,
             objData: {
               // item
-              data: [
-                // {
-                //   id: '1',
-                //   name: '个人基础信息',
-                //   // items
-                //   items: [
-                //     {
-                //       id: '1',
-                //       name: '舒张压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       remark: '用于筛查是否患有高血压',
-                //       // value: null,
-                //       range: [
-                //         {
-                //           name: '低血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: null,
-                //           itUnequal: '60',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '正常血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '60',
-                //           itUnequal: '80',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '正常高值',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '80',
-                //           itUnequal: '89',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '一级高血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '90',
-                //           itUnequal: '99',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '二级高血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '100',
-                //           itUnequal: '109',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '三级高血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '110',
-                //           itUnequal: null,
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     },
-                //     {
-                //       id: '2',
-                //       name: '收缩压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       remark: '用于筛查是否患有高血压',
-                //       range: [
-                //         {
-                //           name: '低血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: null,
-                //           itUnequal: '90',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '正常血压',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '90',
-                //           itUnequal: '119',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '正常高值',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '120',
-                //           itUnequal: '139',
-                //           unit: 'mmHg',
-                //           subRanges: null
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     },
-                //     {
-                //       id: '3',
-                //       name: '心率',
-                //       testMethod: '智能穿戴,心电图机',
-                //       unit: '次/min',
-                //       range: [
-                //         {
-                //           name: '心动过缓',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: null,
-                //           itUnequal: '60',
-                //           unit: '次/min',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '正常',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '60',
-                //           itUnequal: '100',
-                //           unit: '次/min',
-                //           subRanges: null
-                //         },
-                //         {
-                //           name: '心动过速',
-                //           type: 'range',
-                //           value: null,
-                //           gtEqual: '100',
-                //           itUnequal: null,
-                //           unit: '次/min',
-                //           subRanges: null
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: null
-                //     },
-                //     {
-                //       id: '4',
-                //       name: '收缩压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       range: [
-                //         {
-                //           name: '低血压'
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     }
-                //   ]
-                // },
-                // {
-                //   id: '2',
-                //   name: '内科',
-                //   items: [
-                //     {
-                //       id: '1',
-                //       name: '舒张压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       range: [
-                //         {
-                //           name: '低血压'
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     },
-                //     {
-                //       id: '2',
-                //       name: '收缩压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       range: [
-                //         {
-                //           name: '低血压'
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     }
-                //   ]
-                // },
-                // {
-                //   id: '3',
-                //   name: '外科+肛门指诊',
-                //   items: [
-                //     {
-                //       id: '1',
-                //       name: '舒张压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       range: [
-                //         {
-                //           name: '低血压'
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     },
-                //     {
-                //       id: '2',
-                //       name: '收缩压',
-                //       testMethod: '血压仪',
-                //       unit: 'mmHg',
-                //       range: [
-                //         {
-                //           name: '低血压'
-                //         }
-                //       ],
-                //       testEnvironment: '家庭/社区/体检',
-                //       testRate: '3次非同日'
-                //     }
-                //   ]
-                // },
-                // {
-                //   id: '4',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '5',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '6',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '7',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '8',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '9',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '10',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '11',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // },
-                // {
-                //   id: '12',
-                //   name: '外科+肛门指诊',
-                //   items: []
-                // }
-              ],
+              data: [],
               diagnosisData: null, // 诊断信息
               diagnosisTime: null, // 诊断时间
               symptomData: null, // 症状信息
@@ -525,26 +254,23 @@ export default {
       },
       // 新建报告
       AddHealthCom (cusmId) {
-        this.selectReport = false
-        this.customerId = cusmId
-        this.$nextTick(() => {
-          this.clearData()
-        })
-        // 进入新建时，如果custId和上次不同，则清空报告单
-        // const csid = 7
-        // // 如果cusmid不一样则清空已填写的表单
-        // if (cusmId === csid) {
-        //   // console.log('不清空')
-        // } else {
-        //   this.$nextTick(() => {
-        //     this.clearData()
-        //   })
-        //   // console.log('清空')
-        // }
         console.log('我是点击新建触发的时间,传入custmoerId', this.customerId)
+        this.selectReport = false
+        if (this.customerId) {
+          // 如果用户不同，则清空新建弹窗
+          if (this.customerId !== cusmId) {
+            this.customerId = cusmId
+            this.$nextTick(() => {
+              this.clearData() // 调清空方法
+            })
+          }
+        } else {
+          this.customerId = cusmId
+        }
       },
       // 查看报告
       seeHealthCom (data) {
+        console.log('我是点击查看触发的时间')
         this.selectReport = true
         // console.log('点击查看报告单数据', data.projects)
         // console.log('查看objdata', this.objData.data)
@@ -612,25 +338,27 @@ export default {
       },
       clearData () {
         console.log('清空')
-        getHealthIndex().then(res => {
-        if (res.status === 200) {
-          const formdata = res.data
-          for (var i = 0; i < formdata.length; i++) {
-            formdata[i].testAt = null
-            for (var j = 0; j < formdata[i].items.length; j++) {
-              formdata[i].items[j].value = null
-              formdata[i].items[j].diaResult = null
+        this.$nextTick(() => {
+          getHealthIndex().then(res => {
+          if (res.status === 200) {
+            const formdata = res.data
+            for (var i = 0; i < formdata.length; i++) {
+              formdata[i].testAt = null
+              for (var j = 0; j < formdata[i].items.length; j++) {
+                formdata[i].items[j].value = null
+                formdata[i].items[j].diaResult = null
+              }
             }
+            this.objData.data = formdata
+            // console.log(this.objData.data)
           }
-          this.objData.data = formdata
-          // console.log(this.objData.data)
-        }
+          })
+          this.$refs.childDia.clearDia()
+          this.objData.diagnosisData = null
+          this.objData.diagnosisTime = null
+          this.objData.symptomData = null
+          this.objData.symptomTime = null
         })
-        this.$refs.childDia.clearDia()
-        this.objData.diagnosisData = null
-        this.objData.diagnosisTime = null
-        this.objData.symptomData = null
-        this.objData.symptomTime = null
       },
       // 初始化
       getHealth () {
