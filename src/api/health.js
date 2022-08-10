@@ -3,7 +3,8 @@ import request from '@/utils/request'
 const customerApi = {
     healthIndex: '/health-indexes', // 获取健康指标
     healthDis: diseaseId => { return `/health-diseases/${diseaseId}/children` }, // 疾病诊断
-    healthReport: customerId => { return `/health-reports/${customerId}/reports` } // 新建检测报告
+    healthReport: customerId => { return `/health-reports/${customerId}/reports` }, // 新建检测报告
+    healthCustomerReport: '/health-reports/'
 }
 
 // 获取健康指标
@@ -28,6 +29,13 @@ export function addHealthReport (customerId, parameter) {
         url: customerApi.healthReport(customerId),
         method: 'post',
         data: parameter
+    })
+}
+
+// 查看健康报告
+export function getHealthCustomerReport (customerId, reportId) {
+    return request({
+        url: customerApi.healthCustomerReport + customerId + '/reports/' + reportId
     })
 }
 

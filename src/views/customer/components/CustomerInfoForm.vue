@@ -514,7 +514,7 @@ export default {
           baseInfo.aboBloodType = this.fitSelect(form.aboBloodType)
           baseInfo.rhBloodType = this.fitSelect(form.rhBloodType)
           baseInfo.ethnicGroups = this.fitSelect(form.ethnicGroups)
-          this.apiForm.telephone = form.phoneNumber
+          this.apiForm.telephone = this.fitSelect(form.phoneNumber)
           this.apiForm.nickname = form.name
           this.apiForm.code = form.code
           this.apiForm.token = form.token
