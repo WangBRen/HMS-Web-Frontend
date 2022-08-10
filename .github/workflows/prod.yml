@@ -28,7 +28,7 @@ jobs:
           node-version: '13'
       - run: |
           npm install
-          npm run-script build
+          npm run-script build_prod
           DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-7)
           mkdir -p $DEPOLY_DIR
           cp -r dist/** $DEPOLY_DIR

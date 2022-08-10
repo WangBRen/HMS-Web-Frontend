@@ -17,8 +17,7 @@ jobs:
 
       - name: Build App
         run: |
-          npm install
-          vue-cli-service build --mode development
+          npm install && npm run-script build
 
       # - uses: Borales/actions-yarn@v3
       #   with:
