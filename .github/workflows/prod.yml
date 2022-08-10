@@ -30,7 +30,7 @@ jobs:
           npm install
           npm run-script build
           distdir=release/$(git rev-parse --short "$GITHUB_SHA")
-          mkdir $distdir
+          mkdir -p $distdir
           cp dist/** $distdir
 
       - name: Setup Dir
