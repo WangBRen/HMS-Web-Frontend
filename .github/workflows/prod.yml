@@ -29,7 +29,7 @@ jobs:
       - run: |
           npm install
           npm run-script build
-          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 0-6)
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-7)
           mkdir -p $DEPOLY_DIR
           cp -r dist/** $DEPOLY_DIR
 
@@ -66,5 +66,5 @@ jobs:
       
       - name: Upload files to OSS
         run: |
-          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 0-6)
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-7)
           ossutil cp -rf $DEPOLY_DIR oss://hms-web/$DEPOLY_DIR
