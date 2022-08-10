@@ -105,15 +105,6 @@ export default {
     this.onSearch()
   },
   methods: {
-    // 过滤表头
-    // handleFilterDone () {
-    //   const userDefinedColumns = this.dataColums || []
-    //   const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
-    //   console.log(hideIndexes)
-    //   hideIndexes.filter(item => { return item.id })
-    //   this.columns = userDefinedColumns.filter(column => hideIndexes.includes(column.dataIndex)).concat(this.actions)
-    //   window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
-    // },
     async onSearch () {
       const resColumus = await apiGetIndexColumns()
       const totalColumns = (resColumus.data || []).map(column => {
@@ -123,27 +114,6 @@ export default {
       this.dataColums = (resColumus.data || []).map(column => {
         return { ...column, align: 'center' }
       })
-      // console.log('resColumus:', resColumus, 'dataColums:', this.dataColums)
-      // const res = await apiGethealthIndexes()
-      // const datas = (res.data || []).map(item => item.items).flat().map(col => {
-      //   const field = 'field_' + col.id
-      //   return {
-      //     title: col.name,
-      //     key: col.id,
-      //     dataIndex: field + '.value',
-      //     align: 'center',
-      //     scopedSlots: { customRender: field + '.value' }
-      //     // customRender: (text, record) => {
-      //     //   console.log(record[field])
-      //     //   // return text
-      //     //   // return `${text.value}(${text.result})`
-      //     // }
-      //   }
-      // }).concat(this.actions)
-      // console.log(datas)
-      // this.dataColums = datas
-      // this.columns = datas
-      // window.localStorage.setItem('columns', JSON.stringify(this.columns || []))
     },
     /**
      * 查找用户自己的指标
@@ -156,24 +126,7 @@ export default {
       }
       const res = await apiGetHealthReports(customersId, pages)
        this.data = res.data.content || []
-      // const items = (res.data.content || [])
-      //   .map(record => record.projects).flat().map(project => {
-      //     return (project.items || []).map(item => {
-      //       return { ...item, projectId: project.id, projectName: project.indexProjectName }
-      //     }).reduce((acc, item) => {
-      //       const key = 'field_' + item.healthIndexItem.id
-      //       acc[key] = item
-      //       return acc
-      //     }, {})
-      //   })
-      // console.log('------>', items)
     },
-    /**
-     * 点击了确定
-     */
-    // handleOk () {
-    //   console.log('1111')
-    // },
     // 点击了取消
     handleCancel () {
       this.$emit('handleCancel')
@@ -213,33 +166,7 @@ export default {
           this.$refs.child.seeHealthCom(res.data)
         }
       })
-      // this.$refs.child.openModel()
-      // this.$refs.child.seeHealthCom(data)
-      // const custmoerId = 50
-      // apiGetHealthReports(custmoerId).then(res => {
-      //   if (res.status === 200) {
-      //     const report = res.data.content[4]
-      //     // console.log(res.data.content[3])
-      //     this.$refs.child.openModel()
-      //     this.$refs.child.seeHealthCom(report)
-      //   }
-      // })
-      // console.log('data', data)
     }
-    /**
-     * 子组件传过来的列名
-     */
-    // selectHealthTitles (sTableTitle) {
-    //     console.log('子组件传过来的列名', sTableTitle)
-    //     this.saveTableTitle = sTableTitle
-    //     this.filterTitlie() // 调用过滤方法
-    // },
-    // /**
-    //  *取消筛选
-    //  */
-    // closeFilterModal () {
-    //   this.filtersVisible = false
-    // }
   }
 }
 </script>
