@@ -70,4 +70,4 @@ jobs:
           accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
           bucket: hms-web
           # deploy config
-          folder: $(release/${GITHUB_SHA_SHORT})
+          folder: ${{ env.GITHUB_SHA_SHORT }}
