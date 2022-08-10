@@ -76,23 +76,11 @@
 // }
 export default {
   props: {
-    visible: {
-      type: Boolean,
-      default: false
-    },
     columns: {
       type: Array,
       default: function () {
         return []
       }
-    },
-    ok: {
-      type: Function,
-      default: undefined
-    },
-    cancel: {
-      type: Function,
-      default: undefined
     }
   },
   data () {

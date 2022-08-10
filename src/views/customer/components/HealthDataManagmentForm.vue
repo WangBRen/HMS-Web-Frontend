@@ -2,11 +2,10 @@
   <div>
     <a-modal
       :maskClosable="false"
-      :width="1600"
+      :width="1200"
       :title="title"
       :visible="openHealthvisible"
       :confirm-loading="confirmLoading"
-      @ok="handleOk"
       @cancel="handleCancel"
     >
       <div class="table-page-search-wrapper">
@@ -42,10 +41,8 @@
     </a-modal>
     <FiltersHealthDataTableHeadersVue
       ref="filterRef"
-      :visible="filtersVisible"
       :columns="dataColums"
       @ok="selectHealthTitleOk"
-      @close="closeFilterModal"
     />
     <AddHealthData ref="child" />
   </div>
@@ -109,14 +106,14 @@ export default {
   },
   methods: {
     // 过滤表头
-    handleFilterDone () {
-      const userDefinedColumns = this.dataColums || []
-      const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
-      console.log(hideIndexes)
-      hideIndexes.filter(item => { return item.id })
-      this.columns = userDefinedColumns.filter(column => hideIndexes.includes(column.dataIndex)).concat(this.actions)
-      window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
-    },
+    // handleFilterDone () {
+    //   const userDefinedColumns = this.dataColums || []
+    //   const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
+    //   console.log(hideIndexes)
+    //   hideIndexes.filter(item => { return item.id })
+    //   this.columns = userDefinedColumns.filter(column => hideIndexes.includes(column.dataIndex)).concat(this.actions)
+    //   window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
+    // },
     async onSearch () {
       const resColumus = await apiGetIndexColumns()
       const totalColumns = (resColumus.data || []).map(column => {
@@ -146,7 +143,7 @@ export default {
       // console.log(datas)
       // this.dataColums = datas
       // this.columns = datas
-      window.localStorage.setItem('columns', JSON.stringify(this.columns || []))
+      // window.localStorage.setItem('columns', JSON.stringify(this.columns || []))
     },
     /**
      * 查找用户自己的指标
@@ -158,6 +155,7 @@ export default {
         size: this.pagination.pageSize
       }
       const res = await apiGetHealthReports(customersId, pages)
+       this.data = res.data.content || []
       // const items = (res.data.content || [])
       //   .map(record => record.projects).flat().map(project => {
       //     return (project.items || []).map(item => {
@@ -168,15 +166,14 @@ export default {
       //       return acc
       //     }, {})
       //   })
-       this.data = res.data.content || []
       // console.log('------>', items)
     },
     /**
      * 点击了确定
      */
-    handleOk () {
-      console.log('1111')
-    },
+    // handleOk () {
+    //   console.log('1111')
+    // },
     // 点击了取消
     handleCancel () {
       this.$emit('handleCancel')
@@ -228,21 +225,21 @@ export default {
       //   }
       // })
       // console.log('data', data)
-    },
+    }
     /**
      * 子组件传过来的列名
      */
-    selectHealthTitles (sTableTitle) {
-        console.log('子组件传过来的列名', sTableTitle)
-        this.saveTableTitle = sTableTitle
-        this.filterTitlie() // 调用过滤方法
-    },
-    /**
-     *取消筛选
-     */
-    closeFilterModal () {
-      this.filtersVisible = false
-    }
+    // selectHealthTitles (sTableTitle) {
+    //     console.log('子组件传过来的列名', sTableTitle)
+    //     this.saveTableTitle = sTableTitle
+    //     this.filterTitlie() // 调用过滤方法
+    // },
+    // /**
+    //  *取消筛选
+    //  */
+    // closeFilterModal () {
+    //   this.filtersVisible = false
+    // }
   }
 }
 </script>
