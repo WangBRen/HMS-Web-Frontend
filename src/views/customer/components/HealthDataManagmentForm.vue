@@ -110,7 +110,7 @@ export default {
       const totalColumns = (resColumus.data || []).map(column => {
         return { ...column, align: 'center' }
       })
-      this.columns = totalColumns.filter(column => !column.hide)
+      this.columns = totalColumns.filter(column => !column.hide).concat(this.actions)
       this.dataColums = (resColumus.data || []).map(column => {
         return { ...column, align: 'center' }
       })
@@ -143,7 +143,7 @@ export default {
      * 确定筛选
      */
     selectHealthTitleOk (selectColumns) {
-      this.columns = selectColumns.filter(column => !column.hide)
+      this.columns = selectColumns.filter(column => !column.hide).concat(this.actions)
       // console.log(selectColumns)
     },
     // 新建报告单
