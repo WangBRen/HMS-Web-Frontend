@@ -30,6 +30,7 @@ jobs:
           npm install
           npm run-script build
           distdir=release/$(git rev-parse --short "$GITHUB_SHA")
+          export DEPOLY_DIR=$distdir
           mkdir -p $distdir
           cp -r dist/** $distdir
 
@@ -68,4 +69,4 @@ jobs:
           accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
           bucket: hms-web
           # deploy config
-          folder: $distdir
+          folder: ${ DEPOLY_DIR }
