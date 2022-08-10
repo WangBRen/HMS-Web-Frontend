@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload files to OSS
         env:
-          DEPOLY_DIR: ${{ release/$(git rev-parse --short "$GITHUB_SHA") }}
+          DEPOLY_DIR: release/${{ $(git rev-parse --short "$GITHUB_SHA") }}
         uses: fangbinwei/aliyun-oss-website-action@v1.3.0
         with:
           endpoint: oss-cn-shenzhen.aliyuncs.com
