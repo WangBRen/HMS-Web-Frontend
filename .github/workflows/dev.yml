@@ -15,9 +15,14 @@ jobs:
         with:
           node-version: '13'
 
-      - uses: Borales/actions-yarn@v3
-        with:
-          cmd: install && build --mode development
+      - name: Build App
+        run: |
+          npm install
+          vue-cli-service build --mode development
+
+      # - uses: Borales/actions-yarn@v3
+      #   with:
+      #     cmd: install && build --mode development
       # - name: Build App
       #   run: yarn install && yarn build --mode development
 
