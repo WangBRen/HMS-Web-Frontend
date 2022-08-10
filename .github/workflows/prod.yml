@@ -27,12 +27,12 @@ jobs:
         with:
           node-version: '13'
       - run: |
-          echo "DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
+          # echo "DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
           npm install
           npm run-script build
-          distdir=release/$(echo $GITHUB_SHA | cut -c 1-6)
-          mkdir -p $distdir
-          cp -r dist/** $distdir
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)
+          mkdir -p $DEPOLY_DIR
+          cp -r dist/** $DEPOLY_DIR
 
       - name: Setup Dir
         uses: appleboy/ssh-action@master
@@ -62,11 +62,19 @@ jobs:
           target: "/hms_front/prod/"
 
       - name: Upload files to OSS
-        uses: fangbinwei/aliyun-oss-website-action@v1.3.0
+        uses: manyuanrong/setup-ossutil@v2.0
         with:
           endpoint: oss-cn-shenzhen.aliyuncs.com
-          accessKeyId: LTAI5tNw1iosfvrxbsxDf5zk
-          accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
-          bucket: hms-web
-          incremental: true
-          folder: ${{ env.DEPOLY_DIR }}
+          access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
+          access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+        - run: ossutil cp -rf $DEPOLY_DIR oss://hms-web/release/$DEPOLY_DIR
+      
+      # - name: Upload files to OSS
+      #   uses: fangbinwei/aliyun-oss-website-action@v1.3.0
+      #   with:
+      #     endpoint: oss-cn-shenzhen.aliyuncs.com
+      #     accessKeyId: LTAI5tNw1iosfvrxbsxDf5zk
+      #     accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+      #     bucket: hms-web
+      #     incremental: true
+      #     folder: ${{ env.DEPOLY_DIR }}
