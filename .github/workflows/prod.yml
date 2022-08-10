@@ -57,13 +57,13 @@ jobs:
 
       - name: Upload files to OSS
         uses: taixw2/deploy-aliyun-oss@v1
-          with:
-            region: oss-cn-shenzhen.aliyuncs.com
-            access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
-            access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
-            bucket: hms-web
-            secure: true
-            # deploy config
-            entry: dist/**/* # glob pattern
-            remote-dir: /release/$(git rev-parse --short "$GITHUB_SHA")
-            path-rewrite: ^dist/
+        with:
+          region: oss-cn-shenzhen.aliyuncs.com
+          access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
+          access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+          bucket: hms-web
+          secure: true
+          # deploy config
+          entry: dist/**/* # glob pattern
+          remote-dir: /release/$(git rev-parse --short "$GITHUB_SHA")
+          path-rewrite: ^dist/
