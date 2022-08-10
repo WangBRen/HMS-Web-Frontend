@@ -27,11 +27,10 @@ jobs:
         with:
           node-version: '13'
       - run: |
-          echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
+          echo "DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
           npm install
           npm run-script build
-          distdir=release/$(git rev-parse --short "$GITHUB_SHA")
-          export DEPOLY_DIR=$distdir
+          distdir=release/$(echo $GITHUB_SHA | cut -c 1-6)
           mkdir -p $distdir
           cp -r dist/** $distdir
 
@@ -69,5 +68,5 @@ jobs:
           accessKeyId: LTAI5tNw1iosfvrxbsxDf5zk
           accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
           bucket: hms-web
-          # deploy config
-          folder: ${{ env.GITHUB_SHA_SHORT }}
+          incremental: true
+          folder: ${{ env.DEPOLY_DIR }}
