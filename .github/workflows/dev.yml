@@ -17,7 +17,7 @@ jobs:
 
       - uses: Borales/actions-yarn@v3
         with:
-          cmd: yarn install && yarn build --mode development
+          cmd: install && build --mode development
       # - name: Build App
       #   run: yarn install && yarn build --mode development
 
