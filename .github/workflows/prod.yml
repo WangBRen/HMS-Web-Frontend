@@ -69,7 +69,7 @@ jobs:
           access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
       - run: |
           echo $DEPOLY_DIR
-          ossutil cp -rf $DEPOLY_DIR oss://hms-web/$DEPOLY_DIR
+          ossutil cp -rf dist oss://hms-web/$DEPOLY_DIR
       
       # - name: Upload files to OSS
       #   uses: fangbinwei/aliyun-oss-website-action@v1.3.0
