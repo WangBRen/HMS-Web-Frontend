@@ -7,19 +7,19 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  # build:
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '13'
-      - run: export HISTSYS_ENV=prod && npm install && npm run-script build
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: '13'
+  #     - run: export HISTSYS_ENV=prod && npm install && npm run-script build
 
   deploy:
-    needs: [build]
+    # needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
           npm run-script build
           distdir=release/$(git rev-parse --short "$GITHUB_SHA")
           mkdir -p $distdir
-          cp dist/** $distdir
+          cp -r dist/** $distdir
 
       - name: Setup Dir
         uses: appleboy/ssh-action@master
