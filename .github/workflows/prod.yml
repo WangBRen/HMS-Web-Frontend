@@ -29,7 +29,7 @@ jobs:
       - run: |
           npm install
           npm run-script build
-          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 0-6)
           mkdir -p $DEPOLY_DIR
           cp -r dist/** $DEPOLY_DIR
 
@@ -40,7 +40,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           password: ${{ secrets.PASSWORD }}
-#          KEY: ${{ secrets.SSHKEY2 }}
           script: |
             mkdir -p /hms_front/prod
             cd /hms_front
@@ -50,15 +49,13 @@ jobs:
 
       - name: Copy file via scp
         uses: appleboy/scp-action@master
-#        env:
-##          KEY: ${{ secrets.SSHKEY2 }}
         with:
           host: hms.yootane.com
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           password: ${{ secrets.PASSWORD }}
           source: "./dist/index.html"
-          target: "/hms_front/prod/dist/"
+          target: "/hms_front/prod"
 
       - name: Install aliyun-oss util
         uses: manyuanrong/setup-ossutil@v2.0
@@ -69,6 +66,5 @@ jobs:
       
       - name: Upload files to OSS
         run: |
-          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 0-6)
           ossutil cp -rf $DEPOLY_DIR oss://hms-web/$DEPOLY_DIR
-
