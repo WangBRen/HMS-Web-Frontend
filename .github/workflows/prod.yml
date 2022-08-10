@@ -26,7 +26,12 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '13'
-      - run: npm install && npm run-script build
+      - run: |
+          npm install
+          npm run-script build
+          distdir=release/$(git rev-parse --short "$GITHUB_SHA")
+          mkdir $distdir
+          cp dist/** $distdir
 
       - name: Setup Dir
         uses: appleboy/ssh-action@master
@@ -56,14 +61,11 @@ jobs:
           target: "/hms_front/prod/"
 
       - name: Upload files to OSS
-        uses: taixw2/deploy-aliyun-oss@1
+        uses: fangbinwei/aliyun-oss-website-action@v1.3.0
         with:
-          region: oss-cn-shenzhen.aliyuncs.com
-          access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
-          access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+          endpoint: oss-cn-shenzhen.aliyuncs.com
+          accessKeyId: LTAI5tNw1iosfvrxbsxDf5zk
+          accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
           bucket: hms-web
-          secure: true
           # deploy config
-          entry: dist/**/* # glob pattern
-          remote-dir: /release/$(git rev-parse --short "$GITHUB_SHA")
-          path-rewrite: ^dist/
+          folder: $distdir
