@@ -56,7 +56,7 @@ jobs:
           target: "/hms_front/prod/"
 
       - name: Upload files to OSS
-        uses: taixw2/deploy-aliyun-oss@v1
+        uses: taixw2/deploy-aliyun-oss@1
         with:
           region: oss-cn-shenzhen.aliyuncs.com
           access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
