@@ -68,7 +68,7 @@ jobs:
           access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
       
       - name: Upload files to OSS
-      - run: |
+        run: |
           DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)
           ossutil cp -rf $DEPOLY_DIR oss://hms-web/$DEPOLY_DIR
 
