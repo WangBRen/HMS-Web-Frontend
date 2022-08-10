@@ -67,7 +67,7 @@ jobs:
           endpoint: oss-cn-shenzhen.aliyuncs.com
           access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
           access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
-        - run: ossutil cp -rf $DEPOLY_DIR oss://hms-web/release/$DEPOLY_DIR
+      - run: ossutil cp -rf $DEPOLY_DIR oss://hms-web/release/$DEPOLY_DIR
       
       # - name: Upload files to OSS
       #   uses: fangbinwei/aliyun-oss-website-action@v1.3.0
