@@ -30,7 +30,7 @@ jobs:
           # echo "DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
           npm install
           npm run-script build
-          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)/
           mkdir -p $DEPOLY_DIR
           cp -r dist/** $DEPOLY_DIR
 
@@ -67,7 +67,7 @@ jobs:
           endpoint: oss-cn-shenzhen.aliyuncs.com
           access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
           access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
-      - run: ossutil cp -rf $DEPOLY_DIR oss://hms-web/release/$DEPOLY_DIR
+      - run: ossutil cp -r $DEPOLY_DIR oss://hms-web/$DEPOLY_DIR
       
       # - name: Upload files to OSS
       #   uses: fangbinwei/aliyun-oss-website-action@v1.3.0
