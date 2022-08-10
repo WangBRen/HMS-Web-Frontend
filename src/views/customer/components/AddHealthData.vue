@@ -5,7 +5,7 @@
       v-model="visible"
       title="健康信息"
       @ok="handleOk"
-      :width="1200">
+      :width="1100">
       <template v-if="selectReport" slot="footer">
         <a-button @click="closeModel">取消</a-button>
       </template>
@@ -254,19 +254,22 @@ export default {
       },
       // 新建报告
       AddHealthCom (cusmId) {
-        console.log('我是点击新建触发的时间,传入custmoerId', this.customerId)
-        this.selectReport = false
-        if (this.customerId) {
-          // 如果用户不同，则清空新建弹窗
-          if (this.customerId !== cusmId) {
-            this.customerId = cusmId
-            this.$nextTick(() => {
-              this.clearData() // 调清空方法
-            })
-          }
-        } else {
-          this.customerId = cusmId
-        }
+        console.log(cusmId, '我是点击新建触发的时间,传入custmoerId,原本id', this.customerId)
+        this.$nextTick(() => {
+          this.clearData() // 调清空方法
+        })
+        // this.selectReport = false
+        // if (this.customerId) {
+        //   // 如果用户不同，则清空新建弹窗
+        //   if (this.customerId !== cusmId) {
+        //     this.customerId = cusmId
+        //     this.$nextTick(() => {
+        //       this.clearData() // 调清空方法
+        //     })
+        //   }
+        // } else {
+        //   this.customerId = cusmId
+        // }
       },
       // 查看报告
       seeHealthCom (data) {
