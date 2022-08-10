@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      :title="'编辑['+userData.nickname+']的信息'"
+      :title="'编辑['+name+']的信息'"
       :visible="visible"
       @ok="handleOk"
       @cancel="handleCancel"
@@ -102,6 +102,7 @@ export default {
     },
     data () {
       return {
+        name: null,
         groupId: null,
         customerId: null,
         visible: false,
@@ -149,6 +150,7 @@ export default {
         this.groupId = groupId
         const arrData = data.member
         this.customerId = arrData.id
+        this.name = arrData.baseInfo.name
         this.userData.nickname = arrData.nickname
         this.userData.baseInfo.eduBG = arrData.baseInfo.eduBG
         this.userData.baseInfo.ethnicGroups = arrData.baseInfo.ethnicGroups

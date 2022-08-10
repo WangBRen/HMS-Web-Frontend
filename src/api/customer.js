@@ -8,7 +8,7 @@ const customerApi = {
     repeat: '/groups/duplicated/',
     addCustomer: value => { return `/groups/${value}/customers` },
     healthReports: customerId => { return `/health-reports/${customerId}/reports` },
-    editGroupCustomer: '/groups/' // 编辑用户信息
+    editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`// 编辑用户信息
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -80,7 +80,7 @@ export function gethealthReports (customerId, pages) {
 
 export function editGroupCustomer (groupId, customerId, params) {
     return request({
-        url: customerApi.editGroupCustomer + groupId + '/customers/' + customerId,
+        url: customerApi.editInfoGroupCustomer(groupId, customerId),
         method: 'put',
         data: params
     })
