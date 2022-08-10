@@ -8,21 +8,21 @@
           </a-select-option>
         </a-select>
       </a-col>
-      <a-col :span="6">
+      <a-col :span="6" :push="1">
         <a-select v-model="checkCity" style="" @change="handleCityChange">
           <a-select-option v-for="city in cityArr" :key="city.code">
             {{ city.name }}
           </a-select-option>
         </a-select>
       </a-col>
-      <a-col :span="6">
+      <a-col :span="6" :push="2">
         <a-select v-model="checkArea" style="" @change="handleAreaChange">
           <a-select-option v-for="area in areaArr" :key="area.code">
             {{ area.name }}
           </a-select-option>
         </a-select>
       </a-col>
-      <a-col :span="6">
+      <a-col :span="6" :push="3">
         <a-select v-model="checkStreet" style="" @change="handleStreetChange">
           <a-select-option v-for="street in streetArr" :key="street.code">
             {{ street.name }}
@@ -83,9 +83,10 @@ export default {
                 }
             })
             // 默认市
-            that.checkCity = that.cityArr[0].name
-            that.checkArea = ''
-            that.checkStreet = ''
+            // that.checkCity = that.cityArr[0].name
+            that.checkCity = null
+            that.checkArea = null
+            that.checkStreet = null
         },
         handleCityChange (value) {
             var that = this
@@ -107,8 +108,9 @@ export default {
               }
             })
             // console.log(this.checkCity)
-            that.checkArea = that.areaArr[0].name
-            that.checkStreet = ''
+            // that.checkArea = that.areaArr[0].name
+            that.checkArea = null
+            that.checkStreet = null
         },
         handleAreaChange (value) {
             var that = this
@@ -127,7 +129,8 @@ export default {
                 that.streetArr.push(obj)
               }
             })
-            this.checkStreet = this.streetArr[0].name
+            // this.checkStreet = this.streetArr[0].name
+            this.checkStreet = null
         },
         handleStreetChange (value) {
           // console.log(value)
@@ -143,7 +146,19 @@ export default {
           address.area = this.checkArea
           address.street = this.checkStreet
           this.$emit('changes', address)
+        },
+        setAddress (value) {
+          this.checkPro = value.province
+          this.checkCity = value.city
+          this.checkArea = value.area
+          this.checkStreet = value.street
         }
     }
 }
 </script>
+
+<style>
+.qq{
+  margin-right: 10px;
+}
+</style>
