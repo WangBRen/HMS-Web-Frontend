@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: '13'
       - run: |
+          echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
           npm install
           npm run-script build
           distdir=release/$(git rev-parse --short "$GITHUB_SHA")
@@ -62,8 +63,6 @@ jobs:
           target: "/hms_front/prod/"
 
       - name: Upload files to OSS
-        env:
-          DEPOLY_DIR: release/${{ git rev-parse --short "$GITHUB_SHA" }}
         uses: fangbinwei/aliyun-oss-website-action@v1.3.0
         with:
           endpoint: oss-cn-shenzhen.aliyuncs.com
@@ -71,4 +70,4 @@ jobs:
           accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
           bucket: hms-web
           # deploy config
-          folder: ${DEPOLY_DIR}
+          folder: $(release/${GITHUB_SHA_SHORT})
