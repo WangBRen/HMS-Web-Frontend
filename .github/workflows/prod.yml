@@ -58,7 +58,6 @@ jobs:
       - name: Upload files to OSS
         uses: taixw2/deploy-aliyun-oss@v1
           with:
-            # aliyun config
             region: oss-cn-shenzhen.aliyuncs.com
             access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
             access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
