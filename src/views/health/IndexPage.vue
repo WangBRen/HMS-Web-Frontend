@@ -4,7 +4,7 @@
     </div>
     <div style="padding-bottom: 8px">
       <a-button type="primary" @click="openCreateProjectModal" style="margin-right: 12px"> 新建指标项目 </a-button>
-      <a-button type="primary" @click="openModal('create')"> 新建{{ data[currentTabKey - 1]?.name }}指标 </a-button>
+      <a-button type="primary" @click="openModal('create')"> 新建{{ data[currentTabKey - 1].name }}指标 </a-button>
     </div>
     <a-tabs v-model="currentTabKey">
       <a-tab-pane v-for="tab in data" :key="tab.id" :tab="tab.name" >
