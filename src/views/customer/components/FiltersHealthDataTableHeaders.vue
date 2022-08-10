@@ -9,8 +9,17 @@
   >
     <a-card :bordered="false" class="search">
       <div>
-        <div v-for="(tag,index) in tags" :key="index" class="tags-layout">
-          <a-row>
+        <div class="tags-layout">
+          <span v-for="(item,index) in tags" :key="index" class="span2">
+            <a-checkable-tag
+              :key="index"
+              :checked="!item.hide"
+              @change="checked => handleChange(item, checked)"
+            >
+              {{ item.title }}
+            </a-checkable-tag>
+          </span>
+          <!-- <a-row>
             <a-col :span="4">
               <span class="span1">{{ tag.name }}:</span>
             </a-col>
@@ -19,14 +28,14 @@
                 <a-checkable-tag
                   v-model="checkArray[item.id]"
                   :key="i"
-                  :checked="selectedTags.indexOf(item) > -1"
+                  :checked="!tag.hide"
                   @change="checked => handleChange(item, checked)"
                 >
                   {{ item.name }}
                 </a-checkable-tag>
               </span>
             </a-col>
-          </a-row>
+          </a-row> -->
           <!-- <span :style="{ marginRight: 8}" class="span1">{{ tag.name }}:</span>
           <span v-for="(item,id) in tag.items" :key="id" class="span2">
             <a-checkable-tag
@@ -43,7 +52,8 @@
   </a-modal>
 </template>
 <script>
-import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
+
+// import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 
 /**
  * 测试用的
@@ -66,17 +76,23 @@ import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
 // }
 export default {
   props: {
-    saveTableTitle: {
-      type: Array,
-      default: function () {
-      return []
-     }
+    visible: {
+      type: Boolean,
+      default: false
     },
-    dataColums: {
+    columns: {
       type: Array,
       default: function () {
         return []
       }
+    },
+    ok: {
+      type: Function,
+      default: undefined
+    },
+    cancel: {
+      type: Function,
+      default: undefined
     }
   },
   data () {
@@ -93,40 +109,51 @@ export default {
     }
   },
   created () {
-    this.onSearch()
+  },
+  watch: {
+    columns: {
+      immediate: true, // 刷 新页面立即触发
+      deep: true, // 深度监听
+      handler (newCol, oldCol) {
+        this.tags = newCol
+        // console.log(this.tags)
+      }
+    }
   },
   methods: {
-    async onSearch () {
-      const res = await apiGethealthIndexes()
-      this.tags = res.data || []
-    },
+    // async onSearch () {
+    //   const res = await apiGethealthIndexes()
+    //   console.log(res)
+    //   // this.tags = res.data || []
+    // },
     /**
      * 伪双向绑定
      */
     open (columns) {
       this.filtersVisible = true
-      this.onSearch()
-      columns.forEach(element => {
-        this.checkArray[element.key] = true // 父组件展示的列名这边显示为True
-      })
-      const tags = JSON.parse(window.localStorage.getItem('columns'))
-      this.selectedTags = tags.map(i => {
-        return {
-          id: i.key
-        }
-      })
+      // this.onSearch()
+      // columns.forEach(element => {
+      //   this.checkArray[element.key] = true // 父组件展示的列名这边显示为True
+      // })
+      // const tags = JSON.parse(window.localStorage.getItem('columns'))
+      // this.selectedTags = tags.map(i => {
+      //   return {
+      //     id: i.key
+      //   }
+      // })
       // console.log('this.selectedTags', this.selectedTags)
     },
-    onSelectChange (selectedRowKeys, selectedRows) {
-      const selectTitles = (selectedRows || []).map(item =>
-          item.name
-        )
-        this.selectTitle = selectTitles
-    },
+    // onSelectChange (selectedRowKeys, selectedRows) {
+    //   const selectTitles = (selectedRows || []).map(item =>
+    //       item.name
+    //     )
+    //     this.selectTitle = selectTitles
+    // },
     handleOk () {
-      const selectTitle = (this.selectedTags || []).map(item => 'field_' + item.id + '.value')
-      window.localStorage.setItem('selectTitle', JSON.stringify(selectTitle) || [])
-      this.$emit('parseColumns')
+      // const selectTitle = (this.selectedTags || []).map(item => 'field_' + item.id + '.value')
+      // window.localStorage.setItem('selectTitle', JSON.stringify(selectTitle) || [])
+      // this.$emit('parseColumns')
+      this.$emit('ok', this.tags)
       this.filtersVisible = false
     },
     handleCancel () {
@@ -142,11 +169,16 @@ export default {
     //   return newArr
     // },
     handleChange (tag, checked) {
-      const { selectedTags } = this
-      const nextSelectedTags = checked
-        ? [...selectedTags, tag]
-        : selectedTags.filter(t => t.id !== tag.id)
-      this.selectedTags = nextSelectedTags
+      this.tags.forEach(t => {
+        if (t.key === tag.key) {
+          tag.hide = !checked
+        }
+      })
+      // const { selectedTags } = this
+      // const nextSelectedTags = checked
+      //   ? [...selectedTags, tag]
+      //   : selectedTags.filter(t => t.id !== tag.id)
+      // this.selectedTags = nextSelectedTags
     }
   }
 }

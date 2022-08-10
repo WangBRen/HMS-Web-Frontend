@@ -3,7 +3,7 @@
     <a-modal
       :ok-button-props="{ style: { display: 'none' } }"
       :maskClosable="false"
-      :width="1200"
+      :width="1600"
       :title="title"
       :visible="openHealthvisible"
       :confirm-loading="confirmLoading"
@@ -43,12 +43,10 @@
     </a-modal>
     <FiltersHealthDataTableHeadersVue
       ref="filterRef"
-      @selectHealthTitleCancel="selectHealthTitleCancel"
-      :filtersVisible="filtersVisible"
-      @handleCancel="handleCancel"
-      :saveTableTitle="saveTableTitle"
-      :dataColums="dataColums"
-      @parseColumns="parseColumns"
+      :visible="filtersVisible"
+      :columns="dataColums"
+      @ok="selectHealthTitleOk"
+      @close="closeFilterModal"
     />
     <AddHealthData ref="child" />
   </div>
@@ -57,7 +55,7 @@
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import AddHealthData from './AddHealthData.vue'
 import { getHealthReport as apiGetHealthReports } from '@/api/health'
-import { getHealthIndexes as apiGethealthIndexes } from '@/api/healthIndexes'
+import { getIndexColumns as apiGetIndexColumns } from '@/api/healthIndexes'
 
 const columns = []
 const data = []
@@ -111,7 +109,7 @@ export default {
   },
   methods: {
     // 过滤表头
-    parseColumns () {
+    handleFilterDone () {
       const userDefinedColumns = this.dataColums || []
       const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
       hideIndexes.filter(item => { return item.id })
@@ -119,24 +117,34 @@ export default {
       window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
     },
     async onSearch () {
-      const res = await apiGethealthIndexes()
-      const datas = (res.data || []).map(item => item.items).flat().map(col => {
-        const field = 'field_' + col.id
-        return {
-          title: col.name,
-          key: col.id,
-          dataIndex: field + '.value',
-          align: 'center',
-          scopedSlots: { customRender: field + '.value' }
-          // customRender: (text, record) => {
-          //   console.log(record[field])
-          //   // return text
-          //   // return `${text.value}(${text.result})`
-          // }
-        }
-      }).concat(this.actions)
-      this.dataColums = datas
-      this.columns = datas
+      const resColumus = await apiGetIndexColumns()
+      const totalColumns = (resColumus.data || []).map(column => {
+        return { ...column, align: 'center' }
+      })
+      this.columns = totalColumns.filter(column => !column.hide)
+      this.dataColums = (resColumus.data || []).map(column => {
+        return { ...column, align: 'center' }
+      })
+      // console.log('resColumus:', resColumus, 'dataColums:', this.dataColums)
+      // const res = await apiGethealthIndexes()
+      // const datas = (res.data || []).map(item => item.items).flat().map(col => {
+      //   const field = 'field_' + col.id
+      //   return {
+      //     title: col.name,
+      //     key: col.id,
+      //     dataIndex: field + '.value',
+      //     align: 'center',
+      //     scopedSlots: { customRender: field + '.value' }
+      //     // customRender: (text, record) => {
+      //     //   console.log(record[field])
+      //     //   // return text
+      //     //   // return `${text.value}(${text.result})`
+      //     // }
+      //   }
+      // }).concat(this.actions)
+      // console.log(datas)
+      // this.dataColums = datas
+      // this.columns = datas
       window.localStorage.setItem('columns', JSON.stringify(this.columns || []))
     },
     /**
@@ -148,17 +156,18 @@ export default {
         size: this.pagination.pageSize
       }
       const res = await apiGetHealthReports(customersId, pages)
-      const items = (res.data.content || [])
-        .map(record => record.projects).flat().map(project => {
-          return (project.items || []).map(item => {
-            return { ...item, projectId: project.id, projectName: project.indexProjectName }
-          }).reduce((acc, item) => {
-            const key = 'field_' + item.healthIndexItem.id
-            acc[key] = item
-            return acc
-          }, {})
-        })
-      this.data = items
+      // const items = (res.data.content || [])
+      //   .map(record => record.projects).flat().map(project => {
+      //     return (project.items || []).map(item => {
+      //       return { ...item, projectId: project.id, projectName: project.indexProjectName }
+      //     }).reduce((acc, item) => {
+      //       const key = 'field_' + item.healthIndexItem.id
+      //       acc[key] = item
+      //       return acc
+      //     }, {})
+      //   })
+       this.data = res.data.content || []
+      // console.log('------>', items)
     },
     /**
      * 点击了确定
@@ -180,9 +189,9 @@ export default {
     /**
      * 确定筛选
      */
-    selectHealthTitleOk () {
-      this.filtersVisible = false
-      this.$refs.filterRef.handleOk()
+    selectHealthTitleOk (selectColumns) {
+      this.columns = selectColumns.filter(column => !column.hide)
+      // console.log(selectColumns)
     },
     // 新建报告单
     handOpenHealthAdd () {
@@ -214,7 +223,7 @@ export default {
     /**
      *取消筛选
      */
-    selectHealthTitleCancel () {
+    closeFilterModal () {
       this.filtersVisible = false
     }
   }
