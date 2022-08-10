@@ -38,6 +38,7 @@ export default {
     'menu.account.logout': 'Logout',
     'menu.system': 'System',
     'menu.system.health-account-manage': 'Account Manage',
+    'menu.user-management': 'User Management',
     'menu.health': 'Health Management',
     'menu.health.indexes': 'Health Indexes'
 }

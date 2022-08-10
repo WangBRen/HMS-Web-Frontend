@@ -39,6 +39,7 @@ const assetsCDN = {
 
 // vue.config.js
 const vueConfig = {
+  publicPath: `//files.hms.yootane.com/release/${getGitHash()}`,
   configureWebpack: {
     // webpack plugins
     plugins: [

@@ -7,26 +7,32 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  # build:
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '13'
-      - run: export HISTSYS_ENV=prod && npm install && npm run-script build
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: '13'
+  #     - run: export HISTSYS_ENV=prod && npm install && npm run-script build
 
   deploy:
-    needs: [build]
+    # needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: '13'
-      - run: npm install && npm run-script build
+      - run: |
+          # echo "DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
+          npm install
+          npm run-script build
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-6)/
+          mkdir -p $DEPOLY_DIR
+          cp -r dist/** $DEPOLY_DIR
 
       - name: Setup Dir
         uses: appleboy/ssh-action@master
@@ -43,14 +49,34 @@ jobs:
             mkdir -p ./prod
             echo "🙊Remove Old Source Files Success"
 
-      - name: Copy file via scp
-        uses: appleboy/scp-action@master
-#        env:
-##          KEY: ${{ secrets.SSHKEY2 }}
+#       - name: Copy file via scp
+#         uses: appleboy/scp-action@master
+# #        env:
+# ##          KEY: ${{ secrets.SSHKEY2 }}
+#         with:
+#           host: hms.yootane.com
+#           username: ${{ secrets.USERNAME }}
+#           port: ${{ secrets.PORT }}
+#           password: ${{ secrets.PASSWORD }}
+#           source: "./dist"
+#           target: "/hms_front/prod/"
+
+      - name: Upload files to OSS
+        uses: manyuanrong/setup-ossutil@v2.0
         with:
-          host: hms.yootane.com
-          username: ${{ secrets.USERNAME }}
-          port: ${{ secrets.PORT }}
-          password: ${{ secrets.PASSWORD }}
-          source: "./dist"
-          target: "/hms_front/prod/"
+          endpoint: oss-cn-shenzhen.aliyuncs.com
+          access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
+          access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+      - run: |
+          echo $DEPOLY_DIR
+          ossutil cp -rf dist oss://hms-web/$DEPOLY_DIR
+      
+      # - name: Upload files to OSS
+      #   uses: fangbinwei/aliyun-oss-website-action@v1.3.0
+      #   with:
+      #     endpoint: oss-cn-shenzhen.aliyuncs.com
+      #     accessKeyId: LTAI5tNw1iosfvrxbsxDf5zk
+      #     accessKeySecret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+      #     bucket: hms-web
+      #     incremental: true
+      #     folder: ${{ env.DEPOLY_DIR }}

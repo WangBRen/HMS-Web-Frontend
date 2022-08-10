@@ -130,13 +130,13 @@ export const asyncRouterMap = [
         component: RouteView,
         redirect: '/health/indexes',
         name: 'health',
-        meta: { title: 'menu.health', icon: 'user', keepAlive: true, permission: ['health'] },
+        meta: { title: 'menu.health', icon: 'user', keepAlive: true, permission: ['health_index'] },
         children: [
           {
             path: '/health/indexes',
             name: 'indexes',
             component: () => import('@/views/health/IndexPage'),
-            meta: { title: 'menu.health.indexes', keepAlive: true, permission: ['health'] }
+            meta: { title: 'menu.health.indexes', keepAlive: true, permission: ['health_index'] }
           }
         ]
       },
@@ -144,7 +144,7 @@ export const asyncRouterMap = [
         path: '/system',
         name: 'systemPage',
         component: RouteView,
-        meta: { title: 'menu.system', icon: 'slack', permission: ['account'] },
+        meta: { title: 'menu.system', icon: 'slack', permission: ['user', 'role_permission'] },
         children: [
           {
             path: '/system/account-manage',
@@ -154,7 +154,7 @@ export const asyncRouterMap = [
               title: 'menu.system.health-account-manage',
               icon: 'tool',
               keepAlive: true,
-              permission: ['account']
+              permission: ['user']
             }
           },
           {
@@ -165,7 +165,7 @@ export const asyncRouterMap = [
               title: '权限管理',
               icon: 'tool',
               keepAlive: true,
-              permission: ['account']
+              permission: ['role_permission']
             }
           }
         ]

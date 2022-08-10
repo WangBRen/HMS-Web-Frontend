@@ -1,7 +1,6 @@
 <template>
   <div>
     <a-modal
-      :ok-button-props="{ style: { display: 'none' } }"
       :maskClosable="false"
       :width="1600"
       :title="title"
@@ -54,10 +53,9 @@
 <script>
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import AddHealthData from './AddHealthData.vue'
-import { getHealthReport as apiGetHealthReports } from '@/api/health'
+import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from '@/api/health'
 import { getIndexColumns as apiGetIndexColumns } from '@/api/healthIndexes'
 
-const columns = []
 const data = []
 
 export default {
@@ -77,21 +75,23 @@ export default {
   },
   data () {
     return {
+      custId: '',
+      reportId: '',
       data,
-      columns,
+      columns: [],
       dataColums: [],
       confirmLoading: false,
       filtersVisible: false,
       saveTableTitle: [],
       pagination: {
-        total: 0,
-        current: 1,
-        pageSize: 10, // 默认每页显示数量
-        showSizeChanger: true, // 显示可改变每页数量
-        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-        showTotal: total => `共 ${total} 条`, // 显示总数
-        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
-        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+      total: 0,
+      current: 1,
+      pageSize: 10, // 默认每页显示数量
+      showSizeChanger: true, // 显示可改变每页数量
+      pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+      showTotal: total => `共 ${total} 条`, // 显示总数
+      onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+      onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
       actions: {
         title: '操作',
@@ -112,6 +112,7 @@ export default {
     handleFilterDone () {
       const userDefinedColumns = this.dataColums || []
       const hideIndexes = JSON.parse(window.localStorage.getItem('selectTitle')) || []
+      console.log(hideIndexes)
       hideIndexes.filter(item => { return item.id })
       this.columns = userDefinedColumns.filter(column => hideIndexes.includes(column.dataIndex)).concat(this.actions)
       window.localStorage.setItem('columns', JSON.stringify(this.columns) || [])
@@ -151,6 +152,7 @@ export default {
      * 查找用户自己的指标
      */
     async findCustomerHealthReports (customersId) {
+      this.custId = customersId
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
@@ -173,6 +175,7 @@ export default {
      * 点击了确定
      */
     handleOk () {
+      console.log('1111')
     },
     // 点击了取消
     handleCancel () {
@@ -195,30 +198,44 @@ export default {
     },
     // 新建报告单
     handOpenHealthAdd () {
-      this.$refs.child.openModel()
       // 在这传custmoerId
-      const cusmId = 50
+      const cusmId = '2'
+      this.$refs.child.openModel()
       this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
     },
     // 查看报告单
     handleViewingTheTeportForm (data) {
-      const custmoerId = 50
-      apiGetHealthReports(custmoerId).then(res => {
+      const cusmId = '2' // 存customerId
+      const reportId = '5' // 存reportId
+      console.log('cusmId', this.custId)
+      console.log('报告单', data)
+      getHealthCustomerReport(cusmId, reportId).then(res => {
         if (res.status === 200) {
-          const report = res.data.content[4]
-          // console.log(res.data.content[3])
+          console.log('接口查', res.data)
           this.$refs.child.openModel()
-          this.$refs.child.seeHealthCom(report)
+          this.$refs.child.seeHealthCom(res.data)
         }
       })
-    },
+      // this.$refs.child.openModel()
+      // this.$refs.child.seeHealthCom(data)
+      // const custmoerId = 50
+      // apiGetHealthReports(custmoerId).then(res => {
+      //   if (res.status === 200) {
+      //     const report = res.data.content[4]
+      //     // console.log(res.data.content[3])
+      //     this.$refs.child.openModel()
+      //     this.$refs.child.seeHealthCom(report)
+      //   }
+      // })
       // console.log('data', data)
+    },
     /**
      * 子组件传过来的列名
      */
     selectHealthTitles (sTableTitle) {
-      this.saveTableTitle = sTableTitle
-      this.filterTitlie() // 调用过滤方法
+        console.log('子组件传过来的列名', sTableTitle)
+        this.saveTableTitle = sTableTitle
+        this.filterTitlie() // 调用过滤方法
     },
     /**
      *取消筛选

@@ -25,9 +25,9 @@
               <span v-if="range_item.type === 'simple'">
                 <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
                   <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
-                    <a-tag v-for="option in range_item.options" :key="option.id" style="margin-bottom: 2px;">
-                      {{ option.name }}
-                    </a-tag>
+                  <a-tag v-for="option in range_item.options" :key="option.id" style="margin-bottom: 2px;">
+                    {{ option.name }}
+                  </a-tag>
                 </div>
               </span>
               <span v-if="range_item.type === 'range'">
@@ -41,7 +41,7 @@
                     </span>
                     <span v-if="option.start && option.end"> 且 </span>
                     <span v-if="option.end">
-                      <
+                      &lt;
                       <span style="text-decoration: underline;"> {{ option.end }}</span>
                     </span>
                     {{ range_item.unit }}
@@ -58,30 +58,30 @@
               </span>
               <div v-if="range_item.type === 'range'">
                 <!-- <div style="font-size: 12px; padding-bottom: 2px; white-space: nowrap;"> -->
-                  <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px; margin-bottom: 6px; white-space: nowrap;">
-                    <a-divider style="font-size: 12px; color: #999; margin: 4px 0; font-weight: 700;" orientation="left">
-                      <a-tag color="#2db7f5" style="font-weight: 700"> {{ range_item.name }} </a-tag>
-                    </a-divider>
-                    <span v-if="range_item.products">
-                      <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
-                        <span v-if="prod.conditionFilters?.length">
-                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
-                            {{ filter.option?.name }}
-                          </a-tag>:
-                        </span>
-                        <span v-if="prod.start">
-                          <span style="text-decoration: underline;"> {{ prod.start }}</span>
-                          ≤
-                        </span>
-                        <span v-if="prod.start && prod.end"> 且 </span>
-                        <span v-if="prod.end">
-                          <
-                          <span style="text-decoration: underline;"> {{ prod.end }}</span>
-                        </span>
-                        {{ prod.unit }}
-                      </div>
-                    </span>
-                  </div>
+                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px; margin-bottom: 6px; white-space: nowrap;">
+                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0; font-weight: 700;" orientation="left">
+                    <a-tag color="#2db7f5" style="font-weight: 700"> {{ range_item.name }} </a-tag>
+                  </a-divider>
+                  <span v-if="range_item.products">
+                    <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
+                      <span v-if="prod.conditionFilters?.length">
+                        <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
+                          {{ filter.option?.name }}
+                        </a-tag>:
+                      </span>
+                      <span v-if="prod.start">
+                        <span style="text-decoration: underline;"> {{ prod.start }}</span>
+                        ≤
+                      </span>
+                      <span v-if="prod.start && prod.end"> 且 </span>
+                      <span v-if="prod.end">
+                        &lt;
+                        <span style="text-decoration: underline;"> {{ prod.end }}</span>
+                      </span>
+                      {{ prod.unit }}
+                    </div>
+                  </span>
+                </div>
                 <!-- </div> -->
               </div>
             </span>
@@ -101,7 +101,7 @@
       v-model="visible"
       @ok="handleOkDone"
       ok-text="确定"
-      >
+    >
       <a-form :form="form" v-model="current">
         <a-row :gutter="48">
           <a-col :span="12">
@@ -203,7 +203,7 @@
                         </a-col>
                         <a-col :span="17" style="display: flex; align-items: center;">
                           <a-input type="text" v-model="option.start" placeholder="数值下界" style="width: 40%" :addonAfter="condition.unit"/>
-                          <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 条件值 < </div>
+                          <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 条件值 &lt; </div>
                           <a-input type="text" v-model="option.end" placeholder="数值上界" style="width: 40%" :addonAfter="condition.unit"/>
                         </a-col>
                         <a-col :span="1">
@@ -235,7 +235,7 @@
                       </div>
                     </a-col>
                     <a-col :span="21" v-if="condition.type == 'text'" style="padding-left: 4px;">
-                      <span style="color: #999; font-size: 12px;">< 录入指标数据时手动填写 ></span>
+                      <span style="color: #999; font-size: 12px;">&lt; 录入指标数据时手动填写 &gt;</span>
                     </a-col>
                   </a-row>
                 </a-col>
@@ -297,7 +297,7 @@
                                     style="width: 40%"
                                     :addonAfter="current.unit"
                                   />
-                                  <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 < </div>
+                                  <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
                                   <a-input
                                     type="text"
                                     :value="prod.end"
@@ -341,7 +341,7 @@
                       </div>
                     </a-col>
                     <a-col :span="24" v-if="current.result.type == 'text'" style="padding-left: 12px;">
-                      <span style="color: #999; font-size: 12px;">< 录入指标数据时手动填写 ></span>
+                      <span style="color: #999; font-size: 12px;">&lt; 录入指标数据时手动填写 &gt;</span>
                     </a-col>
                   </a-row>
                 </a-col>
@@ -365,16 +365,16 @@
       v-model="projectVisible"
       @ok="handleOkProjectCreateDone"
       ok-text="确认创建"
-      >
-        <a-form v-model="currentProject">
-          <a-row :gutter="48">
-            <a-col :span="18" :offset="3">
-              <a-form-item label="项目名称">
-                <a-input v-model="currentProject.name" type="text" placeholder="如：血常规" />
-              </a-form-item>
-            </a-col>
-          </a-row>
-        </a-form>
+    >
+      <a-form v-model="currentProject">
+        <a-row :gutter="48">
+          <a-col :span="18" :offset="3">
+            <a-form-item label="项目名称">
+              <a-input v-model="currentProject.name" type="text" placeholder="如：血常规" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </a-form>
     </a-modal>
   </a-card>
 </template>
@@ -906,6 +906,7 @@ export default {
       const resp = await apiCreateProject(projectName)
       if (resp.status === 201) {
         this.$message.success(resp.message)
+        this.reloadData()
         this.closeCreateProjectModal()
       } else {
         this.$message.warning(resp.message)
