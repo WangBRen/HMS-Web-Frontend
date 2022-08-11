@@ -36,8 +36,24 @@ Vue.component('page-header-wrapper', PageHeaderWrapper)
 
 window.umi_plugin_ant_themeVar = themePluginConfig.theme
 
+// init reload function
+Vue.prototype.$reload = () => { console.warn('Please Set Reload Function On This Page [0]') }
+// reset reload function
 Vue.prototype.$setPageDataLoader = (func) => {
-  Vue.prototype.$reload = func
+  const urlWhenSetted = window.location.href || 'unknown'
+  Vue.prototype.$reload = () => {
+    const url = window.location.href || 'unknown'
+    if (url === urlWhenSetted) {
+      if (func) {
+        func()
+        Vue.prototype.$message.success('刷新成功')
+      } else {
+        console.warn('Warning: Unset Reload Function On Current Page [1]')
+      }
+    } else {
+      console.warn('Warning: Unset Reload Function On Current Page [2]')
+    }
+  }
 }
 
 new Vue({
