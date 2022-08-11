@@ -9,121 +9,175 @@
       <template v-if="selectReport" slot="footer">
         <a-button @click="closeModel">取消</a-button>
       </template>
-      <a-row>
-        <a-col :span="5" class="modalLeft">
-          <a-row>
-            <a-col>
-              <!-- 使用fixed -->
-              <div class="modalLeftNav">
-                <div class="leftBody" v-for="item in objData.data" :key="item.id">
-                  <a @click="onSc(item.name)" class="leftTitle">{{ item.name }}</a>
-                </div>
-                <div>
-                  <a @click="onSc('用户诊断信息')" key="用户诊断信息" class="leftTitle">用户诊断信息</a>
-                </div>
-                <div>
-                  <a @click="onSc('用户症状信息')" key="用户症状信息" class="leftTitle">用户症状信息</a>
-                </div>
-                <!-- 回到顶部 -->
-                <div>
-                  <a-icon :style="{fontSize: '25px'}" @click="onSc(objData.data[0].name)" type="up-square" theme="filled" />
-                </div>
-                <!-- 清空 -->
-                <div v-if="!selectReport">
-                  <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
-                </div>
-              </div>
-            </a-col>
-          </a-row>
+      <a-row :gutter="20">
+        <a-col :span="4" class="modalLeft">
+          <div class="modal-left-panel">
+            <div class="left-title-wrapper" v-for="item in objData.data" :key="item.id">
+              <a @click="onSc(item.name)">{{ item.name }}</a>
+            </div>
+            <div class="left-title-wrapper">
+              <a @click="onSc('用户诊断信息')" key="用户诊断信息">用户诊断信息</a>
+            </div>
+            <div class="left-title-wrapper">
+              <a @click="onSc('用户症状信息')" key="用户症状信息">用户症状信息</a>
+            </div>
+            <!-- 回到顶部 -->
+            <div class="left-title-wrapper">
+              <a-icon :style="{fontSize: '25px'}" @click="onSc(objData.data[0].name)" type="up-square" theme="filled" />
+            </div>
+            <!-- 清空 -->
+            <div v-if="!selectReport" class="left-title-wrapper">
+              <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
+            </div>
+          </div>
         </a-col>
-        <a-col :span="19" ref="modalRight" class="modalRight">
+        <a-col :span="19" :offset="1" ref="modalRight" class="modal-right-panel">
           <a-form-model v-model="objData">
             <div v-for="item in objData.data" :key="item.id">
               <!-- 大标题 -->
               <a-row>
-                <a-col>
-                  <a :id="item.name" class="rightTitle">{{ item.name }}</a>
+                <a-col class="project-header">
+                  <a :id="item.name" class="project-title">{{ item.name }}</a>
                 </a-col>
               </a-row>
               <!-- 大标题下的小标题加内容 -->
-              <a-row>
-                <a-col v-if="!selectReport" class="rightBody" :span="12" v-for="items in item.items" :key="items.id">
-                  <a-row>
-                    <a-col span="24">
-                      <a-form-model-item>
-                        <!-- 新建 -->
-                        <div v-if="!selectReport">
-                          <a-input v-model="items.value" :addonBefore="items.name" :addonAfter="items.unit" style="width: 200px"></a-input>
-                          诊断结果:
-                          <a-select v-model="items.diaResult" style="width: 150px">
-                            <a-select-option v-for="(ranges,index) in items.result" :key="index" :value="ranges.name">
-                              {{ ranges.name }}
-                            </a-select-option>
-                          </a-select>
+              <a-row style="padding-top: 24px; padding-bottom: 24px;">
+                <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
+                  <a-form-model-item>
+                    <a-row class="index-item" style="#border: 1px #eee solid;">
+                      <a-col :span="3">
+                        <div class="index-item-title-wrapper">
+                          <div class="index-item-title-sider"/>
+                          <span class="index-item-title"> {{ items.name }} </span>
                         </div>
+                      </a-col>
+                      <!-- 新建 -->
+                      <a-col :span="21">
+                        <a-row v-if="!selectReport" justify="center">
+                          <a-col :span="14">
+                            <a-input v-model="items.value" :addonAfter="items.unit" style="width: 80%;"></a-input>
+                          </a-col>
+                          <a-col :span="10">
+                            <a-col :span="8">
+                              <span>诊断结果:</span>
+                            </a-col>
+                            <a-col :span="14">
+                              <a-select v-model="items.diaResult" style="width: 100%;">
+                                <a-select-option v-for="(ranges,index) in items.result" :key="index" :value="ranges.name">
+                                  {{ ranges.name }}
+                                </a-select-option>
+                              </a-select>
+                            </a-col>
+                          </a-col>
+                        </a-row>
                         <!-- 查看 -->
-                        <a-collapse v-if="!selectReport" style="width: 90%;">
-                          <a-collapse-panel header="点击展开">
-                            <div>
-                              <a class="exTitle">数据拓展:</a>
-                              <a v-if="ranges.type === 'range'" style="pointer-events:none;" v-for="(ranges,index) in items.result" :key="index">
-                                {{ ranges | getRange }}
-                                <!-- {{ ranges }} -->
-                              </a>
-                            </div>
-                            <div>
-                              <a class="exTitle">检查方式:</a>
-                              {{ items.testMethod }}
-                              <a class="exTitle">频率:</a>
-                              {{ items.testRate }}
-                              <a class="exTitle">检测环境:</a>
-                              {{ items.testEnvironment }}
-                            </div>
-                            <div>备注:{{ items.remark || '无' }}</div>
-                          </a-collapse-panel>
-                        </a-collapse>
-                      </a-form-model-item>
-                    </a-col>
-                  </a-row>
-                </a-col>
-                <a-col v-if="selectReport" :span="24" class="rightBody" v-for="items in item.items" :key="items.id">
-                  {{ items.name }}: {{ items.value }} {{ items.unit }} 诊断结果: {{ items.diaResult }}
+                        <a-row v-if="!selectReport">
+                          <a-collapse style="border: none;">
+                            <a-collapse-panel header="点击展开" style="background: #f7f7f7;border-radius: 4px;margin-bottom: 24px;margin-top:2px;border: none;overflow: hidden">
+                              <div style="padding-top:12px; display: flex;">
+                                <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
+                                <div style="color: #00a0e9">
+                                  <span v-if="ranges.type === 'range'" style="pointer-events:none;display:block;" v-for="(ranges,index) in items.result" :key="index">
+                                    {{ ranges | getRange }}
+                                    <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
+                                  </span>
+                                </div>
+                              </div>
+                              <div>
+                                <a class="exTitle">检查方式:</a>
+                                {{ items.testMethod }}
+                              </div>
+                              <div>
+                                <a class="exTitle">建议频率:</a>
+                                {{ items.testRate }}
+                              </div>
+                              <div>
+                                <a class="exTitle">检测环境:</a>
+                                {{ items.testEnvironment }}
+                              </div>
+                              <div>
+                                <span class="exTitle">备注:</span>
+                                {{ items.remark || '无' }}
+                              </div>
+                            </a-collapse-panel>
+                          </a-collapse>
+                        </a-row>
+                      </a-col>
+                      <a-col :span="21" v-if="selectReport">
+                        <!-- <span v-if="selectReport" :span="24" class="rightBody" v-for="items in item.items" :key="items.id"> -->
+                        <div>
+                          <a class="exTitle">检测值:</a>
+                          {{ items.value }} {{ items.unit }}
+                        </div>
+                        <div>
+                          <a class="exTitle">检测结果:</a>
+                          {{ items.diaResult }}
+                        </div>
+                        <!-- </span> -->
+                      </a-col>
+                    </a-row>
+                  </a-form-model-item>
                 </a-col>
               </a-row>
               <!-- 选择项目诊断时间 -->
-              <a-row>
-                <a-col :span="4">
+              <a-row style="margin-bottom: 12px;">
+                <a-col :span="8" :offset="16">
                   <!-- 新建 -->
-                  <a-date-picker
-                    v-if="!selectReport"
-                    v-model="item.testAt"
-                    type="date"
-                    placeholder="请选择诊断时间"
-                    style="width: 100%;"
-                  />
-                  <div v-if="selectReport">{{ item.testAt | getMoment }}</div>
+                  <span>
+                    检测时间:
+                  </span>
+                  <span style="float: right;">
+                    <a-date-picker
+                      v-if="!selectReport"
+                      v-model="item.testAt"
+                      type="date"
+                      placeholder="请选择检测时间"
+                    />
+                  </span>
+                  <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ item.testAt | getMoment }}</div>
                 </a-col>
               </a-row>
             </div>
             <!-- 用户诊断信息 -->
             <a-row>
+              <a-col class="project-header">
+                <a id="用户诊断信息" class="project-title">用户诊断信息</a>
+              </a-col>
+            </a-row>
+            <a-row style="padding-top: 12px;">
               <a-col>
                 <a-form-model-item>
-                  <a id="用户诊断信息" class="rightTitle">用户诊断信息</a>
                   <!-- 新建 -->
-                  <CheckDia v-if="!selectReport" ref="childDia" v-model="objData.diagnosisData" @changes="getDia($event)" />
-                  <!-- 查看 -->
-                  <div v-if="selectReport">{{ objData.diagnosisData }}</div>
                   <a-row>
-                    <a-col :span="4">
-                      <a-date-picker
-                        v-if="!selectReport"
-                        v-model="objData.diagnosisTime"
-                        type="date"
-                        placeholder="请选择诊断时间"
-                        style="width: 100%;"
-                      />
-                      <div v-if="selectReport">{{ objData.diagnosisTime | getMoment }}</div>
+                    <a-col :span="3">
+                      <div class="index-item-title-wrapper">
+                        <div class="index-item-title-sider"/>
+                        <span class="index-item-title"> 诊断结果 </span>
+                      </div>
+                    </a-col>
+                    <a-col :span="21">
+                      <div v-if="!selectReport" style="padding-top: 0px;">
+                        <CheckDia ref="childDia" v-model="objData.diagnosisData" @changes="getDia($event)" />
+                      </div>
+                      <!-- 查看 -->
+                      <div v-if="selectReport">{{ objData.diagnosisData }}</div>
+                    </a-col>
+                  </a-row>
+                  <a-row style="margin-bottom: 12px;">
+                    <a-col :span="8" :offset="16">
+                      <!-- 新建 -->
+                      <span>
+                        诊断时间:
+                      </span>
+                      <span style="float: right;">
+                        <a-date-picker
+                          v-if="!selectReport"
+                          v-model="objData.diagnosisTime"
+                          type="date"
+                          placeholder="请选择诊断时间"
+                        />
+                      </span>
+                      <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ objData.diagnosisTime | getMoment }}</div>
                     </a-col>
                   </a-row>
                 </a-form-model-item>
@@ -131,25 +185,40 @@
             </a-row>
             <!-- 用户症状信息 -->
             <a-row>
+              <a-col class="project-header">
+                <a id="用户症状信息" class="project-title">用户症状信息</a>
+              </a-col>
+            </a-row>
+            <a-row style="padding-top: 12px;">
               <a-col>
                 <a-form-model-item>
                   <a-row>
-                    <a-col :span="12">
-                      <a id="用户症状信息" class="rightTitle">用户症状信息</a>
+                    <a-col :span="3">
+                      <div class="index-item-title-wrapper">
+                        <div class="index-item-title-sider"/>
+                        <span class="index-item-title"> 症状 </span>
+                      </div>
+                    </a-col>
+                    <a-col :span="21">
                       <a-textarea v-if="!selectReport" v-model="objData.symptomData" placeholder="填写用户症状信息" :rows="4" />
                       <div v-if="selectReport">{{ objData.symptomData }}</div>
                     </a-col>
                   </a-row>
-                  <a-row>
-                    <a-col :span="4">
-                      <a-date-picker
-                        v-if="!selectReport"
-                        type="date"
-                        v-model="objData.symptomTime"
-                        placeholder="请选择诊断时间"
-                        style="width: 100%;"
-                      />
-                      <div v-if="selectReport">{{ objData.symptomTime | getMoment }}</div>
+                  <a-row style="margin-bottom: 12px;">
+                    <a-col :span="8" :offset="16">
+                      <!-- 新建 -->
+                      <span>
+                        检测时间:
+                      </span>
+                      <span style="float: right;">
+                        <a-date-picker
+                          v-if="!selectReport"
+                          v-model="objData.symptomTime"
+                          type="date"
+                          placeholder="请选择检测时间"
+                        />
+                      </span>
+                      <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ objData.symptomTime | getMoment }}</div>
                     </a-col>
                   </a-row>
                 </a-form-model-item>
@@ -176,13 +245,7 @@ export default {
         // 范围或数值
         if (value.type === 'range') {
           // 范围
-          if (value.end != null && value.start === null) {
-            return value.name + '<' + value.end
-          } else if (value.end != null && value.start != null) {
-            return value.start + '≤' + value.name + '<' + value.end
-          } else if (value.end === null && value.start != null) {
-            return value.name + '≥' + value.start
-          }
+          return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 < ${value.end || 'INF'}`
         } else if (value.type === 'simple') {
           // 数值
           return value.value
@@ -389,49 +452,64 @@ export default {
 <style lang="less" scoped>
 /* .modalLeft{
 } */
-.modalLeftNav{
+.modal-left-panel{
   position: fixed;
-  height: 500px;
+  height: 400px;
   overflow: auto;
-  border-radius: 20px;
-  border-style: solid;
-  border-width: 1px;
-  border-color: black;
-  text-align: center;
-  width: 220px;
+  border-radius: 6px;
+  border: 1px #eee solid;
+  text-align: left;
+  width: 186px;
+  padding: 24px 12px;
 }
-// .leftBody{
-//   border-style: solid;
-//   border-width: 1px;
-//   border-color: black;
-// }
-.leftTitle{
-  font-size: 20px;
-  color: black;
+.left-title-wrapper{
+  font-size: 18px;
+  padding-bottom: 12px;
+  padding: 0 12px 12px 12px;
 }
-.modalRight{
+.left-title-wrapper>a {
+  color: #333;
+  font-weight: 600;
+}
+.left-title-wrapper>a:hover {
+  color: #00a0e9;
+}
+.modal-right-panel{
   /* height: 500px; */
   /* overflow: auto; */
-  border-radius: 20px;
+  border-radius: 6px;
   padding: 10px;
   border-style: solid;
   border-width: 1px;
-  border-color: black;
+  border-color: #eee;
+  padding: 24px 12px;
 }
-.rightTitle{
-  font-size: 20px;
-  pointer-events:none;
-  color: black;
+.project-header {
+  background: linear-gradient(to bottom right, #00a0e9, #00abb9);
+  padding: 0 14px;
+  color: white;
+  border-radius: 6px;
+  border-color: none;
+}
+.project-title{
+  font-size: 18px;
+  pointer-events: none;
+  height: 48px;
+  line-height: 48px;
+  color: white;
+  font-weight: 700;
 }
 .rightBody{
   /* text-align: center; */
   /* height: 240px; */
-  padding: 5px;
+  padding: 0 4px;
 }
 .exTitle{
   /* font-size: 18px; */
   color: #999;
   pointer-events:none;
+  min-width: 64px;
+  display: inline-block;
 }
 /deep/.ant-collapse > .ant-collapse-item > .ant-collapse-header{
   padding: 5px 30px;
@@ -441,5 +519,20 @@ export default {
 }
 /deep/.ant-form-item{
   margin-bottom: 0px
+}
+.index-item-title-wrapper {
+  display: flex;
+  height: 34px;
+  align-items: center;
+}
+.index-item-title {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 12px;
+}
+.index-item-title-sider {
+  width: 8px;
+  height: 24px;
+  background: #00a0e9;
 }
 </style>
