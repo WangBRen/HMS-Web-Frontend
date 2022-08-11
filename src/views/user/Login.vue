@@ -223,10 +223,10 @@ export default {
           { required: true, message: '请选择证件类型', trigger: 'blur' }
         ],
         idNo: [
-          //  { required: true, message: '请输入证件号码', trigger: 'blur' },
+           { required: true, message: '请输入证件号码', trigger: 'blur' },
           //  { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
           //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
-           { validator: checkIdno, trigger: 'change' }
+           { validator: checkIdno, trigger: 'blur' }
         ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
@@ -352,35 +352,37 @@ export default {
     // 点击确定
     handleOk (e) {
       e.preventDefault()
-      if (this.formdata.newPassword === this.formdata.oldPassword && this.formdata.newPassword !== '' && this.formdata.oldPassword !== '') {
-        // console.log('密码相同，可修改')
+      this.$refs.ruleForm.validate(valid => {
         // 满足校验规则提交
-        this.$refs.ruleForm.validate(valid => {
         if (valid) {
-          // 修改信息成功后
-          UserMsg(this.formdata).then(res => {
+          // 判断密码是否相同且不为空
+          if (this.formdata.newPassword === this.formdata.oldPassword && this.formdata.newPassword !== '' && this.formdata.oldPassword !== '') {
+            // console.log('密码相同，可修改')
+             UserMsg(this.formdata).then(res => {
               // console.log('成功'.res)
-              const userinfo = this.formdata
-              this.$delete(userinfo, 'oldPassword')
               // console.log('提交的信息', userinfo)
               if (res.status === 200) {
-                this.$message.info('修改成功，请重新登陆')
-                alert('修改成功，请重新登陆')
-                localStorage.removeItem('Authorization')
-                window.location.reload()// 刷新页面
-                this.visible = false
-              } else {
-                this.$message.error(res.message || '修改失败')
-              }
-          })
+                  console.log('修改成功'.res)
+                  const userinfo = this.formdata
+                  this.$delete(userinfo, 'oldPassword')
+                  this.$message.info('修改成功，请重新登陆')
+                  alert('修改成功，请重新登陆')
+                  localStorage.removeItem('Authorization')
+                  window.location.reload()// 刷新页面
+                  this.visible = false
+                } else {
+                  this.$message.error(res.message || '修改失败')
+                }
+             })
+          } else {
+            this.$message.error('两次输入的密码不同,请修改')
+          }
         } else {
+          // 不满足规则
           this.$message.error('请按要求填写信息')
           return false
         }
       })
-      } else {
-        this.$message.error('两次输入的密码不同,请修改')
-      }
     },
     // 取消
     handleOff () {
