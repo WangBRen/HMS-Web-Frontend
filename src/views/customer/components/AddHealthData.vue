@@ -120,7 +120,7 @@
                 </a-col>
               </a-row>
               <!-- 选择项目诊断时间 -->
-              <a-row style="margin-bottom: 12px;">
+              <a-row style="margin-bottom: 36px;">
                 <a-col :span="8" :offset="16">
                   <!-- 新建 -->
                   <span>
@@ -144,7 +144,7 @@
                 <a id="用户诊断信息" class="project-title">用户诊断信息</a>
               </a-col>
             </a-row>
-            <a-row style="padding-top: 12px;">
+            <a-row style="padding-top: 12px; padding-bottom: 12px;">
               <a-col>
                 <a-form-model-item>
                   <!-- 新建 -->
@@ -189,7 +189,7 @@
                 <a id="用户症状信息" class="project-title">用户症状信息</a>
               </a-col>
             </a-row>
-            <a-row style="padding-top: 12px;">
+            <a-row style="padding-top: 12px; padding-bottom: 12px;">
               <a-col>
                 <a-form-model-item>
                   <a-row>
@@ -488,7 +488,7 @@ export default {
   background: linear-gradient(to bottom right, #00a0e9, #00abb9);
   padding: 0 14px;
   color: white;
-  border-radius: 6px;
+  border-radius: 2px;
   border-color: none;
 }
 .project-title{
