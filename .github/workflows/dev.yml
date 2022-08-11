@@ -19,12 +19,6 @@ jobs:
         run: |
           npm install && npm run build:development
 
-      # - uses: Borales/actions-yarn@v3
-      #   with:
-      #     cmd: install && build --mode development
-      # - name: Build App
-      #   run: yarn install && yarn build --mode development
-
       - name: Setup Dir
         uses: appleboy/ssh-action@master
         with:
