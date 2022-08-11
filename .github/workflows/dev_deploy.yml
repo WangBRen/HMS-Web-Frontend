@@ -1,4 +1,4 @@
-name: HistSys Frontend Development CI
+name: Development Deploy CI
 
 on:
   push:
