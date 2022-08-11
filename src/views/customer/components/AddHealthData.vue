@@ -5,36 +5,32 @@
       v-model="visible"
       title="健康信息"
       @ok="handleOk"
-      :width="1100">
+      :width="1150">
       <template v-if="selectReport" slot="footer">
         <a-button @click="closeModel">取消</a-button>
       </template>
       <a-row>
         <a-col :span="5" class="modalLeft">
-          <a-row>
-            <a-col>
-              <!-- 使用fixed -->
-              <div class="modalLeftNav">
-                <div class="leftBody" v-for="item in objData.data" :key="item.id">
-                  <a @click="onSc(item.name)" class="leftTitle">{{ item.name }}</a>
-                </div>
-                <div>
-                  <a @click="onSc('用户诊断信息')" key="用户诊断信息" class="leftTitle">用户诊断信息</a>
-                </div>
-                <div>
-                  <a @click="onSc('用户症状信息')" key="用户症状信息" class="leftTitle">用户症状信息</a>
-                </div>
-                <!-- 回到顶部 -->
-                <div>
-                  <a-icon :style="{fontSize: '25px'}" @click="onSc(objData.data[0].name)" type="up-square" theme="filled" />
-                </div>
-                <!-- 清空 -->
-                <div v-if="!selectReport">
-                  <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
-                </div>
-              </div>
-            </a-col>
-          </a-row>
+          <!-- 使用fixed -->
+          <div class="modalLeftNav">
+            <div class="leftBody" v-for="item in objData.data" :key="item.id">
+              <a @click="onSc(item.name)" class="leftTitle">{{ item.name }}</a>
+            </div>
+            <div>
+              <a @click="onSc('用户诊断信息')" key="用户诊断信息" class="leftTitle">用户诊断信息</a>
+            </div>
+            <div>
+              <a @click="onSc('用户症状信息')" key="用户症状信息" class="leftTitle">用户症状信息</a>
+            </div>
+            <!-- 回到顶部 -->
+            <div>
+              <a-icon :style="{fontSize: '25px'}" @click="onSc(objData.data[0].name)" type="up-square" theme="filled" />
+            </div>
+            <!-- 清空 -->
+            <div v-if="!selectReport">
+              <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
+            </div>
+          </div>
         </a-col>
         <a-col :span="19" ref="modalRight" class="modalRight">
           <a-form-model v-model="objData">
@@ -55,7 +51,7 @@
                         <div v-if="!selectReport">
                           <a-input v-model="items.value" :addonBefore="items.name" :addonAfter="items.unit" style="width: 200px"></a-input>
                           诊断结果:
-                          <a-select v-model="items.diaResult" style="width: 150px">
+                          <a-select v-model="items.diaResult" style="width: 130px">
                             <a-select-option v-for="(ranges,index) in items.result" :key="index" :value="ranges.name">
                               {{ ranges.name }}
                             </a-select-option>
@@ -254,11 +250,12 @@ export default {
       },
       // 新建报告
       AddHealthCom (cusmId) {
-        console.log(cusmId, '我是点击新建触发的时间,传入custmoerId,原本id', this.customerId)
+        this.customerId = cusmId
+        console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
+        this.selectReport = false
         this.$nextTick(() => {
           this.clearData() // 调清空方法
         })
-        // this.selectReport = false
         // if (this.customerId) {
         //   // 如果用户不同，则清空新建弹窗
         //   if (this.customerId !== cusmId) {
@@ -271,33 +268,73 @@ export default {
         //   this.customerId = cusmId
         // }
       },
+      filterHealthData (data) {
+        if (data) {
+          return data
+        } else {
+          return null
+        }
+      },
       // 查看报告
       seeHealthCom (data) {
-        console.log('我是点击查看触发的时间')
+        const that = this
+        // console.log('我是点击查看触发,传入的数据', data)
         this.selectReport = true
-        // console.log('点击查看报告单数据', data.projects)
-        // console.log('查看objdata', this.objData.data)
-        this.objData.symptomData = data.symptom
-        this.objData.symptomTime = data.symptomAt // 有点小问题，会报警告，问题为日期格式初始化
-        this.objData.diagnosisTime = data.diseaseAt
-        this.objData.diagnosisData = data.disease.title
-        this.objData.data.forEach(function (val1) {
-          data.projects.forEach(function (val2) {
-            if (val1.name === val2.indexProjectName) {
-              val1.items.forEach(function (val3) {
-                val2.items.forEach(function (val4) {
-                  if (val3.id === val4.healthIndexItem.id) {
-                    val3.value = val4.value
-                    val3.diaResult = val4.result
-                  }
-                })
-              })
-              console.log(val1, '???', val2)
-              if (val2.testAt) {
-                val1.testAt = val2.testAt
-              }
-            }
+        console.log('查看objdataval1', this.objData.data)
+        this.objData.data.forEach(function (one) {
+          one.testAt = null
+          one.items.forEach(function (two) {
+            two.value = null
+            two.diaResult = null
           })
+        })
+        // console.log('点击查看报告单数据val2', data.projects)
+        this.objData.symptomData = this.filterHealthData(data.symptom)
+        this.objData.symptomTime = this.filterHealthData(data.symptomAt) // 有点小问题，会报警告，问题为日期格式初始化
+        this.objData.diagnosisTime = this.filterHealthData(data.diseaseAt)
+        this.objData.diagnosisData = this.filterHealthData(data.disease.title)
+        // // console.log('查看objdataval1', this.objData.data)
+        this.objData.data.forEach(function (val1) {
+          if (data.projects.length !== 0) {
+            data.projects.forEach(function (val2) {
+              if (val1.name === val2.indexProjectName) {
+                val1.items.forEach(function (val3) {
+                  val2.items.forEach(function (val4) {
+                    if (val3.id === val4.healthIndexItem.id) {
+                      val3.value = that.filterHealthData(val4.value)
+                      val3.diaResult = that.filterHealthData(val4.result)
+                    }
+                  })
+                })
+                if (val2.testAt) {
+                  val1.testAt = val2.testAt
+                }
+              }
+            })
+          } else {
+              val1.testAt = null
+              val1.items.forEach(function (val3) {
+                val3.value = null
+                val3.diaResult = null
+                console.log('!!!')
+              })
+          }
+          // data.projects.forEach(function (val2) {
+          //   if (val1.name === val2.indexProjectName) {
+          //     val1.items.forEach(function (val3) {
+          //       val2.items.forEach(function (val4) {
+          //         if (val3.id === val4.healthIndexItem.id) {
+          //           val3.value = that.filterHealthData(val4.value)
+          //           val3.diaResult = that.filterHealthData(val4.result)
+          //         }
+          //       })
+          //     })
+          //     // console.log(val1, '???', val2)
+          //     if (val2.testAt) {
+          //       val1.testAt = val2.testAt
+          //     }
+          //   }
+          // })
         })
       },
       handleOk () {
@@ -356,7 +393,9 @@ export default {
             // console.log(this.objData.data)
           }
           })
-          this.$refs.childDia.clearDia()
+          this.$nextTick(() => {
+            this.$refs.childDia.clearDia()
+          })
           this.objData.diagnosisData = null
           this.objData.diagnosisTime = null
           this.objData.symptomData = null
