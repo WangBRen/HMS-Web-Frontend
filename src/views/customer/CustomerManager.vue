@@ -59,6 +59,7 @@
             <a-dropdown>
               <a-menu slot="overlay">
                 <a-menu-item>
+                  <a @click="editUser(inner, record)">编辑</a>
                   <a-popconfirm
                     v-if="data.length"
                     title="是否移除该用户？"
@@ -78,6 +79,7 @@
       </a-table>
     </a-card>
     <Customer-InfoForm :dataTypes="dataTypes" ref="child"/>
+    <EditUserMsg ref="editUser" />
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
@@ -101,6 +103,7 @@
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
+import EditUserMsg from './components/EditUserMsg.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
 import HealthDataManagmentFormVue from './components/HealthDataManagmentForm.vue'
 
@@ -148,7 +151,8 @@ export default {
    components: {
     CustomerInfoForm,
     AddNewUserVue,
-    HealthDataManagmentFormVue
+    HealthDataManagmentFormVue,
+    EditUserMsg
   },
   data () {
     return {
@@ -181,6 +185,12 @@ export default {
     this.onSearch()
   },
   methods: {
+    editUser (inner, userData) {
+      const groupId = inner.id
+      this.$refs.editUser.openModel()
+      this.$refs.editUser.getUserData(groupId, userData)
+      // console.log('编辑用户', userData)
+    },
     onPageChange (page, pageSize) {
       this.pagination.current = page
        this.onSearch()
