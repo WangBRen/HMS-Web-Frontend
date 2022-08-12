@@ -5,7 +5,7 @@
       v-model="visible"
       title="健康信息"
       @ok="handleOk"
-      :width="1100">
+      :width="1150">
       <template v-if="selectReport" slot="footer">
         <a-button @click="closeModel">取消</a-button>
       </template>
@@ -128,6 +128,7 @@
                   </span>
                   <span style="float: right;">
                     <a-date-picker
+                      show-time
                       v-if="!selectReport"
                       v-model="item.testAt"
                       type="date"
@@ -171,6 +172,7 @@
                       </span>
                       <span style="float: right;">
                         <a-date-picker
+                          show-time
                           v-if="!selectReport"
                           v-model="objData.diagnosisTime"
                           type="date"
@@ -212,6 +214,7 @@
                       </span>
                       <span style="float: right;">
                         <a-date-picker
+                          show-time
                           v-if="!selectReport"
                           v-model="objData.symptomTime"
                           type="date"
@@ -307,7 +310,7 @@ export default {
       // 保存五级联动的诊断结果
       getDia (value) {
         this.objData.diagnosisData = value
-        console.log('我是诊断结果', value)
+        // console.log('我是诊断结果', value)
       },
       openModel () {
         this.visible = true
@@ -317,11 +320,12 @@ export default {
       },
       // 新建报告
       AddHealthCom (cusmId) {
-        console.log(cusmId, '我是点击新建触发的时间,传入custmoerId,原本id', this.customerId)
+        this.customerId = cusmId
+        // console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
+        this.selectReport = false
         this.$nextTick(() => {
           this.clearData() // 调清空方法
         })
-        // this.selectReport = false
         // if (this.customerId) {
         //   // 如果用户不同，则清空新建弹窗
         //   if (this.customerId !== cusmId) {
@@ -334,33 +338,70 @@ export default {
         //   this.customerId = cusmId
         // }
       },
+      filterHealthData (data) {
+        if (data) {
+          return data
+        } else {
+          return null
+        }
+      },
       // 查看报告
       seeHealthCom (data) {
-        console.log('我是点击查看触发的时间')
+        const that = this
+        console.log('我是点击查看触发,传入的数据', data)
         this.selectReport = true
-        // console.log('点击查看报告单数据', data.projects)
-        // console.log('查看objdata', this.objData.data)
-        this.objData.symptomData = data.symptom
-        this.objData.symptomTime = data.symptomAt // 有点小问题，会报警告，问题为日期格式初始化
-        this.objData.diagnosisTime = data.diseaseAt
-        this.objData.diagnosisData = data.disease.title
-        this.objData.data.forEach(function (val1) {
-          data.projects.forEach(function (val2) {
-            if (val1.name === val2.indexProjectName) {
-              val1.items.forEach(function (val3) {
-                val2.items.forEach(function (val4) {
-                  if (val3.id === val4.healthIndexItem.id) {
-                    val3.value = val4.value
-                    val3.diaResult = val4.result
-                  }
-                })
-              })
-              console.log(val1, '???', val2)
-              if (val2.testAt) {
-                val1.testAt = val2.testAt
-              }
-            }
+        console.log('查看objdataval1', this.objData)
+        this.objData.data.forEach(function (one) {
+          one.testAt = null
+          one.items.forEach(function (two) {
+            two.value = null
+            two.diaResult = null
           })
+        })
+        // console.log('点击查看报告单数据val2', data.projects)
+        this.objData.symptomData = this.filterHealthData(data.symptom)
+        this.objData.symptomTime = this.filterHealthData(data.symptomAt) // 有点小问题，会报警告，问题为日期格式初始化
+        this.objData.diagnosisTime = this.filterHealthData(data.diseaseAt)
+        if (data.disease) {
+          this.objData.diagnosisData = this.filterHealthData(data.disease.title)
+        } else {
+          this.objData.diagnosisData = null
+        }
+        // // console.log('查看objdataval1', this.objData.data)
+        this.objData.data.forEach(function (val1) {
+          if (data.projects.length !== 0) {
+            data.projects.forEach(function (val2) {
+              if (val1.name === val2.indexProjectName) {
+                val1.items.forEach(function (val3) {
+                  val2.items.forEach(function (val4) {
+                    if (val3.id === val4.healthIndexItem.id) {
+                      val3.value = that.filterHealthData(val4.value)
+                      val3.diaResult = that.filterHealthData(val4.result)
+                    }
+                  })
+                })
+                if (val2.testAt) {
+                  val1.testAt = val2.testAt
+                }
+              }
+            })
+          }
+          // data.projects.forEach(function (val2) {
+          //   if (val1.name === val2.indexProjectName) {
+          //     val1.items.forEach(function (val3) {
+          //       val2.items.forEach(function (val4) {
+          //         if (val3.id === val4.healthIndexItem.id) {
+          //           val3.value = that.filterHealthData(val4.value)
+          //           val3.diaResult = that.filterHealthData(val4.result)
+          //         }
+          //       })
+          //     })
+          //     // console.log(val1, '???', val2)
+          //     if (val2.testAt) {
+          //       val1.testAt = val2.testAt
+          //     }
+          //   }
+          // })
         })
       },
       handleOk () {
@@ -388,11 +429,11 @@ export default {
         apiData.diseaseAt = formData.diagnosisTime
         apiData.symptom = formData.symptomData
         apiData.symptomAt = formData.symptomTime
-        console.log('表格数据', formData)
-        console.log('传回接口数据', apiData)
+        // console.log('表格数据', formData)
+        // console.log('传回接口数据', apiData)
         addHealthReport(customerId, apiData).then(res => {
           if (res.status === 201) {
-            console.log('成功新建报告单')
+            // console.log('成功新建报告单')
             this.$message.info('成功新建报告单')
             this.visible = false
           }
@@ -403,7 +444,7 @@ export default {
         document.getElementById(value).scrollIntoView({ behavior: 'smooth' })
       },
       clearData () {
-        console.log('清空')
+        // console.log('清空')
         this.$nextTick(() => {
           getHealthIndex().then(res => {
           if (res.status === 200) {
@@ -419,7 +460,9 @@ export default {
             // console.log(this.objData.data)
           }
           })
-          this.$refs.childDia.clearDia()
+          this.$nextTick(() => {
+            this.$refs.childDia.clearDia()
+          })
           this.objData.diagnosisData = null
           this.objData.diagnosisTime = null
           this.objData.symptomData = null
@@ -441,7 +484,7 @@ export default {
             }
           }
           this.objData.data = formdata
-          console.log(this.objData.data)
+          // console.log(this.objData.data)
         }
       })
       }

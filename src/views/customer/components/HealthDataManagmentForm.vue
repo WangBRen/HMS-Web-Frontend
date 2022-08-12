@@ -150,19 +150,20 @@ export default {
     // 新建报告单
     handOpenHealthAdd () {
       // 在这传custmoerId
-      const cusmId = '2'
+      // const cusmId = '2'
+      const cusmId = this.custId
       this.$refs.child.openModel()
       this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
     },
     // 查看报告单
     handleViewingTheTeportForm (data) {
-      const cusmId = '2' // 存customerId
-      const reportId = '5' // 存reportId
-      console.log('cusmId', this.custId)
-      console.log('报告单', data)
+      const cusmId = this.custId // 存customerId
+      const reportId = data.id // 存reportId
+      // console.log('cusmId', cusmId)
+      // console.log('报告单', reportId)
       getHealthCustomerReport(cusmId, reportId).then(res => {
         if (res.status === 200) {
-          console.log('接口查', res.data)
+          // console.log('接口查报告单', res.data)
           this.$refs.child.openModel()
           this.$refs.child.seeHealthCom(res.data)
         }
