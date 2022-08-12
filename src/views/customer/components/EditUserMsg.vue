@@ -9,14 +9,7 @@
     >
       <a-tabs default-active-key="1" :tab-position="tabPosition">
         <a-tab-pane key="1" tab="基础信息更新">
-          <a-form-model :model="userData" ref="customsrInfoForm" :rules="customsrInfoRules" :label-col="labelCol" :wrapper-col="wrapperCol">
-            <!-- <a-row>
-              <a-col :span="24">
-                <div class="editTitle">
-                  姓名：{{ userData.nickname }}
-                </div>
-              </a-col>
-            </a-row> -->
+          <a-form-model :model="userData.baseInfo" ref="customsrInfoForm" :rules="customsrInfoRules" :label-col="labelCol" :wrapper-col="wrapperCol">
             <a-row>
               <a-col :span="12">
                 <a-form-model-item label="教育背景">
@@ -59,12 +52,12 @@
             </a-row>
             <a-row>
               <a-col :span="12">
-                <a-form-model-item label="紧急联系人">
+                <a-form-model-item prop="contactName" label="紧急联系人">
                   <a-input v-model="userData.baseInfo.contactName" />
                 </a-form-model-item>
               </a-col>
               <a-col :span="12">
-                <a-form-model-item label="联系人电话">
+                <a-form-model-item prop="contactNumber" label="联系人电话">
                   <a-input v-model="userData.baseInfo.contactNumber" />
                 </a-form-model-item>
               </a-col>
@@ -138,7 +131,6 @@ export default {
     },
     data () {
       return {
-        name: null,
         groupId: null,
         customerId: null,
         visible: false,
@@ -154,21 +146,21 @@ export default {
           timer: null,
           ruleShow: true
         },
+        name: null,
         userData: {
-            nickname: null,
-            baseInfo: {
-                eduBG: null,
-                ethnicGroups: null,
-                aboBloodType: null,
-                rhBloodType: null,
-                contactName: null,
-                contactNumber: null,
-                homeAddress: null,
-                province: null,
-                city: null,
-                area: null,
-                street: null
-            }
+          baseInfo: {
+            eduBG: null,
+            ethnicGroups: null,
+            aboBloodType: null,
+            rhBloodType: null,
+            contactName: null,
+            contactNumber: null,
+            homeAddress: null,
+            province: null,
+            city: null,
+            area: null,
+            street: null
+          }
         },
         tabPosition: 'left',
         labelCol: { span: 6 },
@@ -199,13 +191,12 @@ export default {
           ]
         },
         customsrInfoRules: {
-          contactName: [
-            { required: true, message: '请填写紧急联系人', trigger: 'blur' }
-          ],
           contactNumber: [
-            { required: true, message: '请输入电话号码', trigger: 'blur' },
-            { len: 11, message: '请输入正确的电话号码' },
+            { required: true, message: '请输入紧急联系人号码', trigger: 'blur' },
             { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
+          ],
+          contactName: [
+            { required: true, message: '请输入紧急联系人姓名', trigger: 'blur' }
           ]
         }
       }
@@ -219,28 +210,29 @@ export default {
         const arrData = data.member
         this.customerId = arrData.id
         this.name = arrData.baseInfo.name
-        this.userData.nickname = arrData.nickname
-        this.userData.baseInfo.eduBG = arrData.baseInfo.eduBG
-        this.userData.baseInfo.ethnicGroups = arrData.baseInfo.ethnicGroups
-        this.userData.baseInfo.aboBloodType = arrData.baseInfo.aboBloodType
-        this.userData.baseInfo.rhBloodType = arrData.baseInfo.rhBloodType
-        this.userData.baseInfo.contactName = arrData.baseInfo.contactName
-        this.userData.baseInfo.contactNumber = arrData.baseInfo.contactNumber
-        this.userData.baseInfo.homeAddress = arrData.baseInfo.homeAddress
-        this.userData.baseInfo.province = arrData.baseInfo.province
-        this.userData.baseInfo.city = arrData.baseInfo.city
-        this.userData.baseInfo.area = arrData.baseInfo.area
-        this.userData.baseInfo.street = arrData.baseInfo.street
+        this.userData.baseInfo = {
+          eduBG: arrData.baseInfo.eduBG,
+          ethnicGroups: arrData.baseInfo.ethnicGroups,
+          aboBloodType: arrData.baseInfo.aboBloodType,
+          rhBloodType: arrData.baseInfo.rhBloodType,
+          contactName: arrData.baseInfo.contactName,
+          contactNumber: arrData.baseInfo.contactNumber,
+          homeAddress: arrData.baseInfo.homeAddress,
+          province: arrData.baseInfo.province,
+          city: arrData.baseInfo.city,
+          area: arrData.baseInfo.area,
+          street: arrData.baseInfo.street
+        }
         const arrAddress = { province: arrData.baseInfo.province, city: arrData.baseInfo.city, area: arrData.baseInfo.area, street: arrData.baseInfo.street }
         // 不用nextTick会报初始化错误
         this.$nextTick(() => {
             this.$refs.address.setAddress(arrAddress)
         })
         // this.$refs.address.setAddress(arrAddress)
-        console.log(groupId, '子组件', data)
+        // console.log(groupId, '子组件', data)
       },
       callback (val) {
-        console.log(val)
+        // console.log(val)
       },
       handleOk (e) {
         const groupId = this.groupId
@@ -267,7 +259,7 @@ export default {
         arrData.city = value.city
         arrData.area = value.area
         arrData.street = value.street
-        console.log('地址', value)
+        // console.log('地址', value)
       },
       // 获取验证码
       getUserCode (p) {
