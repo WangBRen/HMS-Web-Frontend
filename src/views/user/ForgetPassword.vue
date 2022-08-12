@@ -160,7 +160,7 @@ export default {
       console.log(p)
      var Reg = /^[1][34578][0-9]{9}$/
       if (this.form.telephone === '') {
-        this.$message.error('请输入手机密码')
+        this.$message.error('请输入手机号码')
       } else if (Reg.test(this.form.telephone)) {
                getCode(p).then(res => {
                 if (res.status === 200) {

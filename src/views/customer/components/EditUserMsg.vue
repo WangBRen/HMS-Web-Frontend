@@ -258,7 +258,7 @@ export default {
       getUserCode (p) {
         var Reg = /^[1][34578][0-9]{9}$/
         if (this.phoneForm.telephone === '') {
-          this.$message.error('请输入手机密码')
+          this.$message.error('请输入手机号码')
         } else if (Reg.test(this.phoneForm.telephone)) {
           apiGetCode(p).then(res => {
             if (res.status === 200) {
