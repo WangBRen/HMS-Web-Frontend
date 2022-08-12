@@ -91,6 +91,7 @@
                 <a-col :span="4">
                   <!-- 新建 -->
                   <a-date-picker
+                    show-time
                     v-if="!selectReport"
                     v-model="item.testAt"
                     type="date"
@@ -113,6 +114,7 @@
                   <a-row>
                     <a-col :span="4">
                       <a-date-picker
+                        show-time
                         v-if="!selectReport"
                         v-model="objData.diagnosisTime"
                         type="date"
@@ -139,10 +141,11 @@
                   <a-row>
                     <a-col :span="4">
                       <a-date-picker
+                        show-time
                         v-if="!selectReport"
                         type="date"
                         v-model="objData.symptomTime"
-                        placeholder="请选择诊断时间"
+                        placeholder="请选择症状诊断时间"
                         style="width: 100%;"
                       />
                       <div v-if="selectReport">{{ objData.symptomTime | getMoment }}</div>
@@ -240,7 +243,7 @@ export default {
       // 保存五级联动的诊断结果
       getDia (value) {
         this.objData.diagnosisData = value
-        console.log('我是诊断结果', value)
+        // console.log('我是诊断结果', value)
       },
       openModel () {
         this.visible = true
@@ -251,7 +254,7 @@ export default {
       // 新建报告
       AddHealthCom (cusmId) {
         this.customerId = cusmId
-        console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
+        // console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
         this.selectReport = false
         this.$nextTick(() => {
           this.clearData() // 调清空方法
@@ -278,9 +281,9 @@ export default {
       // 查看报告
       seeHealthCom (data) {
         const that = this
-        // console.log('我是点击查看触发,传入的数据', data)
+        console.log('我是点击查看触发,传入的数据', data)
         this.selectReport = true
-        console.log('查看objdataval1', this.objData.data)
+        console.log('查看objdataval1', this.objData)
         this.objData.data.forEach(function (one) {
           one.testAt = null
           one.items.forEach(function (two) {
@@ -292,7 +295,11 @@ export default {
         this.objData.symptomData = this.filterHealthData(data.symptom)
         this.objData.symptomTime = this.filterHealthData(data.symptomAt) // 有点小问题，会报警告，问题为日期格式初始化
         this.objData.diagnosisTime = this.filterHealthData(data.diseaseAt)
-        this.objData.diagnosisData = this.filterHealthData(data.disease.title)
+        if (data.disease) {
+          this.objData.diagnosisData = this.filterHealthData(data.disease.title)
+        } else {
+          this.objData.diagnosisData = null
+        }
         // // console.log('查看objdataval1', this.objData.data)
         this.objData.data.forEach(function (val1) {
           if (data.projects.length !== 0) {
@@ -311,13 +318,6 @@ export default {
                 }
               }
             })
-          } else {
-              val1.testAt = null
-              val1.items.forEach(function (val3) {
-                val3.value = null
-                val3.diaResult = null
-                console.log('!!!')
-              })
           }
           // data.projects.forEach(function (val2) {
           //   if (val1.name === val2.indexProjectName) {
@@ -362,11 +362,11 @@ export default {
         apiData.diseaseAt = formData.diagnosisTime
         apiData.symptom = formData.symptomData
         apiData.symptomAt = formData.symptomTime
-        console.log('表格数据', formData)
-        console.log('传回接口数据', apiData)
+        // console.log('表格数据', formData)
+        // console.log('传回接口数据', apiData)
         addHealthReport(customerId, apiData).then(res => {
           if (res.status === 201) {
-            console.log('成功新建报告单')
+            // console.log('成功新建报告单')
             this.$message.info('成功新建报告单')
             this.visible = false
           }
@@ -377,7 +377,7 @@ export default {
         document.getElementById(value).scrollIntoView({ behavior: 'smooth' })
       },
       clearData () {
-        console.log('清空')
+        // console.log('清空')
         this.$nextTick(() => {
           getHealthIndex().then(res => {
           if (res.status === 200) {
@@ -417,7 +417,7 @@ export default {
             }
           }
           this.objData.data = formdata
-          console.log(this.objData.data)
+          // console.log(this.objData.data)
         }
       })
       }

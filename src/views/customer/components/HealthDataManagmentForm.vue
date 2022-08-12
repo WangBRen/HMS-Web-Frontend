@@ -162,7 +162,7 @@ export default {
       // console.log('报告单', reportId)
       getHealthCustomerReport(cusmId, reportId).then(res => {
         if (res.status === 200) {
-          console.log('接口查报告单', res.data)
+          // console.log('接口查报告单', res.data)
           this.$refs.child.openModel()
           this.$refs.child.seeHealthCom(res.data)
         }
