@@ -8,7 +8,9 @@ const customerApi = {
     repeat: '/groups/duplicated/',
     addCustomer: value => { return `/groups/${value}/customers` },
     healthReports: customerId => { return `/health-reports/${customerId}/reports` },
-    editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`// 编辑用户信息
+    editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`, // 编辑用户信息
+    updatePhone: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/phone`,
+    UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` }
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -83,5 +85,21 @@ export function editGroupCustomer (groupId, customerId, params) {
         url: customerApi.editInfoGroupCustomer(groupId, customerId),
         method: 'put',
         data: params
+    })
+}
+
+// 手机验证码
+export function getCode (phone) {
+    return request({
+      url: customerApi.UserCode(phone),
+      method: 'post'
+    })
+ }
+
+export function updatePhone (groupId, customerId, phoneForm) {
+    return request({
+        url: customerApi.updatePhone(groupId, customerId),
+        method: 'put',
+        data: phoneForm
     })
 }

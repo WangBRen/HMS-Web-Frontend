@@ -60,6 +60,8 @@
               <a-menu slot="overlay">
                 <a-menu-item>
                   <a @click="editUser(inner, record)">编辑</a>
+                </a-menu-item>
+                <a-menu-item>
                   <a-popconfirm
                     v-if="data.length"
                     title="是否移除该用户？"
@@ -79,7 +81,7 @@
       </a-table>
     </a-card>
     <Customer-InfoForm :dataTypes="dataTypes" ref="child"/>
-    <EditUserMsg ref="editUser" />
+    <EditUserMsg ref="editUserRef" @onSearch="onSearch"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
@@ -187,8 +189,8 @@ export default {
   methods: {
     editUser (inner, userData) {
       const groupId = inner.id
-      this.$refs.editUser.openModel()
-      this.$refs.editUser.getUserData(groupId, userData)
+      this.$refs.editUserRef.openModel()
+      this.$refs.editUserRef.getUserData(groupId, userData)
       // console.log('编辑用户', userData)
     },
     onPageChange (page, pageSize) {

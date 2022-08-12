@@ -1,10 +1,10 @@
-name: HistSys Frontend Development CI
+name: Development Deploy CI
 
 on:
   push:
     branches: [ develop ]
-  pull_request:
-    branches: [ develop ]
+  # pull_request:
+  #   branches: [ develop ]
 
 jobs:
   deploy:

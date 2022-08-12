@@ -7,6 +7,7 @@
       :visible="openHealthvisible"
       :confirm-loading="confirmLoading"
       @cancel="handleCancel"
+      :ok-button-props="{ style: {display: 'none'} }"
     >
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
