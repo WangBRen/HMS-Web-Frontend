@@ -9,7 +9,7 @@
     >
       <a-tabs default-active-key="1" :tab-position="tabPosition">
         <a-tab-pane key="1" tab="基础信息更新">
-          <a-form-model :model="userData" :label-col="labelCol" :wrapper-col="wrapperCol">
+          <a-form-model :model="userData" ref="customsrInfoForm" :rules="customsrInfoRules" :label-col="labelCol" :wrapper-col="wrapperCol">
             <!-- <a-row>
               <a-col :span="24">
                 <div class="editTitle">
@@ -83,6 +83,9 @@
                 </a-form-model-item>
               </a-col>
             </a-row>
+            <div style="margin-top: 20px;text-align: center;">
+              <a-button type="primary" size="large" @click="handleOk"> 确认修改 </a-button>
+            </div>
           </a-form-model>
         </a-tab-pane>
         <a-tab-pane key="2" tab="手机号码更新">
@@ -126,7 +129,7 @@
 </template>
 <script>
 import Address from '@/components/CheckAddress/CheckAddress.vue'
-import { editGroupCustomer, getCode as apiGetCode, updatePhone as apiUpdatePhone } from '@/api/customer'
+import { editGroupCustomer as apiEditGroupCustomer, getCode as apiGetCode, updatePhone as apiUpdatePhone } from '@/api/customer'
 import { nation } from '../nation'
 
 export default {
@@ -194,6 +197,16 @@ export default {
           code: [
             { required: true, message: '请输入验证码', trigger: 'blur' }
           ]
+        },
+        customsrInfoRules: {
+          contactName: [
+            { required: true, message: '请填写紧急联系人', trigger: 'blur' }
+          ],
+          contactNumber: [
+            { required: true, message: '请输入电话号码', trigger: 'blur' },
+            { len: 11, message: '请输入正确的电话号码' },
+            { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
+          ]
         }
       }
     },
@@ -229,19 +242,21 @@ export default {
       callback (val) {
         console.log(val)
       },
-      handleOk () {
+      handleOk (e) {
         const groupId = this.groupId
         const customerId = this.customerId
         const data = this.userData
-        editGroupCustomer(groupId, customerId, data).then(res => {
+        e.preventDefault()
+        this.$refs.customsrInfoForm.validate(valid => {
+          if (valid) {
+            apiEditGroupCustomer(groupId, customerId, data).then(res => {
             if (res.status === 200) {
-            //   this.$message.info(res.message)
-              this.$message.info('修改成功')
-            //   console.log('修改成功', res)
+              this.$message.success('修改成功')
               this.visible = false
             }
+           })
+          }
         })
-        console.log(groupId, customerId, '点击确定', data)
       },
       handleCancel () {
         this.visible = false
@@ -258,7 +273,7 @@ export default {
       getUserCode (p) {
         var Reg = /^[1][34578][0-9]{9}$/
         if (this.phoneForm.telephone === '') {
-          this.$message.error('请输入手机密码')
+          this.$message.error('请输入手机号码')
         } else if (Reg.test(this.phoneForm.telephone)) {
           apiGetCode(p).then(res => {
             if (res.status === 200) {
