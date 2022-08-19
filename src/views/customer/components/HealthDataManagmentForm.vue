@@ -1,6 +1,7 @@
 <template>
   <div>
     <a-modal
+      forceRender
       :maskClosable="false"
       :width="1200"
       :title="title"
