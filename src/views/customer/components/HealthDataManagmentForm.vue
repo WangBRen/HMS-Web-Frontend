@@ -9,6 +9,7 @@
       :confirm-loading="confirmLoading"
       @cancel="handleCancel"
       :ok-button-props="{ style: {display: 'none'} }"
+      :scroll="{ x: true }"
     >
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
@@ -39,6 +40,15 @@
         <span slot="action" slot-scope="text, record">
           <a @click="handleViewingTheTeportForm(record)">查看报告单</a>
         </span>
+        <span slot="updatedAt" slot-scope="text, record">
+          {{ record.updatedAt ? moment(record?.updatedAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
+        </span>
+        <span slot="createdAt" slot-scope="text, record">
+          {{ record.createdAt ? moment(record?.createdAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
+        </span>
+        <span slot="diseaseAt" slot-scope="text, record">
+          {{ record.diseaseAt ? moment(record.diseaseAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
+        </span>
       </a-table>
     </a-modal>
     <FiltersHealthDataTableHeadersVue
@@ -50,6 +60,7 @@
   </div>
 </template>
 <script>
+import moment from 'moment'
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 import AddHealthData from './AddHealthData.vue'
 import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from '@/api/health'
@@ -107,15 +118,17 @@ export default {
     this.onSearch()
   },
   methods: {
+    moment,
     async onSearch () {
       const resColumus = await apiGetIndexColumns()
       const totalColumns = (resColumus.data || []).map(column => {
-        return { ...column, align: 'center' }
+        return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
       })
       this.columns = totalColumns.filter(column => !column.hide).concat(this.actions)
       this.dataColums = (resColumus.data || []).map(column => {
-        return { ...column, align: 'center' }
+        return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
       })
+      console.log(this.dataColums)
     },
     /**
      * 查找用户自己的指标
