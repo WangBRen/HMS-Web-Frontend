@@ -1,10 +1,12 @@
 <template>
   <div>
     <a-modal
+      forceRender
       class="modal"
       v-model="visible"
       title="健康信息"
       @ok="handleOk"
+      @cancel="closeModel"
       :width="1150">
       <template v-if="selectReport" slot="footer">
         <a-button @click="closeModel">取消</a-button>
@@ -32,7 +34,7 @@
           </div>
         </a-col>
         <a-col :span="19" :offset="1" ref="modalRight" class="modal-right-panel">
-          <a-form-model v-model="objData">
+          <a-form-model>
             <div v-for="item in objData.data" :key="item.id">
               <!-- 大标题 -->
               <a-row>
@@ -43,80 +45,40 @@
               <!-- 大标题下的小标题加内容 -->
               <a-row style="padding-top: 24px; padding-bottom: 24px;">
                 <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
-                  <a-form-model-item>
-                    <a-row class="index-item" style="#border: 1px #eee solid;">
-                      <a-col :span="3">
-                        <div class="index-item-title-wrapper">
-                          <div class="index-item-title-sider"/>
-                          <span class="index-item-title"> {{ items.name }} </span>
-                        </div>
-                      </a-col>
-                      <!-- 新建 -->
-                      <a-col :span="21">
-                        <a-row v-if="!selectReport" justify="center">
-                          <a-col :span="14">
-                            <a-input v-model="items.value" :addonAfter="items.unit" style="width: 80%;"></a-input>
-                          </a-col>
-                          <a-col :span="10">
-                            <a-col :span="8">
-                              <span>诊断结果:</span>
-                            </a-col>
-                            <a-col :span="14">
-                              <a-select v-model="items.diaResult" style="width: 100%;">
-                                <a-select-option v-for="(ranges,index) in items.result" :key="index" :value="ranges.name">
-                                  {{ ranges.name }}
-                                </a-select-option>
-                              </a-select>
-                            </a-col>
-                          </a-col>
-                        </a-row>
-                        <!-- 查看 -->
-                        <a-row v-if="!selectReport">
-                          <a-collapse style="border: none;">
-                            <a-collapse-panel header="点击展开" style="background: #f7f7f7;border-radius: 4px;margin-bottom: 24px;margin-top:2px;border: none;overflow: hidden">
-                              <div style="padding-top:12px; display: flex;">
-                                <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
-                                <div style="color: #00a0e9">
-                                  <span v-if="ranges.type === 'range'" style="pointer-events:none;display:block;" v-for="(ranges,index) in items.result" :key="index">
-                                    {{ ranges | getRange }}
-                                    <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
-                                  </span>
-                                </div>
-                              </div>
-                              <div>
-                                <a class="exTitle">检查方式:</a>
-                                {{ items.testMethod }}
-                              </div>
-                              <div>
-                                <a class="exTitle">建议频率:</a>
-                                {{ items.testRate }}
-                              </div>
-                              <div>
-                                <a class="exTitle">检测环境:</a>
-                                {{ items.testEnvironment }}
-                              </div>
-                              <div>
-                                <span class="exTitle">备注:</span>
-                                {{ items.remark || '无' }}
-                              </div>
-                            </a-collapse-panel>
-                          </a-collapse>
-                        </a-row>
-                      </a-col>
-                      <a-col :span="21" v-if="selectReport">
-                        <!-- <span v-if="selectReport" :span="24" class="rightBody" v-for="items in item.items" :key="items.id"> -->
-                        <div>
-                          <a class="exTitle">检测值:</a>
-                          {{ items.value }} {{ items.unit }}
-                        </div>
-                        <div>
-                          <a class="exTitle">检测结果:</a>
-                          {{ items.diaResult }}
-                        </div>
-                        <!-- </span> -->
-                      </a-col>
-                    </a-row>
-                  </a-form-model-item>
+                  <a-row class="index-item" style="#border: 1px #eee solid;">
+                    <a-col :span="3">
+                      <div class="index-item-title-wrapper">
+                        <div class="index-item-title-sider"/>
+                        <span class="index-item-title"> {{ items.name }} </span>
+                      </div>
+                    </a-col>
+                    <!-- 新建 -->
+                    <a-col :span="21" v-if="!selectReport">
+                      <AddHealthInput
+                        ref="childAdd"
+                        @change="({ value, diaResult }) => { items.value = value, items.diaResult = diaResult }"
+                        :name="items.name"
+                        :unit="items.unit"
+                        :result="items.result"
+                        :testMethod="items.testMethod"
+                        :testRate="items.testRateValue + '次/' + items.testRateUnit"
+                        :testEnvironment="items.testEnvironment"
+                        :remark="items.remark"/>
+                    </a-col>
+                    <!-- 查看 -->
+                    <a-col :span="21" v-if="selectReport">
+                      <!-- <span v-if="selectReport" :span="24" class="rightBody" v-for="items in item.items" :key="items.id"> -->
+                      <div>
+                        <a class="exTitle">检测值:</a>
+                        {{ items.value }} {{ items.unit }}
+                      </div>
+                      <div>
+                        <a class="exTitle">检测结果:</a>
+                        {{ items.diaResult }}
+                      </div>
+                      <!-- </span> -->
+                    </a-col>
+                  </a-row>
                 </a-col>
               </a-row>
               <!-- 选择项目诊断时间 -->
@@ -140,93 +102,98 @@
               </a-row>
             </div>
             <!-- 用户诊断信息 -->
-            <a-row>
-              <a-col class="project-header">
-                <a id="用户诊断信息" class="project-title">用户诊断信息</a>
-              </a-col>
-            </a-row>
-            <a-row style="padding-top: 12px; padding-bottom: 12px;">
-              <a-col>
-                <a-form-model-item>
-                  <!-- 新建 -->
-                  <a-row>
-                    <a-col :span="3">
-                      <div class="index-item-title-wrapper">
-                        <div class="index-item-title-sider"/>
-                        <span class="index-item-title"> 诊断结果 </span>
-                      </div>
-                    </a-col>
-                    <a-col :span="21">
-                      <div v-if="!selectReport" style="padding-top: 0px;">
-                        <CheckDia ref="childDia" v-model="objData.diagnosisData" @changes="getDia($event)" />
-                      </div>
-                      <!-- 查看 -->
-                      <div v-if="selectReport">{{ objData.diagnosisData }}</div>
-                    </a-col>
-                  </a-row>
-                  <a-row style="margin-bottom: 12px;">
-                    <a-col :span="8" :offset="16">
-                      <!-- 新建 -->
-                      <span>
-                        诊断时间:
-                      </span>
-                      <span style="float: right;">
-                        <a-date-picker
-                          show-time
-                          v-if="!selectReport"
-                          v-model="objData.diagnosisTime"
-                          type="date"
-                          placeholder="请选择诊断时间"
-                        />
-                      </span>
-                      <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ objData.diagnosisTime | getMoment }}</div>
-                    </a-col>
-                  </a-row>
-                </a-form-model-item>
-              </a-col>
-            </a-row>
+            <div>
+              <a-row>
+                <a-col class="project-header">
+                  <a id="用户诊断信息" class="project-title">用户诊断信息</a>
+                </a-col>
+              </a-row>
+              <a-row style="padding-top: 12px; padding-bottom: 12px;">
+                <a-col>
+                  <a-form-model-item>
+                    <a-row>
+                      <a-col :span="3">
+                        <div class="index-item-title-wrapper">
+                          <div class="index-item-title-sider"/>
+                          <span class="index-item-title"> 诊断结果 </span>
+                        </div>
+                      </a-col>
+                      <a-col :span="21">
+                        <!-- 新建选择病症 -->
+                        <div v-if="!selectReport" style="padding-top: 0px;">
+                          <CheckDia ref="childDia" v-model="objData.diagnosisData" @changes="getDia($event)" />
+                        </div>
+                        <!-- 查看 -->
+                        <div v-if="selectReport">{{ objData.diagnosisData }}</div>
+                      </a-col>
+                    </a-row>
+                    <a-row style="margin-bottom: 12px;">
+                      <a-col :span="8" :offset="16">
+                        <!-- 新建 -->
+                        <span>
+                          诊断时间:
+                        </span>
+                        <span style="float: right;">
+                          <a-date-picker
+                            show-time
+                            v-if="!selectReport"
+                            v-model="objData.diagnosisTime"
+                            type="date"
+                            placeholder="请选择诊断时间"
+                          />
+                        </span>
+                        <!-- 查看 -->
+                        <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ objData.diagnosisTime | getMoment }}</div>
+                      </a-col>
+                    </a-row>
+                  </a-form-model-item>
+                </a-col>
+              </a-row>
+            </div>
             <!-- 用户症状信息 -->
-            <a-row>
-              <a-col class="project-header">
-                <a id="用户症状信息" class="project-title">用户症状信息</a>
-              </a-col>
-            </a-row>
-            <a-row style="padding-top: 12px; padding-bottom: 12px;">
-              <a-col>
-                <a-form-model-item>
-                  <a-row>
-                    <a-col :span="3">
-                      <div class="index-item-title-wrapper">
-                        <div class="index-item-title-sider"/>
-                        <span class="index-item-title"> 症状 </span>
-                      </div>
-                    </a-col>
-                    <a-col :span="21">
-                      <a-textarea v-if="!selectReport" v-model="objData.symptomData" placeholder="填写用户症状信息" :rows="4" />
-                      <div v-if="selectReport">{{ objData.symptomData }}</div>
-                    </a-col>
-                  </a-row>
-                  <a-row style="margin-bottom: 12px;">
-                    <a-col :span="8" :offset="16">
-                      <!-- 新建 -->
-                      <span>
-                        检测时间:
-                      </span>
-                      <span style="float: right;">
-                        <a-date-picker
-                          show-time
-                          v-if="!selectReport"
-                          v-model="objData.symptomTime"
-                          type="date"
-                          placeholder="请选择检测时间"
-                        />
-                      </span>
-                      <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ objData.symptomTime | getMoment }}</div>
-                    </a-col>
-                  </a-row>
-                </a-form-model-item>
-              </a-col>
-            </a-row>
+            <div>
+              <a-row>
+                <a-col class="project-header">
+                  <a id="用户症状信息" class="project-title">用户症状信息</a>
+                </a-col>
+              </a-row>
+              <a-row style="padding-top: 12px; padding-bottom: 12px;">
+                <a-col>
+                  <a-form-model-item>
+                    <a-row>
+                      <a-col :span="3">
+                        <div class="index-item-title-wrapper">
+                          <div class="index-item-title-sider"/>
+                          <span class="index-item-title"> 症状 </span>
+                        </div>
+                      </a-col>
+                      <a-col :span="21">
+                        <a-textarea v-if="!selectReport" v-model="objData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                        <div v-if="selectReport">{{ objData.symptomData }}</div>
+                      </a-col>
+                    </a-row>
+                    <a-row style="margin-bottom: 12px;">
+                      <a-col :span="8" :offset="16">
+                        <!-- 新建 -->
+                        <span>
+                          检测时间:
+                        </span>
+                        <span style="float: right;">
+                          <a-date-picker
+                            show-time
+                            v-if="!selectReport"
+                            v-model="objData.symptomTime"
+                            type="date"
+                            placeholder="请选择检测时间"
+                          />
+                        </span>
+                        <div v-if="selectReport" style="float: right; margin-right: 12px;">{{ objData.symptomTime | getMoment }}</div>
+                      </a-col>
+                    </a-row>
+                  </a-form-model-item>
+                </a-col>
+              </a-row>
+            </div>
           </a-form-model>
         </a-col>
       </a-row>
@@ -235,13 +202,15 @@
 </template>
 <script>
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
+import AddHealthInput from './AddHealthInput.vue'
 import { getHealthIndex, addHealthReport } from '@/api/health'
 import moment from 'moment'
 // import { getHealthIndex } from '@/api/health'
 
 export default {
     components: {
-      CheckDia
+      CheckDia,
+      AddHealthInput
     },
     filters: {
       getRange: function (value) {
@@ -284,6 +253,7 @@ export default {
         }
     },
     mounted () {
+      // console.log('mounted')
       getHealthIndex().then(res => {
         if (res.status === 200) {
           const formdata = res.data
@@ -320,9 +290,9 @@ export default {
       },
       // 新建报告
       AddHealthCom (cusmId) {
+        this.selectReport = false
         this.customerId = cusmId
         // console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
-        this.selectReport = false
         this.$nextTick(() => {
           this.clearData() // 调清空方法
         })
@@ -347,10 +317,10 @@ export default {
       },
       // 查看报告
       seeHealthCom (data) {
-        const that = this
-        console.log('我是点击查看触发,传入的数据', data)
         this.selectReport = true
-        console.log('查看objdataval1', this.objData)
+        const that = this
+        // console.log('我是点击查看触发,传入的数据', data)
+        // console.log('查看objdataval1', this.objData)
         this.objData.data.forEach(function (one) {
           one.testAt = null
           one.items.forEach(function (two) {
@@ -386,22 +356,6 @@ export default {
               }
             })
           }
-          // data.projects.forEach(function (val2) {
-          //   if (val1.name === val2.indexProjectName) {
-          //     val1.items.forEach(function (val3) {
-          //       val2.items.forEach(function (val4) {
-          //         if (val3.id === val4.healthIndexItem.id) {
-          //           val3.value = that.filterHealthData(val4.value)
-          //           val3.diaResult = that.filterHealthData(val4.result)
-          //         }
-          //       })
-          //     })
-          //     // console.log(val1, '???', val2)
-          //     if (val2.testAt) {
-          //       val1.testAt = val2.testAt
-          //     }
-          //   }
-          // })
         })
       },
       handleOk () {
@@ -439,6 +393,7 @@ export default {
           }
         })
       },
+      // 跳转导航
       onSc (value) {
         // console.log('11', value)
         document.getElementById(value).scrollIntoView({ behavior: 'smooth' })
@@ -446,47 +401,28 @@ export default {
       clearData () {
         // console.log('清空')
         this.$nextTick(() => {
-          getHealthIndex().then(res => {
-          if (res.status === 200) {
-            const formdata = res.data
-            for (var i = 0; i < formdata.length; i++) {
-              formdata[i].testAt = null
-              for (var j = 0; j < formdata[i].items.length; j++) {
-                formdata[i].items[j].value = null
-                formdata[i].items[j].diaResult = null
-              }
-            }
-            this.objData.data = formdata
-            // console.log(this.objData.data)
-          }
-          })
+          this.$refs.childDia.clearDia()
+          const that = this
           this.$nextTick(() => {
-            this.$refs.childDia.clearDia()
+            this.objData.data.forEach(function (arr1) {
+              arr1.items.forEach((item, index) => {
+              that.$refs.childAdd[index].clearValue()
+              })
+            })
           })
+          // console.log('objData', this.objData)
+          for (var i = 0; i < this.objData.data.length; i++) {
+            this.objData.data[i].testAt = null
+            for (var j = 0; j < this.objData.data[i].items.length; j++) {
+              this.objData.data[i].items[j].value = null
+              this.objData.data[i].items[j].diaResult = null
+            }
+          }
           this.objData.diagnosisData = null
           this.objData.diagnosisTime = null
           this.objData.symptomData = null
           this.objData.symptomTime = null
         })
-      },
-      // 初始化
-      getHealth () {
-        getHealthIndex().then(res => {
-        if (res.status === 200) {
-          const formdata = res.data
-          for (var i = 0; i < formdata.length; i++) {
-            // console.log(formdata[i])
-            formdata[i].testAt = null
-            for (var j = 0; j < formdata[i].items.length; j++) {
-              formdata[i].items[j].value = null
-              formdata[i].items[j].diaResult = null
-              // console.log(formdata[i].items[j])
-            }
-          }
-          this.objData.data = formdata
-          // console.log(this.objData.data)
-        }
-      })
       }
     }
 }
