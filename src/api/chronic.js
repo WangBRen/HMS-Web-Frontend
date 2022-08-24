@@ -1,7 +1,8 @@
 import request from '@/utils/request'
 
 const api = {
-  addChronic: 'chronic-diseases'
+  addChronic: 'chronic-diseases',
+  getChronic: 'chronic-diseases'
 }
 
 export function addChronic (parameter) {
@@ -9,5 +10,12 @@ export function addChronic (parameter) {
     url: api.addChronic,
     method: 'post',
     data: parameter
+  })
+}
+
+export function getChronic () {
+  return request({
+    url: api.getChronic,
+    method: 'get'
   })
 }

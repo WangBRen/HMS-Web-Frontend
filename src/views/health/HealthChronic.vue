@@ -34,14 +34,10 @@
           <a-col>
             <span style="font-size: 16px;">指标</span>
             <a-icon @click="addTargetArr" type="plus-circle" />
-            <!-- <a-icon @click="delTargetArrEnd" type="minus-circle" /> -->
+            <a-icon @click="delTargetArrEnd" type="minus-circle" />
           </a-col>
         </a-row>
         <a-row v-for="target in formData.targetArr" :key="target.id">
-          <a-col>
-            <a-icon @click="addTargetArr" type="plus-circle" />
-            <a-icon @click="delTargetArr(target)" type="minus-circle" />
-          </a-col>
           <a-col>
             <a-form-model-item label="指标名">
               <a-col :span="18">
@@ -206,9 +202,9 @@ export default {
           }
           this.formData.targetArr.push(item)
         },
-        // delTargetArrEnd () {
-        //   this.formData.targetArr.pop()
-        // },
+        delTargetArrEnd () {
+          this.formData.targetArr.pop()
+        },
         delTargetArr (item) {
           //  const index = this.formData.targetArr.indexOf(item)
           //  console.log(item)

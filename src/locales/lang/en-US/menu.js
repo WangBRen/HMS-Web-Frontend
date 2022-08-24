@@ -40,5 +40,6 @@ export default {
     'menu.system.health-account-manage': 'Account Manage',
     'menu.user-management': 'User Management',
     'menu.health': 'Health Management',
-    'menu.health.indexes': 'Health Indexes'
+    'menu.health.indexes': 'Health Indexes',
+    'menu.health.chronic': 'Chronic disease management'
 }
