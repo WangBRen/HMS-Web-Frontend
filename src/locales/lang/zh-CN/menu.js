@@ -40,5 +40,6 @@ export default {
     'menu.system.health-account-manage': '账户管理',
     'menu.user-management': '用户管理',
     'menu.health': '健康资料管理',
-    'menu.health.indexes': '指标管理'
+    'menu.health.indexes': '指标管理',
+    'menu.health.chronic': '慢病管理'
 }
