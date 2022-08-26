@@ -1,12 +1,23 @@
 <template>
   <div>
-    <a-card :bordered="false">
+    <a-card class="chronicCard" :bordered="false">
       <a-row>
         <a-col :span="4">
           <a-button type="primary" @click="addChronic">新建慢病</a-button>
         </a-col>
       </a-row>
     </a-card>
+    <a-table class="chronicTable" :columns="columns" :data-source="tableData" :rowKey="record=>record.id">
+      <span slot="items" slot-scope="text, record">
+        <!-- <a>{{ record.items }}</a> -->
+        <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
+      </span>
+      <span slot="action" slot-scope="text, record">
+        <a @click="editChronicTable(record)">编辑</a>
+        <a-divider type="vertical" />
+        <a @click="delChronicTable(record)">删除</a>
+      </span>
+    </a-table>
     <a-modal
       title="新建慢病"
       :visible="addChronicIndexVisible"
@@ -18,14 +29,14 @@
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢性病" prop="name">
-              <a-input v-model="formData.name"></a-input>
+              <a-input placeholder="请输入慢性病的名称" v-model="formData.name"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="描述" prop="describe">
-              <a-textarea v-model="formData.describe" placeholder="慢性病描述" :rows="4" />
+              <a-textarea v-model="formData.describe" placeholder="请输入慢性病的描述" :rows="4" />
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -40,16 +51,18 @@
         <a-row v-for="target in formData.targetArr" :key="target.id">
           <a-col>
             <a-form-model-item label="指标名">
-              <a-col :span="18">
-                <getChronicName
-                  @change="({ id }) => { target.indexItemId = id }"
-                  :indexArr="indexArr"
-                />
-              </a-col>
-              <a-col :span="6" style="text-align: center;margin: 0 auto;">
-                <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" />
-                <a-icon class="targetIcon" @click="delTargetArr(target)" type="minus-circle" />
-              </a-col>
+              <a-row>
+                <a-col :span="18">
+                  <getChronicName
+                    @change="({ id }) => { target.indexItemId = id }"
+                    :indexArr="indexArr"
+                  />
+                </a-col>
+                <a-col :span="6" style="text-align: center;margin: 0 auto;">
+                  <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" />
+                  <a-icon class="targetIcon" @click="delTargetArr(target)" type="minus-circle" />
+                </a-col>
+              </a-row>
             </a-form-model-item>
           </a-col>
           <a-col v-show="target.indexItemId">
@@ -83,19 +96,46 @@
         </a-row>
       </a-form-model>
     </a-modal>
+    <editChronice ref="editChronic"/>
   </div>
 </template>
 
 <script>
 import { getHealthIndex } from '@/api/health'
-import { addChronic } from '@/api/chronic'
+import { addChronic, getChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
+import editChronice from './HealthChronicEdit.vue'
 export default {
     components: {
-      getChronicName
+      getChronicName,
+      editChronice
     },
     data () {
         return {
+          columns: [
+            {
+              title: '慢性病名',
+              dataIndex: 'name',
+              key: 'name'
+            },
+            {
+              title: '慢性病描述',
+              dataIndex: 'describe',
+              key: 'describe'
+            },
+            {
+              title: '指标',
+              dataIndex: 'items',
+              key: 'items',
+              scopedSlots: { customRender: 'items' }
+            },
+            {
+              title: '操作',
+              key: 'action',
+              scopedSlots: { customRender: 'action' }
+            }
+          ],
+          tableData: [],
           formData: {
             name: null,
             describe: null,
@@ -112,26 +152,18 @@ export default {
     },
     filters: {
       getRange: function (value, num) {
-            // 范围或数值
+            // 判断范围或数值
             if (value.type === 'range') {
+              // 范围
               if (value.start === null) {
-                // return `${value.name}:\t  指标值 < ${value.end * 1 + num * 1 || 'INF'}`
-                return `${value.name}:\t ${value.end * 1 + num * 1 || 'INF'} > 指标值`
+                // 无上界
+                return `${value.name}:\t ${(value.end * 1 + num * 1).toFixed(2) || 'INF'} > 指标值 (${value.unit})`
               } else if (value.end === null) {
-                return `${value.name}:\t ${value.start * 1 + num * 1 || 'INF'} ≤ 指标值`
+                // 无下界
+                return `${value.name}:\t ${(value.start * 1 - num * 1).toFixed(2) || 'INF'} ≤ 指标值 (${value.unit})`
               } else {
-                return `${value.name}:\t ${value.start * 1 + num * 1 || 'INF'} ≤ 指标值 < ${value.end * 1 + num * 1 || 'INF'}`
+                return `${value.name}:\t ${(value.start * 1 + num * 1).toFixed(2) || 'INF'} ≤ 指标值 < ${(value.end * 1 + num * 1 || 'INF').toFixed(2)} (${value.unit})`
               }
-
-            // 范围
-            // if (value.start) {
-            //   value.start = value.start * 1 + num * 1
-            // }
-            // if (value.start) {
-            //   value.start = value.start * 1 - num * 1
-            // }
-            // return `${value.name}:\t  指标值 < ${value.end * 1 + num * 1 || 'INF'}`
-            // return `${value.name}:\t ${value.start * 1 + num * 1 || 'INF'} ≤ 指标值 < ${value.end * 1 + num * 1 || 'INF'}`
             } else if (value.type === 'simple') {
             // 数值
               return value.value
@@ -162,6 +194,13 @@ export default {
             }
           }
           // console.log('指标', this.indexArr)
+        }
+      })
+      getChronic().then(res => {
+        if (res.status === 200) {
+          const resData = res.data.content
+          this.tableData = resData
+          // console.log(resData)
         }
       })
     },
@@ -236,9 +275,20 @@ export default {
         },
         resetForm () {
           // console.log('清空')
-          this.$refs.formData.resetFields()
+          // 不用nextTick会报初始化错误
+          this.$nextTick(() => {
+            this.$refs.formData.resetFields()
+          })
           this.formData.targetArr.length = 0
           this.$forceUpdate()
+        },
+        editChronicTable (data) {
+          this.$refs.editChronic.openModel()
+          this.$refs.editChronic.getChronicData(data)
+          // console.log('编辑', data)
+        },
+        delChronicTable (data) {
+          console.log('删除', data)
         }
     }
 }
@@ -249,5 +299,12 @@ export default {
 }
 .targetIcon{
   font-size: 24px;
+}
+/* .ant-card-body{
+  padding: 10px;
+} */
+.chronicTable{
+  background-color: white;
+  padding: 0 20px;
 }
 </style>
