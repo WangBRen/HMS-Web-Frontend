@@ -97,6 +97,7 @@
     <HealthDataManagmentFormVue
       :openHealthvisible="openHealthvisible"
       @handleCancel="handleCancel"
+      :customerId="currentCustomerId"
       ref="healthDataManagmentRef"
     />
   </div>
@@ -180,7 +181,9 @@ export default {
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
-      openHealthvisible: false
+      openHealthvisible: false,
+      // 健康报告列表
+      currentCustomerId: -1
     }
   },
   created () {
@@ -203,8 +206,9 @@ export default {
         this.onSearch()
     },
     handleHealthData (record) {
+      this.currentCustomerId = record.member.id
       this.openHealthvisible = true
-      this.$refs.healthDataManagmentRef.findCustomerHealthReports(record.member.id)
+      this.$refs.healthDataManagmentRef.onSearch(record.member.id)
     },
 
     /**
