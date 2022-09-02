@@ -28,34 +28,35 @@
             <a-col :md="4" :sm="24" :pull="1">
               <span class="table-page-search-submitButtons">
                 <!-- <a-button type="primary">查询</a-button> -->
-                <a-button type="primary " @click="handleFiltrateTitle">筛选</a-button>
+                <!-- <a-button type="primary " @click="handleFiltrateTitle">筛选</a-button> -->
                 <a-button type="primary " @click="handOpenHealthAdd" style="margin-left: 8px">新建</a-button>
               </span>
             </a-col>
           </a-row>
         </a-form>
       </div>
-      <a-table :columns="columns" :data-source="data" :rowKey="(record,index)=> index">
-        <a slot="name" slot-scope="text">{{ text }}</a>
+      <a-table :columns="columns" :dataSource="dataSource" :rowKey="(record,index)=> index">
+        <!-- <a slot="name" slot-scope="text">{{ text }}</a> -->
         <span slot="action" slot-scope="text, record">
           <a @click="handleViewingTheTeportForm(record)">查看报告单</a>
         </span>
-        <span slot="updatedAt" slot-scope="text, record">
+        <span slot="tags" slot-scope="tags">
+          <a-tag
+            v-for="tag in tags"
+            :key="tag"
+            :color="tag === '个人基础信息' ? 'geekblue' : tag.length > 5 ? 'volcano' : 'green'"
+          >{{ tag }}</a-tag>
+        </span>
+        <!-- <span slot="updatedAt" slot-scope="text, record">
           {{ record.updatedAt ? moment(record?.updatedAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
-        </span>
-        <span slot="createdAt" slot-scope="text, record">
-          {{ record.createdAt ? moment(record?.createdAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
-        </span>
-        <span slot="diseaseAt" slot-scope="text, record">
-          {{ record.diseaseAt ? moment(record.diseaseAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
-        </span>
+        </span> -->
       </a-table>
     </a-modal>
-    <FiltersHealthDataTableHeadersVue
+    <!-- <FiltersHealthDataTableHeadersVue
       ref="filterRef"
       :columns="dataColums"
       @ok="selectHealthTitleOk"
-    />
+    /> -->
     <AddHealthData ref="child" />
   </div>
 </template>
@@ -66,7 +67,7 @@ import AddHealthData from './AddHealthData.vue'
 import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from '@/api/health'
 import { getIndexColumns as apiGetIndexColumns } from '@/api/healthIndexes'
 
-const data = []
+const dataSource = []
 
 export default {
    components: {
@@ -87,8 +88,34 @@ export default {
     return {
       custId: '',
       reportId: '',
-      data,
-      columns: [],
+      // eslint-disable-next-line no-undef
+      dataSource,
+      columns: [
+      {
+            title: '创建时间',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            align: 'center',
+            width: 260,
+            customRender: (text, record, index) => {
+            return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+    }
+          },
+          {
+            title: '健康项目名称',
+            dataIndex: 'projects',
+            key: 'projects',
+            align: 'center',
+            scopedSlots: { customRender: 'tags' }
+          },
+          {
+            title: '操作',
+            dataIndex: 'action',
+            align: 'center',
+            scopedSlots: { customRender: 'action' },
+            width: 260
+          }
+      ],
       dataColums: [],
       confirmLoading: false,
       filtersVisible: false,
@@ -102,15 +129,6 @@ export default {
       showTotal: total => `共 ${total} 条`, // 显示总数
       onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
       onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-      },
-      actions: {
-        title: '操作',
-        dataIndex: 'action',
-        key: 'x',
-        align: 'center',
-        fixed: 'right',
-        width: 200,
-        scopedSlots: { customRender: 'action' }
       }
     }
   },
@@ -121,14 +139,14 @@ export default {
     moment,
     async onSearch () {
       const resColumus = await apiGetIndexColumns()
-      const totalColumns = (resColumus.data || []).map(column => {
-        return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
-      })
-      this.columns = totalColumns.filter(column => !column.hide).concat(this.actions)
+      // const totalColumns = (resColumus.data || []).map(column => {
+      //   return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
+      // })
+      // this.columns = totalColumns.filter(column => !column.hide).concat(this.actions)
       this.dataColums = (resColumus.data || []).map(column => {
         return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
       })
-      console.log(this.dataColums)
+      console.log('this.dataColums', this.dataColums)
     },
     /**
      * 查找用户自己的指标
@@ -140,7 +158,8 @@ export default {
         size: this.pagination.pageSize
       }
       const res = await apiGetHealthReports(customersId, pages)
-       this.data = res.data.content || []
+       this.dataSource = res.data.content || []
+       console.log('this.dataSource', this.dataSource)
     },
     // 点击了取消
     handleCancel () {
@@ -150,17 +169,17 @@ export default {
     /**
      * 点开筛选表头
      */
-    handleFiltrateTitle () {
-      this.filtersVisible = true
-      this.$refs.filterRef.open(this.columns) // 伪双向绑定
-    },
-    /**
-     * 确定筛选
-     */
-    selectHealthTitleOk (selectColumns) {
-      this.columns = selectColumns.filter(column => !column.hide).concat(this.actions)
-      // console.log(selectColumns)
-    },
+    // handleFiltrateTitle () {
+    //   this.filtersVisible = true
+    //   this.$refs.filterRef.open(this.columns) // 伪双向绑定
+    // },
+    // /**
+    //  * 确定筛选
+    //  */
+    // selectHealthTitleOk (selectColumns) {
+    //   this.columns = selectColumns.filter(column => !column.hide).concat(this.actions)
+    //   // console.log(selectColumns)
+    // },
     // 新建报告单
     handOpenHealthAdd () {
       // 在这传custmoerId
