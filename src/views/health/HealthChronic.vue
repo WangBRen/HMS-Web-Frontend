@@ -295,7 +295,7 @@ export default {
             }
           })
         },
-        upDataChronic () {
+        updateChronic () {
           // console.log('刷新了吗')
           this.getChronic()
         }

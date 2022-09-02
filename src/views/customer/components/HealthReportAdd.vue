@@ -264,7 +264,7 @@ export default {
                 healthIndexData.push(x, y)
                 this.healthIndexData = JSON.parse(JSON.stringify(healthIndexData))
                 this.filterHealthIndexData = JSON.parse(JSON.stringify(healthIndexData))
-                console.log('指标', this.healthIndexData)
+                // console.log('指标', this.healthIndexData)
             }
         })
     },
@@ -322,8 +322,8 @@ export default {
                 this.$message.error('请选择指标')
                 // console.log('为空')
             }
-            console.log('formData', formData)
-            console.log(customerId, 'apiData', apiData)
+            // console.log('formData', formData)
+            // console.log(customerId, 'apiData', apiData)
         },
         openAddModal () {
             this.addReportVisible = true
@@ -338,7 +338,7 @@ export default {
         },
         openADDmodalCustId (cusmId) {
             this.customerId = cusmId
-            console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
+            // console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
         },
         closeAddModal () {
             this.addReportVisible = false
@@ -355,7 +355,7 @@ export default {
                 testAt: null
             }
             this.formData.indexArr.push(item)
-            console.log(this.formData)
+            // console.log(this.formData)
         },
         checkIndex (indexId) {
             const healthIndexData = this.healthIndexData
@@ -378,21 +378,21 @@ export default {
                 }
             }
             this.addIndexVisible = false
-            console.log(this.formData)
+            // console.log(this.formData)
             // healthIndexData.sort((a, b) => {
             //     return a.name.length - b.name.length
             // })
-            console.log('healthIndexData', healthIndexData)
+            // console.log('healthIndexData', healthIndexData)
         },
         delIndex (item) {
-            console.log('删除', item)
+            // console.log('删除', item)
             this.formData.indexArr = this.formData.indexArr.filter(i => i.id !== item.id)
         },
         delIndexEnd () {
             this.formData.indexArr.pop()
         },
         selectChange (indexId, items) {
-            console.log(indexId, '选择', items)
+            // console.log(indexId, '选择', items)
             const healthIndexData = this.healthIndexData
             for (let i = 0; i < healthIndexData.length; i++) {
                 if (healthIndexData[i].name === indexId) {

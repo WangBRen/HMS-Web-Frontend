@@ -222,7 +222,7 @@ export default {
       } else {
         this.formData.title = null
       }
-      console.log('查看报告', this.formData)
+      // console.log('查看报告', this.formData)
     },
     openSeeModal () {
       this.seeReportVisible = true
@@ -231,7 +231,7 @@ export default {
       this.seeReportVisible = false
     },
     onSc (value) {
-      console.log('11', value)
+      // console.log('11', value)
       document.getElementById(value).scrollIntoView({ behavior: 'smooth' })
     }
   }
