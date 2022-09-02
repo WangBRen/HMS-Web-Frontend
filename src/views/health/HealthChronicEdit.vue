@@ -159,6 +159,7 @@ export default {
                 if (res.status === 200) {
                     // console.log('编辑成功')
                     this.$message.info('成功编辑慢病')
+                    this.$parent.upDataChronic() // 编辑后触发父组件刷新
                     this.editVisible = false
                 }
             })
