@@ -44,7 +44,7 @@
           <a-tag
             v-for="tag in tags"
             :key="tag"
-            :color="tag === '个人基础信息' ? 'geekblue' : tag.length > 5 ? 'volcano' : 'green'"
+            :color=" 'geekblue'"
           >{{ tag }}</a-tag>
         </span>
         <!-- <span slot="updatedAt" slot-scope="text, record">
@@ -165,6 +165,7 @@ export default {
     handleCancel () {
       this.$emit('handleCancel')
       this.filtersVisible = false
+      this.dataSource = []
     },
     /**
      * 点开筛选表头
@@ -203,5 +204,16 @@ export default {
       })
     }
   }
+  // watch: {
+	// 		// 监听,当路由从查看界面返回到全部界面时，获取缓存中的数据
+	// 		$route: {
+	// 			handler: function (val, oldVal) {
+  //         console.log('val', val, 'oldval', oldVal)
+	// 				if (val.name === '首页路由名称' && oldVal.name === '/health-reports/1/reports') {
+	// 					this.getFair() // 调用获取数据的方法
+	// 				}
+	// 			}
+	// 	}
+  // }
 }
 </script>
