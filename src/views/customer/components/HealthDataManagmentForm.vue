@@ -57,7 +57,7 @@
       :columns="dataColums"
       @ok="selectHealthTitleOk"
     />
-    <!-- <AddHealthData ref="child" /> -->
+    <AddHealthData ref="child" /> -->
     <HealthReportSee ref="seeReport" />
     <HealthReportAdd ref="addReport" />
   </div>
