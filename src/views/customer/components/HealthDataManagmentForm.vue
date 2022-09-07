@@ -152,7 +152,7 @@ export default {
       this.dataColums = (resColumus.data || []).map(column => {
         return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
       })
-      console.log('this.dataColums', this.dataColums)
+      // console.log('this.dataColums', this.dataColums)
     },
     /**
      * 查找用户自己的指标
@@ -165,7 +165,7 @@ export default {
       }
       const res = await apiGetHealthReports(customersId, pages)
        this.dataSource = res.data.content || []
-       console.log('this.dataSource', this.dataSource)
+      //  console.log('this.dataSource', this.dataSource)
     },
     // 点击了取消
     handleCancel () {
