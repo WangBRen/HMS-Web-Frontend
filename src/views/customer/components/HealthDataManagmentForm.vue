@@ -56,14 +56,18 @@
       ref="filterRef"
       :columns="dataColums"
       @ok="selectHealthTitleOk"
-    /> -->
-    <AddHealthData ref="child" />
+    />
+    <!-- <AddHealthData ref="child" /> -->
+    <HealthReportSee ref="seeReport" />
+    <HealthReportAdd ref="addReport" />
   </div>
 </template>
 <script>
 import moment from 'moment'
 import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
-import AddHealthData from './AddHealthData.vue'
+// import AddHealthData from './AddHealthData.vue'
+import HealthReportSee from './HealthReportSee.vue'
+import HealthReportAdd from './HealthReportAdd.vue'
 import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from '@/api/health'
 import { getIndexColumns as apiGetIndexColumns } from '@/api/healthIndexes'
 
@@ -72,7 +76,9 @@ const dataSource = []
 export default {
    components: {
     FiltersHealthDataTableHeadersVue,
-    AddHealthData
+    // AddHealthData,
+    HealthReportSee,
+    HealthReportAdd
   },
   props: {
     openHealthvisible: {
@@ -185,9 +191,12 @@ export default {
     handOpenHealthAdd () {
       // 在这传custmoerId
       // const cusmId = '2'
+      // console.log('???')
       const cusmId = this.custId
-      this.$refs.child.openModel()
-      this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
+      // this.$refs.child.openModel()
+      // this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
+      this.$refs.addReport.openAddModal()
+      this.$refs.addReport.openADDmodalCustId(cusmId)
     },
     // 查看报告单
     handleViewingTheTeportForm (data) {
@@ -198,8 +207,8 @@ export default {
       getHealthCustomerReport(cusmId, reportId).then(res => {
         if (res.status === 200) {
           // console.log('接口查报告单', res.data)
-          this.$refs.child.openModel()
-          this.$refs.child.seeHealthCom(res.data)
+          this.$refs.seeReport.openSeeModal()
+          this.$refs.seeReport.seeReportCom(res.data)
         }
       })
     }
