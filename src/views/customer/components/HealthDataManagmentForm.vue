@@ -2,20 +2,21 @@
   <div>
     <a-modal
       forceRender
+      destroyOnClose
       :maskClosable="false"
       :width="1200"
       :title="title"
       :visible="openHealthvisible"
       :confirm-loading="confirmLoading"
       @cancel="handleCancel"
-      :ok-button-props="{ style: {display: 'none'} }"
+      :ok-button-props="{ style: { display: 'none' } }"
       :scroll="{ x: true }"
     >
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
           <a-row :gutter="48">
             <a-col :md="8" :sm="24">
-              <a-form-item >
+              <a-form-item>
                 <a-input-search
                   placeholder="请输入关键字"
                   enter-button="查询"
@@ -24,7 +25,7 @@
                 />
               </a-form-item>
             </a-col>
-            <a-col :md="12" :sm="24"/>
+            <a-col :md="12" :sm="24" />
             <a-col :md="4" :sm="24" :pull="1">
               <span class="table-page-search-submitButtons">
                 <!-- <a-button type="primary">查询</a-button> -->
@@ -39,6 +40,9 @@
         <!-- <a slot="name" slot-scope="text">{{ text }}</a> -->
         <span slot="action" slot-scope="text, record">
           <a @click="handleViewingTheTeportForm(record)">查看报告单</a>
+          <!-- <a-popconfirm title="你确定要删除吗" @confirm="confirm($event,action)">
+            <a-button type="danger">删除</a-button>
+          </a-popconfirm> -->
         </span>
         <span slot="tags" slot-scope="tags">
           <a-tag
@@ -85,9 +89,9 @@ export default {
       type: Boolean,
       default: false
     },
-    title: {
-      type: String,
-      default: ''
+    customerId: {
+      type: Number,
+      default: -1
     }
   },
   data () {
@@ -168,7 +172,7 @@ export default {
       } else {
         this.dataSource = []
       }
-       console.log('this.dataSource', this.dataSource)
+      // console.log('this.dataSource', this.dataSource)
       })
     },
     onPageChange (page, _pageSize) {
@@ -216,7 +220,7 @@ export default {
       const reportId = data.id // 存reportId
       // console.log('cusmId', cusmId)
       // console.log('报告单', reportId)
-      getHealthCustomerReport(cusmId, reportId).then(res => {
+      getHealthCustomerReport(cusmId, reportId).then((res) => {
         if (res.status === 200) {
           // console.log('接口查报告单', res.data)
           this.$refs.seeReport.openSeeModal()
