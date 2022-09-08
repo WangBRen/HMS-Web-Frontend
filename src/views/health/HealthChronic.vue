@@ -170,6 +170,9 @@ export default {
             }
         }
     },
+    created () {
+      this.$setPageDataLoader(this.getChronic)
+    },
     mounted () {
       // 获取指标
       getHealthIndex().then(res => {
