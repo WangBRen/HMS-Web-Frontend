@@ -169,7 +169,7 @@
 </template>
 <script>
 import moment from 'moment'
-import { nation } from './nation'
+import { nation } from '../nation'
 import Address from '@/components/CheckAddress/CheckAddress.vue'
 import { customerRepeat as apiCustomerRepeat, searchCustomerUnderGroup, customerAdd } from '@/api/customer'
 import { getCode } from '@/api/login'

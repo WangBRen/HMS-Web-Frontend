@@ -123,7 +123,7 @@
 <script>
 import Address from '@/components/CheckAddress/CheckAddress.vue'
 import { editGroupCustomer as apiEditGroupCustomer, getCode as apiGetCode, updatePhone as apiUpdatePhone } from '@/api/customer'
-import { nation } from './nation'
+import { nation } from '../nation'
 
 export default {
     components: {
