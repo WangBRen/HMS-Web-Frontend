@@ -43,7 +43,7 @@ const errorHandler = (error) => {
 
 // request interceptor
 request.interceptors.request.use(config => {
-  console.log({ url: config.url })
+  console.warn(`REQUESTING...[${config.method.toUpperCase()}]`, { url: config.url, params: config.params, payload: config.data })
   const token = storage.get(ACCESS_TOKEN)
   // 如果 token 存在
   // 让每个请求携带自定义 token 请根据实际情况自行修改

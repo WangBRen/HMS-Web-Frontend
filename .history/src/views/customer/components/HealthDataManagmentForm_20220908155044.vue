@@ -148,7 +148,6 @@ export default {
   methods: {
     moment,
     async onSearch () {
-      // eslint-disable-next-line no-undef
       const resColumus = await apiGetIndexColumns()
       // const totalColumns = (resColumus.data || []).map(column => {
       //   return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }

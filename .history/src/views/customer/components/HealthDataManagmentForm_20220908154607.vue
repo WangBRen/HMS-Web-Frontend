@@ -36,7 +36,11 @@
           </a-row>
         </a-form>
       </div>
+<<<<<<< HEAD
+      <a-table :columns="columnsData" :dataSource="dataSource" :rowKey="(record,index)=> index" bordered>
+=======
       <a-table :columns="columns" :dataSource="dataSource" :rowKey="(record,index)=> index">
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
         <!-- <a slot="name" slot-scope="text">{{ text }}</a> -->
         <span slot="action" slot-scope="text, record">
           <a @click="handleViewingTheTeportForm(record)">查看报告单</a>
@@ -48,6 +52,15 @@
           <a-tag
             v-for="tag in tags"
             :key="tag"
+<<<<<<< HEAD
+            :color="tag === '个人基础信息' ? 'geekblue' : tag.length > 7 ? 'volcano' : 'green'"
+          >{{ tag }}</a-tag>
+        </span>
+      </a-table>
+    </a-modal>
+    <!-- <FiltersHealthDataTableHeadersVue ref="filterRef" :columns="dataColums" @ok="selectHealthTitleOk" /> -->
+    <AddHealthData ref="child" />
+=======
             :color=" 'geekblue'"
           >{{ tag }}</a-tag>
         </span>
@@ -64,6 +77,7 @@
     <AddHealthData ref="child" /> -->
     <HealthReportSee ref="seeReport" />
     <HealthReportAdd ref="addReport" />
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
   </div>
 </template>
 <script>
@@ -98,6 +112,36 @@ export default {
     return {
       custId: '',
       reportId: '',
+<<<<<<< HEAD
+      data,
+      columnsData: [
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          key: 'createdAt',
+          align: 'center',
+          width: 200,
+          customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+        },
+        {
+          title: '健康项目名称',
+          dataIndex: 'projects',
+          align: 'center',
+          key: 'id',
+          scopedSlots: { customRender: 'tags' }
+        },
+        {
+          title: '操作',
+          // dataIndex: 'Operation',
+          key: 'Operation',
+          align: 'center',
+          width: 250,
+          scopedSlots: { customRender: 'action' }
+        }
+      ],
+      dataSource: [],
+      dataItem: [],
+=======
       // eslint-disable-next-line no-undef
       dataSource,
       columns: [
@@ -126,11 +170,22 @@ export default {
             width: 260
           }
       ],
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
       dataColums: [],
       confirmLoading: false,
       filtersVisible: false,
       saveTableTitle: [],
       pagination: {
+<<<<<<< HEAD
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: (total) => `共 ${total} 条`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+=======
       total: 0,
       current: 1,
       pageSize: 10, // 默认每页显示数量
@@ -139,6 +194,7 @@ export default {
       showTotal: total => `共 ${total} 条`, // 显示总数
       onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
       onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
       }
     }
   },
@@ -147,8 +203,10 @@ export default {
   },
   methods: {
     moment,
+<<<<<<< HEAD
+    async onSearch (customersId) {
+=======
     async onSearch () {
-      // eslint-disable-next-line no-undef
       const resColumus = await apiGetIndexColumns()
       // const totalColumns = (resColumus.data || []).map(column => {
       //   return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
@@ -163,6 +221,7 @@ export default {
      * 查找用户自己的指标
      */
     async findCustomerHealthReports (customersId) {
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
       this.custId = customersId
       const pages = {
         page: this.pagination.current,
@@ -170,8 +229,21 @@ export default {
       }
       this.dataSource = []
       const res = await apiGetHealthReports(customersId, pages)
+<<<<<<< HEAD
+      this.dataSource = res.data.content || []
+      // for (var key in this.dataSource) {
+      //   console.log(key)
+      //   console.log(this.dataSource[key].indexes)
+      //   this.dataItem.push(key)
+      // }
+      // for (const key in this.dataSource) {
+      //   this.dataItem(key).name = key
+      //   console.log('dataItem(key).name', this.dataItem(key))
+      // }
+=======
        this.dataSource = res.data.content || []
       //  console.log('this.dataSource', this.dataSource)
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
     },
     // 点击了取消
     handleCancel () {
@@ -182,6 +254,17 @@ export default {
     /**
      * 点开筛选表头
      */
+<<<<<<< HEAD
+    // handleFiltrateTitle() {
+    //   this.filtersVisible = true
+    //   this.$refs.filterRef.open(this.columns) // 伪双向绑定
+    // },
+    /**
+     * 确定筛选
+     */
+    // selectHealthTitleOk(selectColumns) {
+    //   this.columns = selectColumns.filter((column) => !column.hide).concat(this.actions)
+=======
     // handleFiltrateTitle () {
     //   this.filtersVisible = true
     //   this.$refs.filterRef.open(this.columns) // 伪双向绑定
@@ -191,6 +274,7 @@ export default {
     //  */
     // selectHealthTitleOk (selectColumns) {
     //   this.columns = selectColumns.filter(column => !column.hide).concat(this.actions)
+>>>>>>> d375b6d40b02cf18f3ff876e3fd9e76aed699afb
     //   // console.log(selectColumns)
     // },
     // 新建报告单

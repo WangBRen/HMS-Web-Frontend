@@ -171,6 +171,7 @@ export default {
         }
     },
     mounted () {
+      // 获取指标
       getHealthIndex().then(res => {
         if (res.status === 200) {
           const resData = res.data
@@ -196,13 +197,7 @@ export default {
           // console.log('指标', this.indexArr)
         }
       })
-      getChronic().then(res => {
-        if (res.status === 200) {
-          const resData = res.data.content
-          this.tableData = resData
-          // console.log(resData)
-        }
-      })
+      this.getChronic()
     },
     methods: {
         addChronic () {
@@ -289,6 +284,20 @@ export default {
         },
         delChronicTable (data) {
           console.log('删除', data)
+        },
+        // 获取慢病表
+        getChronic () {
+          getChronic().then(res => {
+            if (res.status === 200) {
+              const resData = res.data.content
+              this.tableData = resData
+              // console.log('111', resData)
+            }
+          })
+        },
+        updateChronic () {
+          // console.log('刷新了吗')
+          this.getChronic()
         }
     }
 }
