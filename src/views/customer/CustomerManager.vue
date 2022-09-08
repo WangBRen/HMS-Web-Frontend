@@ -52,11 +52,19 @@
           :data-source="inner.members"
           :pagination="false"
         >
+          <span slot="healthStatus" slot-scope="text, record">
+            <!-- {{ record.member.healthStatus }} -->
+            <a-tag v-for="tag in record.member.healthStatus" :key="tag">
+              {{ tag | filterHealthStatus }}
+            </a-tag>
+          </span>
           <span slot="cavatar" slot-scope="text, record">
             <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
           <span slot="operation" slot-scope="text, record">
-            <a @click="handleHealthData(record)">查看健康信息</a>
+            <a @click="handleHealthData(record)">健康信息</a>
+            <a-divider type="vertical" />
+            <a @click="chronicManage(record)">慢病管理</a>
             <a-divider type="vertical" />
             <a-dropdown>
               <a-menu slot="overlay">
@@ -102,11 +110,14 @@
       :customerId="currentCustomerId"
       ref="healthDataManagmentRef"
     />
+    <!-- 慢病管理 -->
+    <ChronicManage ref="ChronicManageRef"/>
   </div>
 </template>
 <script>
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
+import ChronicManage from './components/ChronicManage.vue'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import EditUserMsg from './components/EditUserMsg.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
@@ -134,6 +145,7 @@ const innerColumns = [
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
+  { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' } },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
@@ -157,7 +169,32 @@ export default {
     CustomerInfoForm,
     AddNewUserVue,
     HealthDataManagmentFormVue,
-    EditUserMsg
+    EditUserMsg,
+    ChronicManage
+  },
+  filters: {
+    filterHealthStatus: function (value) {
+      // console.log(value)
+      if (value) {
+        if (value === null) {
+          return null
+        } else if (value === 'normal') {
+          return '正常'
+        } else if (value === 'suspect') {
+          return '存在疑似'
+        } else if (value === 'diagnosed') {
+          return '全部确诊'
+        } else if (value === 'hospitalized') {
+          return '住院'
+        } else if (value === 'processing') {
+          return '慢病管理中'
+        } else if (value === 'suspend') {
+          return '暂停'
+        } else if (value === 'withdraw') {
+          return '退出'
+        }
+      }
+    }
   },
   data () {
     return {
@@ -213,6 +250,12 @@ export default {
       this.openHealthvisible = true
       this.$refs.healthDataManagmentRef.setCustomerId(record.member.id)
       this.$refs.healthDataManagmentRef.findCustomerHealthReports()
+    },
+    // 点击慢病管理
+    chronicManage (record) {
+      this.$refs.ChronicManageRef.openChronicManageModal(record.member.id)
+      this.$refs.ChronicManageRef.getUserInfo(record.member.baseInfo)
+      // console.log(record.member.baseInfo)
     },
 
     /**

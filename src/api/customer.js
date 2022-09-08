@@ -10,7 +10,9 @@ const customerApi = {
     healthReports: customerId => { return `/health-reports/${customerId}/reports` },
     editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`, // 编辑用户信息
     updatePhone: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/phone`,
-    UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` }
+    UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
+    ChronicManage: customerId => { return `/customers/${customerId}/chronic-diseases` },
+    editCustomerChronicDiseases: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -101,5 +103,20 @@ export function updatePhone (groupId, customerId, phoneForm) {
         url: customerApi.updatePhone(groupId, customerId),
         method: 'put',
         data: phoneForm
+    })
+}
+
+export function getChronicManage (customersId) {
+    return request({
+        url: customerApi.ChronicManage(customersId),
+        method: 'get'
+    })
+}
+
+export function editCustomerChronicDiseases (customerId, diseaseId, params) {
+    return request({
+        url: customerApi.editCustomerChronicDiseases(customerId, diseaseId),
+        method: 'put',
+        data: params
     })
 }
