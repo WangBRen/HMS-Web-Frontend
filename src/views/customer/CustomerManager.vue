@@ -204,7 +204,8 @@ export default {
     },
     handleHealthData (record) {
       this.openHealthvisible = true
-      this.$refs.healthDataManagmentRef.findCustomerHealthReports(record.member.id)
+      this.$refs.healthDataManagmentRef.setCustomerId(record.member.id)
+      this.$refs.healthDataManagmentRef.findCustomerHealthReports()
     },
 
     /**
