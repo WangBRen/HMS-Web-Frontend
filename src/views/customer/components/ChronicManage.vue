@@ -174,7 +174,7 @@ export default {
         // 获取用户信息
         getUserInfo (userInfo) {
             this.userData = userInfo
-            console.log('userInfo', userInfo)
+            // console.log('userInfo', userInfo)
         },
         // 关闭慢病管理弹窗
         closeChronicManageModal () {
@@ -212,8 +212,8 @@ export default {
                 this.$message.error('编辑失败')
             }
           })
-          console.log(data)
-          console.log(apidata)
+          // console.log(data)
+          // console.log(apidata)
         },
         // 关闭确诊弹窗
         closeEditModel () {
@@ -250,7 +250,7 @@ export default {
         },
         // 点击误判
         suspectOk (data) {
-          console.log(data)
+          // console.log(data)
           this.editChronicException(data)
         }
     }

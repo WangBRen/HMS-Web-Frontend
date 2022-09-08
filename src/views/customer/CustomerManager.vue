@@ -229,7 +229,7 @@ export default {
       const groupId = inner.id
       this.$refs.editUserRef.openModel()
       this.$refs.editUserRef.getUserData(groupId, userData)
-      console.log('编辑用户', userData)
+      // console.log('编辑用户', userData)
     },
     onPageChange (page, pageSize) {
       this.pagination.current = page
