@@ -21,7 +21,7 @@
                   placeholder="请输入关键字"
                   enter-button="查询"
                   :loading="confirmLoading"
-                  @search="onSearch"
+                  @search="findCustomerHealthReports"
                 />
               </a-form-item>
             </a-col>
@@ -36,7 +36,7 @@
           </a-row>
         </a-form>
       </div>
-      <a-table :columns="columns" :dataSource="dataSource" :rowKey="(record,index)=> index">
+      <a-table :columns="columns" :dataSource="dataSource" :rowKey="(record,index)=> index" :pagination="pagination">
         <!-- <a slot="name" slot-scope="text">{{ text }}</a> -->
         <span slot="action" slot-scope="text, record">
           <a @click="handleViewingTheTeportForm(record)">查看报告单</a>
@@ -68,7 +68,7 @@
 </template>
 <script>
 import moment from 'moment'
-import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
+// import FiltersHealthDataTableHeadersVue from './FiltersHealthDataTableHeaders.vue'
 // import AddHealthData from './AddHealthData.vue'
 import HealthReportSee from './HealthReportSee.vue'
 import HealthReportAdd from './HealthReportAdd.vue'
@@ -78,8 +78,8 @@ import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from 
 const dataSource = []
 
 export default {
-  components: {
-    FiltersHealthDataTableHeadersVue,
+   components: {
+    // FiltersHealthDataTableHeadersVue,
     // AddHealthData,
     HealthReportSee,
     HealthReportAdd
@@ -101,83 +101,93 @@ export default {
       // eslint-disable-next-line no-undef
       dataSource,
       columns: [
-      {
-            title: '创建时间',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            align: 'center',
-            width: 260,
-            customRender: (text, record, index) => {
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          key: 'createdAt',
+          align: 'center',
+          width: 260,
+          customRender: (text, record, index) => {
             return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
-    }
-          },
-          {
-            title: '健康项目名称',
-            dataIndex: 'projects',
-            key: 'projects',
-            align: 'center',
-            scopedSlots: { customRender: 'tags' }
-          },
-          {
-            title: '操作',
-            dataIndex: 'action',
-            align: 'center',
-            scopedSlots: { customRender: 'action' },
-            width: 260
           }
+        },
+        {
+          title: '健康项目名称',
+          dataIndex: 'projects',
+          key: 'projects',
+          align: 'center',
+          scopedSlots: { customRender: 'tags' }
+        },
+        {
+          title: '操作',
+          dataIndex: 'action',
+          align: 'center',
+          scopedSlots: { customRender: 'action' },
+          width: 260
+        }
       ],
-      dataColums: [],
+      // dataColums: [],
       confirmLoading: false,
       filtersVisible: false,
       saveTableTitle: [],
+      pages: {},
       pagination: {
-      total: 0,
-      current: 1,
-      pageSize: 10, // 默认每页显示数量
-      showSizeChanger: true, // 显示可改变每页数量
-      pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-      showTotal: total => `共 ${total} 条`, // 显示总数
-      onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
-      onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 条`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       }
     }
   },
-  mounted () {
-    this.onSearch(this.props.customersId)
+  created () {
+    if (this.custId) {
+      this.findCustomerHealthReports()
+    }
   },
   methods: {
     moment,
-    async onSearch () {
-      // eslint-disable-next-line no-undef
-      const resColumus = await apiGetIndexColumns()
-      // const totalColumns = (resColumus.data || []).map(column => {
-      //   return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
-      // })
-      // this.columns = totalColumns.filter(column => !column.hide).concat(this.actions)
-      this.dataColums = (resColumus.data || []).map(column => {
-        return { ...column, align: 'center', scopedSlots: { customRender: column.dataIndex } }
-      })
-      console.log('this.dataColums', this.dataColums)
+    setCustomerId (customersId) {
+      this.custId = customersId
     },
     /**
      * 查找用户自己的指标
      */
-    async findCustomerHealthReports (customersId) {
-      this.custId = customersId
+    async findCustomerHealthReports () {
+      console.log('CustimerId', this.custId)
+      this.loadingShow = true
+      // this.dataSource = []
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
       }
-      this.dataSource = []
-      const res = await apiGetHealthReports(customersId, pages)
-       this.dataSource = res.data.content || []
-       console.log('this.dataSource', this.dataSource)
+      await apiGetHealthReports(this.custId, pages).then(res => {
+      if (res.status === 200) {
+        this.loadingShow = false
+        this.dataSource = res.data.content || []
+        this.pagination.total = res.data.totalElements
+      } else {
+        this.dataSource = []
+      }
+      // console.log('this.dataSource', this.dataSource)
+      })
+    },
+    onPageChange (page, _pageSize) {
+      this.pagination.current = page
+       this.findCustomerHealthReports()
+    },
+    onSizeChange (_current, pageSize) {
+        this.pagination.current = 1
+        this.pagination.pageSize = pageSize
+        this.findCustomerHealthReports()
     },
     // 点击了取消
     handleCancel () {
       this.$emit('handleCancel')
       this.filtersVisible = false
-      this.dataSource = []
     },
     /**
      * 点开筛选表头
