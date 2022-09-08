@@ -32,7 +32,8 @@
         :pagination="pagination"
       >
         <span slot="action" slot-scope="text, grecord">
-          <a @click="handleAdd(grecord)">新增用户</a>|
+          <a @click="handleAdd(grecord)">新增用户</a>
+          <a-divider type="vertical" />
           <a @click="handleEdit(grecord)">添加用户</a>
         </span>
         <!-- <span slot="action" slot-scope="text, grecord">
@@ -42,6 +43,7 @@
           <a-avatar size="large" icon="user" :src="grecord.avatar"/>
         </span>
         <a-table
+          bordered
           :rowKey="(record,index)=>{return index}"
           class="child-table"
           slot="expandedRowRender"
@@ -105,6 +107,7 @@
     <HealthDataManagmentFormVue
       :openHealthvisible="openHealthvisible"
       @handleCancel="handleCancel"
+      :customerId="currentCustomerId"
       ref="healthDataManagmentRef"
     />
     <!-- 慢病管理 -->
@@ -213,15 +216,17 @@ export default {
         pageSize: 10, // 默认每页显示数量
         showSizeChanger: true, // 显示可改变每页数量
         pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-        showTotal: total => `共 ${total} 条`, // 显示总数
+        showTotal: total => `共 ${total} 个群组`, // 显示总数
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
-      openHealthvisible: false
+      openHealthvisible: false,
+      // 健康报告列表
+      currentCustomerId: -1
     }
   },
   created () {
-    this.$setPageDataLoader(this.data)
+    this.$setPageDataLoader(this.onSearch)
     this.onSearch()
   },
   methods: {
@@ -241,8 +246,10 @@ export default {
         this.onSearch()
     },
     handleHealthData (record) {
+      this.currentCustomerId = record.member.id
       this.openHealthvisible = true
-      this.$refs.healthDataManagmentRef.findCustomerHealthReports(record.member.id)
+      this.$refs.healthDataManagmentRef.setCustomerId(record.member.id)
+      this.$refs.healthDataManagmentRef.findCustomerHealthReports()
     },
     // 点击慢病管理
     chronicManage (record) {
@@ -324,7 +331,7 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #e7ebee !important;
+  background: #fafafa !important;
 }
 
 .child-table {
