@@ -270,60 +270,75 @@ export default {
     },
     methods: {
         handleOk () {
-            // console.log('确定', this.formData)
             const apiData = this.apiData
+            // const apiData = { projects: [] }
             const formData = this.formData
+            const that = this
+            var indexItem = 0
             const customerId = this.customerId
             apiData.projects.length = 0
+            apiData.diseaseId = null
+            apiData.diseaseAt = null
+            apiData.symptomAt = null
+            apiData.symptom = null
             if (formData.indexArr.length !== 0) {
                 formData.indexArr.forEach(function (val) {
                     if (val.indexId !== '用户诊断信息' && val.indexId !== '用户症状信息') {
-                        const x = { indexProjectName: null, items: [], testAt: null }
-                        x.indexProjectName = val.indexId
-                        x.testAt = val.testAt
-                        val.indexArr.forEach(function (val2) {
-                            if (val.testAt != null) {
-                                if (val2.value != null) {
-                                    const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
-                                    x.items.push(y)
+                        if (val.testAt !== null) {
+                            const x = { indexProjectName: null, items: [], testAt: null }
+                            x.indexProjectName = val.indexId
+                            x.testAt = val.testAt
+                            val.indexArr.forEach(function (val2) {
+                                if (val.testAt != null) {
+                                    if (val2.value != null) {
+                                        const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
+                                        x.items.push(y)
+                                    }
                                 }
-                                // const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
-                                // x.items.push(y)
-                            }
-                            // if (val2.value != null) {
-                            //     const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
-                            //     x.items.push(y)
-                            // }
-                        })
-                        apiData.projects.push(x)
-                    }
-                // const x = { indexProjectName: null, items: [], testAt: null }
-                // x.indexProjectName = val.indexId
-                // x.testAt = val.testAt
-                // val.indexArr.forEach(function (val2) {
-                //     if (val2.value != null) {
-                //         const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
-                //         x.items.push(y)
-                //     }
-                // })
-                // apiData.projects.push(x)
-                })
-                apiData.diseaseId = formData.diagnosisData
-                apiData.diseaseAt = formData.diagnosisTime
-                apiData.symptom = formData.symptomData
-                apiData.symptomAt = formData.symptomTime
-                addHealthReport(customerId, apiData).then(res => {
-                    if (res.status === 201) {
-                        this.$message.info('成功新建报告单')
-                        this.addReportVisible = false
+                            })
+                            apiData.projects.push(x)
+                            indexItem = indexItem + 1
+                        } else {
+                            that.$message.error(val.indexId + '检测时间未填写')
+                        }
                     }
                 })
+                // 诊断信息
+                if (formData.diagnosisData !== null && formData.diagnosisTime === null) {
+                  this.$message.error('用户诊断信息检测时间未填写')
+                } else if (formData.diagnosisData === null && formData.diagnosisTime !== null) {
+                  this.$message.error('用户诊断信息诊断结果未填写')
+                } else if (formData.diagnosisData && formData.diagnosisTime) {
+                  apiData.diseaseId = formData.diagnosisData
+                  apiData.diseaseAt = formData.diagnosisTime
+                  indexItem = indexItem + 1
+                }
+                // 症状信息
+                if (formData.symptomData !== null && formData.symptomTime === null) {
+                  this.$message.error('用户症状信息检测时间未填写')
+                } else if ((formData.symptomData === null || formData.symptomData === '') && formData.symptomTime !== null) {
+                  this.$message.error('用户症状信息诊断结果未填写')
+                } else if (formData.symptomData && formData.symptomTime) {
+                  apiData.symptom = formData.symptomData
+                  apiData.symptomAt = formData.symptomTime
+                  indexItem = indexItem + 1
+                }
+                // console.log(indexItem, 'apiData', apiData)
+                if (indexItem === formData.indexArr.length) {
+                  // console.log('正确')
+                  // 调接口创建报告单
+                  addHealthReport(customerId, apiData).then(res => {
+                      if (res.status === 201) {
+                          this.$message.info('成功新建报告单')
+                          this.addReportVisible = false
+                      }
+                  })
+                }
             } else {
-                this.$message.error('请选择指标')
-                // console.log('为空')
+                this.$message.error('请添加指标')
             }
             // console.log('formData', formData)
-            // console.log(customerId, 'apiData', apiData)
+            // console.log('apiData', apiData)
         },
         openAddModal () {
             this.addReportVisible = true
@@ -386,9 +401,25 @@ export default {
         },
         delIndex (item) {
             // console.log('删除', item)
+            if (item.indexId === '用户诊断信息') {
+              this.formData.diagnosisData = null
+              this.formData.diagnosisTime = null
+            }
+            if (item.indexId === '用户症状信息') {
+              this.formData.symptomData = null
+              this.formData.symptomTime = null
+            }
             this.formData.indexArr = this.formData.indexArr.filter(i => i.id !== item.id)
         },
         delIndexEnd () {
+            if (this.formData.indexArr[this.formData.indexArr.length - 1].indexId === '用户诊断信息') {
+                this.formData.diagnosisData = null
+                this.formData.diagnosisTime = null
+            }
+            if (this.formData.indexArr[this.formData.indexArr.length - 1].indexId === '用户症状信息') {
+              this.formData.symptomData = null
+              this.formData.symptomTime = null
+            }
             this.formData.indexArr.pop()
         },
         selectChange (indexId, items) {

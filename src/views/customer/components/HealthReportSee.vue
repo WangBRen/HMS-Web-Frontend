@@ -17,10 +17,10 @@
             <div class="left-title-wrapper" v-for="item in formData.testData" :key="item.id">
               <a @click="onSc(item.indexProjectName)">{{ item.indexProjectName }}</a>
             </div>
-            <div class="left-title-wrapper">
+            <div class="left-title-wrapper" v-if="formData.diseaseAt">
               <a @click="onSc('用户诊断信息')" key="用户诊断信息">用户诊断信息</a>
             </div>
-            <div class="left-title-wrapper">
+            <div class="left-title-wrapper" v-if="formData.symptomAt">
               <a @click="onSc('用户症状信息')" key="用户症状信息">用户症状信息</a>
             </div>
             <!-- 回到顶部 -->
@@ -55,11 +55,12 @@
                     <a-col :span="21">
                       <div>
                         <a class="exTitle">检测值:</a>
-                        {{ items.value }} {{ items.unit }}
+                        <!-- {{ items.value }} {{ items.unit }} -->
+                        {{ items.value || '--' }} {{ items.unit }}
                       </div>
                       <div>
                         <a class="exTitle">检测结果:</a>
-                        {{ items.endResult }}
+                        {{ items.endResult || '无' }}
                       </div>
                     </a-col>
                   </a-row>
@@ -74,7 +75,7 @@
               </a-row>
             </div>
             <!-- 用户诊断信息 -->
-            <div>
+            <div v-if="formData.diseaseAt">
               <a-row>
                 <a-col class="project-header">
                   <a id="用户诊断信息" class="project-title">用户诊断信息</a>
@@ -109,7 +110,7 @@
               </a-row>
             </div>
             <!-- 用户症状信息 -->
-            <div>
+            <div v-if="formData.symptomAt">
               <a-row>
                 <a-col class="project-header">
                   <a id="用户症状信息" class="project-title">用户症状信息</a>
@@ -240,7 +241,7 @@ export default {
 <style lang="less" scoped>
 .modal-left-panel{
   position: fixed;
-  height: 400px;
+  // height: 400px;
   overflow: auto;
   border-radius: 6px;
   border: 1px #eee solid;
