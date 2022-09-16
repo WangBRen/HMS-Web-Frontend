@@ -65,6 +65,7 @@
             <a @click="handleHealthData(record)">健康信息</a>
             <a-divider type="vertical" />
             <a @click="chronicManage(record)">慢病管理</a>
+            <a @click="chronicInfo(record)">新的慢病</a>
             <a-divider type="vertical" />
             <a-dropdown>
               <a-menu slot="overlay">
@@ -112,12 +113,15 @@
     />
     <!-- 慢病管理 -->
     <ChronicManage ref="ChronicManageRef"/>
+    <!-- 新的慢病 -->
+    <ChronicInformation ref="ChronicInfoRef"/>
   </div>
 </template>
 <script>
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
 import ChronicManage from './components/ChronicManage.vue'
+import ChronicInformation from './components/ChronicInformation.vue'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import EditUserMsg from './components/EditUserMsg.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
@@ -170,7 +174,8 @@ export default {
     AddNewUserVue,
     HealthDataManagmentFormVue,
     EditUserMsg,
-    ChronicManage
+    ChronicManage,
+    ChronicInformation
   },
   filters: {
     filterHealthStatus: function (value) {
@@ -256,6 +261,10 @@ export default {
       this.$refs.ChronicManageRef.openChronicManageModal(record.member.id)
       this.$refs.ChronicManageRef.getUserInfo(record.member.baseInfo)
       // console.log(record.member.baseInfo)
+    },
+    // 点击新的慢病
+    chronicInfo (record) {
+      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id)
     },
 
     /**

@@ -12,7 +12,9 @@ const customerApi = {
     updatePhone: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/phone`,
     UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
     ChronicManage: customerId => { return `/customers/${customerId}/chronic-diseases` },
-    editCustomerChronicDiseases: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`
+    editCustomerChronicDiseases: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`,
+    // 获取慢病指标历史记录
+    getCustomerChronicIndex: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/indexes`
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -118,5 +120,11 @@ export function editCustomerChronicDiseases (customerId, diseaseId, params) {
         url: customerApi.editCustomerChronicDiseases(customerId, diseaseId),
         method: 'put',
         data: params
+    })
+}
+export function getCustomerChronicIndex (customerId, diseaseId) {
+    return request({
+        url: customerApi.getCustomerChronicIndex(customerId, diseaseId),
+        method: 'get'
     })
 }
