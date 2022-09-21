@@ -14,10 +14,14 @@ export function addChronic (parameter) {
   })
 }
 
-export function getChronic () {
+export function getChronic (pages) {
   return request({
     url: api.getChronic,
-    method: 'get'
+    method: 'get',
+    params: {
+      page: pages.page || 1,
+      siez: pages.size || 10
+    }
   })
 }
 export function editChronic (diseaseId, parameter) {

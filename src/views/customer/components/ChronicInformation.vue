@@ -15,7 +15,7 @@
                 <a-col :span="22">
                   <span style="font-size: 20px;color: white;">慢病名称: </span>
                   <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
-                  <span>
+                  <span @click="changeStatus(item.status)">
                     <a-tag style="margin-left: 10px;" :color="item.status === 'diagnosed' ? 'rgba(217, 0, 27, 0.768627450980392)' : (item.status === 'exception' ? 'blue' : 'rgba(245, 154, 35, 1)')">
                       {{ item.status | filterChronicStatus }}
                     </a-tag>
@@ -25,7 +25,7 @@
                   </span>
                 </a-col>
                 <a-col :span="2">
-                  <a :id="'str'+item.id" class="haha" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a>
+                  <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a>
                 </a-col>
               </a-row>
               <a-row :id="item.id" class="card-detail" style="display: none">
@@ -47,12 +47,14 @@
                   </a-row>
                   <a-row class="card-indexData">
                     <a-col :span="12" class="card-indexData-chart">
-                      <div :id="'main'+item.id" :ref="'main'+item.id" style="width: 500px; height: 300px;"></div>
+                      <div :id="'main'+item.id" :ref="'main'+item.id" style="width: 550px; height: 300px;"></div>
                     </a-col>
                     <a-col :span="12" class="card-indexData-table">
-                      <a-table :columns="indexColumns" :data-source="indexData">
-
-                      </a-table>
+                      <ChronicInformationIndexTable
+                        ref="tableRef"
+                        :data="item"
+                        :custId="custId"
+                      />
                     </a-col>
                   </a-row>
                   <a-row class="card-record">
@@ -82,6 +84,26 @@
         </div>
       </div>
     </a-modal>
+    <a-modal
+      v-model="changeStatusVisible"
+      @ok="handleOk"
+      @cancel="closeChangeStatus"
+      title="修改慢病状态"
+      :width="600">
+      <span style="font-size: 16px;">请上传医院或医疗机构的确诊记录：</span>
+      <div style="width: 300px;margin: 0 auto;">
+        <a-upload-dragger action="https://www.mocky.io/v2/5cc8019d300000980a055e76" @change="upload">
+          <p class="ant-upload-drag-icon">
+            <a-icon type="inbox" />
+          </p>
+          <p class="ant-upload-text">
+            点击或拖动文件上传
+          </p>
+        </a-upload-dragger>
+      </div>
+      <span style="color: rgb(170, 170, 170);">*支持PDF、照片图片及常见文件类型</span>
+    </a-modal>
+    <ChronicInformationChangeStatus ref="ChangeStatus"/>
   </div>
 </template>
 <script>
@@ -89,8 +111,14 @@
 import moment from 'moment'
 import { getChronicManage as apiGetChronicManage, getCustomerChronicIndex as apiGetCustomerChronicIndex } from '@/api/customer'
 import echarts from 'echarts'
+import ChronicInformationIndexTable from './ChronicInformationIndexTable.vue'
+import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 
 export default {
+  components: {
+    ChronicInformationIndexTable,
+    ChronicInformationChangeStatus
+  },
   filters: {
     filterTip: function (value) {
       // 范围或数值
@@ -115,6 +143,7 @@ export default {
         if (value === null) {
           return ''
         } else {
+          console.log('时间', moment(value))
           return moment(value).format('YYYY-MM-DD HH:mm')
         }
       }
@@ -122,28 +151,11 @@ export default {
   data () {
     return {
       chronicInfoVisible: false,
+      changeStatusVisible: false,
       custId: null,
       tableData: [],
-      indexData: [],
       recordData: [],
       indexDataColumns: [
-        {
-          title: '时间',
-          dataIndex: 'a',
-          key: 'a'
-        },
-        {
-          title: '数值',
-          dataIndex: 'b',
-          key: 'b'
-        },
-        {
-          title: '参考结果',
-          dataIndex: 'c',
-          key: 'c'
-        }
-      ],
-      indexColumns: [
         {
           title: '时间',
           dataIndex: 'a',
@@ -215,14 +227,14 @@ export default {
               // console.log('tableData', this.tableData)
           }
       })
+      // 解决重新打开modal框，文字为收起问题
+      const dom = document.getElementsByClassName('showData')
+      for (var j = 0; j < dom.length; j++) {
+        dom[j].innerHTML = '展开'
+      }
+      // 解决重新打开modal框，文字为收起问题
       // echarts
       setTimeout(() => {
-        // 解决重新打开modal框，文字为收起问题
-        const dom = document.getElementsByClassName('haha')
-        for (var j = 0; j < dom.length; j++) {
-          dom[j].innerHTML = '展开'
-        }
-        // 解决重新打开modal框，文字为收起问题
         // 循环大标题，渲染折线图
         for (var i = 0; i < this.tableData.length; i++) {
           // console.log('main' + this.tableData[i].id)
@@ -234,6 +246,7 @@ export default {
             if (res.status === 200) {
               // console.log('图的数据', res.data)
               const diseaseData = res.data
+              // console.log('diseaseData', diseaseData)
               this.drawLine('main' + diseaseId, diseaseData)
             }
           })
@@ -254,9 +267,10 @@ export default {
     },
     // 渲染折线图
     drawLine (mainId, diseaseData) {
-      console.log('数据', diseaseData)
+      // console.log('数据', diseaseData)
       const seriesArr = []
       const legendArr = [] // 提示
+      const timeArr = []
       for (var i = 0; i < diseaseData.length; i++) {
           // console.log(diseaseData[i].data)
           legendArr.push(diseaseData[i].info.name)
@@ -264,7 +278,7 @@ export default {
           for (var j = 0; j < diseaseData[i].data.length; j++) {
             // 数值
             diseaseArr.push(diseaseData[i].data[j].value)
-            // console.log(moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm'))
+            timeArr.push(moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD'))
           }
           var diseaseArrIndex = {
               name: diseaseData[i].info.name,
@@ -272,9 +286,11 @@ export default {
               data: diseaseArr
           }
           seriesArr.push(diseaseArrIndex)
+          // X轴时间去重
+          // console.log([...new Set(timeArr)], '时间转换后的数组', timeArr)
       }
       // console.log('legendArr', legendArr)
-      console.log('seriesArr', seriesArr)
+      // console.log('seriesArr', seriesArr)
       this.charts = echarts.init(document.getElementById(mainId))
       this.charts.setOption({
         title: {
@@ -289,7 +305,7 @@ export default {
         },
         grid: {
           left: '3%',
-          right: '4%',
+          right: '8%',
           bottom: '3%',
           containLabel: true
         },
@@ -301,7 +317,9 @@ export default {
         xAxis: {
           type: 'category',
           boundaryGap: false,
-          data: ['1月', '2月', '3月', '4月', '5月', '6月']
+          // data: ['1月', '2月', '3月', '4月', '5月', '6月']
+          // X轴时间去重
+          data: [...new Set(timeArr)]
         },
         yAxis: {
           type: 'value'
@@ -316,6 +334,23 @@ export default {
         //   }
         // ]
       })
+    },
+    changeStatus (status) {
+      // this.changeStatusVisible = true
+      console.log('修改状态', status)
+      if (status === 'suspect') {
+        this.$refs.ChangeStatus.openChangeStatus()
+      }
+    },
+    closeChangeStatus () {
+      this.changeStatusVisible = false
+    },
+    handleOk () {
+      console.log('上传')
+    },
+    upload (info) {
+      const status = info.file.status
+      console.log('状态', status)
     }
   }
 }
