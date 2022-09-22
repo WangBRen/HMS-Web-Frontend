@@ -4,22 +4,28 @@
       forceRender
       v-model="chronicInfoVisible"
       title="慢病管理"
-      @cancel="closeChronicInfo"
-      :width="1150"
+      :footer="null"
+      width="100%"
+      wrapClassName="full-modal"
     >
-      <a-anchor offsetTop="10">
+
+      <!-- <a-anchor offsetTop="10">
         <div v-for="item in tableData" :key="item.id" class="ant-anchor">
           <a-anchor-link :href="`#${item.id}`" :title="item.chronicDisease.name"/>
         </div>
-      </a-anchor>
+      </a-anchor> -->
       <div class="card">
+        <a-space style="margin-bottom:10px">
+          <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
+          <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
+        </a-space>
         <div class="card-body" v-for="item in tableData" :key="item.id">
           <a-row>
             <a-col :span="24">
               <a-row class="card-title">
                 <a-col :span="22">
-                  <span style="font-size: 20px;color: white;">慢病名称: </span>
-                  <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
+                  <span style="font-size: 18px;color: #eee;">慢病名称：</span>
+                  <span style="font-size: 20px;color: #eef;font-weight: 600;">{{ item.chronicDisease.name }}</span>
                 </a-col>
                 <a-col :span="2">
                   <a :id="'str'+item.id" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a>
@@ -70,16 +76,19 @@
           </a-row>
         </div>
       </div>
+      <AddFollowUpSheet ref="FollowUpSheetRef"/>
     </a-modal>
   </div>
 </template>
 <script>
 import { getChronicManage } from '@/api/customer'
 import FollowUpRecords from './FollowUpRecords.vue'
+import AddFollowUpSheet from './AddFollowUpSheet.vue'
 
 export default {
   components: {
-    FollowUpRecords
+    FollowUpRecords,
+    AddFollowUpSheet
   },
   filters: {
     filterTip: function (value) {
@@ -112,9 +121,9 @@ export default {
           }
       })
     },
-    closeChronicInfo () {
-      this.chronicInfoVisible = false
-    },
+    // closeChronicInfo () {
+    //   this.chronicInfoVisible = false
+    // },
     showCard (id) {
       if (document.getElementById('str' + id).innerHTML === '展开') {
         document.getElementById('str' + id).innerHTML = '收起'
@@ -123,11 +132,18 @@ export default {
         document.getElementById('str' + id).innerHTML = '展开'
         document.getElementById(id).style.display = 'none'
       }
+    },
+    // 点击创建随访单
+    showFollowUpSheet (_tableData) {
+      this.$refs.FollowUpSheetRef.openFollowUpSheet(this.tableData)
     }
   }
 }
 </script>
-<style>
+<style lang="less">
+.card{
+  margin:0 100px;
+}
 .card-body{
   margin: 5px 0;
 }
@@ -137,7 +153,7 @@ export default {
   border-width: 1px;
   /* margin: 3px 0; */
   /* height: 50px; */
-  padding: 10px;
+  padding: 12px;
 }
 /* .card-detail{
   background-color: blueviolet;
@@ -205,5 +221,21 @@ export default {
 .ant-anchor{
   width: 100px;
   line-height: 30px;
+}
+.full-modal {
+  .ant-modal {
+    max-width: 100%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh);
+  }
+  .ant-modal-body {
+    flex: 1;
+  }
 }
 </style>

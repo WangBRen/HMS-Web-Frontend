@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="position:relative">
     <a-table :columns="recordColumns" :data-source="recordData" :pagination="pagination">
       <span slot="result" slot-scope="result">
         <a-tag
@@ -13,6 +13,7 @@
         <a @click="retransmission(text, grecord)" v-else>查看随访表</a>
       </span>
     </a-table>
+    <button class="StartBtn">开始随访</button>
   </div>
 </template>
 
@@ -134,6 +135,10 @@ export default {
     },
     retransmission (text, grecord) {
       console.log(text, grecord)
+    },
+        // 点击创建随访单
+    showFollowUpSheet () {
+      this.$refs.FollowUpSheetRef.openFollowUpSheet()
     }
   }
 
@@ -141,5 +146,11 @@ export default {
 </script>
 
 <style>
-
+.StartBtn{
+  z-index:999;
+  position: absolute;
+  top:300px;
+  left: 20px;
+  width: 260px;
+}
 </style>

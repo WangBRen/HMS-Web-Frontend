@@ -30,6 +30,7 @@
         :data-source="data"
         class="table-content"
         :pagination="pagination"
+        expandRowByClick
       >
         <span slot="action" slot-scope="text, grecord">
           <a @click="handleAdd(grecord)">新增用户</a>
