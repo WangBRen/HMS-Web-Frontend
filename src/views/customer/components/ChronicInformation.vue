@@ -3,7 +3,7 @@
     <a-modal
       forceRender
       v-model="chronicInfoVisible"
-      title="慢病管理"
+      :title="'慢病管理--[' + userInfo.name + ']'"
       @cancel="closeChronicInfo"
       :width="1150"
     >
@@ -46,13 +46,11 @@
                     </a-col>
                   </a-row>
                   <a-row class="card-indexData">
-                    <a-col :span="12" class="card-indexData-chart">
-                      <div :id="'main'+item.id" :ref="'main'+item.id" style="width: 550px; height: 300px;"></div>
-                    </a-col>
-                    <a-col :span="12" class="card-indexData-table">
-                      <ChronicInformationIndexTable
-                        ref="tableRef"
-                        :data="item"
+                    <a-col :span="24" class="card-indexData-chart">
+                      <!-- <div :id="'main'+item.id" :ref="'main'+item.id" style="width: 550px; height: 300px;"></div> -->
+                      <ChronicInformationEcharts
+                        ref="echartsRef"
+                        :dataArr="item"
                         :custId="custId"
                       />
                     </a-col>
@@ -84,40 +82,18 @@
         </div>
       </div>
     </a-modal>
-    <a-modal
-      v-model="changeStatusVisible"
-      @ok="handleOk"
-      @cancel="closeChangeStatus"
-      title="修改慢病状态"
-      :width="600">
-      <span style="font-size: 16px;">请上传医院或医疗机构的确诊记录：</span>
-      <div style="width: 300px;margin: 0 auto;">
-        <a-upload-dragger action="https://www.mocky.io/v2/5cc8019d300000980a055e76" @change="upload">
-          <p class="ant-upload-drag-icon">
-            <a-icon type="inbox" />
-          </p>
-          <p class="ant-upload-text">
-            点击或拖动文件上传
-          </p>
-        </a-upload-dragger>
-      </div>
-      <span style="color: rgb(170, 170, 170);">*支持PDF、照片图片及常见文件类型</span>
-    </a-modal>
     <ChronicInformationChangeStatus ref="ChangeStatus"/>
   </div>
 </template>
 <script>
-// import { getChronicManage as apiGetChronicManage } from '@/api/customer'
-import moment from 'moment'
-import { getChronicManage as apiGetChronicManage, getCustomerChronicIndex as apiGetCustomerChronicIndex } from '@/api/customer'
-import echarts from 'echarts'
-import ChronicInformationIndexTable from './ChronicInformationIndexTable.vue'
+import { getChronicManage as apiGetChronicManage } from '@/api/customer'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
+import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 
 export default {
   components: {
-    ChronicInformationIndexTable,
-    ChronicInformationChangeStatus
+    ChronicInformationChangeStatus,
+    ChronicInformationEcharts
   },
   filters: {
     filterTip: function (value) {
@@ -138,20 +114,12 @@ export default {
         } else if (value === 'exception') {
             return '系统误判'
         }
-    },
-    getMoment: function (value) {
-        if (value === null) {
-          return ''
-        } else {
-          console.log('时间', moment(value))
-          return moment(value).format('YYYY-MM-DD HH:mm')
-        }
-      }
+    }
   },
   data () {
     return {
+      userInfo: [],
       chronicInfoVisible: false,
-      changeStatusVisible: false,
       custId: null,
       tableData: [],
       recordData: [],
@@ -218,13 +186,14 @@ export default {
   },
   methods: {
     // 打开慢病管理弹窗
-    openChronicInfo (custId) {
+    openChronicInfo (custId, userInfo) {
       this.chronicInfoVisible = true
       this.custId = custId
+      this.userInfo = userInfo
+      // console.log(userInfo)
       apiGetChronicManage(custId).then(res => {
           if (res.status === 200) {
               this.tableData = res.data
-              // console.log('tableData', this.tableData)
           }
       })
       // 解决重新打开modal框，文字为收起问题
@@ -233,25 +202,6 @@ export default {
         dom[j].innerHTML = '展开'
       }
       // 解决重新打开modal框，文字为收起问题
-      // echarts
-      setTimeout(() => {
-        // 循环大标题，渲染折线图
-        for (var i = 0; i < this.tableData.length; i++) {
-          // console.log('main' + this.tableData[i].id)
-          // console.log('custId', this.custId, 'diseaseId ', this.tableData[i].id)
-          const custId = this.custId
-          const diseaseId = this.tableData[i].id
-          // const diseaseName = this.tableData[i].chronicDisease.name
-          apiGetCustomerChronicIndex(custId, diseaseId).then(res => {
-            if (res.status === 200) {
-              // console.log('图的数据', res.data)
-              const diseaseData = res.data
-              // console.log('diseaseData', diseaseData)
-              this.drawLine('main' + diseaseId, diseaseData)
-            }
-          })
-        }
-      }, 500)
     },
     closeChronicInfo () {
       this.chronicInfoVisible = false
@@ -265,92 +215,20 @@ export default {
         document.getElementById(id).style.display = 'none'
       }
     },
-    // 渲染折线图
-    drawLine (mainId, diseaseData) {
-      // console.log('数据', diseaseData)
-      const seriesArr = []
-      const legendArr = [] // 提示
-      const timeArr = []
-      for (var i = 0; i < diseaseData.length; i++) {
-          // console.log(diseaseData[i].data)
-          legendArr.push(diseaseData[i].info.name)
-          const diseaseArr = [] // 数据
-          for (var j = 0; j < diseaseData[i].data.length; j++) {
-            // 数值
-            diseaseArr.push(diseaseData[i].data[j].value)
-            timeArr.push(moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD'))
-          }
-          var diseaseArrIndex = {
-              name: diseaseData[i].info.name,
-              type: 'line',
-              data: diseaseArr
-          }
-          seriesArr.push(diseaseArrIndex)
-          // X轴时间去重
-          // console.log([...new Set(timeArr)], '时间转换后的数组', timeArr)
-      }
-      // console.log('legendArr', legendArr)
-      // console.log('seriesArr', seriesArr)
-      this.charts = echarts.init(document.getElementById(mainId))
-      this.charts.setOption({
-        title: {
-          text: ''
-        },
-        tooltip: {
-          trigger: 'axis'
-        },
-        legend: {
-          // data: ['收缩压', '舒张压', '体重指数']
-          data: legendArr
-        },
-        grid: {
-          left: '3%',
-          right: '8%',
-          bottom: '3%',
-          containLabel: true
-        },
-        toolbox: {
-          feature: {
-            saveAsImage: {}
-          }
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          // data: ['1月', '2月', '3月', '4月', '5月', '6月']
-          // X轴时间去重
-          data: [...new Set(timeArr)]
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: seriesArr
-        // series: [
-        //   {
-        //     name: '收缩压',
-        //     type: 'line',
-        //     // stack: '总量',
-        //     data: this.opinionData1
-        //   }
-        // ]
-      })
-    },
     changeStatus (status) {
-      // this.changeStatusVisible = true
-      console.log('修改状态', status)
+      // console.log('修改状态', status)
       if (status === 'suspect') {
-        this.$refs.ChangeStatus.openChangeStatus()
+        const userInfo = this.userInfo
+        this.$refs.ChangeStatus.openChangeStatus(userInfo)
       }
     },
-    closeChangeStatus () {
-      this.changeStatusVisible = false
+    onChange (value, dateString) {
+      console.log('Selected Time: ', value)
+      console.log('Formatted Selected Time: ', dateString)
     },
-    handleOk () {
-      console.log('上传')
-    },
-    upload (info) {
-      const status = info.file.status
-      console.log('状态', status)
+    onOk (value) {
+      console.log('onOk: ', value)
+      this.openChronicInfo()
     }
   }
 }
@@ -398,7 +276,7 @@ export default {
   border-width: 1px;
 }
 .card-indexData-chart{
-  height: 350px;
+  /* height: 350px; */
   border-style: solid;
   border-width: 1px;
 }

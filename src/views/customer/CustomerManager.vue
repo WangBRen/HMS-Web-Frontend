@@ -64,7 +64,7 @@
           <span slot="operation" slot-scope="text, record">
             <a @click="handleHealthData(record)">健康信息</a>
             <a-divider type="vertical" />
-            <a @click="chronicManage(record)">慢病管理</a>
+            <!-- <a @click="chronicManage(record)">慢病管理</a> -->
             <a @click="chronicInfo(record)">新的慢病</a>
             <a-divider type="vertical" />
             <a-dropdown>
@@ -264,7 +264,7 @@ export default {
     },
     // 点击新的慢病
     chronicInfo (record) {
-      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id)
+      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id, record.member.baseInfo)
     },
 
     /**
