@@ -49,3 +49,15 @@ export function getHealthReport (customerId, pages) {
         }
     })
 }
+
+// 随访记录
+export function getFollowRecords (ChronicDiseaseId, pages) {
+  return request({
+      url: customerApi.FollowRecords(ChronicDiseaseId),
+      method: 'get',
+      params: {
+          page: pages.page || 1,
+          size: pages.size || 10
+      }
+  })
+}

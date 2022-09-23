@@ -30,6 +30,7 @@
         :data-source="data"
         class="table-content"
         :pagination="pagination"
+        expandRowByClick
       >
         <span slot="action" slot-scope="text, grecord">
           <a @click="handleAdd(grecord)">新增用户</a>
@@ -65,6 +66,7 @@
             <a @click="handleHealthData(record)">健康信息</a>
             <a-divider type="vertical" />
             <a @click="chronicManage(record)">慢病管理</a>
+            <a @click="chronicInfo(record)">新的慢病</a>
             <a-divider type="vertical" />
             <a-dropdown>
               <a-menu slot="overlay">
@@ -112,12 +114,15 @@
     />
     <!-- 慢病管理 -->
     <ChronicManage ref="ChronicManageRef"/>
+    <!-- 新的慢病 -->
+    <ChronicInformation ref="ChronicInfoRef"/>
   </div>
 </template>
 <script>
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
 import ChronicManage from './components/ChronicManage.vue'
+import ChronicInformation from './components/ChronicInformation.vue'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import EditUserMsg from './components/EditUserMsg.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
@@ -145,7 +150,7 @@ const innerColumns = [
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
-  { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' } },
+  { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' }, align: 'center' },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
@@ -170,7 +175,8 @@ export default {
     AddNewUserVue,
     HealthDataManagmentFormVue,
     EditUserMsg,
-    ChronicManage
+    ChronicManage,
+    ChronicInformation
   },
   filters: {
     filterHealthStatus: function (value) {
@@ -257,6 +263,10 @@ export default {
       this.$refs.ChronicManageRef.getUserInfo(record.member.baseInfo)
       // console.log(record.member.baseInfo)
     },
+    // 点击新的慢病
+    chronicInfo (record) {
+      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id)
+    },
 
     /**
      * 取消按钮
@@ -331,7 +341,7 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #fafafa !important;
+  background: #E9E9E9 !important;
 }
 
 .child-table {
@@ -340,6 +350,8 @@ export default {
 .child-table th {
   line-height: 24px;
   padding: 4px 16px !important;
+  font-weight: bold;
+  background: #F2F2F2;
 }
 .child-table td {
   line-height: 24px;
