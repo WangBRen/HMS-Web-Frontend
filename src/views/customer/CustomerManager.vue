@@ -65,7 +65,7 @@
             <a @click="handleHealthData(record)">健康信息</a>
             <a-divider type="vertical" />
             <!-- <a @click="chronicManage(record)">慢病管理</a> -->
-            <a @click="chronicInfo(record)">新的慢病</a>
+            <a @click="chronicInfo(record)">慢病管理</a>
             <a-divider type="vertical" />
             <a-dropdown>
               <a-menu slot="overlay">

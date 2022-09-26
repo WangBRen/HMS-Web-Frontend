@@ -1,16 +1,23 @@
 <template>
   <div>
     <a-row>
+      <a-col>
+        <div style="margin: 5px 0 5px 35%;">
+          选择时间段：
+          <a-range-picker
+            style="width: 200px;"
+            :show-time="{ format: 'HH:mm' }"
+            format="YYYY-MM-DD HH:mm"
+            :placeholder="['开始时间', '结束时间']"
+            @change="selectTime"
+            @ok="onOkTime"
+          />
+          <a-button class="resetButton" @click="resetTime">重置</a-button>
+        </div>
+      </a-col>
+    </a-row>
+    <a-row>
       <a-col :span="12" class="leftEcharts">
-        <a-button style="margin-left: 150px;margin-top: 5px;" class="resetButton" @click="resetTime">刷新</a-button>
-        <a-range-picker
-          style="width: 200px;"
-          :show-time="{ format: 'HH:mm' }"
-          format="YYYY-MM-DD HH:mm"
-          :placeholder="['开始时间', '结束时间']"
-          @change="selectTime"
-          @ok="onOkTime"
-        />
         <div :id="'echarts'+this.dataArr.id" style="width: 550px;height: 300px;"></div>
       </a-col>
       <a-col :span="12" class="rightTable">
@@ -19,7 +26,7 @@
           :columns="indexColumns"
           rowKey="id"
           :data-source="tableArr"
-          :pagination="{ pageSize: 5 }"
+          :pagination="{ pageSize: 4 }"
           :scroll="{ }">
           <span slot="testAt" slot-scope="text, record">
             {{ record.testAt | getMoment }}
@@ -176,7 +183,9 @@ export default {
         },
         legend: {
           // data: ['收缩压', '舒张压', '体重指数']
-          data: legendArr
+          data: legendArr,
+          left: 10,
+          width: 500
         },
         grid: {
           left: '3%',
@@ -234,7 +243,7 @@ export default {
 </script>
 <style scoped>
 .leftEcharts{
-  height: 380px;
+  height: 330px;
   border-right-width: 1px;
   border-right-style: solid;
 }

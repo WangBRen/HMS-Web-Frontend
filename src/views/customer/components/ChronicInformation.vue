@@ -223,11 +223,11 @@ export default {
       }
     },
     onChange (value, dateString) {
-      console.log('Selected Time: ', value)
-      console.log('Formatted Selected Time: ', dateString)
+      // console.log('Selected Time: ', value)
+      // console.log('Formatted Selected Time: ', dateString)
     },
     onOk (value) {
-      console.log('onOk: ', value)
+      // console.log('onOk: ', value)
       this.openChronicInfo()
     }
   }
@@ -240,7 +240,7 @@ export default {
 .card-title{
   background-color: rgba(64, 158, 255, 1);
   border-style: solid;
-  border-width: 1px;
+  border-width: 2px;
   /* margin: 3px 0; */
   /* height: 50px; */
   padding: 10px;
@@ -257,6 +257,8 @@ export default {
   line-height: 60px;
   border-style: solid;
   border-width: 1px;
+  border-top-width: 1px;
+  border-left-width: 2px;
   text-align: center;
   font-size: 20px;
 }
@@ -264,6 +266,7 @@ export default {
   padding-left: 5px;
   border-style: solid;
   border-width: 1px;
+  border-right-width: 2px;
   text-align: left;
   font-size: 14px
 }
@@ -271,19 +274,12 @@ export default {
   border-style: solid;
   border-width: 1px;
 }
-.card-table1{
-  border-style: solid;
-  border-width: 1px;
-}
 .card-indexData-chart{
   /* height: 350px; */
   border-style: solid;
   border-width: 1px;
-}
-.card-indexData-table{
-  height: 350px;
-  border-style: solid;
-  border-width: 1px;
+  border-left-width: 2px;
+  border-right-width: 2px;
 }
 /* .card-record{
   height: 500px;
@@ -292,18 +288,24 @@ export default {
   height: 450px;
   border-style: solid;
   border-width: 1px;
+  border-left-width: 2px;
 }
 .card-record-table{
   height: 450px;
   border-style: solid;
   border-width: 1px;
+  border-right-width: 2px;
 }
 .card-manage-title{
   border-style: solid;
   border-width: 1px;
+  border-left-width: 2px;
+  border-bottom-width: 2px;
 }
 .card-manage-body{
   border-style: solid;
   border-width: 1px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
 }
 </style>
