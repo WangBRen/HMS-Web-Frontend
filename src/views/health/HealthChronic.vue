@@ -7,7 +7,7 @@
         </a-col>
       </a-row>
     </a-card>
-    <a-table class="chronicTable" :columns="columns" :data-source="tableData" :rowKey="record=>record.id">
+    <a-table class="chronicTable" :columns="columns" :data-source="tableData" :rowKey="record=>record.id" :pagination="pagination">
       <span slot="items" slot-scope="text, record">
         <!-- <a>{{ record.items }}</a> -->
         <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
@@ -147,7 +147,17 @@ export default {
           ],
           addChronicIndexVisible: false,
           labelCol: { span: 4 },
-          wrapperCol: { span: 16 }
+          wrapperCol: { span: 16 },
+          pagination: {
+            total: 0,
+            current: 1,
+            pageSize: 10, // 默认每页显示数量
+            // showSizeChanger: true, // 显示可改变每页数量
+            // pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+            showTotal: total => `共 ${total} 个慢病`, // 显示总数
+            onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+            onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+          }
         }
     },
     filters: {
@@ -290,16 +300,31 @@ export default {
         },
         // 获取慢病表
         getChronic () {
-          getChronic().then(res => {
+          const pages = {
+            page: this.pagination.current,
+            size: this.pagination.pageSize
+          }
+          getChronic(pages).then(res => {
             if (res.status === 200) {
-              const resData = res.data.content
-              this.tableData = resData
+              // const resData = res.data.content
+              // this.tableData = resData
+              this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+              this.pagination.total = res.data.totalElements
               // console.log('111', resData)
             }
           })
         },
         updateChronic () {
           // console.log('刷新了吗')
+          this.getChronic()
+        },
+        onSizeChange (current, pageSize) {
+          this.pagination.current = 1
+          this.pagination.pageSize = pageSize
+          this.getChronic()
+        },
+        onPageChange (page, pageSize) {
+          this.pagination.current = page
           this.getChronic()
         }
     }

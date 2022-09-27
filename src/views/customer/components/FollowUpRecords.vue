@@ -1,7 +1,7 @@
 <template>
   <div style="position:relative">
-    <a-table :columns="recordColumns" :data-source="recordData" :pagination="pagination">
-      <span slot="result" slot-scope="result">
+    <a-table :columns="recordColumns" :data-source="recordData" :pagination="pagination" :rowKey="(record,index)=>{return index}">
+      <span slot="result" slot-scope="result" rowkey="">
         <a-tag
           :color="result=='已回收' ? 'geekblue' : result=='回收中' ? '#e5e5e5' : 'orange'">
           {{ result }}
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { getFollowRecords as apiFollowUpRecords } from '@/api/health'
+// import { getFollowRecords as apiFollowUpRecords } from '@/api/health'
 export default {
   name: 'FollowUpRecords',
   data () {
@@ -121,17 +121,17 @@ export default {
         this.onSearch()
     },
     onSearch (value) {
-      const pages = {
-        page: this.pagination.current,
-        size: this.pagination.pageSize
-      }
-      apiFollowUpRecords(value, pages).then(res => {
-        if (res.status === 200) {
-          this.loadingShow = false
-          this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-          this.pagination.total = res.data.totalElements
-        }
-      })
+      // const pages = {
+      //   page: this.pagination.current,
+      //   size: this.pagination.pageSize
+      // }
+      // apiFollowUpRecords(value, pages).then(res => {
+      //   if (res.status === 200) {
+      //     this.loadingShow = false
+      //     this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+      //     this.pagination.total = res.data.totalElements
+      //   }
+      // })
     },
     retransmission (text, grecord) {
       console.log(text, grecord)
