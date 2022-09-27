@@ -225,20 +225,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-/deep/.ant-modal-title{
-  font-weight: bold;
-  font-size: 26px;
-  text-align: center;
-  letter-spacing: 10px;
-}
-/deep/.ant-modal-header{
-  padding: 26px 20px
-}
-/deep/.ant-modal-close-x{
-  width: 75px;
-  height: 75px;
-  line-height: 75px;
-}
 .Tbody{
   width: 1000px;
   margin: 10px auto;
