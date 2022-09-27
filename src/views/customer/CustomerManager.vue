@@ -30,6 +30,7 @@
         :data-source="data"
         class="table-content"
         :pagination="pagination"
+        expandRowByClick
       >
         <span slot="action" slot-scope="text, grecord">
           <a @click="handleAdd(grecord)">新增用户</a>
@@ -149,7 +150,7 @@ const innerColumns = [
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
-  { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' } },
+  { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' }, align: 'center' },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
@@ -340,7 +341,7 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #fafafa !important;
+  background: #E9E9E9 !important;
 }
 
 .child-table {
@@ -349,6 +350,8 @@ export default {
 .child-table th {
   line-height: 24px;
   padding: 4px 16px !important;
+  font-weight: bold;
+  background: #F2F2F2;
 }
 .child-table td {
   line-height: 24px;

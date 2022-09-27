@@ -5,7 +5,6 @@
       destroyOnClose
       :maskClosable="false"
       :width="1200"
-      :title="title"
       :visible="openHealthvisible"
       :confirm-loading="confirmLoading"
       @cancel="handleCancel"

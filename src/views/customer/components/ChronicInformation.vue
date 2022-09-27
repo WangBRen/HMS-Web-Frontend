@@ -1,13 +1,18 @@
 <template>
   <div>
     <a-modal
-      forceRender
+      forceRend
       v-model="chronicInfoVisible"
       :title="'慢病管理--[' + userInfo.name + ']'"
+      :footer="null"
       @cancel="closeChronicInfo"
-      :width="1150"
+      :width="1200"
     >
       <div class="card">
+        <a-space style="margin-bottom:10px">
+          <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
+          <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
+        </a-space>
         <div class="card-body" v-for="item in tableData" :key="item.id">
           <a-row>
             <a-col :span="24">
@@ -31,7 +36,7 @@
               <a-row :id="item.id" class="card-detail" style="display: none">
                 <a-col>
                   <a-row class="card-index">
-                    <a-col class="card-index-title" :span="3">指标项</a-col>
+                    <a-col class="card-index-title title-name" :span="3">指标项</a-col>
                     <a-col class="card-index-data" :span="21">
                       <span v-for="items in item.chronicDisease.items" :key="items.indexItem.id">
                         <a-tooltip>
@@ -56,19 +61,15 @@
                     </a-col>
                   </a-row>
                   <a-row class="card-record">
-                    <a-col :span="3" class="card-record-title">
+                    <a-col :span="3" class="card-record-title title-name">
                       <span>慢病随访记录</span>
                     </a-col>
                     <a-col class="card-record-table" :span="21">
-                      <a-table :columns="recordColumns" :data-source="recordData">
-                        <span slot="action">
-                          <a href="">操作</a>
-                        </span>
-                      </a-table>
+                      <FollowUpRecords/>
                     </a-col>
                   </a-row>
                   <a-row class="card-manage">
-                    <a-col :span="3" class="card-manage-title">
+                    <a-col :span="3" class="card-manage-title title-name">
                       <span>管理目标</span>
                     </a-col>
                     <a-col :span="21" class="card-manage-body">
@@ -81,17 +82,22 @@
           </a-row>
         </div>
       </div>
+      <AddFollowUpSheet ref="FollowUpSheetRef"/>
     </a-modal>
     <ChronicInformationChangeStatus ref="ChangeStatus"/>
   </div>
 </template>
 <script>
 import { getChronicManage as apiGetChronicManage } from '@/api/customer'
+import FollowUpRecords from './FollowUpRecords.vue'
+import AddFollowUpSheet from './AddFollowUpSheet.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 
 export default {
   components: {
+    FollowUpRecords,
+    AddFollowUpSheet,
     ChronicInformationChangeStatus,
     ChronicInformationEcharts
   },
@@ -122,67 +128,8 @@ export default {
       chronicInfoVisible: false,
       custId: null,
       tableData: [],
-      recordData: [],
-      indexDataColumns: [
-        {
-          title: '时间',
-          dataIndex: 'a',
-          key: 'a'
-        },
-        {
-          title: '数值',
-          dataIndex: 'b',
-          key: 'b'
-        },
-        {
-          title: '参考结果',
-          dataIndex: 'c',
-          key: 'c'
-        }
-      ],
-      recordColumns: [
-        {
-          title: '发送日期',
-          dataIndex: 'a',
-          key: 'a'
-        },
-        {
-          title: '随访健康师',
-          dataIndex: 'b',
-          key: 'b'
-        },
-        {
-          title: '判定级别',
-          dataIndex: 'c',
-          key: 'c'
-        },
-        {
-          title: '回收结果',
-          dataIndex: 'd',
-          key: 'd'
-        },
-        {
-          title: '回收日期',
-          dataIndex: 'e',
-          key: 'e'
-        },
-        {
-          title: '操作',
-          dataIndex: 'f',
-          key: 'f',
-          scopedSlots: { customRender: 'action' }
-        }
-      ],
-      charts: '',
-      opinionData1: ['143', '70', '60', '110', '130'],
-      opinionData2: ['100', '200', '300', '50', '70'],
-      opinionData3: ['1', '2', '', '3', '1', '1.5'],
-      // echart数据
-      echartData: [
-      ]
+      charts: ''
     }
-  },
-  mounted () {
   },
   methods: {
     // 打开慢病管理弹窗
@@ -215,6 +162,7 @@ export default {
         document.getElementById(id).style.display = 'none'
       }
     },
+    // 点击创建随访单
     changeStatus (status) {
       // console.log('修改状态', status)
       if (status === 'suspect') {
@@ -229,11 +177,18 @@ export default {
     onOk (value) {
       // console.log('onOk: ', value)
       this.openChronicInfo()
+    },
+    showFollowUpSheet (_tableData) {
+      this.$refs.FollowUpSheetRef.openFollowUpSheet(this.tableData)
     }
   }
 }
 </script>
-<style>
+<style lang="less">
+.card{
+  // margin:0 100px;
+  padding: 0px 10px;
+}
 .card-body{
   margin: 5px 0;
 }
@@ -243,13 +198,21 @@ export default {
   border-width: 2px;
   /* margin: 3px 0; */
   /* height: 50px; */
-  padding: 10px;
+  padding: 12px;
 }
 /* .card-detail{
   background-color: blueviolet;
   border-style: solid;
   border-width: 1px;
 } */
+.title-name{
+  border-style: solid;
+  border-width: 1px;
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .card-index{
   line-height: 60px;
 }
@@ -293,6 +256,70 @@ export default {
 .card-record-table{
   height: 450px;
   border-style: solid;
+  border-width: 1px;
+  border-right-width: 2px;
+}
+.card-manage-title{
+  min-height: 100px;
+  border-style: solid;
+  border-width: 1px;
+  border-left-width: 2px;
+  border-bottom-width: 2px;
+}
+.card-manage-body{
+  border-style: solid;
+  border-width: 1px;
+  min-height: 100px;
+}
+.ant-anchor{
+  width: 100px;
+  line-height: 30px;
+}
+.full-modal {
+  .ant-modal {
+    max-width: 100%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh);
+  }
+  .ant-modal-body {
+    flex: 1;
+  }
+}
+.card-manage-title{
+  border-style: solid;
+  border-width: 1px;
+  border-left-width: 2px;
+  border-bottom-width: 2px;
+}
+.card-manage-body{
+  border-style: solid;
+  border-width: 1px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-bottom-width: 2px;
+;
+  border-width: 1px;
+  border-right-width: 2px;
+}
+.card-manage-title{
+  border-style: solid;
+  border-width: 1px;
+  border-left-width: 2px;
+  border-bottom-width: 2px;
+}
+.card-manage-body{
+  border-style: solid;
+  border-width: 1px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-bottom-width: 2px;
+;
   border-width: 1px;
   border-right-width: 2px;
 }
