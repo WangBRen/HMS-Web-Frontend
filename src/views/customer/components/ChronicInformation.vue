@@ -1,9 +1,9 @@
 <template>
   <div>
     <a-modal
-      forceRend
+      forceRender
       v-model="chronicInfoVisible"
-      :title="'慢病管理--[' + userInfo.name + ']'"
+      :title="`慢病管理【${userInfo?.name || ''}】`"
       :footer="null"
       @cancel="closeChronicInfo"
       :width="1200"
@@ -127,8 +127,7 @@ export default {
       userInfo: [],
       chronicInfoVisible: false,
       custId: null,
-      tableData: [],
-      charts: ''
+      tableData: []
     }
   },
   methods: {
