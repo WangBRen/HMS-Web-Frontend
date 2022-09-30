@@ -249,7 +249,7 @@ export default {
     handleHealthData (record) {
       this.currentCustomerId = record.member.id
       this.openHealthvisible = true
-      this.$refs.healthDataManagmentRef.setCustomerId(record.member.id)
+      this.$refs.healthDataManagmentRef.setCustomerId(record.member.id, record)
       this.$refs.healthDataManagmentRef.findCustomerHealthReports()
     },
     // 点击新的慢病

@@ -3,6 +3,7 @@
     <a-modal
       forceRender
       v-model="chronicInfoVisible"
+      v-if="chronicInfoVisible"
       :title="`慢病管理【${userInfo?.name || ''}】`"
       :footer="null"
       @cancel="closeChronicInfo"
@@ -20,7 +21,7 @@
                 <a-col :span="22">
                   <span style="font-size: 20px;color: white;">慢病名称: </span>
                   <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
-                  <span @click="changeStatus(item.status)">
+                  <span @click="changeStatus(item.status, item)">
                     <a-tag style="margin-left: 10px;" :color="item.status === 'diagnosed' ? 'rgba(217, 0, 27, 0.768627450980392)' : (item.status === 'exception' ? 'blue' : 'rgba(245, 154, 35, 1)')">
                       {{ item.status | filterChronicStatus }}
                     </a-tag>
@@ -161,12 +162,13 @@ export default {
         document.getElementById(id).style.display = 'none'
       }
     },
-    // 点击创建随访单
-    changeStatus (status) {
-      // console.log('修改状态', status)
+    // 点击修改慢病状态
+    changeStatus (status, item) {
+      // console.log('修改状态', status, 'item', item)
       if (status === 'suspect') {
         const userInfo = this.userInfo
-        this.$refs.ChangeStatus.openChangeStatus(userInfo)
+        const diseaseData = item
+        this.$refs.ChangeStatus.openChangeStatus(userInfo, diseaseData)
       }
     },
     onChange (value, dateString) {

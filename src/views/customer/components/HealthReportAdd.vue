@@ -33,7 +33,21 @@
                           </div>
                         </a-col>
                         <a-col :span="6">
-                          <a-input @change="e => { item.value = e.target.value }" :addonAfter="item.unit"></a-input>
+                          <!-- 整数或小数 -->
+                          <a-input v-if="item.type === 'Integer' || item.type === 'Float'" @change="e => { item.value = e.target.value }" :addonAfter="item.unit"></a-input>
+                          <!-- 主观文本 -->
+                          <a-textarea v-if="item.type === 'Text'" v-model="item.value" :rows="2" />
+                          <!-- 图文报告 -->
+                          <a-upload
+                            v-if="item.type === 'Report'"
+                            v-model="item.value"
+                            name="file"
+                            :multiple="true"
+                            :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + userInfo.customerId"
+                            @change="value => handleChange(value, item)"
+                          >
+                            <a-button> <a-icon type="upload" />上传报告</a-button>
+                          </a-upload>
                         </a-col>
                         <a-col :span="2" :offset="2"><span>诊断结果:</span></a-col>
                         <a-col :span="8">
@@ -122,7 +136,7 @@
                   <span style="float: right;">
                     <a-date-picker
                       show-time
-                      v-model="formData.diagnosisTime"
+                      @change="e => {formData.diagnosisTime = e}"
                       type="date"
                       placeholder="请选择诊断时间"
                     />
@@ -165,7 +179,7 @@
                   <span style="float: right;">
                     <a-date-picker
                       show-time
-                      v-model="formData.symptomTime"
+                      @change="e => {formData.symptomTime = e}"
                       type="date"
                       placeholder="请选择诊断时间"
                     />
@@ -198,11 +212,6 @@
         <a-button @click="closeIndexModal">取消</a-button>
       </template>
       <div>
-        <!-- <div style="height: 300px;" v-for="item in filterHealthIndexData" :key="item.name">
-          <a-button class="indexButton" @click="checkIndex(item.name)">
-            {{ item.name }}
-          </a-button>
-        </div> -->
         <a-row>
           <a-col :span="12" class="indexCol" v-for="item in filterHealthIndexData" :key="item.name">
             <a-button class="indexButton" @click="checkIndex(item.name)">
@@ -236,14 +245,15 @@ export default {
     },
     data () {
         return {
-            healthIndexData: [],
-            filterHealthIndexData: [],
+            userInfo: [],
+            healthIndexData: [], // 保存所有的指标项
+            filterHealthIndexData: [], // 过滤选择后的所有指标项
             formData: {
-                indexArr: [],
-                diagnosisData: null, // 诊断信息
-                diagnosisTime: null, // 诊断时间
-                symptomData: null, // 症状信息
-                symptomTime: null // 症状时间
+                indexArr: [] // 用于保存添加的指标项
+                // diagnosisData: null, // 诊断信息
+                // diagnosisTime: null, // 诊断时间
+                // symptomData: null, // 症状信息
+                // symptomTime: null // 症状时间
             },
             apiData: {
                 projects: []
@@ -256,31 +266,32 @@ export default {
         }
     },
     mounted () {
+        // 初始化时，获取所有的指标项
         getHealthIndex().then(res => {
             if (res.status === 200) {
                 const healthIndexData = res.data
+                // 添加两个独立的指标项目
                 const x = { name: '用户诊断信息', items: [] }
                 const y = { name: '用户症状信息', items: [] }
                 healthIndexData.push(x, y)
                 this.healthIndexData = JSON.parse(JSON.stringify(healthIndexData))
                 this.filterHealthIndexData = JSON.parse(JSON.stringify(healthIndexData))
-                // console.log('指标', this.healthIndexData)
+                // console.log('所有的指标', this.healthIndexData)
             }
         })
     },
     methods: {
         handleOk () {
-            const apiData = this.apiData
+            var apiData = this.apiData
             // const apiData = { projects: [] }
             const formData = this.formData
             const that = this
             var indexItem = 0
             const customerId = this.customerId
-            apiData.projects.length = 0
-            apiData.diseaseId = null
-            apiData.diseaseAt = null
-            apiData.symptomAt = null
-            apiData.symptom = null
+            // apiData.projects.length = 0
+            apiData = {
+              projects: []
+            }
             if (formData.indexArr.length !== 0) {
                 formData.indexArr.forEach(function (val) {
                     if (val.indexId !== '用户诊断信息' && val.indexId !== '用户症状信息') {
@@ -305,27 +316,37 @@ export default {
                 })
                 // 诊断信息
                 if (formData.diagnosisData !== null && formData.diagnosisTime === null) {
+                  // console.log(formData)
                   this.$message.error('用户诊断信息检测时间未填写')
                 } else if (formData.diagnosisData === null && formData.diagnosisTime !== null) {
+                  // console.log(formData)
                   this.$message.error('用户诊断信息诊断结果未填写')
                 } else if (formData.diagnosisData && formData.diagnosisTime) {
                   apiData.diseaseId = formData.diagnosisData
                   apiData.diseaseAt = formData.diagnosisTime
                   indexItem = indexItem + 1
+                } else if (formData.diagnosisData === null && formData.diagnosisTime === null) {
+                  // console.log(formData)
+                  this.$message.error('用户症状信息检测时间未填写')
                 }
                 // 症状信息
                 if (formData.symptomData !== null && formData.symptomTime === null) {
+                  // console.log(formData)
                   this.$message.error('用户症状信息检测时间未填写')
                 } else if ((formData.symptomData === null || formData.symptomData === '') && formData.symptomTime !== null) {
+                  // console.log(formData)
                   this.$message.error('用户症状信息诊断结果未填写')
                 } else if (formData.symptomData && formData.symptomTime) {
                   apiData.symptom = formData.symptomData
                   apiData.symptomAt = formData.symptomTime
                   indexItem = indexItem + 1
+                } else if (formData.symptomData === null && formData.symptomTime === null) {
+                  // console.log(formData)
+                  this.$message.error('用户症状信息检测时间未填写')
                 }
                 // console.log(indexItem, 'apiData', apiData)
                 if (indexItem === formData.indexArr.length) {
-                  // console.log('正确')
+                  // console.log('apiData', apiData, 'formData', formData)
                   // 调接口创建报告单
                   addHealthReport(customerId, apiData).then(res => {
                       if (res.status === 201) {
@@ -334,19 +355,22 @@ export default {
                       }
                   })
                 }
+                // console.log('apiData', apiData, 'formData', formData)
             } else {
                 this.$message.error('请添加指标')
             }
-            // console.log('formData', formData)
-            // console.log('apiData', apiData)
         },
-        openAddModal () {
+        openAddModal (userInfo) {
             this.addReportVisible = true
-            this.formData.indexArr.length = 0
-            this.formData.diagnosisData = null
-            this.formData.diagnosisTime = null
-            this.formData.symptomData = null
-            this.formData.symptomTime = null
+            this.userInfo = userInfo.member.baseInfo
+            // this.formData.indexArr.length = 0
+            this.formData = {
+              indexArr: []
+            }
+            // this.formData.diagnosisData = null
+            // this.formData.diagnosisTime = null
+            // this.formData.symptomData = null
+            // this.formData.symptomTime = null
             // this.$nextTick(() => {
             //     this.$refs.childDia.clearDia()
             // })
@@ -361,21 +385,18 @@ export default {
         filterOption (value, option) {
             return option.componentOptions.children[0].text.indexOf(value) >= 0
         },
-        addIndex () {
-            // console.log('增加')
-            const item = {
-                id: new Date().getTime(),
-                indexId: null,
-                indexArr: [],
-                testAt: null
-            }
-            this.formData.indexArr.push(item)
-            // console.log(this.formData)
-        },
         checkIndex (indexId) {
             const healthIndexData = this.healthIndexData
             for (let i = 0; i < healthIndexData.length; i++) {
                 if (healthIndexData[i].name === indexId) {
+                    if (healthIndexData[i].name === '用户诊断信息') {
+                      this.formData.diagnosisData = null
+                      this.formData.diagnosisTime = null
+                    }
+                    if (healthIndexData[i].name === '用户症状信息') {
+                      this.formData.symptomData = null
+                      this.formData.symptomTime = null
+                    }
                     const item = {
                         id: new Date().getTime(),
                         indexId: indexId,
@@ -393,7 +414,7 @@ export default {
                 }
             }
             this.addIndexVisible = false
-            // console.log(this.formData)
+            // console.log('formData', this.formData)
             // healthIndexData.sort((a, b) => {
             //     return a.name.length - b.name.length
             // })
@@ -402,23 +423,31 @@ export default {
         delIndex (item) {
             // console.log('删除', item)
             if (item.indexId === '用户诊断信息') {
-              this.formData.diagnosisData = null
-              this.formData.diagnosisTime = null
+              delete this.formData.diagnosisData
+              delete this.formData.diagnosisTime
+              // this.formData.diagnosisData = null
+              // this.formData.diagnosisTime = null
             }
             if (item.indexId === '用户症状信息') {
-              this.formData.symptomData = null
-              this.formData.symptomTime = null
+              delete this.formData.symptomData
+              delete this.formData.symptomTime
+              // this.formData.symptomData = null
+              // this.formData.symptomTime = null
             }
             this.formData.indexArr = this.formData.indexArr.filter(i => i.id !== item.id)
         },
         delIndexEnd () {
             if (this.formData.indexArr[this.formData.indexArr.length - 1].indexId === '用户诊断信息') {
-                this.formData.diagnosisData = null
-                this.formData.diagnosisTime = null
+              delete this.formData.diagnosisData
+              delete this.formData.diagnosisTime
+                // this.formData.diagnosisData = null
+                // this.formData.diagnosisTime = null
             }
             if (this.formData.indexArr[this.formData.indexArr.length - 1].indexId === '用户症状信息') {
-              this.formData.symptomData = null
-              this.formData.symptomTime = null
+              delete this.formData.symptomData
+              delete this.formData.symptomTime
+              // this.formData.symptomData = null
+              // this.formData.symptomTime = null
             }
             this.formData.indexArr.pop()
         },
@@ -460,6 +489,32 @@ export default {
         },
         closeIndexModal () {
             this.addIndexVisible = false
+        },
+        // 文件上传
+        handleChange (info, item) {
+          if (info.file.status === 'uploading') {
+            // console.log('上传中的文件', info.file, '上传列表', info.fileList)
+          }
+          if (info.file.status === 'done') {
+            const itemArr = []
+            for (var i = 0; i < info.fileList.length; i++) {
+              // console.log('需要的', info.fileList[i].response.data)
+              itemArr.push(info.fileList[i].response.data)
+            }
+            item.value = JSON.stringify(itemArr)
+            this.$message.success(`文件上传成功`)
+          } else if (info.file.status === 'error') {
+            this.$message.error(`文件上传失败`)
+          } else if (info.file.status === 'removed') {
+            // console.log(info.fileList)
+            const itemArr = []
+            for (var j = 0; j < info.fileList.length; j++) {
+              // console.log('需要的', info.fileList[j].response.data)
+              itemArr.push(info.fileList[j].response.data)
+            }
+            item.value = JSON.stringify(itemArr)
+            this.$message.success(`文件移除成功`)
+          }
         }
     }
 }

@@ -6,19 +6,16 @@
       @cancel="closeVisit"
       title="首次随访记录"
       :width="500">
-      <div style="font-size: 20px;margin-bottom: 20px;">
-        <span>随访内容: </span>
-        <span>
-          <a @click="seeVisit" style="text-decoration:underline;">点击查看</a>
-        </span>
-      </div>
-      <div style="margin-bottom: 10px;">
-        <a-button @click="sendMessage" style="font-size: 14px;border-radius: 8px;" type="primary" ><a-icon type="message" />发送到短信</a-button>
-        <a @click="seeMessage" style="margin-left: 10px;text-decoration:underline;">查看短信模板</a>
-      </div>
-      <div>
-        <a-button @click="sendWechat" style="font-size: 14px;border-radius: 8px;color: white;background-color: rgba(2, 189, 110, 1);"><a-icon type="wechat" />发送到小程序</a-button>
-      </div>
+      <a-row>
+        <a-col class="visit_title">
+          <span>该慢病已确诊，是否开始首次随访?</span>
+        </a-col>
+      </a-row>
+      <a-row>
+        <a-col class="visit_button">
+          <a-button @click="setVisitReport" style="border-radius: 5px;" type="primary">创建随访单</a-button>
+        </a-col>
+      </a-row>
     </a-modal>
   </div>
 </template>
@@ -36,17 +33,8 @@ export default {
     openVisit () {
         this.visitVisible = true
     },
-    seeVisit () {
-        console.log('点击查看')
-    },
-    seeMessage () {
-        console.log('查看短信模板')
-    },
-    sendMessage () {
-        console.log('发送短信')
-    },
-    sendWechat () {
-        console.log('发送小程序')
+    setVisitReport () {
+        console.log('创建随访报告')
     },
     handleOk () {
         console.log('点击确定')
@@ -58,6 +46,13 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-
+<style>
+.visit_title{
+  text-align: center;
+  font-size: 16px;
+}
+.visit_button{
+  margin-top: 10px;
+  text-align: center;
+}
 </style>

@@ -46,17 +46,25 @@
               <a-row style="padding-top: 24px; padding-bottom: 24px;">
                 <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
                   <a-row class="index-item" style="#border: 1px #eee solid;">
-                    <a-col :span="3">
+                    <a-col :span="8">
                       <div class="index-item-title-wrapper">
                         <div class="index-item-title-sider"/>
                         <span class="index-item-title"> {{ items.name }} </span>
                       </div>
                     </a-col>
-                    <a-col :span="21">
+                    <a-col :span="15">
                       <div>
                         <a class="exTitle">检测值:</a>
-                        <!-- {{ items.value }} {{ items.unit }} -->
-                        {{ items.value || '--' }} {{ items.unit }}
+                        <span v-if="items.type === 'Integer' || items.type === 'Float'">
+                          {{ items.value || '--' }} {{ items.unit }}
+                        </span>
+                        <span v-if="items.type === 'Text'">
+                          {{ items.value || '--' }}
+                        </span>
+                        <span v-if="items.type === 'Report'">
+                          <a v-if="items.value" :href="items.value[0].url" target="_blank">{{ items.value[0].fileName }}</a>
+                          <span v-else >--</span>
+                        </span>
                       </div>
                       <div>
                         <a class="exTitle">检测结果:</a>
@@ -211,7 +219,12 @@ export default {
             for (var n = 0; n < this.formData.testData[m].items.length; n++) {
               // console.log(this.formData.testData[m].items[n].id)
               if (arrData[k].items[l].healthIndexItem.id === this.formData.testData[m].items[n].id) {
-                this.formData.testData[m].items[n].value = arrData[k].items[l].value
+                if (arrData[k].items[l].healthIndexItem.type === 'Report') {
+                  this.formData.testData[m].items[n].value = JSON.parse(arrData[k].items[l].value)
+                } else {
+                  this.formData.testData[m].items[n].value = arrData[k].items[l].value
+                }
+                // console.log('value', arrData[k].items[l])
                 this.formData.testData[m].items[n].endResult = arrData[k].items[l].result
               }
             }

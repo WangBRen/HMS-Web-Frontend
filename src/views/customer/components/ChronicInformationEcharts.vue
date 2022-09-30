@@ -111,7 +111,7 @@ export default {
       const diseaseId = this.diseaseId
       apiGetCustomerChronicIndex(custId, diseaseId).then(res => {
         if (res.status === 200) {
-          // console.log('图和表的数据', res.data)
+          console.log('图和表的数据', res.data)
           // 渲染图
           this.apiData = res.data
           this.drawLine(res.data)
