@@ -178,7 +178,7 @@ export default {
       this.openChronicInfo()
     },
     showFollowUpSheet (_tableData) {
-      this.$refs.FollowUpSheetRef.openFollowUpSheet(this.tableData)
+      this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
     }
   }
 }

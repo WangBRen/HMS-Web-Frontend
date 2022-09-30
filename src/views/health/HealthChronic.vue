@@ -306,6 +306,7 @@ export default {
           }
           getChronic(pages).then(res => {
             if (res.status === 200) {
+              console.log('慢病接口数据', res.data.content)
               // const resData = res.data.content
               // this.tableData = resData
               this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })

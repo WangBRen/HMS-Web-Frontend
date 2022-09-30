@@ -18,7 +18,7 @@
 </template>
 
 <script>
-// import { getFollowRecords as apiFollowUpRecords } from '@/api/health'
+// import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
 export default {
   name: 'FollowUpRecords',
   data () {
