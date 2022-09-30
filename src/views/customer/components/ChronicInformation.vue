@@ -13,72 +13,53 @@
           <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
           <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
         </a-space>
-        <div class="card-body" v-for="item in tableData" :key="item.id">
-          <a-row>
-            <a-col :span="24">
-              <a-row class="card-title">
-                <a-col :span="22">
-                  <span style="font-size: 20px;color: white;">慢病名称: </span>
-                  <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
-                  <span @click="changeStatus(item.status)">
-                    <a-tag style="margin-left: 10px;" :color="item.status === 'diagnosed' ? 'rgba(217, 0, 27, 0.768627450980392)' : (item.status === 'exception' ? 'blue' : 'rgba(245, 154, 35, 1)')">
-                      {{ item.status | filterChronicStatus }}
-                    </a-tag>
-                  </span>
-                  <span>
-                    <a-tag :color="item.level <= 5 ? '' : 'rgba(217, 0, 27, 0.768627450980392)'">{{ item.level }}</a-tag>
-                  </span>
-                </a-col>
-                <a-col :span="2">
-                  <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a>
-                </a-col>
-              </a-row>
-              <a-row :id="item.id" class="card-detail" style="display: none">
-                <a-col>
-                  <a-row class="card-index">
-                    <a-col class="card-index-title title-name" :span="3">指标项</a-col>
-                    <a-col class="card-index-data" :span="21">
-                      <span v-for="items in item.chronicDisease.items" :key="items.indexItem.id">
-                        <a-tooltip>
-                          <template slot="title">
-                            <span v-for="tip in items.indexItem.result" :key="tip.id">
-                              {{ tip | filterTip }}
-                            </span>
-                          </template>
-                          <a-tag>{{ items.indexItem.name }}</a-tag>
-                        </a-tooltip>
-                      </span>
-                    </a-col>
-                  </a-row>
-                  <a-row class="card-indexData">
-                    <a-col :span="24" class="card-indexData-chart">
-                      <!-- <div :id="'main'+item.id" :ref="'main'+item.id" style="width: 550px; height: 300px;"></div> -->
-                      <ChronicInformationEcharts
-                        ref="echartsRef"
-                        :dataArr="item"
-                        :custId="custId"
-                      />
-                    </a-col>
-                  </a-row>
-                  <a-row class="card-record">
-                    <a-col :span="3" class="card-record-title title-name">
-                      <span>慢病随访记录</span>
-                    </a-col>
-                    <a-col class="card-record-table" :span="21">
-                      <FollowUpRecords/>
-                    </a-col>
-                  </a-row>
-                  <a-row class="card-manage">
-                    <a-col :span="3" class="card-manage-title title-name">
-                      <span>管理目标</span>
-                    </a-col>
-                    <a-col :span="21" class="card-manage-body">
-                      <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
-                    </a-col>
-                  </a-row>
-                </a-col>
-              </a-row>
+        <div class="card-row" v-for="item in tableData" :key="item.id">
+          <a-row class="card-title">
+            <a-col :span="22" @click="showCard(item.id)">
+              <span style="font-size: 20px;color: white;">慢病名称: </span>
+              <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
+              <span @click="changeStatus(item.status)">
+                <a-tag style="margin-left: 10px;" :color="item.status === 'diagnosed' ? 'rgba(217, 0, 27, 0.768627450980392)' : (item.status === 'exception' ? 'blue' : 'rgba(245, 154, 35, 1)')">
+                  {{ item.status | filterChronicStatus }}
+                </a-tag>
+              </span>
+              <span>
+                <a-tag :color="item.level <= 5 ? '' : 'rgba(217, 0, 27, 0.768627450980392)'">{{ item.level }}</a-tag>
+              </span>
             </a-col>
+            <a-col :span="2">
+              <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a>
+            </a-col>
+          </a-row>
+          <a-row :id="item.id" class="card-body" style="display: none;">
+            <a-card style="margin-top: 12px;">
+              <template #title>
+                <span>指标项</span>
+                <span style="margin-left: 12px">
+                  <span v-for="items in item.chronicDisease.items" :key="items.indexItem.id">
+                    <a-tooltip>
+                      <template slot="title">
+                        <span v-for="tip in items.indexItem.result" :key="tip.id">
+                          {{ tip | filterTip }}
+                        </span>
+                      </template>
+                      <a-tag>{{ items.indexItem.name }}</a-tag>
+                    </a-tooltip>
+                  </span>
+                </span>
+              </template>
+              <ChronicInformationEcharts
+                ref="echartsRef"
+                :dataArr="item"
+                :custId="custId"
+              />
+            </a-card>
+            <a-card title="慢病随访记录" style="margin-top: 12px;">
+              <FollowUpRecords/>
+            </a-card>
+            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
+              <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
+            </a-card>
           </a-row>
         </div>
       </div>
@@ -188,22 +169,21 @@ export default {
   // margin:0 100px;
   padding: 0px 10px;
 }
-.card-body{
-  margin: 5px 0;
+.card-row {
+  margin: 6px 0;
 }
-.card-title{
+.card-title {
   background-color: rgba(64, 158, 255, 1);
-  border-style: solid;
-  border-width: 2px;
+  border-radius: 4px;
   /* margin: 3px 0; */
   /* height: 50px; */
   padding: 12px;
 }
-/* .card-detail{
-  background-color: blueviolet;
-  border-style: solid;
-  border-width: 1px;
-} */
+.card-body {
+  border: 1px #eee solid;
+  padding: 6px 24px;
+  margin-bottom: 24px;
+}
 .title-name{
   border-style: solid;
   border-width: 1px;

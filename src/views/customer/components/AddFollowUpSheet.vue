@@ -3,85 +3,101 @@
     <a-modal
       v-model="modalSelf.visible"
       title="慢病随访单记录表"
-      width="1100px"
-      style="top: 10px"
+      :width="1100"
     >
       <template #footer>
         <a-button type="primary" @click="handlePreview">预览</a-button>
       </template>
-      <div class="Tbody">
+      <div class="modal-container">
         <!-- 基础信息开始 -->
-        <div class="SheetTitle">基础信息</div>
-        <!-- <a-card title="基础信息" style="width: 300px"></a-card> -->
-        <div class="BasicInformation">
-          <span>姓名：{{ baseInfo.name }}</span>
-          <span>性别：{{ baseInfo.gender }}</span>
-          <span>年龄：{{ baseInfo.age }}岁</span><br>
-          <span>血型：{{ baseInfo.aboBloodType }}</span>
-          <span>本人电话：{{ baseInfo.phoneNumber }}</span>
-          <span>家人电话：{{ baseInfo.contactNumber }}</span>
-        </div>
-        <div>
-          <span style="display:inline-block; height:35px;line-height: 45px;">填写提示：</span>
-          <a-textarea v-model="payload.hints" placeholder="请输入强调和提醒用户的话" />
-        </div>
+        <a-card title="基础信息" :loading="loading" class="card">
+          <a-row :gutter="24">
+            <a-col :span="8">
+              <span class="basic-info-label">姓名：</span>
+              <span class="basic-info-value">{{ baseInfo.name }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">性别：</span>
+              <span class="basic-info-value">{{ baseInfo.gender }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">年龄：</span>
+              <span class="basic-info-value">{{ baseInfo.age }}岁</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">血型：</span>
+              <span class="basic-info-value">{{ baseInfo.aboBloodType }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">本人电话：</span>
+              <span class="basic-info-value">{{ baseInfo.phoneNumber }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">家人电话：</span>
+              <span class="basic-info-value">{{ baseInfo.contactNumber }}</span>
+            </a-col>
+          </a-row>
+        </a-card>
+        <a-card title="填写提示" :loading="loading" class="card" :body-style="cardBodyStyle">
+          <a-textarea v-model="payload.hints" class="hint-textarea" placeholder="请输入填写必要的提示内容，如：尽量在今日下班前提交，并与工作人员确认提交内容无误" />
+        </a-card>
         <!-- 慢病选择开始 -->
-        <div class="SheetTitle">慢病选择</div>
-        <div class="addChronicBtn">
-          <a-button @click="openChronicDiseaseModal" type="dashed" style="width: 30%;">
-            <a-icon type="plus" /> 选择添加随访慢病
-          </a-button>
-          <a-modal v-model="modalSelectChronic.visible" title="选择随访慢病" @ok="handleChronicDiseaseOK" width="600px">
-            <a-row>
-              <a-col :span="24" >
-                <a-checkbox-group v-model="modalSelectChronic.diseases">
-                  <a-checkbox :value="item" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
-                    {{ item.chronicDisease.name }}
-                  </a-checkbox>
-                </a-checkbox-group>
-              </a-col>
-            </a-row>
-          </a-modal>
-        </div>
-        <span v-for="item in payload.diseases" :key="item.id"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
+        <a-card :loading="loading" class="card">
+          <template #title>
+            <span>慢病选择</span>
+            <a-button @click="openChronicDiseaseModal" type="dashed" style="float: right">
+              <a-icon type="plus" /> 选择添加随访慢病
+            </a-button>
+          </template>
+          <div v-if="payload.diseases">
+            <span v-for="item in payload.diseases" :key="item.id"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
+          </div>
+        </a-card>
         <!-- 指标选择开始 -->
-        <div class="SheetTitle">指标选择</div>
-        <a-table bordered :data-source="payload.items" :columns="itemColumns" rowKey="id" :pagination="false">
-          <span slot="checked" slot-scope="text, record">
-            <a-checkbox v-model="record.isChecked"/>
-          </span>
-          <span slot="TableInput" slot-scope="text, record">
-            <a-input v-if="!record.isIndex" v-model="record.name"/>
-            <span v-else>{{ text }}</span>
-          </span>
-          <span slot="TableUnit" slot-scope="text, record">
-            <a-input v-if="!record.isIndex" v-model="record.unit"/>
-            <span v-else>{{ text }}</span>
-          </span>
-          <span slot="TableSelect" slot-scope="text, record">
-            <span v-if="!record.isIndex">
-              <a-select v-model="record.type" :options="itemTypeOptions" style="width: 130px" @change="handleChange"/>
-              <a-select
-                v-model="record.options"
-                v-if="record.type === 'options'"
-                mode="tags"
-                style="width: 130px"
-                :token-separators="[' ']"
-                placeholder="请输入选择项"
-                :options="record.defineOptions"
-                :open="false"
-              ></a-select>
+        <a-card title="指标选择" :loading="loading" class="card" :body-style="cardBodyStyle">
+          <a-table bordered :data-source="payload.items" :columns="itemColumns" rowKey="id" :pagination="false">
+            <span slot="checked" slot-scope="text, record">
+              <a-checkbox v-model="record.isChecked" :disabled="record.disabled"/>
             </span>
-            <a-tag v-else>{{ text | fliterIndexType }}</a-tag>
-          </span>
-          <span slot="remark" slot-scope="text, record">
-            <a-textarea :defaultValue="record.remark" placeholder="请输入备注" auto-size v-model="record.remark"/>
-          </span>
-          <span slot="operation" slot-scope="text, record">
-            <a @click="handleOnDisableClicked(record.id)">禁用</a>
-          </span>
-        </a-table>
-        <a-button class="tableAddBtn" @click="handleAddIndex">添加一行新数据</a-button>
+            <span slot="TableInput" slot-scope="text, record">
+              <a-input v-if="!record.isIndex && !record.disabled" v-model="record.name"/>
+              <span v-else-if="!record.disabled">{{ text }}</span>
+              <span v-else class="disabled-text">{{ text }}</span>
+            </span>
+            <span slot="TableUnit" slot-scope="text, record">
+              <a-input v-if="!record.isIndex && !record.disabled" v-model="record.unit"/>
+              <span v-else-if="!record.disabled">{{ text }}</span>
+              <span v-else class="disabled-text">{{ text }}</span>
+            </span>
+            <span slot="TableSelect" slot-scope="text, record">
+              <span v-if="!record.isIndex && !record.disabled">
+                <a-select v-model="record.type" :options="itemTypeOptions" style="width: 130px" @change="handleChange"/>
+                <a-select
+                  v-model="record.options"
+                  v-if="record.type === 'options'"
+                  mode="tags"
+                  style="width: 130px"
+                  :token-separators="[' ']"
+                  placeholder="请输入选择项"
+                  :options="record.defineOptions"
+                  :open="false"
+                ></a-select>
+              </span>
+              <a-tag v-else-if="!record.disabled">{{ text | fliterIndexType }}</a-tag>
+              <a-tag v-else class="disabled-text">{{ text | fliterIndexType }}</a-tag>
+            </span>
+            <span slot="remark" slot-scope="text, record">
+              <a-textarea :disabled="record.disabled" :defaultValue="record.remark" placeholder="请输入备注" auto-size v-model="record.remark"/>
+            </span>
+            <span slot="operation" slot-scope="text, record">
+              <a @click="handleOnDisableClicked(record, !record.disabled)">
+                <span v-if="record.disabled">启用</span>
+                <span v-else>禁用</span>
+              </a>
+            </span>
+          </a-table>
+          <a-button class="button-addline" type="dashed" @click="handleAddIndex">添加一行新数据</a-button>
+        </a-card>
         <!-- 指标选择结束 -->
       </div>
     </a-modal>
@@ -92,6 +108,17 @@
       width="900px"
       okText="发送">
       <div id="container" style="width:100%;height: 900px;pointer-events: none;"></div>
+    </a-modal>
+    <a-modal v-model="modalSelectChronic.visible" title="选择需要进行随访的慢病" @ok="handleChronicDiseaseOK" width="600px">
+      <a-row>
+        <a-col :span="24" >
+          <a-checkbox-group v-model="modalSelectChronic.diseases">
+            <a-checkbox :value="item" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
+              {{ item.chronicDisease.name }}
+            </a-checkbox>
+          </a-checkbox-group>
+        </a-col>
+      </a-row>
     </a-modal>
     <ChronicInformationVisit ref="Visit"/>
   </div>
@@ -187,6 +214,7 @@ export default {
   },
   data () {
     return {
+      loading: false,
       totalChronicDiseases: [], // read only
       baseInfo: {}, // read only
       payload: { // edit
@@ -212,7 +240,11 @@ export default {
         }
       ],
       inputType: '',
-      lastUpdateAt: ''
+      lastUpdateAt: '',
+      // styles:
+      cardBodyStyle: {
+        padding: '0 0 24px 0'
+      }
     }
   },
   filters: {
@@ -314,7 +346,8 @@ export default {
                 type: itemVal.type,
                 unit: itemVal.unit,
                 remark: itemVal.remark,
-                options: []
+                options: [],
+                disabled: itemVal.disabled
               }
               if (itemVal.name !== '' && itemVal.type !== '') {
                 if (itemVal.type === 'textarea' || itemVal.type === 'upload') {
@@ -361,7 +394,8 @@ export default {
           remark: index.remark,
           unit: index.unit,
           isChecked: false,
-          type: parseIndexType(index.type)
+          type: parseIndexType(index.type),
+          disabled: false
         }
       }).reduce((array, current) => {
         for (const item of array) {
@@ -383,11 +417,14 @@ export default {
         remark: '',
         unit: '',
         isChecked: false,
-        type: 'input'
+        type: 'input',
+        disabled: false
       }
       this.payload.items.push(itemObject)
     },
-    handleOnDisableClicked (key) {
+    handleOnDisableClicked (record, disabled) {
+      // console.log(record, disabled)
+      record.disabled = disabled
     },
     handleChange (record) {
       this.inputType = record
@@ -398,49 +435,38 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.Tbody{
-  width: 1000px;
-  margin: 10px auto;
-  padding: 30px;
-  margin-top: 0;
-  padding-top: 0;
-}
-.SheetTitle{
-  font-size: 18px;
-  font-weight: bold;
-  margin: 18px 0;
-  border-bottom: 6px solid #419FFF;
-  height: 38px;
-  padding: 10px;
-  width: 100px;
-}
-.BasicInformation{
-  border: 1px solid #ccc;
-  padding: 15px 30px;
-  span{
-    display: inline-block;
-    width: 280px;
-    height: 40px;
-    line-height: 40px;
-    font-size: 16px;
-  }
-}
-.indexButton:active{
-  background: #666;
-}
-.addChronicBtn{
-  display:flex;
-  justify-content:center;
-  margin: 20px auto;
-
-}
-.tableAddBtn{
-  width: 940px;
-}
-.checkbox{
+.checkbox {
   display: inline-block;
   width: 266px;
   height: 30px;
   margin-left: 8px;
+}
+.modal-container {
+  padding: 0 24px;
+}
+.basic-info-label {
+  display: inline-block;
+  width: 80px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.basic-info-value {
+}
+.card {
+  margin-bottom: 24px;
+}
+.hint-body {
+  padding: 24px 6px !important;
+}
+.hint-textarea {
+  border: none;
+  padding: 24px;
+}
+.button-addline{
+  margin-top: 6px;
+  width: 100%;
+}
+.disabled-text {
+  text-decoration: line-through;
 }
 </style>
