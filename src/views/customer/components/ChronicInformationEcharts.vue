@@ -1,8 +1,8 @@
 <template>
   <div>
     <a-row>
-      <a-col>
-        <div style="margin: 5px 0 5px 35%;">
+      <a-col style="display: flex;">
+        <div style="margin: 0 auto; margin-bottom: 24px;">
           选择时间段：
           <a-range-picker
             style="width: 200px;"
@@ -12,17 +12,16 @@
             @change="selectTime"
             @ok="onOkTime"
           />
-          <a-button class="resetButton" @click="resetTime">重置</a-button>
+          <a-button @click="resetTime" style="margin-left: 8px;">重置</a-button>
         </div>
       </a-col>
     </a-row>
     <a-row>
-      <a-col :span="12" class="leftEcharts">
-        <div :id="'echarts'+this.dataArr.id" style="width: 550px;height: 300px;"></div>
+      <a-col :id="'ac-' + this.dataArr.id" :span="12" class="leftEcharts">
+        <div :id="'echarts' + this.dataArr.id" style="width: 500px; height: 300px;"></div>
       </a-col>
-      <a-col :span="12" class="rightTable">
+      <a-col :span="12" class="rightTable" style="padding: 0 24px;">
         <a-table
-          class="rightTable_body"
           :columns="indexColumns"
           rowKey="id"
           :data-source="tableArr"
@@ -174,6 +173,11 @@ export default {
       // console.log('legendArr', legendArr)
       // console.log('seriesArr', seriesArr)
       this.charts = echarts.init(document.getElementById('echarts' + this.dataArr.id))
+      let width = document.getElementById('ac-' + this.dataArr.id).offsetWidth - 36
+      if (width < 500) {
+        width = 500
+      }
+      console.log({ width })
       this.charts.setOption({
         title: {
           text: ''
@@ -185,7 +189,7 @@ export default {
           // data: ['收缩压', '舒张压', '体重指数']
           data: legendArr,
           left: 10,
-          width: 500
+          width
         },
         grid: {
           left: '3%',
@@ -243,14 +247,8 @@ export default {
 </script>
 <style scoped>
 .leftEcharts{
-  height: 330px;
-  border-right-width: 1px;
-  border-right-style: solid;
+  height: 350px;
+  border-right: 1px solid #ddd;
+  padding-right: 12px;
 }
-/* .resetButton{
-  margin-left: 150px;
-} */
-/* .rightTable_body{
-  margin: 10px;
-} */
 </style>

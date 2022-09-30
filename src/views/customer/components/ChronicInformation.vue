@@ -81,6 +81,36 @@
               </a-row>
             </a-col>
           </a-row>
+          <a-row :id="item.id" class="card-body" style="display: none;">
+            <a-card style="margin-top: 12px;">
+              <template #title>
+                <span>指标项</span>
+                <span style="margin-left: 12px">
+                  <span v-for="items in item.chronicDisease.items" :key="items.indexItem.id">
+                    <a-tooltip>
+                      <template slot="title">
+                        <span v-for="tip in items.indexItem.result" :key="tip.id">
+                          {{ tip | filterTip }}
+                        </span>
+                      </template>
+                      <a-tag>{{ items.indexItem.name }}</a-tag>
+                    </a-tooltip>
+                  </span>
+                </span>
+              </template>
+              <ChronicInformationEcharts
+                ref="echartsRef"
+                :dataArr="item"
+                :custId="custId"
+              />
+            </a-card>
+            <a-card title="慢病随访记录" style="margin-top: 12px;">
+              <FollowUpRecords/>
+            </a-card>
+            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
+              <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
+            </a-card>
+          </a-row>
         </div>
       </div>
       <AddFollowUpSheet ref="FollowUpSheetRef"/>
@@ -180,7 +210,7 @@ export default {
       this.openChronicInfo()
     },
     showFollowUpSheet (_tableData) {
-      this.$refs.FollowUpSheetRef.openFollowUpSheet(this.tableData)
+      this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
     }
   }
 }
@@ -190,22 +220,21 @@ export default {
   // margin:0 100px;
   padding: 0px 10px;
 }
-.card-body{
-  margin: 5px 0;
+.card-row {
+  margin: 6px 0;
 }
-.card-title{
+.card-title {
   background-color: rgba(64, 158, 255, 1);
-  border-style: solid;
-  border-width: 2px;
+  border-radius: 4px;
   /* margin: 3px 0; */
   /* height: 50px; */
   padding: 12px;
 }
-/* .card-detail{
-  background-color: blueviolet;
-  border-style: solid;
-  border-width: 1px;
-} */
+.card-body {
+  border: 1px #eee solid;
+  padding: 6px 24px;
+  margin-bottom: 24px;
+}
 .title-name{
   border-style: solid;
   border-width: 1px;
