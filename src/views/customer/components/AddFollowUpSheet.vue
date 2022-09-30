@@ -228,7 +228,7 @@ export default {
   mounted () {
     getToken().then(res => {
         if (res.status === 200) {
-            console.log('唯一 TOKEN 获取成功', res.data)
+            // console.log('唯一 TOKEN 获取成功', res.data)
             this.payload.myToken = res.data
         }
     })
@@ -236,11 +236,11 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     openModal (baseInfo, totalChronicDiseases = []) {
-      console.log('慢病列表', totalChronicDiseases)
+      // console.log('慢病列表', totalChronicDiseases)
       this.totalChronicDiseases = totalChronicDiseases
       this.baseInfo = baseInfo || {}
       this.baseInfo.age = 17
-      console.log('baseInfo', baseInfo)
+      // console.log('baseInfo', baseInfo)
       // re-initial data-source
       this.payload.diseases = []
       this.payload.items = []
@@ -260,8 +260,8 @@ export default {
                 const previewUrl = res.data.url
                 document.getElementById('container').innerHTML = `<object type="text/html" data="${previewUrl}" width="100%" height="100%"></object>`
             } else {
-                console.log('预览失败')
-              }
+                notification.warning({ message: '预览失败', description: resp.message })
+            }
           })
         } else {
           notification.warning({ message: '预览失败', description: resp.message })
@@ -276,7 +276,7 @@ export default {
       if (promise) {
         promise.then(res => {
           if (res.status === 201) {
-            console.log('创建成功的res', res)
+            // console.log('创建成功的res', res)
             this.$refs.Visit.openVisit(res.data)
           }
         }).catch(err => {
@@ -300,10 +300,10 @@ export default {
       const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
       const customerId = this.baseInfo.customerId
       if (this.payload.items.length !== 0) {
-        console.log('发送给用户的', this.payload)
+        // console.log('发送给用户的', this.payload)
             apiPayload.hints = this.payload.hints
             this.payload.diseases.forEach(function (diseas) {
-              console.log(diseas)
+              // console.log(diseas)
               apiPayload.diseaseIds.push(diseas.id)
             })
             this.payload.items.forEach(function (itemVal) {
@@ -324,7 +324,7 @@ export default {
               }
             })
             apiPayload.token = this.payload.myToken
-            console.log('发给后端的', apiPayload)
+            // console.log('发给后端的', apiPayload)
       }
       return apiCreateFollowUpForm(customerId, apiPayload)
       // // 调接口创建随访单
@@ -351,7 +351,7 @@ export default {
       // console.log({ diseases: this.payload.diseases })
       // update index table
       const totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.chronicDisease.items).flat().map(item => item.indexItem)
-      console.log('totalIndexOfThisPeople', totalIndexOfThisPeople)
+      // console.log('totalIndexOfThisPeople', totalIndexOfThisPeople)
       const items = totalIndexOfThisPeople.map(index => {
         return {
           id: index.id,
@@ -391,7 +391,7 @@ export default {
     },
     handleChange (record) {
       this.inputType = record
-      console.log(this.inputType)
+      // console.log(this.inputType)
     }
   }
 }

@@ -63,13 +63,13 @@ export default {
     })
     },
     onSendMessage () {
-      console.log('准备发送短信')
+      // console.log('准备发送短信')
       const apiPhone = this.phone
 
       ApiSendForm(this.customerId, this.formDataId, { telephone: apiPhone }).then(res => {
         if (res.status === 200) {
           this.visitVisible = false
-          console.log('发送到短信了', res)
+          // console.log('发送到短信了', res)
         } else if (res.status === 400) {
           notification.open({ message: '发送失败：', description: '手机号码格式错误' })
           }
