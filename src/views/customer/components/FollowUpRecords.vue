@@ -1,5 +1,5 @@
 <template>
-  <div style="position:relative">
+  <div>
     <a-table :columns="recordColumns" :data-source="recordData" :pagination="pagination" :rowKey="(record,index)=>{return index}">
       <span slot="result" slot-scope="result" rowkey="">
         <a-tag
@@ -13,7 +13,7 @@
         <a @click="retransmission(text, grecord)" v-else>查看随访表</a>
       </span>
     </a-table>
-    <button class="StartBtn">开始随访</button>
+    <a-button class="follow-start-button" type="primary">开始随访</a-button>
   </div>
 </template>
 
@@ -146,11 +146,8 @@ export default {
 </script>
 
 <style>
-.StartBtn{
-  z-index:999;
-  position: absolute;
-  top:300px;
-  left: 20px;
+.follow-start-button {
   width: 260px;
+  top: -36px;
 }
 </style>
