@@ -1,46 +1,89 @@
 <template>
   <div>
-    <a-table :columns="recordColumns" :data-source="recordData" :pagination="pagination" :rowKey="(record,index)=>{return index}">
-      <span slot="result" slot-scope="result" rowkey="">
+    <a-table
+      :columns="recordColumns"
+      :data-source="recordData"
+      :pagination="pagination"
+      :rowKey="(record,index)=>{return index}">
+      <span slot="HealthSpecialist" slot-scope="text,scope">
+        {{ scope.diseases[0].diseasedBy.nickname }}
+      </span>
+      <span slot="level" slot-scope="text,scope">
+        <span v-if="scope.diseases[0].level === 0">
+          -
+        </span>
+        <span v-else>
+          {{ scope.diseases[0].level }}
+        </span>
+      </span>
+      <span slot="result" slot-scope="text,scope" rowkey="">
         <a-tag
-          :color="result=='已回收' ? 'geekblue' : result=='回收中' ? '#e5e5e5' : 'orange'">
-          {{ result }}
+          :color="scope.status==='success' ? 'geekblue' : scope.status==='pending' ? '#DEE1E6' : 'orange'">
+          <span v-if="scope.status==='pending'">回收中</span>
+          <span v-else-if="scope.status==='success'">已回收</span>
+          <span v-else>超时</span>
         </a-tag>
       </span>
-      <span slot="action" slot-scope="text, grecord">
-        <a @click="retransmission(text, grecord)" v-if="grecord.level=='-'">重发</a>
-        <a @click="retransmission(text, grecord)" v-else-if="grecord.level=='待判定'">判定</a>
-        <a @click="retransmission(text, grecord)" v-else>查看随访表</a>
+      <span slot="receivedAt" slot-scope="text, scope">
+        <span v-if="scope.status==='success'">{{ scope.receivedAt }}</span>
+        <span v-else> - </span>
+      </span>
+      <span slot="action" slot-scope="text, scope">
+        <a v-if="scope.status!=='success'">重发</a>
+        <a v-else-if="scope.level=='待判定'">判定</a>
+        <a @click="ViewFollowUpTable(text, scope)" v-else>查看随访表</a>
       </span>
     </a-table>
-    <a-button class="follow-start-button" type="primary">开始随访</a-button>
+    <a-button class="follow-start-button" type="primary" @click="showFollowUpSheet(chroName)">开始随访</a-button>
+    <SeeFollowUpSheet ref="SeeFollowUpSheetRef"/>
   </div>
 </template>
 
 <script>
-// import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
+import moment from 'moment'
+import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
+import { number } from 'echarts/lib/export'
+import SeeFollowUpSheet from './SeeFollowUpSheet.vue'
 export default {
   name: 'FollowUpRecords',
+  components: {
+    SeeFollowUpSheet
+  },
+  props: {
+    diseaseId: {
+      type: number,
+      default: ''
+    },
+    customerId: {
+      type: number,
+      default: ''
+    }
+  },
   data () {
     return {
       recordColumns: [
         {
           title: '发送日期',
-          dataIndex: 'SendData',
+          dataIndex: 'sendAt',
           key: 'a',
-          align: 'center'
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record ? moment(record.sendAt).format('YYYY-MM-DD HH:mm:ss') : ''
+          }
         },
         {
           title: '随访健康师',
           dataIndex: 'HealthSpecialist',
           key: 'b',
-          align: 'center'
+          align: 'center',
+          scopedSlots: { customRender: 'HealthSpecialist' }
         },
         {
           title: '判定级别',
           dataIndex: 'level',
           key: 'c',
-          align: 'center'
+          align: 'center',
+          scopedSlots: { customRender: 'level' }
         },
         {
           title: '回收结果',
@@ -51,9 +94,10 @@ export default {
         },
         {
           title: '回收日期',
-          dataIndex: 'RecyclingDate',
+          dataIndex: 'receivedAt',
           key: 'e',
-          align: 'center'
+          align: 'center',
+          scopedSlots: { customRender: 'receivedAt' }
         },
         {
           title: '操作',
@@ -63,36 +107,7 @@ export default {
           scopedSlots: { customRender: 'action' }
         }
       ],
-      recordData: [
-        {
-          SendData: '2022-09-09 19:45',
-          HealthSpecialist: '张晓刚',
-          level: '-',
-          result: '回收中',
-          RecyclingDate: '2022-10-09 13:25'
-        },
-        {
-          SendData: '2022-09-08 19:45',
-          HealthSpecialist: '张晓刚',
-          level: '待判定',
-          result: '已回收',
-          RecyclingDate: '2022-10-09 13:25'
-        },
-        {
-          SendData: '2022-09-08 19:45',
-          HealthSpecialist: '张晓刚',
-          level: '1级',
-          result: '已回收',
-          RecyclingDate: '2022-10-09 13:25'
-        },
-        {
-          SendData: '2022-09-07 19:45',
-          HealthSpecialist: '王小明',
-          level: '-',
-          result: '超时',
-          RecyclingDate: '2022-10-09 13:25'
-        }
-      ],
+      recordData: [],
       pages: {},
       pagination: {
         total: 0,
@@ -120,28 +135,28 @@ export default {
         this.pagination.pageSize = pageSize
         this.onSearch()
     },
-    onSearch (value) {
-      // const pages = {
-      //   page: this.pagination.current,
-      //   size: this.pagination.pageSize
-      // }
-      // apiFollowUpRecords(value, pages).then(res => {
-      //   if (res.status === 200) {
-      //     this.loadingShow = false
-      //     this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-      //     this.pagination.total = res.data.totalElements
-      //   }
-      // })
+    async onSearch () {
+      const pages = {
+        page: this.pagination.current,
+        size: this.pagination.pageSize
+      }
+      apiFollowUpRecords(this.customerId, this.diseaseId, pages).then(res => {
+        if (res.status === 200) {
+          this.recordData = res.data.content || []
+          this.pagination.total = res.data.totalElements
+        } else {
+          this.recordData = []
+        }
+      })
     },
-    retransmission (text, grecord) {
-      console.log(text, grecord)
+    ViewFollowUpTable (text, grecord) {
+      this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
     },
         // 点击创建随访单
-    showFollowUpSheet () {
-      this.$refs.FollowUpSheetRef.openFollowUpSheet()
+    showFollowUpSheet (chroName) {
+      // console.log('创建随访单啦')
     }
   }
-
 }
 </script>
 
@@ -149,5 +164,6 @@ export default {
 .follow-start-button {
   width: 260px;
   top: -36px;
+  z-index: 999;
 }
 </style>
