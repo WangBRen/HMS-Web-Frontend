@@ -1,6 +1,7 @@
 import request from '@/utils/request'
 
 const customerApi = {
+    FollowRecords: (customerId, diseaseId) => { return `/customers/${customerId}/${diseaseId}/followup-forms` },
     FollowUpSheet: (customerId) => { return `/customers/${customerId}/followup-forms` }, // 创建随访单
     idempotentToken: '/base/idempotent-token', // 获取token
     FormSendingInfo: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/sending-info` },
@@ -9,9 +10,9 @@ const customerApi = {
   }
 
 // 随访记录
-export function getFollowRecords (ChronicDiseaseId, pages) {
+export function getFollowRecords (customerId, diseaseId, pages) {
   return request({
-      url: customerApi.FollowRecords(ChronicDiseaseId),
+      url: customerApi.FollowRecords(customerId, diseaseId),
       method: 'get',
       params: {
           page: pages.page || 1,

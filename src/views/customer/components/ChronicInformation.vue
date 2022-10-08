@@ -55,7 +55,7 @@
               />
             </a-card>
             <a-card title="慢病随访记录" style="margin-top: 12px;">
-              <FollowUpRecords/>
+              <FollowUpRecords :diseaseId="item.id" :customerId="custId"/>
             </a-card>
             <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
