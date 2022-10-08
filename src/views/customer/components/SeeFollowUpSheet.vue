@@ -146,44 +146,7 @@ const options = [
     label: '选项'
   }
 ]
-const gradeOptions = [
-  {
-    value: '1级',
-    label: '1级'
-  },
-  {
-    value: '2级',
-    label: '2级'
-  },
-  {
-    value: '3级',
-    label: '3级'
-  },
-  {
-    value: '4级',
-    label: '5级'
-  },
-  {
-    value: '5级',
-    label: '5级'
-  },
-  {
-    value: '6级',
-    label: '6级'
-  },
-  {
-    value: '7级',
-    label: '7级'
-  },
-  {
-    value: '8级',
-    label: '8级'
-  },
-  {
-    value: '9级',
-    label: '9级'
-  }
-]
+const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(step => { return { value: step, label: step + '级' } })
 
 export default {
   name: 'SeeFollowUpSheet',
