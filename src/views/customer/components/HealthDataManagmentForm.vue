@@ -96,6 +96,7 @@ export default {
   data () {
     return {
       custId: '',
+      userInfo: [], // 保存用户信息
       reportId: '',
       // eslint-disable-next-line no-undef
       dataSource,
@@ -149,8 +150,9 @@ export default {
   },
   methods: {
     moment,
-    setCustomerId (customersId) {
+    setCustomerId (customersId, userInfo) {
       this.custId = customersId
+      this.userInfo = userInfo
     },
     /**
      * 查找用户自己的指标
@@ -208,9 +210,10 @@ export default {
       // const cusmId = '2'
       // console.log('???')
       const cusmId = this.custId
+      const userInfo = this.userInfo
       // this.$refs.child.openModel()
       // this.$refs.child.AddHealthCom(cusmId) // 点击新建弹窗
-      this.$refs.addReport.openAddModal()
+      this.$refs.addReport.openAddModal(userInfo)
       this.$refs.addReport.openADDmodalCustId(cusmId)
     },
     // 查看报告单
