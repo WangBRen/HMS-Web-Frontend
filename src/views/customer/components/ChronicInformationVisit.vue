@@ -20,8 +20,8 @@
   </div>
 </template>
 <script>
-import { getFormSendingInfo as apigetFormSendingInfo, ApiSendForm } from '@/api/followUpForm'
-import { notification } from 'ant-design-vue'
+// import { getFormSendingInfo as apigetFormSendingInfo, ApiSendForm } from '@/api/followUpForm'
+// import { notification } from 'ant-design-vue'
 export default {
   data () {
     return {
