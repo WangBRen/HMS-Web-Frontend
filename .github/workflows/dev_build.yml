@@ -15,4 +15,5 @@ jobs:
 
       - name: Build App
         run: |
-          npm install && npm run build:development
+          npm install && npm run build:production
+        # or build:development
