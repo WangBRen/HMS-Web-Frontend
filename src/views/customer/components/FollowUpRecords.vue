@@ -142,7 +142,6 @@ export default {
       }
       apiFollowUpRecords(this.customerId, this.diseaseId, pages).then(res => {
         if (res.status === 200) {
-          console.log(this.diseaseId, '随访记录的值', res.data)
           this.recordData = res.data.content || []
           this.pagination.total = res.data.totalElements
         } else {
@@ -152,11 +151,10 @@ export default {
     },
     ViewFollowUpTable (text, grecord) {
       this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
-      console.log('查看随访表', text, grecord)
     },
         // 点击创建随访单
     showFollowUpSheet (chroName) {
-      console.log('创建随访单啦')
+      // console.log('创建随访单啦')
     }
   }
 }

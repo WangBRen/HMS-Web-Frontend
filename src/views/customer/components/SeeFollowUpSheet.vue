@@ -226,11 +226,9 @@ export default {
       this.followTableData = followTableData
     },
     handleOnDisableClicked (record, disabled) {
-      // console.log(record, disabled)
       record.disabled = disabled
     },
     radioChange (e) {
-      console.log(e.target)
       if (e.target.value === 1) {
         this.valid = true
         this.invalid = false

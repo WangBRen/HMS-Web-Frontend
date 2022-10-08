@@ -260,7 +260,6 @@ export default {
   mounted () {
     getToken().then(res => {
         if (res.status === 200) {
-            // console.log('唯一 TOKEN 获取成功', res.data)
             this.payload.myToken = res.data
         }
     })
@@ -268,11 +267,9 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     openModal (baseInfo, totalChronicDiseases = []) {
-      // console.log('慢病列表', totalChronicDiseases)
       this.totalChronicDiseases = totalChronicDiseases
       this.baseInfo = baseInfo || {}
       this.baseInfo.age = 17
-      // console.log('baseInfo', baseInfo)
       // re-initial data-source
       this.payload.diseases = []
       this.payload.items = []
@@ -280,7 +277,6 @@ export default {
     },
     async handlePreview () {
       const resp = await this.doRequest()
-      // console.log({ resp })
       if (resp) {
         if (resp.status === 201) {
           this.modalPreviewInfo = true
@@ -302,13 +298,11 @@ export default {
     },
     handleSend () {
       // this.createFollowUpList(() => {
-      //   console.log('创建成功')
       // })
       const promise = this.doRequest()
       if (promise) {
         promise.then(res => {
           if (res.status === 201) {
-            // console.log('创建成功的res', res)
             this.$refs.Visit.openVisit(res.data)
           }
         }).catch(err => {
@@ -332,10 +326,8 @@ export default {
       const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
       const customerId = this.baseInfo.customerId
       if (this.payload.items.length !== 0) {
-        // console.log('发送给用户的', this.payload)
             apiPayload.hints = this.payload.hints
             this.payload.diseases.forEach(function (diseas) {
-              // console.log(diseas)
               apiPayload.diseaseIds.push(diseas.id)
             })
             this.payload.items.forEach(function (itemVal) {
@@ -357,7 +349,6 @@ export default {
               }
             })
             apiPayload.token = this.payload.myToken
-            // console.log('发给后端的', apiPayload)
       }
       return apiCreateFollowUpForm(customerId, apiPayload)
       // // 调接口创建随访单
