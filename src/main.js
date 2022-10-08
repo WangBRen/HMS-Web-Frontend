@@ -21,9 +21,10 @@ import './permission' // permission control
 import './utils/filter' // global filter
 import './global.less' // global style
 // 表单组件注册
-import { FormModel, collapse } from 'ant-design-vue'
+import { FormModel, collapse, slider } from 'ant-design-vue'
 Vue.use(FormModel)
 Vue.use(collapse)
+Vue.use(slider)
 
 Vue.config.productionTip = false
 
@@ -36,8 +37,24 @@ Vue.component('page-header-wrapper', PageHeaderWrapper)
 
 window.umi_plugin_ant_themeVar = themePluginConfig.theme
 
+// init reload function
+Vue.prototype.$reload = () => { console.warn('Please Set Reload Function On This Page [0]') }
+// reset reload function
 Vue.prototype.$setPageDataLoader = (func) => {
-  Vue.prototype.$reload = func
+  const urlWhenSetted = window.location.href || 'unknown'
+  Vue.prototype.$reload = () => {
+    const url = window.location.href || 'unknown'
+    if (url === urlWhenSetted) {
+      if (func) {
+        func()
+        Vue.prototype.$message.success('刷新成功')
+      } else {
+        console.warn('Warning: Unset Reload Function On Current Page [1]')
+      }
+    } else {
+      console.warn('Warning: Unset Reload Function On Current Page [2]')
+    }
+  }
 }
 
 new Vue({

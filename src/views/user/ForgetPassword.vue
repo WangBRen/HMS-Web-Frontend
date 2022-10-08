@@ -160,7 +160,7 @@ export default {
       console.log(p)
      var Reg = /^[1][34578][0-9]{9}$/
       if (this.form.telephone === '') {
-        this.$message.error('请输入手机密码')
+        this.$message.error('请输入手机号码')
       } else if (Reg.test(this.form.telephone)) {
                getCode(p).then(res => {
                 if (res.status === 200) {
@@ -183,13 +183,11 @@ export default {
             }
     },
     fixPassword (e) {
-      console.log(this.form)
       e.preventDefault()
        this.$refs.ruleForm.validate(valid => {
         if (valid) {
           if (this.form.newPassword === this.form.oldPassword) {
              forgetPassword(this.form).then(res => {
-              console.log(res)
               if (res.status === 200) {
                  this.$message.success(res.$message || '修改密码成功')
                  this.current = false

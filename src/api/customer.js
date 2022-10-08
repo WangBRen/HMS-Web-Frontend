@@ -8,7 +8,14 @@ const customerApi = {
     repeat: '/groups/duplicated/',
     addCustomer: value => { return `/groups/${value}/customers` },
     healthReports: customerId => { return `/health-reports/${customerId}/reports` },
-    editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`// 编辑用户信息
+    editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`, // 编辑用户信息
+    updatePhone: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/phone`,
+    UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
+    ChronicManage: customerId => { return `/customers/${customerId}/chronic-diseases` },
+    editCustomerChronicDiseases: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`,
+    // 获取慢病指标历史记录
+    getCustomerChronicIndex: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/indexes`,
+    makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -82,6 +89,51 @@ export function editGroupCustomer (groupId, customerId, params) {
     return request({
         url: customerApi.editInfoGroupCustomer(groupId, customerId),
         method: 'put',
+        data: params
+    })
+}
+
+// 手机验证码
+export function getCode (phone) {
+    return request({
+      url: customerApi.UserCode(phone),
+      method: 'post'
+    })
+ }
+
+export function updatePhone (groupId, customerId, phoneForm) {
+    return request({
+        url: customerApi.updatePhone(groupId, customerId),
+        method: 'put',
+        data: phoneForm
+    })
+}
+
+export function getChronicManage (customersId) {
+    return request({
+        url: customerApi.ChronicManage(customersId),
+        method: 'get'
+    })
+}
+
+export function editCustomerChronicDiseases (customerId, diseaseId, params) {
+    return request({
+        url: customerApi.editCustomerChronicDiseases(customerId, diseaseId),
+        method: 'put',
+        data: params
+    })
+}
+export function getCustomerChronicIndex (customerId, diseaseId) {
+    return request({
+        url: customerApi.getCustomerChronicIndex(customerId, diseaseId),
+        method: 'get'
+    })
+}
+
+export function makeDiagnosed (customerId, diseaseId, params) {
+    return request({
+        url: customerApi.makeDiagnosed(customerId, diseaseId),
+        method: 'post',
         data: params
     })
 }

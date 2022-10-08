@@ -3,7 +3,7 @@ import request from '@/utils/request'
 const customerApi = {
     healthIndex: '/health-indexes', // 获取健康指标
     healthDis: diseaseId => { return `/health-diseases/${diseaseId}/children` }, // 疾病诊断
-    healthReport: customerId => { return `/health-reports/${customerId}/reports` }, // 新建检测报告
+    healthReport: (customerId) => { return `/health-reports/${customerId}/reports` }, // 新建检测报告
     healthCustomerReport: '/health-reports/'
 }
 
@@ -39,9 +39,13 @@ export function getHealthCustomerReport (customerId, reportId) {
     })
 }
 
-export function getHealthReport (customerId) {
+export function getHealthReport (customerId, pages) {
     return request({
         url: customerApi.healthReport(customerId),
-        method: 'get'
+        method: 'get',
+        params: {
+            page: pages.page || 1,
+            size: pages.size || 10
+        }
     })
 }

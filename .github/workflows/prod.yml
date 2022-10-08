@@ -1,4 +1,4 @@
-name: HistSys Frontend Production CI
+name: HMS Frontend Production CI
 
 on:
   push:

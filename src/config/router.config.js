@@ -133,6 +133,14 @@ export const asyncRouterMap = [
         meta: { title: 'menu.health', icon: 'user', keepAlive: true, permission: ['health_index'] },
         children: [
           {
+            path: '/health/chronic',
+            name: 'chronic',
+            component: () => import('@/views/health/HealthChronic'),
+            // meta: { title: '慢病管理' }
+            meta: { title: 'menu.health.chronic', keepAlive: true, permission: ['chronic_management'] }
+
+          },
+          {
             path: '/health/indexes',
             name: 'indexes',
             component: () => import('@/views/health/IndexPage'),

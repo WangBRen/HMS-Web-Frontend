@@ -1,38 +1,36 @@
 <template>
   <div>
-    <a-row>
+    <a-row :gutter="12">
       <a-col :span="6">
-        <a-select v-model="firstLev" @change="firstChange">
+        <a-select class="selectDia" v-model="firstLev" @change="firstChange">
           <a-select-option v-for="first in firstData" :key="first.id">
             {{ first.title }}
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6">
-        <a-select v-model="secLev" @change="secChange">
+        <a-select class="selectDia" v-model="secLev" @change="secChange" :disabled="!firstLev">
           <a-select-option v-for="second in secArr" :key="second.id">
             {{ second.title }}
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6">
-        <a-select v-model="thirdLev" @change="thirdChange">
+        <a-select class="selectDia" v-model="thirdLev" @change="thirdChange" :disabled="!secLev">
           <a-select-option v-for="third in thirdArr" :key="third.id">
             {{ third.title }}
           </a-select-option>
         </a-select>
       </a-col>
-    </a-row>
-    <a-row>
       <a-col :span="6">
-        <a-select v-model="fourLev" @change="fourChange">
+        <a-select class="selectDia" v-model="fourLev" @change="fourChange" :disabled="!thirdLev">
           <a-select-option v-for="four in fourArr" :key="four.id">
             {{ four.title }}
           </a-select-option>
         </a-select>
       </a-col>
-      <a-col :span="6">
-        <a-select v-model="fifthLev" @change="fifthChange">
+      <a-col :span="10">
+        <a-select class="selectDia" v-model="fifthLev" @change="fifthChange" :disabled="!fourLev">
           <a-select-option v-for="fifth in fifthArr" :key="fifth.id">
             {{ fifth.title }}
           </a-select-option>
@@ -246,3 +244,8 @@ export default {
     }
 }
 </script>
+<style>
+.selectDia{
+  width: 240px
+}
+</style>

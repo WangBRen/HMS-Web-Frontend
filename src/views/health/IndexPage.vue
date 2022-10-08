@@ -3,8 +3,9 @@
     <div class="table-page-search-wrapper">
     </div>
     <div style="padding-bottom: 8px">
-      <a-button type="primary" @click="openCreateProjectModal" style="margin-right: 12px"> 新建指标项目 </a-button>
-      <a-button type="primary" @click="openModal('create')"> 新建{{ data[currentTabKey - 1]?.name }}指标 </a-button>
+      <a-button type="primary" @click="openProjectModal('create')" style="margin-right: 12px"> 新建指标项目 </a-button>
+      <a-button type="primary" @click="openProjectModal('edit')" style="margin-right: 12px"> 编辑{{ currentProjectName() }}项目名称 </a-button>
+      <a-button type="primary" @click="openModal('create')" style="margin-right: 12px; float: right"> 新建{{ currentProjectName() }}指标条目 </a-button>
     </div>
     <a-tabs v-model="currentTabKey">
       <a-tab-pane v-for="tab in data" :key="tab.id" :tab="tab.name" >
@@ -87,15 +88,21 @@
             </span>
             <span v-if="!text.length"> - </span>
           </span>
-          <span slot="action" slot-scope="text, record">
-            <a @click="openModal('edit', record)">编辑</a>
+          <span slot="action" slot-scope="text, record" style="white-space: nowrap;">
+            <a @click="openModal('edit', record)" style="margin-right: 12px;">编辑</a>
+            <a-popconfirm
+              title="是否永久删除该指标？"
+              @confirm="handleOnDeleteIndexItem(record)"
+            >
+              <a href="javascript:;">删除</a>
+            </a-popconfirm>
           </span>
         </a-table>
       </a-tab-pane>
     </a-tabs>
 
     <a-modal
-      :title="mode === 'create' ? '新建指标' : '编辑指标'"
+      :title="mode === 'create' ? `新建 ${this.currentProjectName()} 指标条目` : `编辑 ${this.currentProjectName()} 指标条目【${current.name}】`"
       style="top: 20px"
       :width="920"
       v-model="visible"
@@ -359,12 +366,12 @@
       </a-form>
     </a-modal>
     <a-modal
-      title="新建指标项目"
+      :title="currentProject.mode === 'create' ? '新建指标项目' : '编辑指标项目'"
       style="top: 20px"
       :width="800"
       v-model="projectVisible"
-      @ok="handleOkProjectCreateDone"
-      ok-text="确认创建"
+      @ok="handleOkProjectModalDone"
+      ok-text="确认"
     >
       <a-form v-model="currentProject">
         <a-row :gutter="48">
@@ -390,7 +397,10 @@ import {
   listAllIndexes,
   createIndexItem as apiCreateIndexItem,
   updateIndexItem as apiUpdateIndexItem,
-  createProject as apiCreateProject
+  deleteIndexItem as apiDeleteIndexItem,
+  createProject as apiCreateProject,
+  updateProjectName as apiUpdateProjectName,
+  deleteProject as apiDeleteProject
 } from '@/api/health_indexes'
 import { ref } from 'vue'
 
@@ -537,6 +547,12 @@ export default {
     this.reloadData()
   },
   methods: {
+    currentProjectName () {
+      const project = (this.data || []).find(tab => tab.id === this.currentTabKey + 0)
+      // console.log({ data: this.data, project, key: this.currentTabKey })
+      if (project) return project.name
+      return ''
+    },
     async reloadData () {
       const resp = await listAllIndexes()
       if (resp.status === 200) {
@@ -593,7 +609,7 @@ export default {
         })
         // console.log({ data })
         this.data = data
-        if (!this.currentTabKey) {
+        if (!this.currentTabKey && resp.data.length > 0) {
           this.currentTabKey = ref(resp.data[0].id)
         }
       }
@@ -849,7 +865,7 @@ export default {
         // return payload
       }
       const payload = reform(this.current || {})
-      const projectName = this.data[this.currentTabKey - 1].name
+      const projectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
       // valid payload
       const validPayload = (payload) => {
         if (!payload.name) {
@@ -890,26 +906,70 @@ export default {
       }
     },
     // create project modal
-    openCreateProjectModal () {
-      this.projectVisible = true
+    openProjectModal (mode) {
+      switch (mode) {
+        case 'create':
+          this.currentProject.name = ''
+          this.currentProject.mode = 'create'
+          this.projectVisible = true
+          break
+        case 'edit':
+          const projectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
+          this.currentProject.name = '' + projectName
+          this.currentProject.mode = 'edit'
+          this.projectVisible = true
+          break
+      }
     },
-    closeCreateProjectModal () {
+    closeProjectModal () {
       this.projectVisible = false
     },
-    async handleOkProjectCreateDone (e) {
+    async handleOkProjectModalDone (e) {
       e.preventDefault()
       const projectName = this.currentProject.name.trim()
       if (!projectName) {
         this.$message.warning('请输入项目名称')
         return
       }
-      const resp = await apiCreateProject(projectName)
-      if (resp.status === 201) {
-        this.$message.success(resp.message)
-        this.reloadData()
-        this.closeCreateProjectModal()
+      if (this.currentProject.mode === 'create') {
+        const resp = await apiCreateProject(projectName)
+        if (resp.status === 201) {
+          this.$message.success(resp.message)
+          this.reloadData()
+          this.closeProjectModal()
+        } else {
+          this.$message.warning(resp.message)
+        }
       } else {
-        this.$message.warning(resp.message)
+        const originalProjectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
+        const resp = await apiUpdateProjectName(originalProjectName, projectName)
+        if (resp.status === 200) {
+          this.$message.success(resp.message || '指标名称更新成功')
+          this.reloadData()
+          this.closeProjectModal()
+        } else {
+          this.$message.warning(resp.message || '更新失败')
+        }
+      }
+    },
+    async handleOnDeleteIndexItem (record) {
+      const projectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
+      const resp = await apiDeleteIndexItem(projectName, record.id)
+      if (resp.status > 204) {
+        this.$message.warning(resp.message || '删除失败')
+      } else {
+        this.$message.success('指标删除成功')
+        this.reloadData()
+      }
+    },
+    async handleOnDeleteCurrentProject () {
+      const projectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
+      const resp = await apiDeleteProject(projectName)
+      if (resp.status > 204) {
+        this.$message.warning(resp.message || '删除失败')
+      } else {
+        this.$message.success('指标项目删除成功')
+        this.reloadData()
       }
     }
   },

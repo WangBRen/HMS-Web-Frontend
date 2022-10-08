@@ -30,9 +30,11 @@
         :data-source="data"
         class="table-content"
         :pagination="pagination"
+        expandRowByClick
       >
         <span slot="action" slot-scope="text, grecord">
-          <a @click="handleAdd(grecord)">新增用户</a>|
+          <a @click="handleAdd(grecord)">新增用户</a>
+          <a-divider type="vertical" />
           <a @click="handleEdit(grecord)">添加用户</a>
         </span>
         <!-- <span slot="action" slot-scope="text, grecord">
@@ -42,6 +44,7 @@
           <a-avatar size="large" icon="user" :src="grecord.avatar"/>
         </span>
         <a-table
+          bordered
           :rowKey="(record,index)=>{return index}"
           class="child-table"
           slot="expandedRowRender"
@@ -50,16 +53,26 @@
           :data-source="inner.members"
           :pagination="false"
         >
+          <span slot="healthStatus" slot-scope="text, record">
+            <!-- {{ record.member.healthStatus }} -->
+            <a-tag v-for="tag in record.member.healthStatus" :key="tag">
+              {{ tag | filterHealthStatus }}
+            </a-tag>
+          </span>
           <span slot="cavatar" slot-scope="text, record">
             <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
           <span slot="operation" slot-scope="text, record">
-            <a @click="handleHealthData(record)">查看健康信息</a>
+            <a @click="handleHealthData(record)">健康信息</a>
+            <a-divider type="vertical" />
+            <a @click="chronicInfo(record)">慢病管理</a>
             <a-divider type="vertical" />
             <a-dropdown>
               <a-menu slot="overlay">
                 <a-menu-item>
                   <a @click="editUser(inner, record)">编辑</a>
+                </a-menu-item>
+                <a-menu-item>
                   <a-popconfirm
                     v-if="data.length"
                     title="是否移除该用户？"
@@ -79,7 +92,7 @@
       </a-table>
     </a-card>
     <Customer-InfoForm :dataTypes="dataTypes" ref="child"/>
-    <EditUserMsg ref="editUser" />
+    <EditUserMsg ref="editUserRef" @onSearch="onSearch"/>
     <!-- 群组管理 -->
     <AddNewUserVue
       :key="openKey"
@@ -95,13 +108,17 @@
     <HealthDataManagmentFormVue
       :openHealthvisible="openHealthvisible"
       @handleCancel="handleCancel"
+      :customerId="currentCustomerId"
       ref="healthDataManagmentRef"
     />
+    <!-- 新的慢病 -->
+    <ChronicInformation ref="ChronicInfoRef"/>
   </div>
 </template>
 <script>
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import moment from 'moment'
+import ChronicInformation from './components/ChronicInformation.vue'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import EditUserMsg from './components/EditUserMsg.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
@@ -129,6 +146,7 @@ const innerColumns = [
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
   { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
+  { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' }, align: 'center' },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
@@ -152,7 +170,32 @@ export default {
     CustomerInfoForm,
     AddNewUserVue,
     HealthDataManagmentFormVue,
-    EditUserMsg
+    EditUserMsg,
+    ChronicInformation
+  },
+  filters: {
+    filterHealthStatus: function (value) {
+      // console.log(value)
+      if (value) {
+        if (value === null) {
+          return null
+        } else if (value === 'normal') {
+          return '正常'
+        } else if (value === 'suspect') {
+          return '存在疑似'
+        } else if (value === 'diagnosed') {
+          return '全部确诊'
+        } else if (value === 'hospitalized') {
+          return '住院'
+        } else if (value === 'processing') {
+          return '慢病管理中'
+        } else if (value === 'suspend') {
+          return '暂停'
+        } else if (value === 'withdraw') {
+          return '退出'
+        }
+      }
+    }
   },
   data () {
     return {
@@ -174,21 +217,24 @@ export default {
         pageSize: 10, // 默认每页显示数量
         showSizeChanger: true, // 显示可改变每页数量
         pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-        showTotal: total => `共 ${total} 条`, // 显示总数
+        showTotal: total => `共 ${total} 个群组`, // 显示总数
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
-      openHealthvisible: false
+      openHealthvisible: false,
+      // 健康报告列表
+      currentCustomerId: -1
     }
   },
   created () {
+    this.$setPageDataLoader(this.onSearch)
     this.onSearch()
   },
   methods: {
     editUser (inner, userData) {
       const groupId = inner.id
-      this.$refs.editUser.openModel()
-      this.$refs.editUser.getUserData(groupId, userData)
+      this.$refs.editUserRef.openModel()
+      this.$refs.editUserRef.getUserData(groupId, userData)
       // console.log('编辑用户', userData)
     },
     onPageChange (page, pageSize) {
@@ -201,8 +247,14 @@ export default {
         this.onSearch()
     },
     handleHealthData (record) {
+      this.currentCustomerId = record.member.id
       this.openHealthvisible = true
-      this.$refs.healthDataManagmentRef.findCustomerHealthReports(record.member.id)
+      this.$refs.healthDataManagmentRef.setCustomerId(record.member.id, record)
+      this.$refs.healthDataManagmentRef.findCustomerHealthReports()
+    },
+    // 点击新的慢病
+    chronicInfo (record) {
+      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id, record.member.baseInfo)
     },
 
     /**
@@ -278,7 +330,7 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #e7ebee !important;
+  background: #E9E9E9 !important;
 }
 
 .child-table {
@@ -287,6 +339,8 @@ export default {
 .child-table th {
   line-height: 24px;
   padding: 4px 16px !important;
+  font-weight: bold;
+  background: #F2F2F2;
 }
 .child-table td {
   line-height: 24px;
