@@ -20,10 +20,16 @@
   </div>
 </template>
 <script>
+import { getFormSendingInfo as apigetFormSendingInfo, ApiSendForm } from '@/api/followUpForm'
+import { notification } from 'ant-design-vue'
 export default {
   data () {
     return {
-        visitVisible: false
+      visitVisible: false,
+      phone: '',
+      url: '',
+      formDataId: '',
+      customerId: ''
     }
   },
   methods: {
