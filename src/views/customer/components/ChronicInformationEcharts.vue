@@ -33,7 +33,6 @@
         </a-table>
       </a-col>
     </a-row>
-    <!-- <a-button @click="initial">点击</a-button> -->
   </div>
 </template>
 <script>
@@ -66,12 +65,10 @@ export default {
   },
   data () {
     return {
-      echartsData: this.dataArr, // 原始数据
       customerId: this.custId, // custid
       diseaseId: this.dataArr.id,
       startTime: null,
       endTime: null,
-      apiData: [],
       tableArr: [], // 表格数据
       indexColumns: [
         {
@@ -110,13 +107,18 @@ export default {
       const diseaseId = this.diseaseId
       apiGetCustomerChronicIndex(custId, diseaseId).then(res => {
         if (res.status === 200) {
-          console.log('图和表的数据', res.data)
-          // 渲染图
-          this.apiData = res.data
-          this.drawLine(res.data)
-          // 渲染表
-          const indexArr = []
-          const indexTable = res.data
+          // console.log('图和表的数据', res.data)
+          // 过滤图文报告和主观文本，保留整数和小数
+          const filterData = res.data.filter((item, i, arr) => {
+            return item.info.type === 'Integer' || item.info.type === 'Float'
+          })
+          // console.log('过滤后图和表的数据', filterData)
+          // 渲染Echarts图
+          const testData = JSON.parse(JSON.stringify(filterData))
+          this.drawLine(testData)
+          // 渲染表格
+          const indexArr = [] // 表格的数据
+          const indexTable = filterData
           for (var i = 0; i < indexTable.length; i++) {
               // console.log('indexTable', indexTable[i].data)
               // console.log('name', indexTable[i].info.name)
@@ -130,54 +132,65 @@ export default {
                     indexTable[i].data[j].name = indexTable[i].info.name
                     indexArr.push(indexTable[i].data[j])
                   }
-                  // indexTable[i].data[j].name = indexTable[i].info.name
-                  // indexArr.push(indexTable[i].data[j])
               }
           }
           this.tableArr = indexArr
+          // this.tableArr = indexArr.reverse()
           // console.log('tableArr', this.tableArr)
         }
       })
     },
     // 绘制eharts图
     drawLine (diseaseData) {
-      // console.log('数据', diseaseData)
       const seriesArr = []
       const legendArr = [] // 提示
-      const timeArr = []
+      const timeArr = [] // X轴
       for (var i = 0; i < diseaseData.length; i++) {
           // console.log(diseaseData[i].data)
           legendArr.push(diseaseData[i].info.name)
           const diseaseArr = [] // 数据
           for (var j = 0; j < diseaseData[i].data.length; j++) {
             // 数值
-            if (this.startTime !== null && this.endTime !== null) {
-              if (moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm') > this.startTime && moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm') < this.endTime) {
-                  diseaseArr.push(diseaseData[i].data[j].value)
-                  timeArr.push(moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD'))
+            // 用于过滤错误数据
+            if (typeof (diseaseData[i].data[j].testAt) === 'string') {
+              if (this.startTime !== null && this.endTime !== null) {
+                if (moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm') > this.startTime && moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm') < this.endTime) {
+                    // 采用二维数组实现XY轴对应
+                    diseaseArr.push([moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm'), diseaseData[i].data[j].value])
+                    // timeArr.push(moment(diseaseData[i].data[j].testAt).format('MM-DD HH:mm'))
+                    timeArr.push(diseaseData[i].data[j].testAt)
+                }
+              } else {
+                // 采用二维数组实现XY轴对应
+                diseaseArr.push([moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD HH:mm'), diseaseData[i].data[j].value])
+                // timeArr.push(moment(diseaseData[i].data[j].testAt).format('MM-DD HH:mm'))
+                timeArr.push(diseaseData[i].data[j].testAt)
               }
-            } else {
-              diseaseArr.push(diseaseData[i].data[j].value)
-              timeArr.push(moment(diseaseData[i].data[j].testAt).format('YYYY-MM-DD'))
             }
-          }
+           }
           var diseaseArrIndex = {
               name: diseaseData[i].info.name,
               type: 'line',
               data: diseaseArr
           }
           seriesArr.push(diseaseArrIndex)
-          // X轴时间去重
-          // console.log([...new Set(timeArr)], '时间转换后的数组', timeArr)
+          // console.log('时间转换后的数组', timeArr.reverse())
       }
       // console.log('legendArr', legendArr)
       // console.log('seriesArr', seriesArr)
+      // console.log('timeArr', timeArr)
       this.charts = echarts.init(document.getElementById('echarts' + this.dataArr.id))
       let width = document.getElementById('ac-' + this.dataArr.id).offsetWidth - 36
       if (width < 500) {
         width = 500
       }
-      console.log({ width })
+      // console.log({ width })
+      timeArr.sort((a, b) => {
+          return b < a ? 1 : -1
+      })
+      for (var k = 0; k < timeArr.length; k++) {
+        timeArr[k] = moment(timeArr[k]).format('YYYY-MM-DD HH:mm')
+      }
       this.charts.setOption({
         title: {
           text: ''
@@ -192,8 +205,8 @@ export default {
           width
         },
         grid: {
-          left: '3%',
-          right: '8%',
+          left: '5%',
+          right: '10%',
           bottom: '3%',
           containLabel: true
         },
@@ -208,6 +221,7 @@ export default {
           // data: ['1月', '2月', '3月', '4月', '5月', '6月']
           // X轴时间去重
           data: [...new Set(timeArr)]
+          // data: [...new Set(timeArr.reverse())]
         },
         yAxis: {
           type: 'value'
