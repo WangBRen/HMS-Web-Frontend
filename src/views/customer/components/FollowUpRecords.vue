@@ -26,17 +26,22 @@
         </a-tag>
       </span>
       <span slot="receivedAt" slot-scope="text, scope">
-        <span v-if="scope.status==='success'">{{ scope.receivedAt }}</span>
+        <span v-if="scope.status==='success'">{{ scope.receivedAt | moment }}</span>
         <span v-else> - </span>
       </span>
       <span slot="action" slot-scope="text, scope">
-        <a v-if="scope.status!=='success'" @click="retransmission">重发</a>
+        <a v-if="scope.status!=='success'" @click="retransmission(text, scope)">重发</a>
         <a v-else-if="scope.level===null" @click="startLevel(text, scope)">分级</a>
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
     <a-button class="follow-start-button" type="primary" @click="showFollowUpSheet(diseaseObj)">开始随访</a-button>
-    <SeeFollowUpSheet ref="SeeFollowUpSheetRef" :customerId="customerId" :diseaseId="diseaseId" />
+    <SeeFollowUpSheet
+      ref="SeeFollowUpSheetRef"
+      :customerId="customerId"
+      :diseaseId="diseaseId"
+      @grandFatherMethod="onSearch"/>
+    <ChronicInformationVisit ref="Visit" @onMessageSendSuccess="handleOnMessageSendSuccess"/>
   </div>
 </template>
 
@@ -44,10 +49,12 @@
 import moment from 'moment'
 import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
 import SeeFollowUpSheet from './SeeFollowUpSheet.vue'
+import ChronicInformationVisit from './ChronicInformationVisit.vue'
 export default {
   name: 'FollowUpRecords',
   components: {
-    SeeFollowUpSheet
+    SeeFollowUpSheet,
+    ChronicInformationVisit
   },
   props: {
     diseaseId: {
@@ -156,8 +163,9 @@ export default {
       })
     },
     // 重发随访单
-    retransmission () {
-
+    retransmission (text, formData) {
+      this.$refs.Visit.openVisit(formData)
+      this.onSearch()
     },
     // 随访单分级
     startLevel (text, grecord) {
@@ -172,7 +180,10 @@ export default {
     showFollowUpSheet (diseaseObj) {
       // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
       this.$emit('addNewDisease', diseaseObj)
-      console.log('慢病名称', diseaseObj)
+    },
+    handleOnMessageSendSuccess (data) {
+      // console.log('message send success!!!', data)
+      this.onSearch()
     }
   }
 }

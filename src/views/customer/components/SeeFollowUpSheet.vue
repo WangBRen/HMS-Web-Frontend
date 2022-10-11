@@ -85,7 +85,13 @@
         </a-card>
         <!-- 指标选择结束 -->
       </div>
-      <GradeModel ref="GradeModelRef" :customerId="customerId" :diseaseId="diseaseId" :followId="followId"/>
+      <GradeModel
+        ref="GradeModelRef"
+        :customerId="customerId"
+        :diseaseId="diseaseId"
+        :followId="followId"
+        @fatherMethod="fatherMethod"
+        :fatherMode="modalSelf.visible"/>
       <!-- 判定 -->
       <!-- <div style="padding: 0 24px;">
         <a-card title="慢病分级" :loading="loading" class="card">
@@ -227,13 +233,6 @@ export default {
     }
   },
   methods: {
-    // openstartLevel (cusId, diseaseId, followTableData) {
-    //   this.openFollowUpSheet(followTableData)
-    //   console.log('11111')
-    //   this.customerId = cusId
-    //   this.diseaseId = diseaseId
-    //   console.log('爸爸：人id和病id', cusId, diseaseId)
-    // },
     // 查看随访单弹窗
     openFollowUpSheet (followTableData) {
       this.modalSelf.visible = true
@@ -273,6 +272,7 @@ export default {
     handleGrade () {
       this.$refs.GradeModelRef.openGradeModal()
     },
+    // 废弃随访单
     handleAbolish () {
       apiAbandonFollow(this.customerId, this.followId).then(res => {
         if (res.status === 200) {
@@ -286,6 +286,10 @@ export default {
           this.$message.error(res.message || '本条随访单废弃失败')
         }
       })
+    },
+    fatherMethod (val) {
+      this.modalSelf.visible = val
+      this.$emit('grandFatherMethod')
     }
   }
 }

@@ -106,7 +106,7 @@
       :title="`预览随访单【最近编辑时间：${lastUpdateAt}】`"
       @ok="handleSend"
       width="900px"
-      okText="发送">
+      okText="确认创建">
       <div id="container" style="width:100%;height: 900px;pointer-events: none;"></div>
     </a-modal>
     <a-modal v-model="modalSelectChronic.visible" title="选择需要进行随访的慢病" @ok="handleChronicDiseaseOK" width="600px">
@@ -131,7 +131,7 @@
 <script>
 import ChronicInformationVisit from './ChronicInformationVisit.vue'
 import { STable } from '@/components'
-import { addFollowUpSheet as apiCreateFollowUpForm, getPreviewForm, getToken } from '@/api/followUpForm'
+import { addFollowUpSheet as apiCreateFollowUpForm, getPreviewForm, getToken, postFormCreated as apiPostFormCreated } from '@/api/followUpForm'
 import { notification } from 'ant-design-vue'
 import moment from 'moment'
 const columns = [
@@ -307,7 +307,15 @@ export default {
       if (promise) {
         promise.then(res => {
           if (res.status === 201) {
-            this.$refs.Visit.openVisit(res.data)
+            const customer = res.data.customer || {}
+            const form = res.data
+            this.$refs.Visit.openVisit(form)
+            // tell server: user create a form here.
+            apiPostFormCreated(customer.id, form.id).then(res => {
+              if (res.status !== 201) {
+                notification.warning({ description: res.message || '随访单创建失败' })
+              }
+            })
           }
         }).catch(err => {
           notification.warning({ description: err })
@@ -437,6 +445,9 @@ export default {
       this.totalChronicDiseases = tableData
       this.handleChronicDiseaseOK()
     }
+    // openSunModel (formData, callback) {
+    //   this.$refs.Visit.openVisit(formData)
+    // }
   }
 }
 </script>

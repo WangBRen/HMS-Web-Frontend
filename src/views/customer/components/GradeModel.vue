@@ -33,6 +33,10 @@ export default {
     followId: {
       type: Number,
       default: 0
+    },
+    fatherModel: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
@@ -56,7 +60,8 @@ export default {
         levelData.followUpFormId = this.followId
         return apiformLevels(this.customerId, this.diseaseId, levelData).then(res => {
           if (res.status === 201) {
-            // message.success('分级成功')
+            message.success('分级成功')
+            this.$emit('fatherMethod', false)
           }
         })
       } else {

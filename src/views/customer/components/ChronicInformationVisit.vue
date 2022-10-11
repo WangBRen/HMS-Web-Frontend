@@ -46,11 +46,13 @@ export default {
     fatherModel2: {
       type: Boolean,
       default: true
+    },
+    onMessageSendSuccess: {
+      type: Function,
+      default: function () {
+        return null
+      }
     }
-    // onSendSuccess: {
-    //   type: Function,
-    //   default: null
-    // }
   },
   data () {
     return {
@@ -83,6 +85,7 @@ export default {
         if (res.status === 200) {
           this.visitVisible = false
           this.$emit('sendToFather', false)
+          this.$emit('onMessageSendSuccess', res.data)
           // console.log('发送到短信了', res)
         } else if (res.status === 400) {
           notification.open({ message: '发送失败：', description: '手机号码格式错误' })
