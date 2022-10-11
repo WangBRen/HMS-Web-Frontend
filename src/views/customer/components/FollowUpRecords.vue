@@ -5,15 +5,16 @@
       :data-source="recordData"
       :pagination="pagination"
       :rowKey="(record,index)=>{return index}">
-      <span slot="HealthSpecialist" slot-scope="text,scope">
-        {{ scope.diseases[0].diseasedBy.nickname }}
+      <span slot="HealthSpecialistRender" slot-scope="text,scope">
+        <span v-if="scope.createdBy !== null">{{ scope.createdBy.nickname }}</span>
+        <span v-else>-</span>
       </span>
       <span slot="level" slot-scope="text,scope">
-        <span v-if="scope.diseases[0].level === 0">
-          -
-        </span>
+        <!-- {{ scope.level }} -->
+        <span v-if="scope.status!=='success'">-</span>
+        <span v-else-if="scope.level===null">待判定</span>
         <span v-else>
-          {{ scope.diseases[0].level }}
+          {{ scope.level.level }}级
         </span>
       </span>
       <span slot="result" slot-scope="text,scope" rowkey="">
@@ -29,20 +30,19 @@
         <span v-else> - </span>
       </span>
       <span slot="action" slot-scope="text, scope">
-        <a v-if="scope.status!=='success'">重发</a>
-        <a v-else-if="scope.level=='待判定'">判定</a>
-        <a @click="ViewFollowUpTable(text, scope)" v-else>查看随访表</a>
+        <a v-if="scope.status!=='success'" @click="retransmission">重发</a>
+        <a v-else-if="scope.level===null" @click="startLevel(text, scope)">分级</a>
+        <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
-    <a-button class="follow-start-button" type="primary" @click="showFollowUpSheet(chroName)">开始随访</a-button>
-    <SeeFollowUpSheet ref="SeeFollowUpSheetRef"/>
+    <a-button class="follow-start-button" type="primary" @click="showFollowUpSheet(diseaseObj)">开始随访</a-button>
+    <SeeFollowUpSheet ref="SeeFollowUpSheetRef" :customerId="customerId" :diseaseId="diseaseId" />
   </div>
 </template>
 
 <script>
 import moment from 'moment'
 import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
-import { number } from 'echarts/lib/export'
 import SeeFollowUpSheet from './SeeFollowUpSheet.vue'
 export default {
   name: 'FollowUpRecords',
@@ -51,12 +51,18 @@ export default {
   },
   props: {
     diseaseId: {
-      type: number,
-      default: ''
+      type: Number,
+      default: 0
     },
     customerId: {
-      type: number,
-      default: ''
+      type: Number,
+      default: 0
+    },
+    diseaseObj: {
+      type: Object,
+      default: function () {
+        return {}
+        }
     }
   },
   data () {
@@ -72,11 +78,11 @@ export default {
           }
         },
         {
-          title: '随访健康师',
-          dataIndex: 'HealthSpecialist',
+          title: '创建人',
+          dataIndex: 'createdBy',
           key: 'b',
           align: 'center',
-          scopedSlots: { customRender: 'HealthSpecialist' }
+          scopedSlots: { customRender: 'HealthSpecialistRender' }
         },
         {
           title: '判定级别',
@@ -149,12 +155,24 @@ export default {
         }
       })
     },
-    ViewFollowUpTable (text, grecord) {
+    // 重发随访单
+    retransmission () {
+
+    },
+    // 随访单分级
+    startLevel (text, grecord) {
       this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
     },
+    // 查看随访单
+    ViewFollowUpTable (text, grecord) {
+      this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
+      this.$refs.SeeFollowUpSheetRef.showFoot = false
+    },
         // 点击创建随访单
-    showFollowUpSheet (chroName) {
-      // console.log('创建随访单啦')
+    showFollowUpSheet (diseaseObj) {
+      // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
+      this.$emit('addNewDisease', diseaseObj)
+      console.log('慢病名称', diseaseObj)
     }
   }
 }

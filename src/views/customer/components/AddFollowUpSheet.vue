@@ -120,7 +120,11 @@
         </a-col>
       </a-row>
     </a-modal>
-    <ChronicInformationVisit ref="Visit"/>
+    <ChronicInformationVisit
+      ref="Visit"
+      :fatherModel="modalPreviewInfo"
+      @sendToFather="closeModel"
+      :fatherModel2="modalSelf.visible"/>
   </div>
 </template>
 
@@ -215,7 +219,7 @@ export default {
   data () {
     return {
       loading: false,
-      totalChronicDiseases: [], // read only
+      totalChronicDiseases: [], // read only 总的慢病
       baseInfo: {}, // read only
       payload: { // edit
         myToken: '',
@@ -420,6 +424,18 @@ export default {
     handleChange (record) {
       this.inputType = record
       // console.log(this.inputType)
+    },
+    closeModel (val) {
+      this.modalPreviewInfo = val
+      this.modalSelf.visible = val
+    },
+    openAddFollow (diseaseObj, tableData) {
+      this.modalSelf.visible = true
+      this.baseInfo = diseaseObj.customer.baseInfo
+      this.modalSelectChronic.diseases = []
+      this.modalSelectChronic.diseases.push(diseaseObj)
+      this.totalChronicDiseases = tableData
+      this.handleChronicDiseaseOK()
     }
   }
 }

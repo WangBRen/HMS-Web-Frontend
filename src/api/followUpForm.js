@@ -6,7 +6,9 @@ const customerApi = {
     idempotentToken: '/base/idempotent-token', // 获取token
     FormSendingInfo: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/sending-info` },
     PreviewForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/preview-info` }, // 预览随访单
-    SendForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/send` }// 发送随访单
+    SendForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/send` }, // 发送随访单
+    SendLevel: (customerId, diseaseId) => { return `/customers/${customerId}/chronic-diseases/${diseaseId}/levels` }, // 分级
+    abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destory` }
   }
 
 // 随访记录
@@ -56,5 +58,20 @@ export function ApiSendForm (customerId, formId, parameter) {
     url: customerApi.SendForm(customerId, formId),
     method: 'post',
     data: parameter
+  })
+}
+// 分级
+export function formLevels (customerId, diseaseId, parameter) {
+  return request({
+    url: customerApi.SendLevel(customerId, diseaseId),
+    method: 'post',
+    data: parameter
+  })
+}
+// 废弃随访单
+export function abandonFollow (customerId, formId) {
+  return request({
+      url: customerApi.abandonFollowForm(customerId, formId),
+      method: 'put'
   })
 }

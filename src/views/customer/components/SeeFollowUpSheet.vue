@@ -2,9 +2,22 @@
   <div>
     <a-modal
       v-model="modalSelf.visible"
-      title="慢病随访单记录表"
+      :title="`慢病随访单记录表${headerTips}`"
       :width="1100"
+      :footer="showFoot ? undefined : null"
     >
+      <template #footer>
+        <a-popconfirm
+          title="你确定废除本条随访记录吗?"
+          ok-text="Yes"
+          cancel-text="No"
+          @confirm="handleAbolish"
+          placement="topRight"
+        >
+          <a-button danger>废除</a-button>
+        </a-popconfirm>
+        <a-button type="primary" @click="handleGrade">分级</a-button>
+      </template>
       <div class="modal-container">
         <!-- 基础信息开始 -->
         <a-card title="基础信息" :loading="loading" class="card">
@@ -35,7 +48,7 @@
             </a-col>
           </a-row>
         </a-card>
-        <a-card title="填写提示" :loading="loading" class="card" :body-style="cardBodyStyle">
+        <a-card v-if="hintShow" title="填写提示" :loading="loading" class="card" :body-style="cardBodyStyle">
           <span class="hint-textarea" >{{ followTableData.hints }}</span>
         </a-card>
         <!-- 慢病选择开始 -->
@@ -54,15 +67,27 @@
               <a-tag>{{ text | fliterIndexType }}</a-tag>
             </span>
             <span slot="inputValue" slot-scope="text, record">
-              <span v-if="record.type === 'upload'">{{ record.value.url }}</span>
+              <span v-if="record.type === 'upload'">{{ record.value }}</span>
               <span v-else>{{ record.value }}</span>
             </span>
           </a-table>
+          <!-- <div v-for="item in items" :key="item.id">
+            <div class="itemTitle">
+              <text class="IndexName">{{ item.name }}：</text>
+            </div>
+            <span class="Index">
+              <div style="position:relative" class="parent">
+                <span class="unit">${obj.unit}</span>
+              </div>
+              <div class="Notes" id="Notes{id}">${obj.remark && '备注：' + obj.remark}</div>
+            </span>
+          </div> -->
         </a-card>
         <!-- 指标选择结束 -->
       </div>
-      <div style="padding: 0 24px;">
-        <!-- 判定 -->
+      <GradeModel ref="GradeModelRef" :customerId="customerId" :diseaseId="diseaseId" :followId="followId"/>
+      <!-- 判定 -->
+      <!-- <div style="padding: 0 24px;">
         <a-card title="慢病分级" :loading="loading" class="card">
           <a-radio-group v-model="radioValue" @change="radioChange">
             <a-radio :value="1">判定有效</a-radio>
@@ -81,13 +106,15 @@
             <a-textarea placeholder="请输入"/>
           </div>
         </a-card>
-        <!-- 查看随访表 -->
-      </div>
+      </div> -->
     </a-modal>
   </div>
 </template>
 
 <script>
+import GradeModel from './GradeModel.vue'
+import { notification } from 'ant-design-vue'
+import { abandonFollow as apiAbandonFollow } from '@/api/followUpForm'
 // import moment from 'moment'
 const columns = [
   {
@@ -146,47 +173,23 @@ const options = [
     label: '选项'
   }
 ]
-const gradeOptions = [
-  {
-    value: '1级',
-    label: '1级'
-  },
-  {
-    value: '2级',
-    label: '2级'
-  },
-  {
-    value: '3级',
-    label: '3级'
-  },
-  {
-    value: '4级',
-    label: '5级'
-  },
-  {
-    value: '5级',
-    label: '5级'
-  },
-  {
-    value: '6级',
-    label: '6级'
-  },
-  {
-    value: '7级',
-    label: '7级'
-  },
-  {
-    value: '8级',
-    label: '8级'
-  },
-  {
-    value: '9级',
-    label: '9级'
-  }
-]
+// const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(step => { return { value: step, label: step + '级' } })
 
 export default {
   name: 'SeeFollowUpSheet',
+  components: {
+    GradeModel
+  },
+  props: {
+    diseaseId: {
+      type: Number,
+      default: 0
+    },
+    customerId: {
+      type: Number,
+      default: 0
+    }
+  },
   data () {
     return {
       loading: false,
@@ -194,8 +197,9 @@ export default {
       baseInfo: {}, // read only
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
-      gradeOptions: gradeOptions,
+      // gradeOptions: gradeOptions,
       followTableData: {},
+      items: [],
       modalSelf: {
         visible: false
       },
@@ -203,9 +207,13 @@ export default {
       cardBodyStyle: {
         padding: '0 0 24px 0'
       },
-      radioValue: '',
-      valid: false,
-      invalid: false
+      // radioValue: '',
+      // valid: false,
+      // invalid: false,
+      hintShow: true, // 是否展示填写提示
+      followId: 0,
+      showFoot: true, // 是否显示底部按钮
+      headerTips: ''
     }
   },
   filters: {
@@ -219,23 +227,65 @@ export default {
     }
   },
   methods: {
-    // 打开创建随访单弹窗
+    // openstartLevel (cusId, diseaseId, followTableData) {
+    //   this.openFollowUpSheet(followTableData)
+    //   console.log('11111')
+    //   this.customerId = cusId
+    //   this.diseaseId = diseaseId
+    //   console.log('爸爸：人id和病id', cusId, diseaseId)
+    // },
+    // 查看随访单弹窗
     openFollowUpSheet (followTableData) {
       this.modalSelf.visible = true
       this.baseInfo = followTableData.customer.baseInfo
       this.followTableData = followTableData
+      this.followId = followTableData.id
+      this.items = followTableData.items
+      const destroy = followTableData.destroy
+      let tips = ''
+      if (destroy) {
+        tips = '【已废弃】'
+      } else {
+        if (followTableData.level !== null) {
+          const levelByName = followTableData.level.levelBy.nickname
+          tips = `【分级人: ${levelByName}】`
+        } else {
+          tips = `【未分级】`
+        }
+      }
+      this.headerTips = tips
+      if (followTableData.hints === '') {
+        this.hintShow = false
+      }
     },
     handleOnDisableClicked (record, disabled) {
       record.disabled = disabled
     },
-    radioChange (e) {
-      if (e.target.value === 1) {
-        this.valid = true
-        this.invalid = false
-      } else {
-        this.valid = false
-        this.invalid = true
-      }
+    // radioChange (e) {
+    //   if (e.target.value === 1) {
+    //     this.valid = true
+    //     this.invalid = false
+    //   } else {
+    //     this.valid = false
+    //     this.invalid = true
+    //   }
+    // },
+    handleGrade () {
+      this.$refs.GradeModelRef.openGradeModal()
+    },
+    handleAbolish () {
+      apiAbandonFollow(this.customerId, this.followId).then(res => {
+        if (res.status === 200) {
+          this.modalSelf.visible = false
+          notification.open({
+            message: '提示',
+            description:
+              '本条随访记录已废除'
+          })
+        } else {
+          this.$message.error(res.message || '本条随访单废弃失败')
+        }
+      })
     }
   }
 }
