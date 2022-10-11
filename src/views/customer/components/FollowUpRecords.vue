@@ -30,7 +30,10 @@
         <span v-else> - </span>
       </span>
       <span slot="action" slot-scope="text, scope">
-        <a v-if="scope.status!=='success'" @click="retransmission(text, scope)">重发</a>
+        <span v-if="scope.status!=='success'">
+          <a @click="retransmission(text, scope)">重发</a>
+          <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>
+        </span>
         <a v-else-if="scope.level===null" @click="startLevel(text, scope)">分级</a>
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
