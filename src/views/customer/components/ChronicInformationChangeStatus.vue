@@ -9,7 +9,7 @@
       title="修改慢病状态"
       :width="600">
       <span style="font-size: 16px;">请上传医院或医疗机构的确诊记录：</span>
-      <div style="width: 300px;margin: 0 auto;">
+      <div style="width: 400px;margin: 15px auto;">
         <a-upload-dragger
           name="file"
           :multiple="true"
@@ -17,7 +17,7 @@
           @change="handleChange"
         >
           <p class="ant-upload-drag-icon">
-            <a-icon type="inbox" />
+            <a-icon type="cloud-upload" />
           </p>
           <p class="ant-upload-text">
             点击或拖动文件上传
