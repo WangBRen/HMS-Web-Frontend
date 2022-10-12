@@ -56,7 +56,12 @@
               />
             </a-card>
             <a-card title="慢病随访记录" style="margin-top: 12px;">
-              <FollowUpRecords :diseaseId="item.id" :customerId="custId"/>
+              <FollowUpRecords
+                :diseaseId="item.id"
+                :customerId="custId"
+                :diseaseObj="item"
+                @addNewDisease="getDiseaseName"
+              />
             </a-card>
             <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
@@ -162,7 +167,13 @@ export default {
     },
     showFollowUpSheet (_tableData) {
       this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
+    },
+    getDiseaseName (val) {
+      this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
     }
+    // getformData (val, callback) {
+    //   this.$refs.FollowUpSheetRef.openSunModel(val, callback)
+    // }
   }
 }
 </script>
