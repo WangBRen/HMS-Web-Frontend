@@ -31,14 +31,14 @@
       </span>
       <span slot="action" slot-scope="text, scope">
         <span v-if="scope.status!=='success'">
-          <a @click="retransmission(text, scope)">重发</a>
+          <a @click="retransmission(text, scope)">重发</a> |
           <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>
         </span>
         <a v-else-if="scope.level===null" @click="startLevel(text, scope)">分级</a>
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
-    <a-button class="follow-start-button" type="primary" @click="showFollowUpSheet(diseaseObj)">开始随访</a-button>
+    <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet(diseaseObj)">开始随访</a-button>
     <SeeFollowUpSheet
       ref="SeeFollowUpSheetRef"
       :customerId="customerId"
@@ -73,6 +73,10 @@ export default {
       default: function () {
         return {}
         }
+    },
+    createButtonVisible: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
