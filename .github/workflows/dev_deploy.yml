@@ -14,10 +14,16 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
+      - run: |
+          npm install
+          npm run build:production
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-7)
+          mkdir -p $DEPOLY_DIR
+          cp -r dist/** $DEPOLY_DIR
 
-      - name: Build App
-        run: |
-          npm install && npm run build:production
+      # - name: Build App
+      #   run: |
+      #     npm install && npm run build:production
         # or build:development
 
       - name: Install aliyun-oss util
