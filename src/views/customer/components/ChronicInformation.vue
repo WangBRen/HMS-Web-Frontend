@@ -15,21 +15,20 @@
           <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
         </a-space>
         <div class="card-row" v-for="item in tableData" :key="item.id">
-          <a-row class="card-title">
+          <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
             <a-col :span="22" @click="cardShow(item)">
-              <span style="font-size: 20px;color: white;">慢病名称: </span>
-              <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
               <span @click="changeStatus(item.status, item)">
-                <a-tag style="margin-left: 10px;" :color="item.status === 'diagnosed' ? 'rgba(217, 0, 27, 0.768627450980392)' : (item.status === 'exception' ? 'blue' : 'rgba(245, 154, 35, 1)')">
+                <a-button style="width:80px;" :type="item.status === 'diagnosed' ? 'danger' : (item.status === 'exception' ? 'dashed' : 'primary')">
                   {{ item.status | filterChronicStatus }}
-                </a-tag>
+                </a-button>
               </span>
-              <span>
+              <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
+              <span v-if="item.status === 'diagnosed' ? true : false">
                 <a-tag :color="item.level <= 5 ? '' : 'rgba(217, 0, 27, 0.768627450980392)'">{{ item.level }}</a-tag>
               </span>
             </a-col>
             <a-col :span="2">
-              <a style="font-size: 20px;color: white;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
+              <a style="font-size: 20px;color: inherit;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
             </a-col>
           </a-row>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
@@ -68,6 +67,14 @@
             </a-card>
           </a-row>
         </div>
+        <!-- 查看所有随访单 -->
+        <a-card title="全部随访记录" style="margin-top: 30px;">
+          <FollowUpRecords
+            :diseaseId="-1"
+            :customerId="custId"
+            :create-button-visible="isShowBtn"
+          />
+        </a-card>
       </div>
       <AddFollowUpSheet ref="FollowUpSheetRef"/>
     </a-modal>
@@ -114,7 +121,8 @@ export default {
       userInfo: [],
       chronicInfoVisible: false,
       custId: null,
-      tableData: []
+      tableData: [],
+      isShowBtn: false
     }
   },
   methods: {
@@ -150,7 +158,6 @@ export default {
     closeChronicInfo () {
       this.chronicInfoVisible = false
     },
-    // 展开/收起
     cardShow (showIndex) {
       showIndex.showIndex = !showIndex.showIndex
     },
@@ -181,19 +188,22 @@ export default {
   padding: 0px 10px;
 }
 .card-row {
-  margin: 6px 0;
+  margin: 8px 0;
+  border: 1px solid #61affe;
+  border-radius: 4px;
 }
 .card-title {
-  background-color: rgba(64, 158, 255, 1);
-  border-radius: 4px;
+  background-color: rgba(97,175,254,.1);
+  border-bottom: none;
   /* margin: 3px 0; */
   /* height: 50px; */
-  padding: 12px;
+  padding: 6px;
 }
 .card-body {
-  border: 1px #eee solid;
+  // border: 1px #eee solid;
   padding: 6px 24px;
-  margin-bottom: 24px;
+  // margin-bottom: 24px;
+  background-color: rgba(97,175,254,.1);
 }
 
 </style>
