@@ -29,15 +29,16 @@
         <a-button @click="handleOk" :disabled="buttonDisabled" :loading="buttonLoad" type="primary">确定</a-button>
       </div>
     </a-modal>
-    <ChronicInformationVisit ref="Visit"/>
+    <ChronicInformationFirstFollowUp ref="FirstFollowUp"/>
+
   </div>
 </template>
 <script>
-import ChronicInformationVisit from './ChronicInformationVisit.vue'
+import ChronicInformationFirstFollowUp from './ChronicInformationFirstFollowUp.vue'
 import { makeDiagnosed as apiMakeDiagnosed } from '@/api/customer'
 export default {
   components: {
-    ChronicInformationVisit
+    ChronicInformationFirstFollowUp
   },
   data () {
     return {
@@ -73,7 +74,8 @@ export default {
           this.$message.success('修改慢病状态成功')
           setTimeout(() => {
             this.changeStatusVisible = false
-            this.$refs.Visit.openVisit()
+            this.$refs.FirstFollowUp.openFirstFollowUp()
+            this.$parent.renovateData(custId)
           }, 1000)
         } else {
           this.$message.error('修改慢病状态失败')
