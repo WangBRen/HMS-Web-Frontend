@@ -15,9 +15,8 @@
           <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
         </a-space>
         <div class="card-row" v-for="item in tableData" :key="item.id">
-          <a-row class="card-title" :id="'border'+item.id">
-            <a-col :span="22" @click="showCard(item.id)">
-              <!-- <span style="font-size: 20px;color: white;">慢病名称: </span> -->
+          <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
+            <a-col :span="22" @click="cardShow(item)">
               <span @click="changeStatus(item.status, item)">
                 <a-button style="width:80px;" :type="item.status === 'diagnosed' ? 'danger' : (item.status === 'exception' ? 'dashed' : 'primary')">
                   {{ item.status | filterChronicStatus }}
@@ -29,10 +28,11 @@
               </span>
             </a-col>
             <a-col :span="2">
-              <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: inherit;" @click="showCard(item.id)">展开</a>
+              <!-- <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a> -->
+              <a style="font-size: 20px;color: inherit;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
             </a-col>
           </a-row>
-          <a-row :id="item.id" class="card-body" style="display: none;">
+          <a-row v-show="item.showIndex" :id="item.id" class="card-body">
             <a-card style="margin-top: 12px;">
               <template #title>
                 <span>指标项</span>
@@ -135,7 +135,12 @@ export default {
       // console.log(userInfo)
       apiGetChronicManage(custId).then(res => {
           if (res.status === 200) {
-              this.tableData = res.data
+              // const tableData = res.data
+              this.tableData = res.data.map((item) => {
+                item.showIndex = false
+                return item
+              })
+              console.log('tableData', this.tableData)
           }
       })
       // 解决重新打开modal框，文字为收起问题
@@ -148,15 +153,11 @@ export default {
     closeChronicInfo () {
       this.chronicInfoVisible = false
     },
-    showCard (id) {
-      if (document.getElementById('str' + id).innerHTML === '展开') {
-        document.getElementById('str' + id).innerHTML = '收起'
-        document.getElementById(id).style.display = 'block'
-        document.getElementById('border' + id).style.borderBottom = '1px solid #61affe'
+    cardShow (showIndex) {
+      if (showIndex.showIndex === false) {
+        showIndex.showIndex = true
       } else {
-        document.getElementById('str' + id).innerHTML = '展开'
-        document.getElementById(id).style.display = 'none'
-        document.getElementById('border' + id).style.border = 'none'
+        showIndex.showIndex = false
       }
     },
     // 点击修改慢病状态
@@ -211,134 +212,5 @@ export default {
   // margin-bottom: 24px;
   background-color: rgba(97,175,254,.1);
 }
-.title-name{
-  border-style: solid;
-  border-width: 1px;
-  font-size: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.card-index{
-  line-height: 60px;
-}
-.card-index-title{
-  line-height: 60px;
-  border-style: solid;
-  border-width: 1px;
-  border-top-width: 1px;
-  border-left-width: 2px;
-  text-align: center;
-  font-size: 20px;
-}
-.card-index-data{
-  padding-left: 5px;
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  text-align: left;
-  font-size: 14px
-}
-.card-chart{
-  border-style: solid;
-  border-width: 1px;
-}
-.card-indexData-chart{
-  /* height: 350px; */
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-right-width: 2px;
-}
-/* .card-record{
-  height: 500px;
-} */
-.card-record-title{
-  height: 450px;
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-}
-.card-record-table{
-  height: 450px;
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-}
-.card-manage-title{
-  min-height: 100px;
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  min-height: 100px;
-}
-.ant-anchor{
-  width: 100px;
-  line-height: 30px;
-}
-.full-modal {
-  .ant-modal {
-    max-width: 100%;
-    top: 0;
-    padding-bottom: 0;
-    margin: 0;
-  }
-  .ant-modal-content {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh);
-  }
-  .ant-modal-body {
-    flex: 1;
-  }
-}
-.card-manage-title{
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-  border-bottom-width: 2px;
-;
-  border-width: 1px;
-  border-right-width: 2px;
-}
-.card-manage-title{
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-  border-bottom-width: 2px;
-;
-  border-width: 1px;
-  border-right-width: 2px;
-}
-.card-manage-title{
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-}
+
 </style>
