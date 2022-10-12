@@ -20,6 +20,18 @@ jobs:
           npm install && npm run build:production
         # or build:development
 
+      - name: Install aliyun-oss util
+        uses: manyuanrong/setup-ossutil@v2.0
+        with:
+          endpoint: oss-cn-shenzhen.aliyuncs.com
+          access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
+          access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+
+      - name: Upload files to OSS
+        run: |
+          DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-7)
+          ossutil cp -rf $DEPOLY_DIR oss://hms-web/$DEPOLY_DIR
+          
       - name: Setup Dir
         uses: appleboy/ssh-action@master
         with:
