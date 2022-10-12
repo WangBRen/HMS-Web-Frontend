@@ -29,7 +29,6 @@
               </span>
             </a-col>
             <a-col :span="2">
-              <!-- <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a> -->
               <a style="font-size: 20px;color: white;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
             </a-col>
           </a-row>
@@ -132,34 +131,28 @@ export default {
                 item.showIndex = false
                 return item
               })
-              console.log('tableData', this.tableData)
+              // console.log('tableData', this.tableData)
           }
       })
-      // 解决重新打开modal框，文字为收起问题
-      const dom = document.getElementsByClassName('showData')
-      for (var j = 0; j < dom.length; j++) {
-        dom[j].innerHTML = '展开'
-      }
-      // 解决重新打开modal框，文字为收起问题
+    },
+    renovateData (custId) {
+      apiGetChronicManage(custId).then(res => {
+          if (res.status === 200) {
+              // const tableData = res.data
+              this.tableData = res.data.map((item) => {
+                item.showIndex = false
+                return item
+              })
+              // console.log('tableData', this.tableData)
+          }
+      })
     },
     closeChronicInfo () {
       this.chronicInfoVisible = false
     },
-    // showCard (id) {
-    //   if (document.getElementById('str' + id).innerHTML === '展开') {
-    //     document.getElementById('str' + id).innerHTML = '收起'
-    //     document.getElementById(id).style.display = 'block'
-    //   } else {
-    //     document.getElementById('str' + id).innerHTML = '展开'
-    //     document.getElementById(id).style.display = 'none'
-    //   }
-    // },
+    // 展开/收起
     cardShow (showIndex) {
-      if (showIndex.showIndex === false) {
-        showIndex.showIndex = true
-      } else {
-        showIndex.showIndex = false
-      }
+      showIndex.showIndex = !showIndex.showIndex
     },
     // 点击修改慢病状态
     changeStatus (status, item) {
@@ -169,14 +162,6 @@ export default {
         const diseaseData = item
         this.$refs.ChangeStatus.openChangeStatus(userInfo, diseaseData)
       }
-    },
-    onChange (value, dateString) {
-      // console.log('Selected Time: ', value)
-      // console.log('Formatted Selected Time: ', dateString)
-    },
-    onOk (value) {
-      // console.log('onOk: ', value)
-      this.openChronicInfo()
     },
     showFollowUpSheet (_tableData) {
       this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
