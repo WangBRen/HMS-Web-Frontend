@@ -12,11 +12,30 @@
         <br>
         <a-button type="primary" style="margin-top: 20px;" @click="setFollow()">创建随访单</a-button>
       </div>
+      <AddFollowUpSheet ref="FollowUpSheetRef"/>
     </a-modal>
   </div>
 </template>
 <script>
+import AddFollowUpSheet from './AddFollowUpSheet.vue'
 export default {
+  components: {
+    AddFollowUpSheet
+  },
+  props: {
+    diseaseData: {
+      type: Object,
+      default: function () {
+        return {}
+        }
+    },
+    tableData: {
+      type: Array,
+      default: function () {
+        return []
+        }
+    }
+  },
   name: 'APP',
   data () {
     return {
@@ -31,7 +50,8 @@ export default {
         this.firstFollowUpVisible = false
     },
     setFollow () {
-        console.log('创建随访单')
+        this.$refs.FollowUpSheetRef.openAddFollow(this.diseaseData, this.tableData)
+        this.firstFollowUpVisible = false
     }
   },
   created () {

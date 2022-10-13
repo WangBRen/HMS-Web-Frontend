@@ -17,13 +17,17 @@
           {{ scope.level.level }}级
         </span>
       </span>
-      <span slot="result" slot-scope="text,scope" rowkey="">
-        <a-tag
+      <span slot="result" slot-scope="text, record" rowkey="">
+        <!-- <a-tag
           :color="scope.status==='success' ? 'geekblue' : scope.status==='pending' ? '#DEE1E6' : 'orange'">
           <span v-if="scope.status==='pending'">回收中</span>
           <span v-else-if="scope.status==='success'">已回收</span>
           <span v-else>超时</span>
-        </a-tag>
+        </a-tag> -->
+        <a-tag v-if="record.status==='created'" color="#ccc">已创建</a-tag>
+        <a-tag v-if="record.status==='pending'" color="#999">回收中</a-tag>
+        <a-tag v-if="record.status==='success'" color="geekblue">已回收</a-tag>
+        <a-tag v-if="record.status==='failure'" color="orange">超时</a-tag>
       </span>
       <span slot="receivedAt" slot-scope="text, scope">
         <span v-if="scope.status==='success'">{{ scope.receivedAt | moment }}</span>
@@ -88,7 +92,7 @@ export default {
           key: 'a',
           align: 'center',
           customRender: (text, record, index) => {
-            return record ? moment(record.sendAt).format('YYYY-MM-DD HH:mm:ss') : ''
+            return record.sendAt ? moment(record.sendAt).format('YYYY-MM-DD HH:mm:ss') : '-'
           }
         },
         {
@@ -141,6 +145,16 @@ export default {
       }
     }
   },
+  // filters: {
+  //   fliterStatus (status) {
+  //     switch (status) {
+  //       case 'created': return '已创建'
+  //       case 'pending': return '回收中'
+  //       case 'success': return '已回收'
+  //       case 'failure': return '回收失败（超时）'
+  //     }
+  //   }
+  // },
   created () {
     this.$setPageDataLoader(this.onSearch)
     this.onSearch()
@@ -156,6 +170,7 @@ export default {
         this.onSearch()
     },
     async onSearch () {
+      console.log('flush!!!')
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
@@ -181,7 +196,6 @@ export default {
     // 查看随访单
     ViewFollowUpTable (text, grecord) {
       this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
-      this.$refs.SeeFollowUpSheetRef.showFoot = false
     },
         // 点击创建随访单
     showFollowUpSheet (diseaseObj) {
@@ -189,7 +203,7 @@ export default {
       this.$emit('addNewDisease', diseaseObj)
     },
     handleOnMessageSendSuccess (data) {
-      // console.log('message send success!!!', data)
+      console.log('message send success!!!', data)
       this.onSearch()
     }
   }

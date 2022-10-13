@@ -78,7 +78,7 @@
       </div>
       <AddFollowUpSheet ref="FollowUpSheetRef"/>
     </a-modal>
-    <ChronicInformationChangeStatus ref="ChangeStatus"/>
+    <ChronicInformationChangeStatus ref="ChangeStatus" :tableData="tableData"/>
   </div>
 </template>
 <script>

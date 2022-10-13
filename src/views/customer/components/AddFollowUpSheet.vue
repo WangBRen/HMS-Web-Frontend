@@ -65,7 +65,10 @@
               <span v-else class="disabled-text">{{ text }}</span>
             </span>
             <span slot="TableUnit" slot-scope="text, record">
-              <a-input v-if="!record.isIndex && !record.disabled" v-model="record.unit"/>
+              <span v-if="!record.isIndex && !record.disabled" >
+                <span v-if="record.type !== 'input'">-</span>
+                <a-input v-else v-model="record.unit"/>
+              </span>
               <span v-else-if="!record.disabled">{{ text }}</span>
               <span v-else class="disabled-text">{{ text }}</span>
             </span>
@@ -76,9 +79,9 @@
                   v-model="record.options"
                   v-if="record.type === 'options'"
                   mode="tags"
-                  style="width: 130px"
+                  style="width: 150px;margin-top: 10px;"
                   :token-separators="[' ']"
-                  placeholder="请输入选择项"
+                  placeholder="请输入选项按空格"
                   :options="record.defineOptions"
                   :open="false"
                 ></a-select>
@@ -315,6 +318,8 @@ export default {
               if (res.status !== 201) {
                 notification.warning({ description: res.message || '随访单创建失败' })
               }
+            }).catch(res => {
+              notification.warning({ description: res.message || '随访单创建失败' })
             })
           }
         }).catch(err => {

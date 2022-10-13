@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { message } from 'ant-design-vue'
+import { message, notification } from 'ant-design-vue'
 import { formLevels as apiformLevels } from '@/api/followUpForm'
 const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(step => { return { value: step, label: step + '级' } })
 export default {
@@ -62,7 +62,12 @@ export default {
           if (res.status === 201) {
             message.success('分级成功')
             this.$emit('fatherMethod', false)
-          }
+          } else {
+              notification.open({
+                message: '错误提示',
+                description: '分级失败，请稍后再试'
+              })
+            }
         })
       } else {
         message.info('请选择慢病分级')
