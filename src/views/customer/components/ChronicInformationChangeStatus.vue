@@ -29,7 +29,7 @@
         <a-button @click="handleOk" :disabled="buttonDisabled" :loading="buttonLoad" type="primary">确定</a-button>
       </div>
     </a-modal>
-    <ChronicInformationFirstFollowUp ref="FirstFollowUp"/>
+    <ChronicInformationFirstFollowUp ref="FirstFollowUp" :diseaseData="diseaseData" :tableData="tableData"/>
 
   </div>
 </template>
@@ -39,6 +39,14 @@ import { makeDiagnosed as apiMakeDiagnosed } from '@/api/customer'
 export default {
   components: {
     ChronicInformationFirstFollowUp
+  },
+  props: {
+    tableData: {
+      type: Array,
+      default: function () {
+        return []
+        }
+    }
   },
   data () {
     return {

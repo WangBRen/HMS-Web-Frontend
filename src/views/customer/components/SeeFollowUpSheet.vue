@@ -4,7 +4,7 @@
       v-model="modalSelf.visible"
       :title="`慢病随访单记录表${headerTips}`"
       :width="1100"
-      :footer="showFoot ? undefined : null"
+      :footer="(followTableData.level==null&&followTableData.status=='success') ? undefined : null"
     >
       <template #footer>
         <a-popconfirm
@@ -218,7 +218,6 @@ export default {
       // invalid: false,
       hintShow: true, // 是否展示填写提示
       followId: 0,
-      showFoot: true, // 是否显示底部按钮
       headerTips: ''
     }
   },
