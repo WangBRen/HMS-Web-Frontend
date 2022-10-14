@@ -15,7 +15,8 @@ const customerApi = {
     editCustomerChronicDiseases: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`,
     // 获取慢病指标历史记录
     getCustomerChronicIndex: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/indexes`,
-    makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`
+    makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`,
+    makeUnexpected: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-unexpected`
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -135,5 +136,12 @@ export function makeDiagnosed (customerId, diseaseId, params) {
         url: customerApi.makeDiagnosed(customerId, diseaseId),
         method: 'post',
         data: params
+    })
+}
+
+export function makeUnexpected (customerId, diseaseId) {
+    return request({
+        url: customerApi.makeUnexpected(customerId, diseaseId),
+        method: 'post'
     })
 }
