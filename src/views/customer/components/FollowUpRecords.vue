@@ -170,7 +170,6 @@ export default {
         this.onSearch()
     },
     async onSearch () {
-      console.log('flush!!!')
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
@@ -203,7 +202,6 @@ export default {
       this.$emit('addNewDisease', diseaseObj)
     },
     handleOnMessageSendSuccess (data) {
-      console.log('message send success!!!', data)
       this.onSearch()
     }
   }
