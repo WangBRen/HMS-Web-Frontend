@@ -17,15 +17,20 @@
         <div class="card-row" v-for="item in tableData" :key="item.id">
           <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
             <a-col :span="22" @click="cardShow(item)">
-              <span @click="changeStatus(item.status, item)">
-                <a-button style="width:80px;" :type="item.status === 'diagnosed' ? 'danger' : (item.status === 'exception' ? 'dashed' : 'primary')">
+              <span class="all-tags">
+                <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
                   {{ item.status | filterChronicStatus }}
-                </a-button>
+                </a-tag> -->
+                <a-tag v-if="item.status==='exception'" color="">系统误判</a-tag>
+                <a-tag v-if="item.status==='suspect'" color="orange" @click="changeStatus(item.status, item)">
+                  <a-icon type="question-circle" /> 疑似
+                </a-tag>
+                <span v-if="item.status==='diagnosed'" class="all-tags">
+                  <a-tag v-if="item.level===null||item.level===0" color="geekblue">已确诊</a-tag>
+                  <a-tag v-if="item.level>0" color="red">{{ item.level }}级</a-tag>
+                </span>
               </span>
               <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
-              <span v-if="item.status === 'diagnosed' ? true : false">
-                <a-tag :color="item.level <= 5 ? '' : 'rgba(217, 0, 27, 0.768627450980392)'">{{ item.level }}</a-tag>
-              </span>
             </a-col>
             <a-col :span="2">
               <a style="font-size: 20px;color: inherit;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
@@ -205,5 +210,8 @@ export default {
   // margin-bottom: 24px;
   background-color: rgba(97,175,254,.1);
 }
-
+.all-tags>*{
+  width: 65px;
+  text-align: center;
+}
 </style>
