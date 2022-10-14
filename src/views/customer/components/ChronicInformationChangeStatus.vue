@@ -3,10 +3,31 @@
     <a-modal
       v-model="changeStatusVisible"
       v-if="changeStatusVisible"
-      @ok="handleOk"
       @cancel="closeChangeStatus"
       :footer="null"
       title="修改慢病状态"
+      :width="600">
+      <a-row style="text-align:center;">
+        <a-col :span="12">
+          <a-button @click="enterDiagnosis">确诊入口</a-button>
+        </a-col>
+        <a-col :span="12">
+          <a-popconfirm
+            title="确定要误判该慢病吗？"
+            @confirm="confirm"
+            @cancel="cancel"
+          >
+            <a-button @click="enterError">误判入口</a-button>
+          </a-popconfirm>
+        </a-col>
+      </a-row>
+    </a-modal>
+    <a-modal
+      v-model="diagnosisVisible"
+      v-if="diagnosisVisible"
+      @cancel="closediagnosis"
+      :footer="null"
+      title="上传慢病文件"
       :width="600">
       <span style="font-size: 16px;">请上传医院或医疗机构的确诊记录：</span>
       <div style="width: 400px;margin: 15px auto;">
@@ -35,7 +56,7 @@
 </template>
 <script>
 import ChronicInformationFirstFollowUp from './ChronicInformationFirstFollowUp.vue'
-import { makeDiagnosed as apiMakeDiagnosed } from '@/api/customer'
+import { makeDiagnosed as apiMakeDiagnosed, makeUnexpected as apiMakeUnexpected } from '@/api/customer'
 export default {
   components: {
     ChronicInformationFirstFollowUp
@@ -51,6 +72,7 @@ export default {
   data () {
     return {
         changeStatusVisible: false, // 用于控制modal框显示和销毁组件
+        diagnosisVisible: false,
         uploading: false,
         userInfo: [],
         uploadData: [],
@@ -116,6 +138,27 @@ export default {
           this.$message.error(`${info.file.name} 文件上传失败`)
         }
       }
+    },
+    enterDiagnosis () {
+      this.changeStatusVisible = false
+      this.diagnosisVisible = true
+    },
+    confirm () {
+      const custId = this.diseaseData.customer.id
+      const diseaseId = this.diseaseData.id
+      apiMakeUnexpected(custId, diseaseId).then(res => {
+        if (res.status === 200) {
+          this.$message.success('误判了')
+          setTimeout(() => {
+            this.$parent.renovateData(custId)
+            this.changeStatusVisible = false
+          }, 1000)
+        }
+      })
+    },
+    cancel () {
+      this.$message.error('取消误判')
+      // this.changeStatusVisible = false
     }
   },
   created () {
