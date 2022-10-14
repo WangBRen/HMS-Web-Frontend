@@ -15,9 +15,9 @@
           <a-popconfirm
             title="确定要误判该慢病吗？"
             @confirm="confirm"
-            @cancel="cancel"
+            @cancel="cancelNo"
           >
-            <a-button @click="enterError">误判入口</a-button>
+            <a-button>误判入口</a-button>
           </a-popconfirm>
         </a-col>
       </a-row>
@@ -76,7 +76,7 @@ export default {
         uploading: false,
         userInfo: [],
         uploadData: [],
-        diseaseData: [],
+        diseaseData: null,
         buttonDisabled: true, // 禁用按钮
         buttonLoad: false // 用于load按钮
     }
@@ -85,13 +85,16 @@ export default {
     closeChangeStatus () {
       this.changeStatusVisible = false
     },
+    closediagnosis () {
+      this.diagnosisVisible = false
+    },
     // 初始化
     openChangeStatus (userInfo, diseaseData) {
       this.diseaseData = diseaseData
       this.changeStatusVisible = true
       this.buttonDisabled = true
       this.userInfo = userInfo
-      // console.log('修改状态')
+      // console.log('this.diseaseData', typeof this.diseaseData)
     },
     handleOk () {
       // console.log('uploadData', this.uploadData, 'user', this.userInfo)
@@ -103,7 +106,7 @@ export default {
         if (res.status === 200) {
           this.$message.success('修改慢病状态成功')
           setTimeout(() => {
-            this.changeStatusVisible = false
+            this.diagnosisVisible = false
             this.$refs.FirstFollowUp.openFirstFollowUp()
             this.$parent.renovateData(custId)
           }, 1000)
@@ -156,7 +159,7 @@ export default {
         }
       })
     },
-    cancel () {
+    cancelNo () {
       this.$message.error('取消误判')
       // this.changeStatusVisible = false
     }
