@@ -338,6 +338,12 @@ export default {
         notification.warning({ message: '慢病项为空', description: '请至少选择一个慢病' })
         return
       }
+      this.payload.items.forEach(item => {
+        if (!item.name) {
+          notification.warning({ message: '表单项名称为空', description: '请填写表单项名称' })
+          return false
+        }
+      })
 
       // do request
       const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
