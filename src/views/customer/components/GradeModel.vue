@@ -2,6 +2,7 @@
   <div>
     <a-modal v-model="gradeModelvisible" title="慢病分级" @ok="handleOk">
       <!-- <a-radio-group :options="gradeOptions" v-model="Grade" size="large"/> -->
+      <div>分级标准：</div>
       <div style="margin:30px ;display: flex;justify-content: center;align-items: center;">
         <span>选择慢病分级：</span>
         <a-select
@@ -16,7 +17,7 @@
 </template>
 
 <script>
-import { message, notification } from 'ant-design-vue'
+import { message, notification, Modal } from 'ant-design-vue'
 import { formLevels as apiformLevels } from '@/api/followUpForm'
 const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(step => { return { value: step, label: step + '级' } })
 export default {
@@ -60,7 +61,10 @@ export default {
         levelData.followUpFormId = this.followId
         return apiformLevels(this.customerId, this.diseaseId, levelData).then(res => {
           if (res.status === 201) {
-            message.success('分级成功')
+              Modal.success({
+                title: () => '分级成功 ' + '(' + this.Grade + '级)'
+              })
+            // message.success('分级成功')
             this.$emit('fatherMethod', false)
           } else {
               notification.open({

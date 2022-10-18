@@ -16,7 +16,7 @@
         </a-space>
         <div class="card-row" v-for="item in tableData" :key="item.id">
           <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
-            <a-col :span="22" @click="cardShow(item)">
+            <a-col :span="23" @click="cardShow(item)">
               <span class="all-tags">
                 <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
                   {{ item.status | filterChronicStatus }}
@@ -32,8 +32,11 @@
               </span>
               <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
             </a-col>
-            <a-col :span="2">
-              <a style="font-size: 20px;color: inherit;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
+            <a-col :span="1">
+              <a style="font-size: 20px;color: inherit;float: right;" @click="cardShow(item)">
+                <a-icon v-if="item.showIndex===false" type="right"/>
+                <a-icon v-if="item.showIndex" type="down"/>
+              </a>
             </a-col>
           </a-row>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
@@ -202,7 +205,7 @@ export default {
   border-bottom: none;
   /* margin: 3px 0; */
   /* height: 50px; */
-  padding: 6px;
+  padding: 6px 10px;
 }
 .card-body {
   // border: 1px #eee solid;

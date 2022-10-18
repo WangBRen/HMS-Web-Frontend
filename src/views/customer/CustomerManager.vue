@@ -59,6 +59,9 @@
               {{ tag | filterHealthStatus }}
             </a-tag>
           </span>
+          <span slot="healthlevel" slot-scope="">
+            <!-- {{ record }} -->
+          </span>
           <span slot="cavatar" slot-scope="text, record">
             <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
@@ -147,6 +150,7 @@ const innerColumns = [
   { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
   { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' }, align: 'center' },
+  { title: '慢病等级', dataIndex: 'member.level', key: 'member.level', scopedSlots: { customRender: 'healthlevel' }, align: 'center' },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
@@ -154,7 +158,8 @@ const innerColumns = [
     align: 'center',
     customRender: (text, record, index) => {
       return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
-    }
+    },
+    width: '13%'
   },
   {
     title: '操作',

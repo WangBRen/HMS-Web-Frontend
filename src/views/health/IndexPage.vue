@@ -550,7 +550,12 @@ export default {
     currentProjectName () {
       const project = (this.data || []).find(tab => tab.id === this.currentTabKey + 0)
       // console.log({ data: this.data, project, key: this.currentTabKey })
-      if (project) return project.name
+      if (project) {
+        if (project.name.length > 18) {
+          return project.name.substr(0, 18) + '...'
+        }
+        return project.name
+      }
       return ''
     },
     async reloadData () {
