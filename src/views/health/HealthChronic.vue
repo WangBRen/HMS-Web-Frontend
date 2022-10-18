@@ -18,14 +18,15 @@
         <a @click="delChronicTable(record)">删除</a>
       </span>
     </a-table>
+
     <a-modal
       title="新建慢病"
+      v-if="addChronicIndexVisible"
       :visible="addChronicIndexVisible"
       @ok="handleOk"
       @cancel="handleCancel"
       :width="700">
-      <a-form-model ref="formData" :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
-        <!-- <a-button @click="resetForm">清空</a-button> -->
+      <a-form-model ref="formData" :rules="rules" :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢性病" prop="name">
@@ -102,7 +103,8 @@
 
 <script>
 import { getHealthIndex } from '@/api/health'
-import { addChronic, getChronic } from '@/api/chronic'
+// import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
+import { getChronic as apiGetChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
 export default {
@@ -112,6 +114,14 @@ export default {
     },
     data () {
         return {
+          rules: {
+            name: [{
+              required: true, message: '请输入慢性病名', trigger: 'blur'
+            }],
+            describe: [{
+              required: true, message: '请输入慢性病描述', trigger: 'blur'
+            }]
+          },
           columns: [
             {
               title: '慢性病名',
@@ -142,8 +152,6 @@ export default {
             targetArr: []
           },
           indexArr: [
-          ],
-          targetArr: [
           ],
           addChronicIndexVisible: false,
           labelCol: { span: 4 },
@@ -219,20 +227,26 @@ export default {
             // console.log('新建慢病')
         },
         handleOk () {
-          const apiData = {
-            name: this.formData.name,
-            describe: this.formData.describe,
-            items: this.formData.targetArr
-          }
-          addChronic(apiData).then(res => {
-            if (res.status === 201) {
-              // console.log('添加慢病成功，添加的数据', apiData)
-              this.addChronicIndexVisible = false
-              this.$message.info('成功添加慢病')
+          this.$refs.formData.validate(valid => {
+            if (valid) {
+              const apiData = {
+                name: this.formData.name,
+                describe: this.formData.describe,
+                items: this.formData.targetArr
+              }
+              // apiAddChronic(apiData).then(res => {
+              //   if (res.status === 201) {
+              //     // console.log('添加慢病成功，添加的数据', apiData)
+              //     this.addChronicIndexVisible = false
+              //     this.$message.info('成功添加慢病')
+              //   }
+              // })
+              console.log('确定formData', this.formData)
+              console.log('确定apiData', apiData)
+            } else {
+              return false
             }
           })
-          // console.log('确定formData', this.formData)
-          // console.log('确定apiData', apiData)
         },
         handleCancel () {
             this.addChronicIndexVisible = false
@@ -282,10 +296,11 @@ export default {
           }
         },
         resetForm () {
-          // console.log('清空')
           // 不用nextTick会报初始化错误
           this.$nextTick(() => {
-            this.$refs.formData.resetFields()
+            // this.$refs.formData.resetFields()
+            this.formData.name = null
+            this.formData.describe = null
           })
           this.formData.targetArr.length = 0
           this.$forceUpdate()
@@ -304,7 +319,7 @@ export default {
             page: this.pagination.current,
             size: this.pagination.pageSize
           }
-          getChronic(pages).then(res => {
+          apiGetChronic(pages).then(res => {
             if (res.status === 200) {
               console.log('慢病接口数据', res.data.content)
               // const resData = res.data.content
@@ -314,10 +329,6 @@ export default {
               // console.log('111', resData)
             }
           })
-        },
-        updateChronic () {
-          // console.log('刷新了吗')
-          this.getChronic()
         },
         onSizeChange (current, pageSize) {
           this.pagination.current = 1
