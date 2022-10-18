@@ -59,8 +59,11 @@
               {{ tag | filterHealthStatus }}
             </a-tag>
           </span>
-          <span slot="healthlevel" slot-scope="">
-            <!-- {{ record }} -->
+          <span slot="healthlevel" slot-scope="text, record">
+            <a-tag v-for="tag in record.member.diseases" :key="tag">
+              <span>{{ record.diseases.name }}</span>
+              <span v-if="record.diseases.level!==null">：{{ record.diseases.level }}级</span>
+            </a-tag>
           </span>
           <span slot="cavatar" slot-scope="text, record">
             <a-avatar :src="record.member.avatar" icon="user"/>

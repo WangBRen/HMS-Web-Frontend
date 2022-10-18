@@ -22,28 +22,28 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-divider type="horizontal" />
-        <a-row>
+        <a-divider type="horizontal" dashed style="margin-bottom:24px"/>
+        <!-- <a-row>
           <a-col>
             <span style="font-size: 16px;">指标</span>
             <a-icon @click="addEdit" type="plus-circle" />
             <a-icon @click="delEditEnd" type="minus-circle" />
           </a-col>
-        </a-row>
+        </a-row> -->
         <a-row v-for="target in formData.items" :key="target.indexItem.id">
           <a-col>
             <a-form-model-item label="指标名">
               <a-row>
-                <a-col :span="18">
+                <a-col :span="22">
                   <a-select v-model="target.indexItem.id" show-search :filterOption="filterOption">
                     <a-select-option v-for="item in indexArr" :key="item.id">
                       {{ item.name }} - <span style="font-size: 11px; color: #999">({{ item.category }})</span>
                     </a-select-option>
                   </a-select>
                 </a-col>
-                <a-col :span="6" style="text-align: center;margin: 0 auto;">
-                  <a-icon class="targetIcon" @click="addEdit" type="plus-circle" />
-                  <a-icon class="targetIcon" @click="delEdit(target)" type="minus-circle" />
+                <a-col :span="2" style="text-align: center;margin: 0 auto;">
+                  <!-- <a-icon class="targetIcon" @click="addEdit" type="plus-circle" /> -->
+                  <a-icon class="targetIcon" @click="delEdit(target)" type="close-circle" />
                 </a-col>
               </a-row>
             </a-form-model-item>
@@ -70,12 +70,19 @@
           <a-col v-show="target.indexItem.id">
             <a-form-model-item label="结果">
               <a-row>
-                <a-col v-for="(result,index) in target.indexItem.result" :key="index">
+                <a-col v-for="(result,index) in target.indexItem.result" :key="index" class="index-result">
                   <span v-if="result.type==='range'">{{ result | getRange(target.coefficient) }}</span>
                   <span v-if="result.type==='simple'">{{ result.name }}</span>
                 </a-col>
               </a-row>
             </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="22">
+            <a-button @click="addEdit" type="dashed" style="display:block;margin:0 auto;width:60%">
+              <a-icon type="plus" /> 添加指标
+            </a-button>
           </a-col>
         </a-row>
       </a-form-model>
@@ -213,6 +220,12 @@ export default {
 </script>
 <style scoped>
 .targetIcon{
-  font-size: 24px;
+  font-size: 18px;
+  color: #999;
+}
+.index-result{
+  color: #999;
+  line-height: 22px;
+  font-size: 12px;
 }
 </style>

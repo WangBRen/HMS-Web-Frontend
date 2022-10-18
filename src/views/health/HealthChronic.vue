@@ -13,6 +13,8 @@
         <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
+        <a @click="GradingStandard(record)">分级标准</a>
+        <a-divider type="vertical" />
         <a @click="editChronicTable(record)">编辑</a>
         <a-divider type="vertical" />
         <a @click="delChronicTable(record)">删除</a>
@@ -100,6 +102,7 @@
       </a-form-model>
     </a-modal>
     <editChronice ref="editChronic"/>
+    <GradingStandard/>
   </div>
 </template>
 
@@ -108,10 +111,12 @@ import { getHealthIndex } from '@/api/health'
 import { addChronic, getChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
+import GradingStandard from './components/GradingStandard.vue'
 export default {
     components: {
       getChronicName,
-      editChronice
+      editChronice,
+      GradingStandard
     },
     data () {
         return {
@@ -293,6 +298,9 @@ export default {
           this.formData.targetArr.length = 0
           this.$forceUpdate()
         },
+        GradingStandard () {
+          // this.$refs.GradingStandardModel.
+        },
         editChronicTable (data) {
           this.$refs.editChronic.openModel()
           this.$refs.editChronic.getChronicData(data)
@@ -351,7 +359,7 @@ export default {
 }
 .index-result{
   color: #999;
-  line-height: 24px;
+  line-height: 22px;
   font-size: 12px;
 }
 </style>
