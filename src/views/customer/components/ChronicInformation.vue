@@ -9,6 +9,7 @@
       @cancel="closeChronicInfo"
       :width="1200"
     >
+      <a-skeleton active :loading="loading"/>
       <div class="card">
         <a-space style="margin-bottom:10px">
           <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
@@ -40,7 +41,7 @@
             </a-col>
           </a-row>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
-            <a-card style="margin-top: 12px;">
+            <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
                 <span>指标项</span>
                 <span style="margin-left: 12px">
@@ -62,7 +63,7 @@
                 :custId="custId"
               />
             </a-card>
-            <a-card title="慢病随访记录" style="margin-top: 12px;">
+            <a-card title="慢病随访记录" style="margin-top: 12px;" :loading="loading">
               <FollowUpRecords
                 :diseaseId="item.id"
                 :customerId="custId"
@@ -70,7 +71,7 @@
                 @addNewDisease="getDiseaseName"
               />
             </a-card>
-            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
+            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
             </a-card>
           </a-row>
@@ -126,6 +127,7 @@ export default {
   },
   data () {
     return {
+      loading: false,
       userInfo: [],
       chronicInfoVisible: false,
       custId: null,
@@ -133,23 +135,28 @@ export default {
       isShowBtn: false
     }
   },
+  mounted () {
+    this.loadData()
+  },
   methods: {
+    async loadData () {
+      this.loading = true
+      const resp = await apiGetChronicManage(this.custId)
+      this.loading = false
+      if (resp.status === 200) {
+          this.tableData = resp.data.map((item) => {
+            item.showIndex = false
+            return item
+          })
+          // console.log('tableData', this.tableData)
+      }
+    },
     // 打开慢病管理弹窗
     openChronicInfo (custId, userInfo) {
       this.chronicInfoVisible = true
       this.custId = custId
       this.userInfo = userInfo
       // console.log(userInfo)
-      apiGetChronicManage(custId).then(res => {
-          if (res.status === 200) {
-              // const tableData = res.data
-              this.tableData = res.data.map((item) => {
-                item.showIndex = false
-                return item
-              })
-              // console.log('tableData', this.tableData)
-          }
-      })
     },
     renovateData (custId) {
       apiGetChronicManage(custId).then(res => {

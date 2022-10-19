@@ -2,10 +2,10 @@ import request from '@/utils/request'
 
 const customerApi = {
     healthIndex: '/health-indexes', // 获取健康指标
-    healthDis: diseaseId => { return `/health-diseases/${diseaseId}/children` }, // 疾病诊断
-    healthReport: (customerId) => { return `/health-reports/${customerId}/reports` }, // 新建检测报告
+    healthDis: diseaseId => `/health-diseases/${diseaseId}/children`, // 疾病诊断
+    healthReport: (customerId) => `/health-reports/${customerId}/reports`, // 新建检测报告
     healthCustomerReport: '/health-reports/',
-    heathLevels: diseaseId => { return `/chronic-diseases/${diseaseId}/levels` } // 获取与更新分级
+    heathLevels: diseaseId => `/chronic-diseases/${diseaseId}/levels` // 获取与更新分级
 }
 
 // 获取健康指标
@@ -50,7 +50,7 @@ export function getHealthReport (customerId, pages) {
         }
     })
 }
-// 更新话术
+// 更新分级设置
 export function updateHeathLevels (diseaseId, parameter) {
   return request({
       url: customerApi.heathLevels(diseaseId),
@@ -62,7 +62,7 @@ export function updateHeathLevels (diseaseId, parameter) {
       //  }
   })
 }
-// 获取话术列表
+// 获取分级表
 export function getHeathLevels (diseaseId) {
   return request({
       method: 'get',

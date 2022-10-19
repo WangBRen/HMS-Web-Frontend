@@ -3,7 +3,7 @@
     <a-modal v-model="gradeModelvisible" title="慢病分级" @ok="handleOk" width="800px">
       <div class="level-box">
         <!-- <a-radio-group :options="gradeOptions" v-model="Grade" size="large"/> -->
-        <a-card title="分级标准" style="width: 100%">
+        <a-card title="分级标准" style="width: 100%" :loading="loading">
           <!-- <a-divider orientation="left">分级标准</a-divider> -->
           <a-row v-for="item in healthLevels" :key="item.id" class="levels">
             <a-col :span="2" class="level">
@@ -59,24 +59,31 @@ export default {
   },
   data () {
     return {
+      loading: false,
       gradeModelvisible: false,
       Grade: '',
       healthLevels: [],
       gradeOptions: [] // this.healthLevels.map(step => { return { value: step, label: step + '级' } })
     }
   },
+  mounted () {
+    this.loadData()
+  },
   methods: {
+    async loadData () {
+      this.loading = true
+      const resp = await getHeathLevels(this.chronicDiseaseId)
+      this.loading = false
+      if (resp.status === 200) {
+        console.log(resp.data)
+        this.healthLevels = resp.data
+        this.gradeOptions = resp.data.map(item => { return { value: item.level, label: item.level + '级' } })
+        // console.log('级别', this.healthLevels)
+      }
+    },
     openGradeModal () {
       this.gradeModelvisible = true
       this.Grade = ''
-      getHeathLevels(this.chronicDiseaseId).then(res => {
-        if (res.status === 200) {
-          console.log(res.data)
-          this.healthLevels = res.data
-          this.gradeOptions = res.data.map(item => { return { value: item.level, label: item.level + '级' } })
-          // console.log('级别', this.healthLevels)
-        }
-      })
     },
     handleOk () {
       if (this.Grade !== '') {

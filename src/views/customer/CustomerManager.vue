@@ -60,9 +60,9 @@
             </a-tag>
           </span>
           <span slot="healthlevel" slot-scope="text, record">
-            <a-tag v-for="tag in record.member.diseases" :key="tag">
-              <span>{{ record.diseases.name }}</span>
-              <span v-if="record.diseases.level!==null">：{{ record.diseases.level }}级</span>
+            <a-tag v-for="tag in record.member.diseases" :key="tag.id">
+              <span>{{ tag.name }}</span>
+              <span v-if="tag.level!==null">:{{ tag.level }}级</span>
             </a-tag>
           </span>
           <span slot="cavatar" slot-scope="text, record">
@@ -162,7 +162,7 @@ const innerColumns = [
     customRender: (text, record, index) => {
       return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
     },
-    width: '13%'
+    width: '110px'
   },
   {
     title: '操作',
