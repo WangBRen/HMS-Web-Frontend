@@ -9,7 +9,8 @@ const customerApi = {
     SendForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/send` }, // 发送随访单
     SendLevel: (customerId, diseaseId) => { return `/customers/${customerId}/chronic-diseases/${diseaseId}/levels` }, // 分级
     abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destory` },
-    createFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/create` }
+    createFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/create` },
+    showFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}` }
   }
 
 // 随访记录
@@ -81,5 +82,11 @@ export function postFormCreated (customerId, formId) {
   return request({
     url: customerApi.createFollowForm(customerId, formId),
     method: 'post'
+  })
+}
+export function showFollowForm (customerId, formId) {
+  return request({
+    url: customerApi.showFollowForm(customerId, formId),
+    method: 'get'
   })
 }

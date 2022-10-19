@@ -1,7 +1,8 @@
 <template>
   <div>
     <a-modal
-      v-model="modalSelf.visible"
+      :visible="visible"
+      @cancel="handleOnModalCancel"
       :title="`慢病随访单记录表${headerTips}`"
       :width="1100"
       :footer="(followTableData.level==null&&followTableData.status=='success') ? undefined : null"
@@ -121,7 +122,7 @@
 <script>
 import DefineLevel from './DefineLevel.vue'
 import { notification } from 'ant-design-vue'
-import { abandonFollow as apiAbandonFollow } from '@/api/followUpForm'
+import { abandonFollow as apiAbandonFollow, showFollowForm as apiShowFollowForm } from '@/api/followUpForm'
 // import moment from 'moment'
 const columns = [
   {
@@ -195,6 +196,20 @@ export default {
     customerId: {
       type: Number,
       default: 0
+    },
+    formId: {
+      type: Number,
+      default: -1
+    },
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    onclose: {
+      type: Function,
+      default: function () {
+        return null
+      }
     }
   },
   data () {
@@ -233,9 +248,19 @@ export default {
       }
     }
   },
+  mounted () {
+    this.loadData()
+  },
   methods: {
     // 查看随访单弹窗
-    openFollowUpSheet (followTableData) {
+    async loadData () {
+      if (this.formId === -1) return
+      this.loading = true
+      const resp = await apiShowFollowForm(this.customerId, this.formId)
+      this.loading = false
+      console.log({ resp })
+      if (resp.status !== 200) { return }
+      const followTableData = resp.data || {}
       console.log('随访单数据', followTableData)
       this.modalSelf.visible = true
       this.baseInfo = followTableData.customer.baseInfo
@@ -298,6 +323,10 @@ export default {
     fatherMethod (val) {
       this.modalSelf.visible = val
       this.$emit('grandFatherMethod')
+    },
+    handleOnModalCancel () {
+      console.log('close!!')
+      this.$emit('onclose')
     }
   }
 }

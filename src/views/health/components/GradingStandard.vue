@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-modal v-model="visible" :title="`【${chronicTitle || ''}】分级标准`" @ok="handleOk" width="800px">
+    <a-modal v-model="visible" :title="`【${chronicTitle || ''}】分级标准`" @ok="handleOk" width="800px" ok-text="保存">
       <div class="group-body">
         <a-input-group v-for="(item, index) in levelArr" :key="index" class="group-item">
           <a-input style="width: 15%;text-align: center;" :value="index + 1 + '级'" disabled/>
@@ -63,10 +63,10 @@ export default {
       updateHeathLevels(this.diseaseId, apiData).then(res => {
         // console.log('给后端的', apiData)
         if (res.status === 200) {
-          this.$message.info('分级信息加载成功')
+          this.$message.success('保存成功')
           this.visible = false
         } else {
-          notification.warning({ message: '请求失败', description: res.message })
+          notification.warning({ message: '保存失败', description: res.message })
         }
       })
     },

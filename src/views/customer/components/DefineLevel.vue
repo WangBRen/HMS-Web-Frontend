@@ -3,13 +3,15 @@
     <a-modal v-model="gradeModelvisible" title="慢病分级" @ok="handleOk" width="800px">
       <div class="level-box">
         <!-- <a-radio-group :options="gradeOptions" v-model="Grade" size="large"/> -->
-        <a-divider orientation="left">分级标准</a-divider>
-        <a-row v-for="item in healthLevels" :key="item.id" class="levels">
-          <a-col :span="2" class="level">
-            <a-tag>{{ item.level }}级</a-tag>
-          </a-col>
-          <a-col :span="22" class="remark">{{ item.remark }}</a-col>
-        </a-row>
+        <a-card title="分级标准" style="width: 100%">
+          <!-- <a-divider orientation="left">分级标准</a-divider> -->
+          <a-row v-for="item in healthLevels" :key="item.id" class="levels">
+            <a-col :span="2" class="level">
+              <a-tag>{{ item.level }}级</a-tag>
+            </a-col>
+            <a-col :span="22" class="remark">{{ item.remark }}</a-col>
+          </a-row>
+        </a-card>
         <a-row>
           <div style="margin:30px ;display: flex;justify-content: center;align-items: center;">
             <span>选择慢病分级：</span>
@@ -30,7 +32,7 @@
 import { message, notification, Modal } from 'ant-design-vue'
 import { formLevels as apiformLevels } from '@/api/followUpForm'
 import { getHeathLevels } from '@/api/health'
-const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(step => { return { value: step, label: step + '级' } })
+// const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(step => { return { value: step, label: step + '级' } })
 export default {
   name: 'DefineLevel',
   props: {
@@ -59,8 +61,8 @@ export default {
     return {
       gradeModelvisible: false,
       Grade: '',
-      gradeOptions: gradeOptions,
-      healthLevels: []
+      healthLevels: [],
+      gradeOptions: [] // this.healthLevels.map(step => { return { value: step, label: step + '级' } })
     }
   },
   methods: {
@@ -71,6 +73,8 @@ export default {
         if (res.status === 200) {
           console.log(res.data)
           this.healthLevels = res.data
+          this.gradeOptions = res.data.map(item => { return { value: item.level, label: item.level + '级' } })
+          // console.log('级别', this.healthLevels)
         }
       })
     },
@@ -115,6 +119,7 @@ export default {
 .level{
    font-size: 16px;
    letter-spacing: 0.25rem;
+   text-align: center;
 }
 .levels{
   margin-bottom: 10px;
