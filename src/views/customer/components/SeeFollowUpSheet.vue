@@ -85,13 +85,14 @@
         </a-card>
         <!-- 指标选择结束 -->
       </div>
-      <GradeModel
+      <DefineLevel
         ref="GradeModelRef"
         :customerId="customerId"
         :diseaseId="diseaseId"
         :followId="followId"
         @fatherMethod="fatherMethod"
-        :fatherMode="modalSelf.visible"/>
+        :fatherMode="modalSelf.visible"
+        :chronicDiseaseId="chronicDiseaseId"/>
       <!-- 判定 -->
       <!-- <div style="padding: 0 24px;">
         <a-card title="慢病分级" :loading="loading" class="card">
@@ -118,7 +119,7 @@
 </template>
 
 <script>
-import GradeModel from './GradeModel.vue'
+import DefineLevel from './DefineLevel.vue'
 import { notification } from 'ant-design-vue'
 import { abandonFollow as apiAbandonFollow } from '@/api/followUpForm'
 // import moment from 'moment'
@@ -184,7 +185,7 @@ const options = [
 export default {
   name: 'SeeFollowUpSheet',
   components: {
-    GradeModel
+    DefineLevel
   },
   props: {
     diseaseId: {
@@ -218,7 +219,8 @@ export default {
       // invalid: false,
       hintShow: true, // 是否展示填写提示
       followId: 0,
-      headerTips: ''
+      headerTips: '',
+      chronicDiseaseId: null
     }
   },
   filters: {
@@ -234,6 +236,7 @@ export default {
   methods: {
     // 查看随访单弹窗
     openFollowUpSheet (followTableData) {
+      console.log('随访单数据', followTableData)
       this.modalSelf.visible = true
       this.baseInfo = followTableData.customer.baseInfo
       this.followTableData = followTableData
@@ -254,6 +257,12 @@ export default {
       this.headerTips = tips
       if (followTableData.hints === '') {
         this.hintShow = false
+      }
+      const diseaseList = followTableData.diseases.filter(disease => disease.id === this.diseaseId)
+      if (diseaseList.length !== 0) {
+        this.chronicDiseaseId = diseaseList[0].chronicDisease.id
+      } else {
+        this.chronicDiseaseId = undefined
       }
     },
     handleOnDisableClicked (record, disabled) {

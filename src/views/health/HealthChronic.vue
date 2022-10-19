@@ -102,16 +102,17 @@
       </a-form-model>
     </a-modal>
     <editChronice ref="editChronic"/>
-    <GradingStandard/>
+    <GradingStandard ref="openChildModel" />
   </div>
 </template>
 
 <script>
-import { getHealthIndex } from '@/api/health'
+import { getHealthIndex, getHeathLevels } from '@/api/health'
 import { addChronic, getChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
 import GradingStandard from './components/GradingStandard.vue'
+import { notification } from 'ant-design-vue'
 export default {
     components: {
       getChronicName,
@@ -196,7 +197,7 @@ export default {
       getHealthIndex().then(res => {
         if (res.status === 200) {
           const resData = res.data
-          console.log('接口数据', resData)
+          // console.log('接口数据', resData)
           for (var i = 0; i < resData.length; i++) {
             if (resData[i].items) {
               // console.log('指标', resData[i].items)
@@ -298,8 +299,17 @@ export default {
           this.formData.targetArr.length = 0
           this.$forceUpdate()
         },
-        GradingStandard () {
-          // this.$refs.GradingStandardModel.
+        GradingStandard (data) {
+          // console.log('data', data)
+          const diseaseId = data.id
+          getHeathLevels(diseaseId).then(res => {
+            if (res.status === 200) {
+              this.$refs.openChildModel.openModel(data)
+              this.$refs.openChildModel.getHealthLevels(res.data)
+            } else {
+              notification.warning({ message: '请求失败', description: res.message })
+            }
+          })
         },
         editChronicTable (data) {
           this.$refs.editChronic.openModel()
@@ -317,7 +327,7 @@ export default {
           }
           getChronic(pages).then(res => {
             if (res.status === 200) {
-              console.log('慢病接口数据', res.data.content)
+              // console.log('慢病接口数据', res.data.content)
               // const resData = res.data.content
               // this.tableData = resData
               this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
