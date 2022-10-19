@@ -55,9 +55,15 @@
               <a-row>
                 <a-col :span="18">
                   <getChronicName
-                    @change="({ id }) => { target.indexItemId = id }"
+                    @change1="({ id }) => { target.indexItemId = id;setChronicName(id) }"
                     :indexArr="indexArr"
+                    :formData="formData"
                   />
+                  <!-- <a-select v-model="target.indexItemId" show-search :filterOption="filterOption" @change="setChronicName">
+                    <a-select-option v-for="item in indexArr" :key="item.id">
+                      {{ item.name }} - <span style="font-size: 11px; color: #999">({{ item.category }})</span>
+                    </a-select-option>
+                  </a-select> -->
                 </a-col>
                 <a-col :span="6" style="text-align: center;margin: 0 auto;">
                   <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" />
@@ -67,28 +73,10 @@
             </a-form-model-item>
           </a-col>
           <a-col v-show="target.indexItemId">
-            <a-form-model-item label="系数">
-              <a-row>
-                <a-col :span="12">
-                  <a-slider
-                    v-model="target.coefficient"
-                    :default-value="2"
-                    :min="0"
-                    :max="10"
-                    :step="0.01"
-                    @afterChange="changeIndex(target.indexItemId, target.coefficient)"/>
-                </a-col>
-                <a-col :span="6" :push="1">
-                  <a-input-number @change="changeIndex(target.indexItemId, target.coefficient)" v-model="target.coefficient" :min="0" :max="10"></a-input-number>
-                </a-col>
-              </a-row>
-            </a-form-model-item>
-          </a-col>
-          <a-col v-show="target.indexItemId">
             <a-form-model-item label="结果">
               <a-row>
                 <a-col v-for="(result,index) in target.result" :key="index">
-                  <span v-if="result.type==='range'">{{ result | getRange(target.coefficient) }}</span>
+                  <span v-if="result.type==='range'">{{ result | getRange() }}</span>
                   <span v-if="result.type==='simple'">{{ result.name }}</span>
                 </a-col>
               </a-row>
@@ -169,18 +157,18 @@ export default {
         }
     },
     filters: {
-      getRange: function (value, num) {
+      getRange: function (value) {
             // 判断范围或数值
             if (value.type === 'range') {
               // 范围
               if (value.start === null) {
                 // 无上界
-                return `${value.name}:\t ${(value.end * 1 + num * 1).toFixed(2) || 'INF'} > 指标值 (${value.unit})`
+                return `${value.name}:\t ${value.end || 'INF'} > 指标值 (${value.unit})`
               } else if (value.end === null) {
                 // 无下界
-                return `${value.name}:\t ${(value.start * 1 - num * 1).toFixed(2) || 'INF'} ≤ 指标值 (${value.unit})`
+                return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 (${value.unit})`
               } else {
-                return `${value.name}:\t ${(value.start * 1 + num * 1).toFixed(2) || 'INF'} ≤ 指标值 < ${(value.end * 1 + num * 1 || 'INF').toFixed(2)} (${value.unit})`
+                return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 < ${(value.end || 'INF')} (${value.unit})`
               }
             } else if (value.type === 'simple') {
             // 数值
@@ -257,7 +245,7 @@ export default {
           const item = {
             id: new Date().getTime(),
             indexItemId: null,
-            coefficient: 1,
+            // coefficient: 1,
             result: null
             // 分割
           }
@@ -275,25 +263,6 @@ export default {
         // 将输入的内容与显示的内容进行匹配
         filterOption (value, option) {
           return option.componentOptions.children[0].text.indexOf(value) >= 0
-        },
-        changeIndex (id, num) {
-          // console.log('1')
-          const targetArr = this.formData.targetArr
-          const indexArr = this.indexArr
-          // console.log('结果', targetArr)
-          // console.log('指标', this.indexArr)
-          // console.log('id', id, '系数', num)
-          for (var j = 0; j < indexArr.length; j++) {
-            if (indexArr[j].id === id) {
-              // console.log('11', indexArr[j].result)
-              for (var i = 0; i < targetArr.length; i++) {
-                if (targetArr[i].indexItemId === id) {
-                  const result = indexArr[j].result
-                  targetArr[i].result = result
-                }
-              }
-            }
-          }
         },
         resetForm () {
           // 不用nextTick会报初始化错误
@@ -321,7 +290,7 @@ export default {
           }
           apiGetChronic(pages).then(res => {
             if (res.status === 200) {
-              console.log('慢病接口数据', res.data.content)
+              // console.log('慢病接口数据', res.data.content)
               // const resData = res.data.content
               // this.tableData = resData
               this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
@@ -338,6 +307,25 @@ export default {
         onPageChange (page, pageSize) {
           this.pagination.current = page
           this.getChronic()
+        },
+        setChronicName (value) {
+          console.log('value', value)
+          const targetArr = this.formData.targetArr
+          const indexArr = this.indexArr
+          // console.log('结果', targetArr)
+          // console.log('指标', this.indexArr)
+          // console.log('id', id)
+          for (var j = 0; j < indexArr.length; j++) {
+            if (indexArr[j].id === value) {
+              // console.log('11', indexArr[j].result)
+              for (var i = 0; i < targetArr.length; i++) {
+                if (targetArr[i].indexItemId === value) {
+                  const result = indexArr[j].result
+                  targetArr[i].result = result
+                }
+              }
+            }
+          }
         }
     }
 }
