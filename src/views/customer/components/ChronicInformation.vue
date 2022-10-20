@@ -9,7 +9,7 @@
     >
       <div class="card">
         <a-space style="margin-bottom:10px">
-          <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
+          <a-button type="primary" @click="showFollowUpSheet">创建随访单</a-button>
           <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
         </a-space>
         <a-skeleton active :loading="loading"/>
@@ -25,8 +25,8 @@
                   <a-icon type="question-circle" /> 疑似
                 </a-tag>
                 <span v-if="item.status==='diagnosed'" class="all-tags">
-                  <a-tag v-if="item.level===null||item.level===0" color="geekblue">已确诊</a-tag>
                   <a-tag v-if="item.level>0" color="red">{{ item.level }}级</a-tag>
+                  <a-tag v-else color="geekblue">已确诊</a-tag>
                 </span>
               </span>
               <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
@@ -83,7 +83,14 @@
           />
         </a-card>
       </div>
-      <AddFollowUpSheet ref="FollowUpSheetRef"/>
+      <AddFollowUpSheet
+        v-if="addFollowFormVisible"
+        :visible="addFollowFormVisible"
+        :customerId="custId"
+        :diseaseId="diseaseId"
+        :baseInfo="baseInfo"
+        @close="closeAddFollowForm"
+        @onMessageSent="handleOnMessageSent"/>
     </a-modal>
     <ChronicInformationChangeStatus ref="ChangeStatus" :tableData="tableData"/>
   </div>
@@ -145,7 +152,10 @@ export default {
       userInfo: [],
       // custId: null,
       tableData: [],
-      isShowBtn: false
+      isShowBtn: false,
+      addFollowFormVisible: false,
+      diseaseObj: {},
+      diseaseId: null
     }
   },
   mounted () {
@@ -154,10 +164,8 @@ export default {
   methods: {
     async loadData () {
       this.loading = true
-      console.log('baseInfo', this.baseInfo)
       const resp = await apiGetChronicManage(this.custId)
       this.loading = false
-      console.log({ resp })
       if (resp.status === 200) {
         this.tableData = resp.data.map((item) => {
           item.showIndex = false
@@ -205,15 +213,29 @@ export default {
         this.$refs.ChangeStatus.openChangeStatus(userInfo, diseaseData)
       }
     },
-    showFollowUpSheet (_tableData) {
-      this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
+    showFollowUpSheet () {
+      this.addFollowFormVisible = true
+      // this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
     },
-    getDiseaseName (val) {
-      this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
-    }
+    getDiseaseName (diseaseId) {
+      this.addFollowFormVisible = true
+      this.diseaseId = diseaseId
+      // this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
+    },
     // getformData (val, callback) {
     //   this.$refs.FollowUpSheetRef.openSunModel(val, callback)
     // }
+    closeAddFollowForm () {
+      this.addFollowFormVisible = false
+    },
+    handleOnMessageSent (success) {
+      if (success) {
+        this.$message.success('发送成功')
+        this.addFollowFormVisible = false
+      } else {
+        // notification.xxx
+      }
+    }
   }
 }
 </script>

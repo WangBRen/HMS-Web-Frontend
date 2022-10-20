@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-modal v-model="gradeModelvisible" title="慢病分级" @ok="handleOk" width="800px">
+    <a-modal :visible="gradeModelvisible" title="慢病分级" @ok="handleOk" @cancel="handleOnLevelModalCancel" width="800px">
       <div class="level-box">
         <!-- <a-radio-group :options="gradeOptions" v-model="Grade" size="large"/> -->
         <a-card title="分级标准" style="width: 100%" :loading="loading">
@@ -52,15 +52,14 @@ export default {
       type: Number,
       default: 0
     },
-    fatherModel: {
+    gradeModelvisible: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   data () {
     return {
       loading: false,
-      gradeModelvisible: false,
       Grade: '',
       healthLevels: [],
       gradeOptions: [] // this.healthLevels.map(step => { return { value: step, label: step + '级' } })
@@ -75,15 +74,10 @@ export default {
       const resp = await getHeathLevels(this.chronicDiseaseId)
       this.loading = false
       if (resp.status === 200) {
-        console.log(resp.data)
         this.healthLevels = resp.data
         this.gradeOptions = resp.data.map(item => { return { value: item.level, label: item.level + '级' } })
         // console.log('级别', this.healthLevels)
       }
-    },
-    openGradeModal () {
-      this.gradeModelvisible = true
-      this.Grade = ''
     },
     handleOk () {
       if (this.Grade !== '') {
@@ -97,7 +91,6 @@ export default {
               Modal.success({
                 title: () => '分级成功, ' + '当前分级为：' + this.Grade + '级'
               })
-            // message.success('分级成功')
             this.$emit('fatherMethod', false)
           } else {
               notification.open({
@@ -109,6 +102,9 @@ export default {
       } else {
         message.info('请选择慢病分级')
       }
+    },
+    handleOnLevelModalCancel () {
+      this.$emit('onclose')
     }
   }
 }

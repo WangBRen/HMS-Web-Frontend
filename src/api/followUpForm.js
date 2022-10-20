@@ -1,16 +1,16 @@
 import request from '@/utils/request'
 
 const customerApi = {
-    FollowRecords: (customerId, diseaseId) => { return `/customers/${customerId}/${diseaseId}/followup-forms` },
-    FollowUpSheet: (customerId) => { return `/customers/${customerId}/followup-forms` }, // 创建随访单
+    FollowRecords: (customerId, diseaseId) => `/customers/${customerId}/${diseaseId}/followup-forms`,
+    newFollowUpForm: (customerId) => `/customers/${customerId}/followup-forms`, // 新增随访单
     idempotentToken: '/base/idempotent-token', // 获取token
-    FormSendingInfo: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/sending-info` },
-    PreviewForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/preview-info` }, // 预览随访单
-    SendForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/send` }, // 发送随访单
-    SendLevel: (customerId, diseaseId) => { return `/customers/${customerId}/chronic-diseases/${diseaseId}/levels` }, // 分级
-    abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destory` },
-    createFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/create` },
-    showFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}` }
+    FormSendingInfo: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/sending-info`,
+    PreviewForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/preview-info`, // 预览随访单
+    SendForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/send`, // 发送随访单
+    SendLevel: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/levels`, // 分级
+    abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destory` }, // 废弃随访单
+    createFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/create`, // 创建随访单
+    showFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}`
   }
 
 // 随访记录
@@ -26,9 +26,9 @@ export function getFollowRecords (customerId, diseaseId, pages) {
 }
 
 // 创建随访单
-export function addFollowUpSheet (customerId, parameter) {
+export function addNewFollowUpForm (customerId, parameter) {
   return request({
-      url: customerApi.FollowUpSheet(customerId),
+      url: customerApi.newFollowUpForm(customerId),
       method: 'post',
       data: parameter
   })

@@ -87,12 +87,14 @@
         <!-- 指标选择结束 -->
       </div>
       <DefineLevel
-        ref="GradeModelRef"
+        v-if="gradeModelvisible"
+        :gradeModelvisible="gradeModelvisible"
         :customerId="customerId"
         :diseaseId="diseaseId"
         :followId="followId"
         @fatherMethod="fatherMethod"
         :fatherMode="modalSelf.visible"
+        @onclose="closeLevelModal"
         :chronicDiseaseId="chronicDiseaseId"/>
       <!-- 判定 -->
       <!-- <div style="padding: 0 24px;">
@@ -216,7 +218,9 @@ export default {
     return {
       loading: false,
       totalChronicDiseases: [], // read only
-      baseInfo: {}, // read only
+      baseInfo: {
+        age: null
+      }, // read only
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
       // gradeOptions: gradeOptions,
@@ -235,7 +239,8 @@ export default {
       hintShow: true, // 是否展示填写提示
       followId: 0,
       headerTips: '',
-      chronicDiseaseId: null
+      chronicDiseaseId: null,
+      gradeModelvisible: false
     }
   },
   filters: {
@@ -260,9 +265,8 @@ export default {
       this.loading = false
       if (resp.status !== 200) { return }
       const followTableData = resp.data || {}
-      console.log('随访单数据', followTableData)
-      this.modalSelf.visible = true
       this.baseInfo = followTableData.customer.baseInfo
+      this.baseInfo.age = this.age(this.baseInfo.birthDate)
       this.followTableData = followTableData
       this.followId = followTableData.id
       this.items = followTableData.items
@@ -302,7 +306,7 @@ export default {
     //   }
     // },
     handleGrade () {
-      this.$refs.GradeModelRef.openGradeModal()
+      this.gradeModelvisible = true
     },
     // 废弃随访单
     handleAbolish () {
@@ -325,6 +329,39 @@ export default {
     },
     handleOnModalCancel () {
       this.$emit('onclose')
+    },
+    closeLevelModal () {
+      this.gradeModelvisible = false
+    },
+    age (dateStr) {
+      if (dateStr) {
+        const year = parseInt(dateStr.substr(0, 4))
+        const month = parseInt(dateStr.substr(5, 7))
+        const day = parseInt(dateStr.substr(8, 10))
+        const now = new Date()
+        const nowYear = now.getFullYear()
+        const nowMonth = now.getMonth() + 1
+        const nowDay = now.getDate()
+        let age = nowYear - year
+        if (nowMonth < month) {
+            age -= 1
+            return age
+        }
+        if (nowMonth > month) {
+            return age
+        }
+        // nowMonth == month
+        if (nowDay < day) {
+            age -= 1
+            return age
+        }
+        if (nowDay > day) {
+            return age
+        }
+        // nowDay == day
+        return age
+      }
+      return null
     }
   }
 }
