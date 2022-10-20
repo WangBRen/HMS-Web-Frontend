@@ -5691,10 +5691,10 @@ eslint-plugin-standard@^4.0.0:
   resolved "https://registry.yarnpkg.com/eslint-plugin-standard/-/eslint-plugin-standard-4.1.0.tgz#0c3bf3a67e853f8bbbc580fb4945fbf16f41b7c5"
   integrity sha512-ZL7+QRixjTR6/528YNGyDotyffm5OQst/sGxKDwGb9Uqs4In5Egi4+jbobhqJoyoCM6/7v/1A5fhQ7ScMtDjaQ==
 
-eslint-plugin-vue-enhance@^9.6.4:
-  version "9.6.4"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-vue-enhance/-/eslint-plugin-vue-enhance-9.6.4.tgz#9550e5a64df0b578784a27ccd7730ef8f0120a45"
-  integrity sha512-hCeF+3aQ8PMIorLbZENfwD1CCgJYiY9xghPCN5nIBmhdab+g10T77F6UAX81OtTlM031znBxLlaGTn5NfFcfKQ==
+eslint-plugin-vue-enhance@^9.6.5:
+  version "9.6.5"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-vue-enhance/-/eslint-plugin-vue-enhance-9.6.5.tgz#b6b0329fa460c399e12e4fc11c3ff7df300cf4f0"
+  integrity sha512-y4WcnvXCvL3vYksZg8Hiv0F2zvHKHlWD6ZVyxTTyvGZV+/rl2rr2D1dqHJoaAUrwRQKwiBc7E+7rAJvGx1p+yg==
   dependencies:
     eslint-utils "^3.0.0"
     natural-compare "^1.4.0"
