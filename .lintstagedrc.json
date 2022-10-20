@@ -1,4 +1,5 @@
 {
+  "*.vue": "eslint",
   "*.js": "eslint --fix",
   "*.{css,less}": "stylelint --fix"
 }
