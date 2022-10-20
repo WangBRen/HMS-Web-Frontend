@@ -55,15 +55,15 @@
               <a-row>
                 <a-col :span="18">
                   <getChronicName
-                    @change1="({ id }) => { target.indexItemId = id;setChronicName(id) }"
+                    @changeIndex="({ id, filterAr }) => {
+                      target.indexItemId = id;
+                      const filter = filterAr
+                      setChronicName(id, filter)
+                    }"
                     :indexArr="indexArr"
                     :formData="formData"
+                    :sendFilter="sendFilter"
                   />
-                  <!-- <a-select v-model="target.indexItemId" show-search :filterOption="filterOption" @change="setChronicName">
-                    <a-select-option v-for="item in indexArr" :key="item.id">
-                      {{ item.name }} - <span style="font-size: 11px; color: #999">({{ item.category }})</span>
-                    </a-select-option>
-                  </a-select> -->
                 </a-col>
                 <a-col :span="6" style="text-align: center;margin: 0 auto;">
                   <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" />
@@ -91,8 +91,8 @@
 
 <script>
 import { getHealthIndex } from '@/api/health'
-// import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
-import { getChronic as apiGetChronic } from '@/api/chronic'
+import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
+// import { getChronic as apiGetChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
 export default {
@@ -102,6 +102,7 @@ export default {
     },
     data () {
         return {
+          sendFilter: [],
           rules: {
             name: [{
               required: true, message: '请输入慢性病名', trigger: 'blur'
@@ -222,13 +223,13 @@ export default {
                 describe: this.formData.describe,
                 items: this.formData.targetArr
               }
-              // apiAddChronic(apiData).then(res => {
-              //   if (res.status === 201) {
-              //     // console.log('添加慢病成功，添加的数据', apiData)
-              //     this.addChronicIndexVisible = false
-              //     this.$message.info('成功添加慢病')
-              //   }
-              // })
+              apiAddChronic(apiData).then(res => {
+                if (res.status === 201) {
+                  // console.log('添加慢病成功，添加的数据', apiData)
+                  this.addChronicIndexVisible = false
+                  this.$message.info('成功添加慢病')
+                }
+              })
               console.log('确定formData', this.formData)
               console.log('确定apiData', apiData)
             } else {
@@ -251,14 +252,39 @@ export default {
           }
           this.formData.targetArr.push(item)
         },
+        // 从末尾删除
         delTargetArrEnd () {
+          // console.log(this.formData.targetArr[this.formData.targetArr.length - 1])
           this.formData.targetArr.pop()
+          var waitArr = this.indexArr
+          for (var i = 0; i < this.formData.targetArr.length; i++) {
+            // console.log('22222', this.formData.targetArr[i].indexItemId)
+            waitArr = waitArr.filter((item) => {
+              return item.id !== this.formData.targetArr[i].indexItemId
+            })
+          }
+          // 将删除指标后过滤的指标传给子组件
+          this.sendFilter = waitArr
+          // console.log('全部指标', this.indexArr)
+          // console.log('选择的指标', this.formData.targetArr)
+          // console.log('删除过滤后', waitArr)
         },
+        // 从指定位置删除
         delTargetArr (item) {
-          //  const index = this.formData.targetArr.indexOf(item)
           //  console.log(item)
-          //  this.formData.targetArr.splice(index, 1)
-           this.formData.targetArr = this.formData.targetArr.filter(i => i.id !== item.id)
+          this.formData.targetArr = this.formData.targetArr.filter(i => i.id !== item.id)
+          var waitArr = this.indexArr
+          for (var i = 0; i < this.formData.targetArr.length; i++) {
+            // console.log('1111', this.formData.targetArr[i].indexItemId)
+            waitArr = waitArr.filter((item) => {
+              return item.id !== this.formData.targetArr[i].indexItemId
+            })
+          }
+          // console.log('删除过滤后', waitArr)
+          // console.log('选择的指标', this.formData.targetArr)
+          // console.log('全部指标', this.indexArr)
+          // 将删除指标后过滤的指标传给子组件
+          this.sendFilter = waitArr
         },
         // 将输入的内容与显示的内容进行匹配
         filterOption (value, option) {
@@ -308,8 +334,10 @@ export default {
           this.pagination.current = page
           this.getChronic()
         },
-        setChronicName (value) {
-          console.log('value', value)
+        setChronicName (value, filter) {
+          // console.log('value', value)
+          // console.log('filter', filter)
+          this.sendFilter = filter
           const targetArr = this.formData.targetArr
           const indexArr = this.indexArr
           // console.log('结果', targetArr)
