@@ -16,7 +16,6 @@
           <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="$t('user.login.message-invalid-credentials')" />
           <a-form-item>
             <a-input
-              ref="demo2"
               size="large"
               type="text"
               :placeholder="$t('user.login.username.placeholder')"
