@@ -8,6 +8,7 @@
       @submit="handleSubmit"
     >
       <a-tabs
+        ref="demo"
         :activeKey="customActiveKey"
         :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
         @change="handleTabClick"
@@ -366,7 +367,7 @@ export default {
                   const userinfo = this.formdata
                   this.$delete(userinfo, 'oldPassword')
                   this.$message.info('修改成功，请重新登陆')
-                  alert('修改成功，请重新登陆')
+                  // alert('修改成功，请重新登陆')
                   localStorage.removeItem('Authorization')
                   window.location.reload()// 刷新页面
                   this.visible = false
