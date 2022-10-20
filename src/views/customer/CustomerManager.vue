@@ -118,7 +118,12 @@
       ref="healthDataManagmentRef"
     />
     <!-- 新的慢病 -->
-    <ChronicInformation ref="ChronicInfoRef"/>
+    <ChronicInformation
+      v-if="chronicList.visible"
+      :custId="chronicList.custId"
+      :baseInfo="chronicList.baseInfo"
+      :chronicVisible="chronicList.visible"
+      @onclose="closeChronicModal"/>
   </div>
 </template>
 <script>
@@ -231,7 +236,12 @@ export default {
       },
       openHealthvisible: false,
       // 健康报告列表
-      currentCustomerId: -1
+      currentCustomerId: -1,
+      chronicList: {
+        custId: null,
+        baseInfo: {},
+        visible: false
+      }
     }
   },
   created () {
@@ -262,7 +272,15 @@ export default {
     },
     // 点击新的慢病
     chronicInfo (record) {
-      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id, record.member.baseInfo)
+      this.chronicList.custId = record.member.id
+      this.chronicList.baseInfo = record.member.baseInfo
+      this.chronicList.visible = true
+      // this.$refs.ChronicInfoRef.openChronicInfo(record.member.id, record.member.baseInfo)
+    },
+    // 关闭慢病弹窗
+    closeChronicModal () {
+      this.chronicList.custId = -1
+      this.chronicList.visible = false
     },
 
     /**

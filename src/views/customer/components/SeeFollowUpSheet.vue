@@ -258,7 +258,6 @@ export default {
       this.loading = true
       const resp = await apiShowFollowForm(this.customerId, this.formId)
       this.loading = false
-      console.log({ resp })
       if (resp.status !== 200) { return }
       const followTableData = resp.data || {}
       console.log('随访单数据', followTableData)
@@ -325,7 +324,6 @@ export default {
       this.$emit('grandFatherMethod')
     },
     handleOnModalCancel () {
-      console.log('close!!')
       this.$emit('onclose')
     }
   }

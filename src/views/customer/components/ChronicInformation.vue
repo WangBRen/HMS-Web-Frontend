@@ -1,20 +1,18 @@
 <template>
   <div>
     <a-modal
-      forceRender
-      v-model="chronicInfoVisible"
-      v-if="chronicInfoVisible"
-      :title="`慢病管理【${userInfo?.name || ''}】`"
+      :visible="chronicVisible"
+      :title="`慢病管理【${baseInfo?.name || ''}】`"
       :footer="null"
       @cancel="closeChronicInfo"
       :width="1200"
     >
-      <a-skeleton active :loading="loading"/>
       <div class="card">
         <a-space style="margin-bottom:10px">
           <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
           <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
         </a-space>
+        <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
           <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
             <a-col :span="23" @click="cardShow(item)">
@@ -77,7 +75,7 @@
           </a-row>
         </div>
         <!-- 查看所有随访单 -->
-        <a-card title="全部随访记录" style="margin-top: 30px;">
+        <a-card title="全部随访记录" style="margin-top: 30px;" :loading="loading">
           <FollowUpRecords
             :diseaseId="-1"
             :customerId="custId"
@@ -96,7 +94,7 @@ import FollowUpRecords from './FollowUpRecords.vue'
 import AddFollowUpSheet from './AddFollowUpSheet.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
-
+import { notification } from 'ant-design-vue'
 export default {
   components: {
     FollowUpRecords,
@@ -125,12 +123,27 @@ export default {
         }
     }
   },
+  props: {
+    custId: {
+      type: Number,
+      default: 0
+    },
+    baseInfo: {
+      type: Object,
+      default: function () {
+        return {}
+      }
+    },
+    chronicVisible: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
       loading: false,
       userInfo: [],
-      chronicInfoVisible: false,
-      custId: null,
+      // custId: null,
       tableData: [],
       isShowBtn: false
     }
@@ -141,23 +154,30 @@ export default {
   methods: {
     async loadData () {
       this.loading = true
+      console.log('baseInfo', this.baseInfo)
       const resp = await apiGetChronicManage(this.custId)
       this.loading = false
+      console.log({ resp })
       if (resp.status === 200) {
-          this.tableData = resp.data.map((item) => {
-            item.showIndex = false
-            return item
-          })
-          // console.log('tableData', this.tableData)
+        this.tableData = resp.data.map((item) => {
+          item.showIndex = false
+          return item
+        })
+        // console.log('tableData', this.tableData)
+      } else {
+        notification.open({
+          message: '慢病信息获取失败',
+          description: resp.message
+        })
       }
     },
     // 打开慢病管理弹窗
-    openChronicInfo (custId, userInfo) {
-      this.chronicInfoVisible = true
-      this.custId = custId
-      this.userInfo = userInfo
-      // console.log(userInfo)
-    },
+    // openChronicInfo (custId, userInfo) {
+    //   this.chronicInfoVisible = true
+    //   this.custId = custId
+    //   this.userInfo = userInfo
+    //   // console.log(userInfo)
+    // },
     renovateData (custId) {
       apiGetChronicManage(custId).then(res => {
           if (res.status === 200) {
@@ -171,7 +191,7 @@ export default {
       })
     },
     closeChronicInfo () {
-      this.chronicInfoVisible = false
+      this.$emit('onclose')
     },
     cardShow (showIndex) {
       showIndex.showIndex = !showIndex.showIndex
