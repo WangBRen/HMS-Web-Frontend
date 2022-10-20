@@ -1,5 +1,5 @@
 {
-  "*.vue": "precommit",
+  "*.vue": "vue-cli-service lint --no-fix",
   "*.js": "eslint --fix",
   "*.{css,less}": "stylelint --fix"
 }
