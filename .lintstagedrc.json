@@ -1,5 +1,5 @@
 {
-  "*.vue": "vue-cli-service lint",
+  "*.vue": "vue-cli-service lint --mode production",
   "*.js": "eslint --fix",
   "*.{css,less}": "stylelint --fix"
 }
