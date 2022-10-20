@@ -8,7 +8,6 @@
       @submit="handleSubmit"
     >
       <a-tabs
-        ref="demo7"
         :activeKey="customActiveKey"
         :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
         @change="handleTabClick"
@@ -17,6 +16,7 @@
           <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="$t('user.login.message-invalid-credentials')" />
           <a-form-item>
             <a-input
+              ref="demo"
               size="large"
               type="text"
               :placeholder="$t('user.login.username.placeholder')"
