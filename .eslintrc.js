@@ -6,13 +6,13 @@ module.exports = {
   'extends': [
     // 'plugin:vue-enhance/strongly-recommended',
     'plugin:vue/strongly-recommended',
-    '@vue/standard'
+    '@vue/standard',
   ],
   plugins: [
     'vue-enhance'
   ],
   rules: {
-    'vue-enhance/no-ref': 2,
+    'vue-enhance/no-ref': 1,
     // 'no-ref': 0,
     // 'no-console': 'error',
     'vue/comment-directive': 0,
