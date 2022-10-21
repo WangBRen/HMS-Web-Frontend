@@ -81,7 +81,7 @@ export default {
     },
     handleOk () {
       if (this.Grade !== '') {
-        this.gradeModelvisible = false
+        // this.gradeModelvisible = false
         const levelData = { level: 0, remark: '', followUpFormId: 0 }
         levelData.level = this.Grade
         levelData.remark = ''

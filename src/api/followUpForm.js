@@ -8,7 +8,7 @@ const customerApi = {
     PreviewForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/preview-info`, // 预览随访单
     SendForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/send`, // 发送随访单
     SendLevel: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/levels`, // 分级
-    abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destory` }, // 废弃随访单
+    abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destroy` }, // 废弃随访单
     createFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/create`, // 创建随访单
     showFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}`
   }

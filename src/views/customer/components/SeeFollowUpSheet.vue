@@ -10,8 +10,8 @@
       <template #footer>
         <a-popconfirm
           title="你确定废除本条随访记录吗?"
-          ok-text="Yes"
-          cancel-text="No"
+          ok-text="是"
+          cancel-text="否"
           @confirm="handleAbolish"
           placement="topRight"
         >
@@ -91,7 +91,7 @@
         :gradeModelvisible="gradeModelvisible"
         :customerId="customerId"
         :diseaseId="diseaseId"
-        :followId="followId"
+        :formId="formId"
         @fatherMethod="fatherMethod"
         :fatherMode="modalSelf.visible"
         @onclose="closeLevelModal"
@@ -123,7 +123,7 @@
 
 <script>
 import DefineLevel from './DefineLevel.vue'
-import { notification } from 'ant-design-vue'
+import { notification, message } from 'ant-design-vue'
 import { abandonFollow as apiAbandonFollow, showFollowForm as apiShowFollowForm } from '@/api/followUpForm'
 // import moment from 'moment'
 const columns = [
@@ -237,10 +237,10 @@ export default {
       // valid: false,
       // invalid: false,
       hintShow: true, // 是否展示填写提示
-      followId: 0,
       headerTips: '',
       chronicDiseaseId: null,
-      gradeModelvisible: false
+      gradeModelvisible: false,
+      destroy: false
     }
   },
   filters: {
@@ -268,11 +268,10 @@ export default {
       this.baseInfo = followTableData.customer.baseInfo
       this.baseInfo.age = this.age(this.baseInfo.birthDate)
       this.followTableData = followTableData
-      this.followId = followTableData.id
       this.items = followTableData.items
-      const destroy = followTableData.destroy
+      this.destroy = followTableData.destroy
       let tips = ''
-      if (destroy) {
+      if (this.destroy) {
         tips = '【已废弃】'
       } else {
         if (followTableData.level !== null) {
@@ -306,13 +305,26 @@ export default {
     //   }
     // },
     handleGrade () {
-      this.gradeModelvisible = true
+      if (this.destroy) {
+        message.warning('本条随访单已废弃，不可分级')
+      } else {
+        if (this.diseaseId === -1) {
+          notification.open({
+            message: '提示',
+            description:
+              '不可在此处分级，请前往单个慢病里分级'
+          })
+        } else {
+          this.gradeModelvisible = true
+        }
+      }
     },
     // 废弃随访单
     handleAbolish () {
-      apiAbandonFollow(this.customerId, this.followId).then(res => {
+      apiAbandonFollow(this.customerId, this.formId).then(res => {
         if (res.status === 200) {
-          this.modalSelf.visible = false
+          // this.modalSelf.visible = false
+          this.$emit('onclose')
           notification.open({
             message: '提示',
             description:
@@ -324,7 +336,7 @@ export default {
       })
     },
     fatherMethod (val) {
-      this.modalSelf.visible = val
+      // this.modalSelf.visible = val
       this.$emit('grandFatherMethod')
     },
     handleOnModalCancel () {
