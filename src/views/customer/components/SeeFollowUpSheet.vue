@@ -1,7 +1,8 @@
 <template>
   <div>
     <a-modal
-      v-model="modalSelf.visible"
+      :visible="visible"
+      @cancel="handleOnModalCancel"
       :title="`慢病随访单记录表${headerTips}`"
       :width="1100"
       :footer="(followTableData.level==null&&followTableData.status=='success') ? undefined : null"
@@ -9,8 +10,8 @@
       <template #footer>
         <a-popconfirm
           title="你确定废除本条随访记录吗?"
-          ok-text="Yes"
-          cancel-text="No"
+          ok-text="是"
+          cancel-text="否"
           @confirm="handleAbolish"
           placement="topRight"
         >
@@ -85,13 +86,16 @@
         </a-card>
         <!-- 指标选择结束 -->
       </div>
-      <GradeModel
-        ref="GradeModelRef"
+      <DefineLevel
+        v-if="gradeModelvisible"
+        :gradeModelvisible="gradeModelvisible"
         :customerId="customerId"
         :diseaseId="diseaseId"
-        :followId="followId"
+        :formId="formId"
         @fatherMethod="fatherMethod"
-        :fatherMode="modalSelf.visible"/>
+        :fatherMode="modalSelf.visible"
+        @onclose="closeLevelModal"
+        :chronicDiseaseId="chronicDiseaseId"/>
       <!-- 判定 -->
       <!-- <div style="padding: 0 24px;">
         <a-card title="慢病分级" :loading="loading" class="card">
@@ -118,9 +122,9 @@
 </template>
 
 <script>
-import GradeModel from './GradeModel.vue'
-import { notification } from 'ant-design-vue'
-import { abandonFollow as apiAbandonFollow } from '@/api/followUpForm'
+import DefineLevel from './DefineLevel.vue'
+import { notification, message } from 'ant-design-vue'
+import { abandonFollow as apiAbandonFollow, showFollowForm as apiShowFollowForm } from '@/api/followUpForm'
 // import moment from 'moment'
 const columns = [
   {
@@ -184,7 +188,7 @@ const options = [
 export default {
   name: 'SeeFollowUpSheet',
   components: {
-    GradeModel
+    DefineLevel
   },
   props: {
     diseaseId: {
@@ -194,13 +198,29 @@ export default {
     customerId: {
       type: Number,
       default: 0
+    },
+    formId: {
+      type: Number,
+      default: -1
+    },
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    onclose: {
+      type: Function,
+      default: function () {
+        return null
+      }
     }
   },
   data () {
     return {
       loading: false,
       totalChronicDiseases: [], // read only
-      baseInfo: {}, // read only
+      baseInfo: {
+        age: null
+      }, // read only
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
       // gradeOptions: gradeOptions,
@@ -217,8 +237,10 @@ export default {
       // valid: false,
       // invalid: false,
       hintShow: true, // 是否展示填写提示
-      followId: 0,
-      headerTips: ''
+      headerTips: '',
+      chronicDiseaseId: null,
+      gradeModelvisible: false,
+      destroy: false
     }
   },
   filters: {
@@ -231,17 +253,25 @@ export default {
       }
     }
   },
+  mounted () {
+    this.loadData()
+  },
   methods: {
     // 查看随访单弹窗
-    openFollowUpSheet (followTableData) {
-      this.modalSelf.visible = true
+    async loadData () {
+      if (this.formId === -1) return
+      this.loading = true
+      const resp = await apiShowFollowForm(this.customerId, this.formId)
+      this.loading = false
+      if (resp.status !== 200) { return }
+      const followTableData = resp.data || {}
       this.baseInfo = followTableData.customer.baseInfo
+      this.baseInfo.age = this.age(this.baseInfo.birthDate)
       this.followTableData = followTableData
-      this.followId = followTableData.id
       this.items = followTableData.items
-      const destroy = followTableData.destroy
+      this.destroy = followTableData.destroy
       let tips = ''
-      if (destroy) {
+      if (this.destroy) {
         tips = '【已废弃】'
       } else {
         if (followTableData.level !== null) {
@@ -254,6 +284,12 @@ export default {
       this.headerTips = tips
       if (followTableData.hints === '') {
         this.hintShow = false
+      }
+      const diseaseList = followTableData.diseases.filter(disease => disease.id === this.diseaseId)
+      if (diseaseList.length !== 0) {
+        this.chronicDiseaseId = diseaseList[0].chronicDisease.id
+      } else {
+        this.chronicDiseaseId = undefined
       }
     },
     handleOnDisableClicked (record, disabled) {
@@ -269,13 +305,26 @@ export default {
     //   }
     // },
     handleGrade () {
-      this.$refs.GradeModelRef.openGradeModal()
+      if (this.destroy) {
+        message.warning('本条随访单已废弃，不可分级')
+      } else {
+        if (this.diseaseId === -1) {
+          notification.open({
+            message: '提示',
+            description:
+              '不可在此处分级，请前往单个慢病里分级'
+          })
+        } else {
+          this.gradeModelvisible = true
+        }
+      }
     },
     // 废弃随访单
     handleAbolish () {
-      apiAbandonFollow(this.customerId, this.followId).then(res => {
+      apiAbandonFollow(this.customerId, this.formId).then(res => {
         if (res.status === 200) {
-          this.modalSelf.visible = false
+          // this.modalSelf.visible = false
+          this.$emit('onclose')
           notification.open({
             message: '提示',
             description:
@@ -287,8 +336,44 @@ export default {
       })
     },
     fatherMethod (val) {
-      this.modalSelf.visible = val
+      // this.modalSelf.visible = val
       this.$emit('grandFatherMethod')
+    },
+    handleOnModalCancel () {
+      this.$emit('onclose')
+    },
+    closeLevelModal () {
+      this.gradeModelvisible = false
+    },
+    age (dateStr) {
+      if (dateStr) {
+        const year = parseInt(dateStr.substr(0, 4))
+        const month = parseInt(dateStr.substr(5, 7))
+        const day = parseInt(dateStr.substr(8, 10))
+        const now = new Date()
+        const nowYear = now.getFullYear()
+        const nowMonth = now.getMonth() + 1
+        const nowDay = now.getDate()
+        let age = nowYear - year
+        if (nowMonth < month) {
+            age -= 1
+            return age
+        }
+        if (nowMonth > month) {
+            return age
+        }
+        // nowMonth == month
+        if (nowDay < day) {
+            age -= 1
+            return age
+        }
+        if (nowDay > day) {
+            return age
+        }
+        // nowDay == day
+        return age
+      }
+      return null
     }
   }
 }

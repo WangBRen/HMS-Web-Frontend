@@ -1,22 +1,21 @@
 <template>
   <div>
     <a-modal
-      forceRender
-      v-model="chronicInfoVisible"
-      v-if="chronicInfoVisible"
-      :title="`慢病管理【${userInfo?.name || ''}】`"
+      :visible="chronicVisible"
+      :title="`慢病管理【${baseInfo?.name || ''}】`"
       :footer="null"
       @cancel="closeChronicInfo"
       :width="1200"
     >
       <div class="card">
         <a-space style="margin-bottom:10px">
-          <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
+          <a-button type="primary" @click="showFollowUpSheet">创建随访单</a-button>
           <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
         </a-space>
+        <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
           <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
-            <a-col :span="22" @click="cardShow(item)">
+            <a-col :span="23" @click="cardShow(item)">
               <span class="all-tags">
                 <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
                   {{ item.status | filterChronicStatus }}
@@ -26,18 +25,21 @@
                   <a-icon type="question-circle" /> 疑似
                 </a-tag>
                 <span v-if="item.status==='diagnosed'" class="all-tags">
-                  <a-tag v-if="item.level===null||item.level===0" color="geekblue">已确诊</a-tag>
                   <a-tag v-if="item.level>0" color="red">{{ item.level }}级</a-tag>
+                  <a-tag v-else color="geekblue">已确诊</a-tag>
                 </span>
               </span>
               <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
             </a-col>
-            <a-col :span="2">
-              <a style="font-size: 20px;color: inherit;" @click="cardShow(item)">{{ item.showIndex === false ? '展开' : '收起' }}</a>
+            <a-col :span="1">
+              <a style="font-size: 20px;color: inherit;float: right;" @click="cardShow(item)">
+                <a-icon v-if="item.showIndex===false" type="right"/>
+                <a-icon v-if="item.showIndex" type="down"/>
+              </a>
             </a-col>
           </a-row>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
-            <a-card style="margin-top: 12px;">
+            <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
                 <span>指标项</span>
                 <span style="margin-left: 12px">
@@ -59,7 +61,7 @@
                 :custId="custId"
               />
             </a-card>
-            <a-card title="慢病随访记录" style="margin-top: 12px;">
+            <a-card title="慢病随访记录" style="margin-top: 12px;" :loading="loading">
               <FollowUpRecords
                 :diseaseId="item.id"
                 :customerId="custId"
@@ -67,13 +69,13 @@
                 @addNewDisease="getDiseaseName"
               />
             </a-card>
-            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
+            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
             </a-card>
           </a-row>
         </div>
         <!-- 查看所有随访单 -->
-        <a-card title="全部随访记录" style="margin-top: 30px;">
+        <a-card title="全部随访记录" style="margin-top: 30px;" :loading="loading">
           <FollowUpRecords
             :diseaseId="-1"
             :customerId="custId"
@@ -81,7 +83,14 @@
           />
         </a-card>
       </div>
-      <AddFollowUpSheet ref="FollowUpSheetRef"/>
+      <AddFollowUpSheet
+        v-if="addFollowFormVisible"
+        :visible="addFollowFormVisible"
+        :customerId="custId"
+        :diseaseId="diseaseId"
+        :baseInfo="baseInfo"
+        @close="closeAddFollowForm"
+        @onMessageSent="handleOnMessageSent"/>
     </a-modal>
     <ChronicInformationChangeStatus ref="ChangeStatus" :tableData="tableData"/>
   </div>
@@ -92,7 +101,7 @@ import FollowUpRecords from './FollowUpRecords.vue'
 import AddFollowUpSheet from './AddFollowUpSheet.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
-
+import { notification } from 'ant-design-vue'
 export default {
   components: {
     FollowUpRecords,
@@ -121,33 +130,62 @@ export default {
         }
     }
   },
-  data () {
-    return {
-      userInfo: [],
-      chronicInfoVisible: false,
-      custId: null,
-      tableData: [],
-      isShowBtn: false
+  props: {
+    custId: {
+      type: Number,
+      default: 0
+    },
+    baseInfo: {
+      type: Object,
+      default: function () {
+        return {}
+      }
+    },
+    chronicVisible: {
+      type: Boolean,
+      default: false
     }
   },
+  data () {
+    return {
+      loading: false,
+      userInfo: [],
+      // custId: null,
+      tableData: [],
+      isShowBtn: false,
+      addFollowFormVisible: false,
+      diseaseObj: {},
+      diseaseId: null
+    }
+  },
+  mounted () {
+    this.loadData()
+  },
   methods: {
-    // 打开慢病管理弹窗
-    openChronicInfo (custId, userInfo) {
-      this.chronicInfoVisible = true
-      this.custId = custId
-      this.userInfo = userInfo
-      // console.log(userInfo)
-      apiGetChronicManage(custId).then(res => {
-          if (res.status === 200) {
-              // const tableData = res.data
-              this.tableData = res.data.map((item) => {
-                item.showIndex = false
-                return item
-              })
-              // console.log('tableData', this.tableData)
-          }
-      })
+    async loadData () {
+      this.loading = true
+      const resp = await apiGetChronicManage(this.custId)
+      this.loading = false
+      if (resp.status === 200) {
+        this.tableData = resp.data.map((item) => {
+          item.showIndex = false
+          return item
+        })
+        // console.log('tableData', this.tableData)
+      } else {
+        notification.open({
+          message: '慢病信息获取失败',
+          description: resp.message
+        })
+      }
     },
+    // 打开慢病管理弹窗
+    // openChronicInfo (custId, userInfo) {
+    //   this.chronicInfoVisible = true
+    //   this.custId = custId
+    //   this.userInfo = userInfo
+    //   // console.log(userInfo)
+    // },
     renovateData (custId) {
       apiGetChronicManage(custId).then(res => {
           if (res.status === 200) {
@@ -161,7 +199,7 @@ export default {
       })
     },
     closeChronicInfo () {
-      this.chronicInfoVisible = false
+      this.$emit('onclose')
     },
     cardShow (showIndex) {
       showIndex.showIndex = !showIndex.showIndex
@@ -175,15 +213,29 @@ export default {
         this.$refs.ChangeStatus.openChangeStatus(userInfo, diseaseData)
       }
     },
-    showFollowUpSheet (_tableData) {
-      this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
+    showFollowUpSheet () {
+      this.addFollowFormVisible = true
+      // this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
     },
-    getDiseaseName (val) {
-      this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
-    }
+    getDiseaseName (diseaseId) {
+      this.addFollowFormVisible = true
+      this.diseaseId = diseaseId
+      // this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
+    },
     // getformData (val, callback) {
     //   this.$refs.FollowUpSheetRef.openSunModel(val, callback)
     // }
+    closeAddFollowForm () {
+      this.addFollowFormVisible = false
+    },
+    handleOnMessageSent (success) {
+      if (success) {
+        this.$message.success('发送成功')
+        this.addFollowFormVisible = false
+      } else {
+        // notification.xxx
+      }
+    }
   }
 }
 </script>
@@ -202,7 +254,7 @@ export default {
   border-bottom: none;
   /* margin: 3px 0; */
   /* height: 50px; */
-  padding: 6px;
+  padding: 6px 10px;
 }
 .card-body {
   // border: 1px #eee solid;

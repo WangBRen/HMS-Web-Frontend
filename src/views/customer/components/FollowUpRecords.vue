@@ -42,13 +42,22 @@
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
-    <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet(diseaseObj)">开始随访</a-button>
+    <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet">开始随访</a-button>
     <SeeFollowUpSheet
-      ref="SeeFollowUpSheetRef"
+      v-if="currentSelectedForm.visible"
+      :formId="currentSelectedForm.id"
       :customerId="customerId"
       :diseaseId="diseaseId"
-      @grandFatherMethod="onSearch"/>
-    <ChronicInformationVisit ref="Visit" @onMessageSendSuccess="handleOnMessageSendSuccess"/>
+      :visible="currentSelectedForm.visible"
+      @onclose="closeFollowUpFormModal"
+      @grandFatherMethod="handleSuccessLevel"/>
+    <FollowUpFormSend
+      v-if="sendModelVisible"
+      @onMessageSendSuccess="handleOnMessageSendSuccess"
+      :sendVisible="sendModelVisible"
+      :customerId="customerId"
+      :formId="formId"
+      @onclose="closeFollowSend"/>
   </div>
 </template>
 
@@ -56,12 +65,12 @@
 import moment from 'moment'
 import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
 import SeeFollowUpSheet from './SeeFollowUpSheet.vue'
-import ChronicInformationVisit from './ChronicInformationVisit.vue'
+import FollowUpFormSend from './FollowUpFormSend.vue'
 export default {
   name: 'FollowUpRecords',
   components: {
     SeeFollowUpSheet,
-    ChronicInformationVisit
+    FollowUpFormSend
   },
   props: {
     diseaseId: {
@@ -142,7 +151,13 @@ export default {
         showTotal: total => `共 ${total} 条`, // 显示总数
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-      }
+      },
+      currentSelectedForm: {
+        id: -1,
+        visible: false
+      },
+      sendModelVisible: false,
+      formId: null
     }
   },
   // filters: {
@@ -184,24 +199,50 @@ export default {
       })
     },
     // 重发随访单
-    retransmission (text, formData) {
-      this.$refs.Visit.openVisit(formData)
-      this.onSearch()
+    retransmission (_text, formData) {
+      this.formId = formData.id
+      this.sendModelVisible = true
+      // this.$refs.Visit.openVisit(formData)
+      // this.onSearch()
     },
     // 随访单分级
     startLevel (text, grecord) {
-      this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
+      this.openFollowUpFormModal(grecord.id)
     },
     // 查看随访单
     ViewFollowUpTable (text, grecord) {
-      this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
+      // this.$refs.SeeFollowUpSheetRef.openFollowUpSheet(grecord)
+      // this.currentSelectedForm.id = grecord.id
+      // this.currentSelectedForm.visible = true
+      // this.currentSelectedForm = {
+      //   id: grecord.id,
+      //   visible: true
+      // }
+      this.openFollowUpFormModal(grecord.id)
+    },
+    openFollowUpFormModal (formId) {
+      this.currentSelectedForm.id = formId
+      this.currentSelectedForm.visible = true
+    },
+    closeFollowUpFormModal () {
+      this.currentSelectedForm.id = -1
+      this.currentSelectedForm.visible = false
+    },
+    closeFollowSend () {
+      this.sendModelVisible = false
     },
         // 点击创建随访单
-    showFollowUpSheet (diseaseObj) {
+    showFollowUpSheet () {
       // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
-      this.$emit('addNewDisease', diseaseObj)
+      this.$emit('addNewDisease', this.diseaseId)
     },
     handleOnMessageSendSuccess (data) {
+      this.$message.success('发送成功')
+      this.sendModelVisible = false
+      this.onSearch()
+    },
+    handleSuccessLevel () {
+      this.currentSelectedForm.visible = false
       this.onSearch()
     }
   }

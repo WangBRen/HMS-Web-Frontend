@@ -1,9 +1,10 @@
 <template>
   <div>
     <a-modal
-      v-model="visitVisible"
+      :visible="sendVisible"
       title="发送随访单"
       :footer="null"
+      @cancel="closeFollowSend"
       :width="550">
       <div style="margin: 20px auto; width: 400px; padding-bottom: 20px;">
         <div style="font-size: 16px;margin-bottom: 30px;">
@@ -25,7 +26,7 @@
               @click="onSendMessage"
             />
           </span> -->
-          <a-button @click="onSendMessage" style="font-size: 14px;" type="primary" >发送到短信</a-button>
+          <a-button @click="handleOnSendMessageClick" style="font-size: 14px;" type="primary" :disabled="disableClickButton">发送到短信</a-button>
         </div>
       </div>
       <!-- <div>
@@ -39,63 +40,66 @@ import { getFormSendingInfo as apigetFormSendingInfo, ApiSendForm } from '@/api/
 import { notification } from 'ant-design-vue'
 export default {
   props: {
-    fatherModel: {
-      type: Boolean,
-      default: true
-    },
-    fatherModel2: {
-      type: Boolean,
-      default: true
-    },
     onMessageSendSuccess: {
       type: Function,
       default: function () {
         return null
       }
+    },
+    sendVisible: {
+      type: Boolean,
+      default: false
+    },
+    customerId: {
+      type: Number,
+      default: 0
+    },
+    formId: {
+      type: Number,
+      default: 0
     }
   },
   data () {
     return {
-      visitVisible: false,
       phone: '',
       url: '',
-      formDataId: '',
-      customerId: ''
+      disableClickButton: false
     }
   },
+  mounted () {
+    this.loadData()
+  },
   methods: {
-    openVisit (formData) {
-      this.visitVisible = true
-      this.formDataId = formData.id
-      this.customerId = formData.customer.id
-      apigetFormSendingInfo(this.customerId, this.formDataId).then(res => {
-        if (res.status === 200) {
-            this.phone = res.data.targetTelephone
-            this.url = res.data.url
-        } else {
-            notification.warning('获取失败：' + res.message)
-            throw Error(res.message)
-          }
-    })
+    async loadData () {
+      if (!this.formId) { return }
+      const resp = await apigetFormSendingInfo(this.customerId, this.formId)
+      if (resp.status === 200) {
+        this.phone = resp.data.targetTelephone
+        this.url = resp.data.url
+      } else {
+        notification.warning({ message: '获取失败11：', description: resp.message })
+        throw Error(resp.message)
+      }
     },
-    onSendMessage () {
+    async handleOnSendMessageClick () {
       // console.log('准备发送短信')
+      this.disableClickButton = true
       const apiPhone = this.phone
-      ApiSendForm(this.customerId, this.formDataId, { telephone: apiPhone }).then(res => {
-        if (res.status === 200) {
-          this.visitVisible = false
-          this.$emit('sendToFather', false)
-          this.$emit('onMessageSendSuccess', res.data)
-          // console.log('发送到短信了', res)
-        } else if (res.status === 400) {
-          notification.open({ message: '发送失败：', description: '手机号码格式错误' })
-          }
-      })
+      const res = await ApiSendForm(this.customerId, this.formId, { telephone: apiPhone })
+      if (res.status === 200) {
+        this.selfVisible = false
+        this.$emit('onMessageSendSuccess', res.data)
+        // console.log('发送到短信了', res)
+      } else if (res.status === 400) {
+        notification.open({ message: '发送失败：', description: '手机号码格式错误' })
+      }
+      this.disableClickButton = false
+    },
+    closeFollowSend () {
+      this.$emit('onclose')
     }
   },
   created () {
-  },
-  mounted () {
   }
 }
 </script>

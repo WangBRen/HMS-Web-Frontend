@@ -1,9 +1,10 @@
 <template>
   <div>
     <a-modal
-      v-model="modalSelf.visible"
+      :visible="visible"
       title="慢病随访单记录表"
       :width="1100"
+      @cancel="handleOnModalCancel"
     >
       <template #footer>
         <a-button type="primary" @click="handlePreview">预览</a-button>
@@ -22,7 +23,7 @@
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">年龄：</span>
-              <span class="basic-info-value">{{ baseInfo.age }}岁</span>
+              <span class="basic-info-value">{{ userAge }}岁</span>
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">血型：</span>
@@ -105,9 +106,10 @@
       </div>
     </a-modal>
     <a-modal
-      v-model="modalPreviewInfo"
+      :visible="modalPreviewInfo"
       :title="`预览随访单【最近编辑时间：${lastUpdateAt}】`"
-      @ok="handleSend"
+      @ok="handlePreviewOK"
+      @cancel="handleOnPreviewModalCancel"
       width="900px"
       okText="确认创建">
       <div id="container" style="width:100%;height: 900px;pointer-events: none;"></div>
@@ -123,20 +125,25 @@
         </a-col>
       </a-row>
     </a-modal>
-    <ChronicInformationVisit
-      ref="Visit"
-      :fatherModel="modalPreviewInfo"
-      @sendToFather="closeModel"
-      :fatherModel2="modalSelf.visible"/>
+    <FollowUpFormSend
+      v-if="sendModal"
+      :sendVisible="sendModal"
+      :customerId="customerId"
+      :formId="formId"
+      @onMessageSendSuccess="handleOnSendSuccess"
+      @onclose="closeFollowSend"
+    />
   </div>
 </template>
 
 <script>
-import ChronicInformationVisit from './ChronicInformationVisit.vue'
+import { getChronicManage as apiGetChronicManage, getChronicDetail } from '@/api/customer'
+import FollowUpFormSend from './FollowUpFormSend.vue'
 import { STable } from '@/components'
-import { addFollowUpSheet as apiCreateFollowUpForm, getPreviewForm, getToken, postFormCreated as apiPostFormCreated } from '@/api/followUpForm'
+import { addNewFollowUpForm as apiCreateFollowUpForm, getPreviewForm, getToken, postFormCreated as apiPostFormCreated } from '@/api/followUpForm'
 import { notification } from 'ant-design-vue'
 import moment from 'moment'
+// import age from '@/utils/age'
 const columns = [
   {
     title: '是否必填',
@@ -217,13 +224,39 @@ export default {
   name: 'AddFollowUpSheet',
   components: {
     STable,
-    ChronicInformationVisit
+    FollowUpFormSend
+  },
+  props: {
+    customerId: {
+      type: Number,
+      default: null
+    },
+    diseaseId: {
+      type: Number,
+      default: null
+    },
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    baseInfo: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
+    onMessageSent: {
+      type: Function,
+      default: () => {
+        return null
+      }
+    }
   },
   data () {
     return {
       loading: false,
       totalChronicDiseases: [], // read only 总的慢病
-      baseInfo: {}, // read only
+      // baseInfo: {}, // read only
       payload: { // edit
         myToken: '',
         hints: '',
@@ -232,9 +265,6 @@ export default {
       },
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
-      modalSelf: {
-        visible: false
-      },
       modalPreviewInfo: false,
       modalSelectChronic: {
         visible: false,
@@ -251,7 +281,10 @@ export default {
       // styles:
       cardBodyStyle: {
         padding: '0 0 24px 0'
-      }
+      },
+      sendModal: false,
+      formId: null,
+      userAge: null
     }
   },
   filters: {
@@ -270,26 +303,41 @@ export default {
             this.payload.myToken = res.data
         }
     })
+    this.loadData()
   },
   methods: {
     // 打开创建随访单弹窗
-    openModal (baseInfo, totalChronicDiseases = []) {
-      this.totalChronicDiseases = totalChronicDiseases
-      this.baseInfo = baseInfo || {}
-      this.baseInfo.age = 17
-      // re-initial data-source
-      this.payload.diseases = []
-      this.payload.items = []
-      this.modalSelf.visible = true
+    async loadData () {
+      const resp = await apiGetChronicManage(this.customerId)
+      if (resp.status === 200) {
+        this.totalChronicDiseases = resp.data
+      }
+      if (this.diseaseId) {
+        const res = await getChronicDetail(this.customerId, this.diseaseId)
+        if (res.status === 200) {
+          console.log(res)
+          const diseaseObj = res.data
+          this.modalSelectChronic.diseases.push(diseaseObj)
+          this.handleChronicDiseaseOK()
+        }
+      }
+      // this.userAge = age(this.baseInfo.birthDate)
+      // console.log('resp', resp)
+      // this.payload.hints = ''
+      // this.payload.diseases = []
+      // this.payload.items = []
+      // if (this.diseaseObj === {}) { return }
+      //   console.log('this.diseaseObj', this.diseaseObj)
+      //   this.modalSelectChronic.diseases.push(this.diseaseObj)
+      //   this.handleChronicDiseaseOK()
     },
     async handlePreview () {
       const resp = await this.doRequest()
       if (resp) {
         if (resp.status === 201) {
           this.modalPreviewInfo = true
-          const formDataId = resp.data.id
-          const customerId = resp.data.customer.id
-          getPreviewForm(customerId, formDataId).then(res => {
+          this.formId = resp.data.id
+          getPreviewForm(this.customerId, this.formId).then(res => {
             if (res.status === 200) {
                 this.lastUpdateAt = moment(res.data.lastUpdateAt).format('YYYY-MM-DD HH:mm:ss')
                 const previewUrl = res.data.url
@@ -303,20 +351,19 @@ export default {
         }
       }
     },
-    handleSend () {
+    handlePreviewOK () {
       // this.createFollowUpList(() => {
       // })
       const promise = this.doRequest()
       if (promise) {
         promise.then(res => {
           if (res.status === 201) {
-            const customer = res.data.customer || {}
             const form = res.data
-            this.$refs.Visit.openVisit(form)
             // tell server: user create a form here.
-            apiPostFormCreated(customer.id, form.id).then(res => {
-              if (res.status !== 201) {
-                notification.warning({ description: res.message || '随访单创建失败' })
+            apiPostFormCreated(this.customerId, form.id).then(res => {
+              if (res.status === 201) {
+                this.sendModal = true
+                this.$message.success('随访单创建成功')
               }
             }).catch(res => {
               notification.warning({ description: res.message || '随访单创建失败' })
@@ -347,7 +394,6 @@ export default {
 
       // do request
       const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
-      const customerId = this.baseInfo.customerId
       if (this.payload.items.length !== 0) {
             apiPayload.hints = this.payload.hints
             this.payload.diseases.forEach(function (diseas) {
@@ -373,7 +419,7 @@ export default {
             })
             apiPayload.token = this.payload.myToken
       }
-      return apiCreateFollowUpForm(customerId, apiPayload)
+      return apiCreateFollowUpForm(this.customerId, apiPayload)
       // // 调接口创建随访单
       // return apiCreateFollowUpForm(customerId, apiPayload).then(res => {
       //     if (res.status === 201) {
@@ -444,21 +490,20 @@ export default {
       this.inputType = record
       // console.log(this.inputType)
     },
-    closeModel (val) {
-      this.modalPreviewInfo = val
-      this.modalSelf.visible = val
+    handleOnSendSuccess () {
+      this.modalPreviewInfo = false
+      this.sendModal = false
+      this.$emit('onMessageSent', true)
     },
-    openAddFollow (diseaseObj, tableData) {
-      this.modalSelf.visible = true
-      this.baseInfo = diseaseObj.customer.baseInfo
-      this.modalSelectChronic.diseases = []
-      this.modalSelectChronic.diseases.push(diseaseObj)
-      this.totalChronicDiseases = tableData
-      this.handleChronicDiseaseOK()
+    handleOnModalCancel () {
+      this.$emit('close')
+    },
+    handleOnPreviewModalCancel () {
+      this.modalPreviewInfo = false
+    },
+    closeFollowSend () {
+      this.sendModal = false
     }
-    // openSunModel (formData, callback) {
-    //   this.$refs.Visit.openVisit(formData)
-    // }
   }
 }
 </script>

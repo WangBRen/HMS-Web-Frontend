@@ -13,6 +13,8 @@
         <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
+        <a @click="GradingStandard(record)">分级标准</a>
+        <a-divider type="vertical" />
         <a @click="editChronicTable(record)">编辑</a>
         <a-divider type="vertical" />
         <a @click="delChronicTable(record)">删除</a>
@@ -41,19 +43,12 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-divider type="horizontal" />
-        <a-row>
-          <a-col>
-            <span style="font-size: 16px;">指标</span>
-            <a-icon @click="addTargetArr" type="plus-circle" />
-            <a-icon @click="delTargetArrEnd" type="minus-circle" />
-          </a-col>
-        </a-row>
+        <a-divider type="horizontal" dashed style="margin-bottom:24px"/>
         <a-row v-for="target in formData.targetArr" :key="target.id">
           <a-col>
             <a-form-model-item label="指标名">
               <a-row>
-                <a-col :span="18">
+                <a-col :span="22">
                   <getChronicName
                     @changeIndex="({ id, filterAr }) => {
                       target.indexItemId = id;
@@ -65,9 +60,9 @@
                     :sendFilter="sendFilter"
                   />
                 </a-col>
-                <a-col :span="6" style="text-align: center;margin: 0 auto;">
-                  <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" />
-                  <a-icon class="targetIcon" @click="delTargetArr(target)" type="minus-circle" />
+                <a-col :span="2" style="text-align: center;margin: 0 auto;">
+                  <!-- <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" /> -->
+                  <a-icon class="targetIcon" @click="delTargetArr(target)" type="close-circle" />
                 </a-col>
               </a-row>
             </a-form-model-item>
@@ -75,30 +70,43 @@
           <a-col v-show="target.indexItemId">
             <a-form-model-item label="结果">
               <a-row>
-                <a-col v-for="(result,index) in target.result" :key="index">
-                  <span v-if="result.type==='range'">{{ result | getRange() }}</span>
+                <a-col v-for="(result,index) in target.result" :key="index" class="index-result">
+                  <span v-if="result.type==='range'">{{ result | getRange }}</span>
                   <span v-if="result.type==='simple'">{{ result.name }}</span>
                 </a-col>
               </a-row>
             </a-form-model-item>
           </a-col>
         </a-row>
+        <a-row>
+          <a-col :span="22">
+            <!-- <span style="font-size: 16px;">指标</span>
+            <a-icon @click="addTargetArr" type="plus-circle" />
+            <a-icon @click="delTargetArrEnd" type="minus-circle" /> -->
+            <a-button @click="addTargetArr" type="dashed" style="display:block;margin:0 auto;width:60%">
+              <a-icon type="plus" /> 添加指标
+            </a-button>
+          </a-col>
+        </a-row>
       </a-form-model>
     </a-modal>
     <editChronice ref="editChronic"/>
+    <GradingStandard ref="openChildModel" />
   </div>
 </template>
 
 <script>
 import { getHealthIndex } from '@/api/health'
 import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
-// import { getChronic as apiGetChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
+import GradingStandard from './components/GradingStandard.vue'
+import { notification } from 'ant-design-vue'
 export default {
     components: {
       getChronicName,
-      editChronice
+      editChronice,
+      GradingStandard
     },
     data () {
         return {
@@ -300,6 +308,18 @@ export default {
           this.formData.targetArr.length = 0
           this.$forceUpdate()
         },
+        GradingStandard (data) {
+          // console.log('data', data)
+          const diseaseId = data.id
+          getHeathLevels(diseaseId).then(res => {
+            if (res.status === 200) {
+              this.$refs.openChildModel.openModel(data)
+              this.$refs.openChildModel.getHealthLevels(res.data)
+            } else {
+              notification.warning({ message: '请求失败', description: res.message })
+            }
+          })
+        },
         editChronicTable (data) {
           this.$refs.editChronic.openModel()
           this.$refs.editChronic.getChronicData(data)
@@ -363,7 +383,8 @@ export default {
   margin: 1px
 }
 .targetIcon{
-  font-size: 24px;
+  font-size: 18px;
+  color: #999;
 }
 /* .ant-card-body{
   padding: 10px;
@@ -371,5 +392,10 @@ export default {
 .chronicTable{
   background-color: white;
   padding: 0 20px;
+}
+.index-result{
+  color: #999;
+  line-height: 22px;
+  font-size: 12px;
 }
 </style>
