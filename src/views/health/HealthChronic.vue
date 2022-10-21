@@ -383,7 +383,10 @@ export default {
   margin: 1px
 }
 .targetIcon{
-  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-top: 10px;
+  margin-left: 12px;
   color: #999;
 }
 /* .ant-card-body{
