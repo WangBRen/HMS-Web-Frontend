@@ -23,13 +23,6 @@
           </a-col>
         </a-row>
         <a-divider type="horizontal" dashed style="margin-bottom:24px"/>
-        <!-- <a-row>
-          <a-col>
-            <span style="font-size: 16px;">指标</span>
-            <!-- <a-icon @click="addEdit" type="plus-circle" />
-            <a-icon @click="delEditEnd" type="minus-circle" /> -->
-          </a-col>
-        </a-row> -->
         <a-row v-for="target in formData.items" :key="target.indexItem.id">
           <a-col>
             <a-form-model-item label="指标名">

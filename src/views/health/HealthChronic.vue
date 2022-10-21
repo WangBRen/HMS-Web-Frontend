@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import { getHealthIndex } from '@/api/health'
+import { getHealthIndex, getHeathLevels } from '@/api/health'
 import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
