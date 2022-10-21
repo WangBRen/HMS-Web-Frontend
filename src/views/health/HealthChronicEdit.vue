@@ -26,8 +26,8 @@
         <!-- <a-row>
           <a-col>
             <span style="font-size: 16px;">指标</span>
-            <a-icon @click="addEdit" type="plus-circle" />
-            <a-icon @click="delEditEnd" type="minus-circle" />
+            <!-- <a-icon @click="addEdit" type="plus-circle" />
+            <a-icon @click="delEditEnd" type="minus-circle" /> -->
           </a-col>
         </a-row> -->
         <a-row v-for="target in formData.items" :key="target.indexItem.id">
@@ -35,20 +35,19 @@
             <a-form-model-item label="指标名">
               <a-row>
                 <a-col :span="22">
-                  <a-select v-model="target.indexItem.id" show-search :filterOption="filterOption">
+                  <a-select disabled v-model="target.indexItem.id" show-search :filterOption="filterOption">
                     <a-select-option v-for="item in indexArr" :key="item.id">
                       {{ item.name }} - <span style="font-size: 11px; color: #999">({{ item.category }})</span>
                     </a-select-option>
                   </a-select>
                 </a-col>
                 <a-col :span="2" style="text-align: center;margin: 0 auto;">
-                  <!-- <a-icon class="targetIcon" @click="addEdit" type="plus-circle" /> -->
                   <a-icon class="targetIcon" @click="delEdit(target)" type="close-circle" />
                 </a-col>
               </a-row>
             </a-form-model-item>
           </a-col>
-          <a-col v-show="target.indexItem.id">
+          <!-- <a-col v-show="target.indexItem.id">
             <a-form-model-item label="系数">
               <a-row>
                 <a-col :span="12">
@@ -66,7 +65,7 @@
                 </a-col>
               </a-row>
             </a-form-model-item>
-          </a-col>
+          </a-col> -->
           <a-col v-show="target.indexItem.id">
             <a-form-model-item label="结果">
               <a-row>
@@ -166,7 +165,7 @@ export default {
                 if (res.status === 200) {
                     // console.log('编辑成功')
                     this.$message.info('成功编辑慢病')
-                    this.$parent.updateChronic() // 编辑后触发父组件刷新
+                    this.$parent.getChronic() // 编辑后触发父组件刷新
                     this.editVisible = false
                 }
             })
