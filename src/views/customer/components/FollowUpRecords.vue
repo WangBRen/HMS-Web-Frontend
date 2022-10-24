@@ -9,6 +9,18 @@
         <span v-if="scope.createdBy !== null">{{ scope.createdBy.nickname }}</span>
         <span v-else>-</span>
       </span>
+      <span slot="chronicDisease" slot-scope="text,scope">
+        <span style="display: flex;flex-wrap: wrap;">
+          <a-tag
+            v-for="item in scope.diseases"
+            :key="item.id"
+            color="blue"
+            style="margin: 0 4px 4px 0"
+          >
+            {{ item.name }}
+          </a-tag>
+        </span>
+      </span>
       <span slot="level" slot-scope="text,scope">
         <!-- {{ scope.level }} -->
         <span v-if="scope.status!=='success'">-</span>
@@ -29,16 +41,12 @@
         <a-tag v-if="record.status==='success'" color="geekblue">已回收</a-tag>
         <a-tag v-if="record.status==='failure'" color="orange">超时</a-tag>
       </span>
-      <span slot="receivedAt" slot-scope="text, scope">
-        <span v-if="scope.status==='success'">{{ scope.receivedAt | moment }}</span>
-        <span v-else> - </span>
-      </span>
       <span slot="action" slot-scope="text, scope">
         <span v-if="scope.status!=='success'">
           <a @click="retransmission(text, scope)">重发</a> |
           <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>
         </span>
-        <a v-else-if="scope.level===null" @click="startLevel(text, scope)">分级</a>
+        <a v-else-if="(scope.level===null && diseaseId>0) || (scope.level===null && scope.diseases.length===1) " @click="startLevel(text, scope)">分级</a>
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
@@ -47,7 +55,7 @@
       v-if="currentSelectedForm.visible"
       :formId="currentSelectedForm.id"
       :customerId="customerId"
-      :diseaseId="diseaseId"
+      :diseaseId="currentSelectedForm.diseaseId"
       :visible="currentSelectedForm.visible"
       @onclose="closeFollowUpFormModal"
       @grandFatherMethod="handleSuccessLevel"/>
@@ -60,7 +68,6 @@
       @onclose="closeFollowSend"/>
   </div>
 </template>
-
 <script>
 import moment from 'moment'
 import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
@@ -96,46 +103,57 @@ export default {
     return {
       recordColumns: [
         {
-          title: '发送日期',
-          dataIndex: 'sendAt',
-          key: 'a',
+          title: '创建日期',
+          dataIndex: 'createdAt',
           align: 'center',
           customRender: (text, record, index) => {
-            return record.sendAt ? moment(record.sendAt).format('YYYY-MM-DD HH:mm:ss') : '-'
+            return record.createdAt ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : '-'
           }
         },
         {
           title: '创建人',
           dataIndex: 'createdBy',
-          key: 'b',
           align: 'center',
           scopedSlots: { customRender: 'HealthSpecialistRender' }
         },
         {
+          title: '随访慢病',
+          dataIndex: 'diseases',
+          align: 'center',
+          width: '20%',
+          scopedSlots: { customRender: 'chronicDisease' }
+        },
+        {
           title: '判定级别',
           dataIndex: 'level',
-          key: 'c',
           align: 'center',
           scopedSlots: { customRender: 'level' }
         },
         {
           title: '回收结果',
           dataIndex: 'result',
-          key: 'd',
           align: 'center',
           scopedSlots: { customRender: 'result' }
         },
         {
-          title: '回收日期',
-          dataIndex: 'receivedAt',
-          key: 'e',
+          title: '发送时间',
+          dataIndex: 'sendAt',
           align: 'center',
-          scopedSlots: { customRender: 'receivedAt' }
+          customRender: (text, record, index) => {
+            return record.sendAt ? moment(record.sendAt).format('MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '回收时间',
+          dataIndex: 'receivedAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.receivedAt ? moment(record.receivedAt).format('MM-DD HH:mm:ss') : '-'
+          }
         },
         {
           title: '操作',
           dataIndex: 'action',
-          key: 'f',
           align: 'center',
           scopedSlots: { customRender: 'action' }
         }
@@ -154,7 +172,8 @@ export default {
       },
       currentSelectedForm: {
         id: -1,
-        visible: false
+        visible: false,
+        diseaseId: -1
       },
       sendModelVisible: false,
       formId: null
@@ -171,6 +190,7 @@ export default {
   //   }
   // },
   created () {
+    this.currentSelectedForm.diseaseId = this.diseaseId // take value from props
     this.$setPageDataLoader(this.onSearch)
     this.onSearch()
   },
@@ -207,7 +227,7 @@ export default {
     },
     // 随访单分级
     startLevel (text, grecord) {
-      this.openFollowUpFormModal(grecord.id)
+      this.openFollowUpFormModal(grecord.id, grecord.diseases[0].id)
     },
     // 查看随访单
     ViewFollowUpTable (text, grecord) {
@@ -220,9 +240,12 @@ export default {
       // }
       this.openFollowUpFormModal(grecord.id)
     },
-    openFollowUpFormModal (formId) {
+    openFollowUpFormModal (formId, diseaseId) {
       this.currentSelectedForm.id = formId
       this.currentSelectedForm.visible = true
+      if (diseaseId) {
+        this.currentSelectedForm.diseaseId = diseaseId
+      }
     },
     closeFollowUpFormModal () {
       this.currentSelectedForm.id = -1

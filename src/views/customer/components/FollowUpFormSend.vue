@@ -77,7 +77,7 @@ export default {
         this.phone = resp.data.targetTelephone
         this.url = resp.data.url
       } else {
-        notification.warning({ message: '获取失败11：', description: resp.message })
+        notification.warning({ message: '获取发送链接失败', description: resp.message })
         throw Error(resp.message)
       }
     },
@@ -87,8 +87,19 @@ export default {
       const apiPhone = this.phone
       const res = await ApiSendForm(this.customerId, this.formId, { telephone: apiPhone })
       if (res.status === 200) {
-        this.selfVisible = false
-        this.$emit('onMessageSendSuccess', res.data)
+        this.$confirm({
+          title: '短信发送成功',
+          // content: '是否返回重新编辑发送',
+          okText: '回到慢病管理',
+          cancelText: '重发',
+          onOk: () => {
+            this.$emit('onMessageSendSuccess', res.data)
+          },
+          onCancel: () => {
+
+          }
+        })
+        // this.$emit('onMessageSendSuccess', res.data)
         // console.log('发送到短信了', res)
       } else if (res.status === 400) {
         notification.open({ message: '发送失败：', description: '手机号码格式错误' })
