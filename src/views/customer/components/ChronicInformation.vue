@@ -15,32 +15,34 @@
         </a-space>
         <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
-          <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
-            <a-col :span="23" @click="cardShow(item)">
-              <span class="all-tags">
-                <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
-                  {{ item.status | filterChronicStatus }}
-                </a-tag> -->
-                <a-tag v-if="item.status==='exception'" color="">系统误判</a-tag>
-                <span v-if="item.status==='suspect'">
-                  <a-tag color="orange" @click="changeStatus(item.status, item)">
-                    <a-icon type="question-circle" /> 疑似
-                  </a-tag>
+          <div @click="cardShow(item)">
+            <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
+              <a-col :span="23">
+                <span class="all-tags">
+                  <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
+                    {{ item.status | filterChronicStatus }}
+                  </a-tag> -->
+                  <a-tag v-if="item.status==='exception'" color="">系统误判</a-tag>
+                  <span v-if="item.status==='suspect'">
+                    <a-tag color="orange" @click="changeStatus(item.status, item)">
+                      <a-icon type="question-circle" /> 疑似
+                    </a-tag>
+                  </span>
+                  <span v-if="item.status==='diagnosed'" class="all-tags">
+                    <a-tag v-if="item.level === null" color="geekblue">已确诊</a-tag>
+                    <a-tag v-else color="red">{{ item.level.level }}级</a-tag>
+                  </span>
                 </span>
-                <span v-if="item.status==='diagnosed'" class="all-tags">
-                  <a-tag v-if="item.level === null" color="geekblue">已确诊</a-tag>
-                  <a-tag v-else color="red">{{ item.level.level }}级</a-tag>
-                </span>
-              </span>
-              <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
-            </a-col>
-            <a-col :span="1">
-              <a style="font-size: 20px;color: inherit;float: right;" @click="cardShow(item)">
-                <a-icon v-if="item.showIndex===false" type="right"/>
-                <a-icon v-if="item.showIndex" type="down"/>
-              </a>
-            </a-col>
-          </a-row>
+                <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
+              </a-col>
+              <a-col :span="1">
+                <a style="font-size: 20px;color: inherit;float: right;">
+                  <a-icon v-if="item.showIndex===false" type="right"/>
+                  <a-icon v-if="item.showIndex" type="down"/>
+                </a>
+              </a-col>
+            </a-row>
+          </div>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
             <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
@@ -197,7 +199,6 @@ export default {
       if (resp.status === 200) {
         this.tableData = resp.data.map((item) => {
           item.showIndex = false
-          item.status = 'suspect'
           return item
         })
         // console.log('tableData', this.tableData)
