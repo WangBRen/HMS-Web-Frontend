@@ -6,38 +6,43 @@
       :footer="null"
       @cancel="closeChronicInfo"
       :width="1200"
+      :dialog-style="{ top: '50px' }"
     >
       <div class="card">
         <a-space style="margin-bottom:10px">
           <a-button type="primary" @click="showFollowUpSheet">创建随访单</a-button>
-          <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
+          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;">+健康指导</a-button>
         </a-space>
         <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
-          <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
-            <a-col :span="23" @click="cardShow(item)">
-              <span class="all-tags">
-                <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
-                  {{ item.status | filterChronicStatus }}
-                </a-tag> -->
-                <a-tag v-if="item.status==='exception'" color="">系统误判</a-tag>
-                <a-tag v-if="item.status==='suspect'" color="orange" @click="changeStatus(item.status, item)">
-                  <a-icon type="question-circle" /> 疑似
-                </a-tag>
-                <span v-if="item.status==='diagnosed'" class="all-tags">
-                  <a-tag v-if="item.level>0" color="red">{{ item.level }}级</a-tag>
-                  <a-tag v-else color="geekblue">已确诊</a-tag>
+          <div @click="cardShow(item)">
+            <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
+              <a-col :span="23">
+                <span class="all-tags">
+                  <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
+                    {{ item.status | filterChronicStatus }}
+                  </a-tag> -->
+                  <a-tag v-if="item.status==='exception'" color="">系统误判</a-tag>
+                  <span v-if="item.status==='suspect'">
+                    <a-tag color="orange" @click="changeStatus(item.status, item)">
+                      <a-icon type="question-circle" /> 疑似
+                    </a-tag>
+                  </span>
+                  <span v-if="item.status==='diagnosed'" class="all-tags">
+                    <a-tag v-if="item.level === null" color="geekblue">已确诊</a-tag>
+                    <a-tag v-else color="red">{{ item.level.level }}级</a-tag>
+                  </span>
                 </span>
-              </span>
-              <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
-            </a-col>
-            <a-col :span="1">
-              <a style="font-size: 20px;color: inherit;float: right;" @click="cardShow(item)">
-                <a-icon v-if="item.showIndex===false" type="right"/>
-                <a-icon v-if="item.showIndex" type="down"/>
-              </a>
-            </a-col>
-          </a-row>
+                <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
+              </a-col>
+              <a-col :span="1">
+                <a style="font-size: 20px;color: inherit;float: right;">
+                  <a-icon v-if="item.showIndex===false" type="right"/>
+                  <a-icon v-if="item.showIndex" type="down"/>
+                </a>
+              </a-col>
+            </a-row>
+          </div>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
             <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
@@ -56,7 +61,6 @@
                 </span>
               </template>
               <ChronicInformationEcharts
-                ref="echartsRef"
                 :dataArr="item"
                 :custId="custId"
               />
@@ -68,6 +72,10 @@
                 :diseaseObj="item"
                 @addNewDisease="getDiseaseName"
               />
+            </a-card>
+            <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
+              <HealthCoachingRecords />
+              <a-button type="primary" class="HealthCoachingBtn" ghost @click="startHealthCoaching">开始指导</a-button>
             </a-card>
             <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
@@ -92,7 +100,21 @@
         @close="closeAddFollowForm"
         @onMessageSent="handleOnMessageSent"/>
     </a-modal>
-    <ChronicInformationChangeStatus ref="ChangeStatus" :tableData="tableData"/>
+    <ChronicInformationChangeStatus
+      :userInfo="userInfo"
+      :diseaseId="diseaseId"
+      :customerId="custId"
+      :changeStatusVisible="StatusVisible"
+      @onClose="closeStatusModel"
+      @successChangeState="updateStatusModel"/>
+    <add-health-coaching
+      :coachingVisible="coachingVisible"
+      :customerId="custId"
+      :diseaseId="diseaseId"
+      :baseInfo="baseInfo"
+      @close="closeCoaching"
+      :isShow="isShowSelectChronic"
+    />
   </div>
 </template>
 <script>
@@ -102,12 +124,16 @@ import AddFollowUpSheet from './AddFollowUpSheet.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
+import AddHealthCoaching from './AddHealthCoaching.vue'
+import HealthCoachingRecords from './HealthCoachingRecords.vue'
 export default {
   components: {
     FollowUpRecords,
     AddFollowUpSheet,
     ChronicInformationChangeStatus,
-    ChronicInformationEcharts
+    ChronicInformationEcharts,
+    AddHealthCoaching,
+    HealthCoachingRecords
   },
   filters: {
     filterTip: function (value) {
@@ -149,13 +175,17 @@ export default {
   data () {
     return {
       loading: false,
-      userInfo: [],
+      userInfo: {},
+      diseaseData: {},
       // custId: null,
       tableData: [],
       isShowBtn: false,
       addFollowFormVisible: false,
       diseaseObj: {},
-      diseaseId: null
+      diseaseId: null,
+      coachingVisible: false,
+      isShowSelectChronic: true,
+      StatusVisible: false
     }
   },
   mounted () {
@@ -186,36 +216,32 @@ export default {
     //   this.userInfo = userInfo
     //   // console.log(userInfo)
     // },
-    renovateData (custId) {
-      apiGetChronicManage(custId).then(res => {
-          if (res.status === 200) {
-              // const tableData = res.data
-              this.tableData = res.data.map((item) => {
-                item.showIndex = false
-                return item
-              })
-              // console.log('tableData', this.tableData)
-          }
-      })
-    },
+    // renovateData (custId) {
+    //   this.loadData()
+    // },
     closeChronicInfo () {
       this.$emit('onclose')
+    },
+    updateStatusModel () {
+      this.StatusVisible = false
+      this.loadData()
+    },
+    closeStatusModel () {
+      this.StatusVisible = false
     },
     cardShow (showIndex) {
       showIndex.showIndex = !showIndex.showIndex
     },
     // 点击修改慢病状态
     changeStatus (status, item) {
-      // console.log('修改状态', status, 'item', item)
+      event.stopPropagation()
+      this.diseaseId = item.id
       if (status === 'suspect') {
-        const userInfo = this.userInfo
-        const diseaseData = item
-        this.$refs.ChangeStatus.openChangeStatus(userInfo, diseaseData)
+        this.StatusVisible = true
       }
     },
     showFollowUpSheet () {
       this.addFollowFormVisible = true
-      // this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
     },
     getDiseaseName (diseaseId) {
       this.addFollowFormVisible = true
@@ -235,6 +261,17 @@ export default {
       } else {
         // notification.xxx
       }
+    },
+    showHealthCoaching () { // 新增健康指导
+      this.coachingVisible = true
+      this.isShowSelectChronic = true
+    },
+    startHealthCoaching () {
+      this.coachingVisible = true
+      this.isShowSelectChronic = false
+    },
+    closeCoaching () {
+      this.coachingVisible = false
     }
   }
 }
@@ -265,5 +302,10 @@ export default {
 .all-tags>*{
   width: 65px;
   text-align: center;
+}
+.HealthCoachingBtn{
+  width: 260px;
+  top: -36px;
+  // z-index: 999;
 }
 </style>
