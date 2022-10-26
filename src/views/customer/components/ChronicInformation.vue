@@ -234,6 +234,7 @@ export default {
     },
     // 点击修改慢病状态
     changeStatus (status, item) {
+      event.stopPropagation()
       this.diseaseId = item.id
       if (status === 'suspect') {
         this.StatusVisible = true
