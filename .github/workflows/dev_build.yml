@@ -15,5 +15,6 @@ jobs:
 
       - name: Build App
         run: |
+          npm config set registry https://registry.npmjs.org/
           npm install && npm run build:production
         # or build:development
