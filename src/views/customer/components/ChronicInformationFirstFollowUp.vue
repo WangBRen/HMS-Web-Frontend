@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      v-model="firstFollowUpVisible"
+      :visible="firstFollowUpVisible"
       @cancel="closeFirstFollowUp"
       :width="400"
       :footer="null"
@@ -12,7 +12,7 @@
         <br>
         <a-button type="primary" style="margin-top: 20px;" @click="setFollow()">创建随访单</a-button>
       </div>
-      <AddFollowUpSheet ref="FollowUpSheetRef"/>
+      <AddFollowUpSheet :customerId="customerId" :diseaseId="diseaseId" :userInfo="userInfo" :visible="AddFollowUpFormModel" @close="closeFollowUpFormModel"/>
     </a-modal>
   </div>
 </template>
@@ -23,35 +23,46 @@ export default {
     AddFollowUpSheet
   },
   props: {
-    diseaseData: {
+    userInfo: {
       type: Object,
       default: function () {
         return {}
-        }
+      }
     },
-    tableData: {
-      type: Array,
-      default: function () {
-        return []
-        }
+    diseaseId: {
+      type: Number,
+      default: null
+    },
+    customerId: {
+      type: Number,
+      default: null
+    },
+    firstFollowUpVisible: {
+      type: Boolean,
+      default: false
     }
   },
   name: 'APP',
   data () {
     return {
-        firstFollowUpVisible: false
+      AddFollowUpFormModel: false
     }
   },
   methods: {
-    openFirstFollowUp () {
-        this.firstFollowUpVisible = true
-    },
+    // openFirstFollowUp () {
+    //     this.firstFollowUpVisible = true
+    // },
     closeFirstFollowUp () {
-        this.firstFollowUpVisible = false
+        // this.firstFollowUpVisible = false
+        this.$emit('onClose')
     },
     setFollow () {
-        this.$refs.FollowUpSheetRef.openAddFollow(this.diseaseData, this.tableData)
-        this.firstFollowUpVisible = false
+        // this.$refs.FollowUpSheetRef.openAddFollow(this.diseaseData, this.tableData)
+        this.AddFollowUpFormModel = true
+        this.$emit('onClose')
+    },
+    closeFollowUpFormModel () {
+      this.AddFollowUpFormModel = false
     }
   },
   created () {
