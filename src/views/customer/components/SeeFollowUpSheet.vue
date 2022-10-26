@@ -5,7 +5,7 @@
       @cancel="handleOnModalCancel"
       :title="`慢病随访单记录表${headerTips}`"
       :width="1100"
-      :footer="(followTableData.level==null&&followTableData.status=='success') ? undefined : null"
+      :footer="(followTableData.level==null&&followTableData.status=='success'&&followTableData.diseases.length===1) ? undefined : null"
     >
       <template #footer>
         <a-popconfirm
@@ -308,15 +308,7 @@ export default {
       if (this.destroy) {
         message.warning('本条随访单已废弃，不可分级')
       } else {
-        if (this.diseaseId === -1) {
-          notification.open({
-            message: '提示',
-            description:
-              '不可在此处分级，请前往单个慢病里分级'
-          })
-        } else {
           this.gradeModelvisible = true
-        }
       }
     },
     // 废弃随访单
