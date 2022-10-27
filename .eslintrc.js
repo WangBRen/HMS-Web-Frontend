@@ -12,8 +12,8 @@ module.exports = {
     'vue-enhance'
   ],
   rules: {
-    'vue-enhance/no-ref': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'vue-enhance/no-ref': process.env.NODE_ENV === 'preview' ? 'error' : 'off',
+    'no-console': process.env.NODE_ENV === 'preview' ? 'error' : 'off',
     'vue/comment-directive': 0,
     'no-alert': 'error',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
