@@ -114,13 +114,13 @@
       @onClose="closeStatusModel"
       @successChangeState="updateStatusModel"/>
     <AddHealthCoaching
-      v-if="coachingVisible"
       :coachingVisible="coachingVisible"
       :customerId="custId"
       :diseaseId="diseaseId"
       :baseInfo="baseInfo"
       :tableData="tableData"
       @close="closeCoaching"
+      @successCreat="successCreatCoaching"
     />
   </div>
 </template>
@@ -290,6 +290,9 @@ export default {
       this.diseaseId = diseaseId
     },
     closeCoaching () {
+      this.coachingVisible = false
+    },
+    successCreatCoaching () {
       this.coachingVisible = false
     }
   }

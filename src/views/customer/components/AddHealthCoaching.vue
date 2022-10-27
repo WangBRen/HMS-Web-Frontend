@@ -2,7 +2,7 @@
   <div>
     <a-modal
       :visible="coachingVisible"
-      :title="`健康指导【${chronicName}】`"
+      :title="`健康指导${chronicName}`"
       :ok-button-props="{ props: { disabled: disabled } }"
       @cancel="closeCoachingModel"
       :width="900"
@@ -123,6 +123,11 @@ export default {
       sendVisible: false
     }
   },
+  watch: {
+    coachingVisible () {
+      this.loadData()
+    }
+  },
   mounted () {
     getToken().then(res => {
         if (res.status === 200) {
@@ -133,6 +138,8 @@ export default {
   },
   methods: {
     async loadData () {
+      this.chronicName = ''
+      this.chronicSelectData = []
       if (this.diseaseId > 0) {
         // 请求话术模板
         const resp = await apiGuidanceTemplates(this.customerId, this.diseaseId)
@@ -148,7 +155,9 @@ export default {
         // 获取慢病名称
         const res = await apiChronicDetail(this.customerId, this.diseaseId)
         if (res.status === 200) {
-          this.chronicName = res.data.chronicDisease.name
+          this.chronicName = '【' + res.data.chronicDisease.name + '】'
+        } else {
+          this.$message.error('慢病名称获取失败')
         }
         // 创建新的指导
         const apiPayload = { token: '', diseaseIds: [], sendText: '' }
@@ -181,7 +190,7 @@ export default {
       this.$emit('close')
     },
     handleChange (value) {
-      this.chronicName = value
+      this.chronicName = '【' + value + '】'
     },
     filterOption (input, option) {
       return (
@@ -192,8 +201,9 @@ export default {
       if (this.templateData !== '') {
         creatGuidance(this.customerId, this.guidanceId).then(res => {
           if (res.status === 201) {
-            message.success(res.message)
+            // message.success(res.message)
             this.sendVisible = true
+            this.$emit('successCreat')
           } else {
             message.error(res.message)
           }

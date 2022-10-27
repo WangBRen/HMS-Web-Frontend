@@ -220,7 +220,7 @@ export default {
       this.formId = formData.id
       this.sendModelVisible = true
       // this.$refs.Visit.openVisit(formData)
-      // this.onSearch()
+      this.onSearch()
     },
     // 随访单分级
     startLevel (text, grecord) {

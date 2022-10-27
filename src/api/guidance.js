@@ -5,8 +5,9 @@ const customerApi = {
   guidanceTemplates: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/templates`, // 获取指导内容模板
   addNewGuidance: (customerId, diseaseId) => `/customers/${customerId}/${diseaseId}/health-guidances`, // 新建新的指导
   creatGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/create`, // 创建健康指导
-  guidanceSendingInfo: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/sending-info`,
-  ApiSendGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/send`
+  guidanceSendingInfo: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/sending-info`, // 健康指导待发送
+  ApiSendGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/send`, // 发送健康指导
+  guidanceSee: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}` // 查看健康指导
   }
 
 // 指导记录
@@ -54,5 +55,11 @@ export function ApiSendGuidance (customerId, guidanceId, parameter) {
       url: customerApi.ApiSendGuidance(customerId, guidanceId),
       method: 'post',
       data: parameter
+  })
+}
+export function guidanceSee (customerId, guidanceId) {
+  return request({
+      url: customerApi.guidanceSee(customerId, guidanceId),
+      method: 'get'
   })
 }

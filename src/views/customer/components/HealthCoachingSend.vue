@@ -2,19 +2,20 @@
   <div>
     <a-modal
       :visible="coachingSendVisible"
-      title="推送健康指导"
+      title="发送健康指导"
       :footer="null"
       @cancel="closeCoachingSend"
       centered
-      :width="550">
-      <div style="margin: 20px auto; width: 400px; padding-bottom: 20px;">
+      :width="500">
+      <div style="margin: 10px auto; width: 290px; padding-bottom: 20px;">
         <!-- <div style="font-size: 16px;margin-bottom: 30px;">
           <span>随访内容：</span>
           <span>
             <a :href="url" style="text-decoration:underline;" target="_blank">{{ url }}</a>
           </span>
         </div> -->
-        <div style="margin-bottom: 10px;display: flex;align-items: center;">
+        <div>健康指导已创建成功，是否发送给用户？</div>
+        <div style="margin: 20px auto;display: flex;align-items: center;">
           <span style="width:150px">
             <a-input placeholder="请输入用户手机号" v-model="phone" prefix="📞" />
           </span>
@@ -84,7 +85,7 @@ export default {
         this.$emit('onMessageSendSuccess', res.data)
         // console.log('发送到短信了', res)
       } else if (res.status === 400) {
-        notification.open({ message: '发送失败：', description: res.message })
+        this.$message.error(res.message)
       }
       this.disableClickButton = false
     },

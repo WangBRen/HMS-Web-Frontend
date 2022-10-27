@@ -1,6 +1,10 @@
 <template>
   <div>
-    <a-table :columns="columns" :data-source="dataSource" :rowKey="(record,index)=>{return index}">
+    <a-table
+      :columns="columns"
+      :data-source="dataSource"
+      :pagination="pagination"
+      :rowKey="(record,index)=>{return index}">
       <a slot="name" slot-scope="text">{{ text }}</a>
       <!-- <span slot="customTitle"><a-icon type="smile-o" /> Name</span> -->
       <span slot="mode">
@@ -15,7 +19,7 @@
       </span>
       <span slot="action" slot-scope="text, scope">
         <a v-if="scope.statue !== 'success'" @click="retransmission(text, scope)">重发 | </a>
-        <a>查看</a>
+        <a @click="coachingSee(text, scope)">查看</a>
       </span>
     </a-table>
     <HealthCoachingSend
@@ -26,12 +30,20 @@
       @onclose="closeSendModel"
       @onMessageSendSuccess="closeSendModel"
     />
+    <HealthCoachingSee
+      v-if="coachingVisible"
+      :customerId="customerId"
+      :guidanceId="guidanceId"
+      :coachingVisible="coachingVisible"
+      @onclose="closeCoachingModel"
+    />
   </div>
 </template>
 
 <script>
 import { getGuidanceRecords as apiGuidanceRecords } from '@/api/guidance'
 import HealthCoachingSend from './HealthCoachingSend.vue'
+import HealthCoachingSee from './HealthCoachingSee.vue'
 import moment from 'moment'
 const columns = [
   {
@@ -69,7 +81,8 @@ const columns = [
 export default {
   name: 'HealthCoachingRecords',
   components: {
-    HealthCoachingSend
+    HealthCoachingSend,
+    HealthCoachingSee
   },
   props: {
     customerId: {
@@ -88,6 +101,7 @@ export default {
       pages: {},
       sendVisible: false,
       guidanceId: null,
+      coachingVisible: false,
       pagination: {
         total: 0,
         current: 1,
@@ -106,13 +120,13 @@ export default {
   methods: {
     onPageChange (page, _pageSize) {
       this.pagination.current = page
-      this.onSearch()
+      this.loadData()
       // this.$reload()
     },
     onSizeChange (_current, pageSize) {
         this.pagination.current = 1
         this.pagination.pageSize = pageSize
-        this.onSearch()
+        this.loadData()
         // this.$reload()
     },
     async loadData () {
@@ -134,6 +148,13 @@ export default {
     },
     closeSendModel () {
       this.sendVisible = false
+    },
+    coachingSee (text, scope) {
+      this.guidanceId = scope.id
+      this.coachingVisible = true
+    },
+    closeCoachingModel () {
+      this.coachingVisible = false
     }
   }
 }
