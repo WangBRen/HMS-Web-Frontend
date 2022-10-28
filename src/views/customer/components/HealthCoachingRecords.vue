@@ -92,6 +92,12 @@ export default {
     diseaseId: {
       type: Number,
       default: null
+    },
+    setRefreshCallback: {
+      type: Function,
+      default: () => {
+        return null
+      }
     }
   },
   data () {
@@ -114,13 +120,9 @@ export default {
       }
     }
   },
-  watch: {
-    dataSource () {
-      this.loadData()
-    }
-  },
   mounted () {
     this.loadData()
+    this.$emit('setRefreshCallback', this.loadData)
   },
   methods: {
     onPageChange (page, _pageSize) {

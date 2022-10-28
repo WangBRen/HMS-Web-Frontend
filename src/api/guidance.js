@@ -3,7 +3,7 @@ import request from '@/utils/request'
 const customerApi = {
   guidanceRecords: (customerId, diseaseId) => `/customers/${customerId}/${diseaseId}/health-guidances`, // 健康指导记录
   guidanceTemplates: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/templates`, // 获取指导内容模板
-  addNewGuidance: (customerId, diseaseId) => `/customers/${customerId}/${diseaseId}/health-guidances`, // 新建新的指导
+  addNewGuidance: (customerId) => `/customers/${customerId}/health-guidances`, // 新建新的指导
   creatGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/create`, // 创建健康指导
   guidanceSendingInfo: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/sending-info`, // 健康指导待发送
   ApiSendGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/send`, // 发送健康指导
@@ -29,9 +29,9 @@ export function getGuidanceTemplates (customerId, diseaseId) {
   })
 }
 // 新建新指导单
-export function addNewGuidance (customerId, diseaseId, parameter) {
+export function addNewGuidance (customerId, parameter) {
   return request({
-      url: customerApi.addNewGuidance(customerId, diseaseId),
+      url: customerApi.addNewGuidance(customerId),
       method: 'post',
       data: parameter
   })

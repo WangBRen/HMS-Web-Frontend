@@ -122,62 +122,70 @@ export default {
       },
       guidanceId: null,
       sendVisible: false,
-      selectedData: ''
+      selectedData: '',
+      chronicId: ''
     }
   },
   watch: {
-    coachingVisible () {
-      this.loadData()
+    coachingVisible (newVal, oldVal) {
+      // if newVisible == true then loadData
+      if (newVal !== oldVal && newVal) {
+        getToken().then(res => {
+          if (res.status === 200) {
+              this.payload.myToken = res.data
+          }
+        })
+        this.loadData()
+      }
     }
   },
   mounted () {
-    getToken().then(res => {
-        if (res.status === 200) {
-            this.payload.myToken = res.data
-        }
-    })
     this.loadData()
   },
   methods: {
-    async loadData () {
+    async doRequest () {
+      // 请求话术模板
+      const resp = await apiGuidanceTemplates(this.customerId, this.chronicId)
+      if (resp.status === 200) {
+        this.templateData = resp.data
+      } else {
+        this.disabled = true
+        this.$notification.info({
+          message: '温馨提示',
+          description: resp.message
+        })
+      }
+      // 获取慢病名称
+      const res = await apiChronicDetail(this.customerId, this.chronicId)
+      if (res.status === 200) {
+        this.chronicName = '【' + res.data.chronicDisease.name + '】'
+      } else {
+        this.$message.error('慢病名称获取失败')
+      }
+      // 创建新的指导
+      const apiPayload = { token: '', diseaseIds: [], sendText: '' }
+      apiPayload.token = this.payload.myToken
+      apiPayload.diseaseIds.push(this.chronicId)
+      apiPayload.sendText = this.templateData
+
+      addNewGuidance(this.customerId, apiPayload).then(res => {
+        if (res.status === 201) {
+        this.guidanceId = res.data.id
+        } else {
+          this.notification.open({
+          message: '健康指导新建失败',
+          description: res.message
+        })
+        }
+      })
+    },
+    loadData () {
       this.chronicName = ''
       this.selectedData = ''
       this.templateData = ''
       if (this.diseaseId > 0) {
-        // 请求话术模板
-        const resp = await apiGuidanceTemplates(this.customerId, this.diseaseId)
-        if (resp.status === 200) {
-          this.templateData = resp.data
-        } else {
-          this.disabled = true
-          this.$notification.info({
-            message: '温馨提示',
-            description: resp.message
-          })
-        }
-        // 获取慢病名称
-        const res = await apiChronicDetail(this.customerId, this.diseaseId)
-        if (res.status === 200) {
-          this.chronicName = '【' + res.data.chronicDisease.name + '】'
-        } else {
-          this.$message.error('慢病名称获取失败')
-        }
-        // 创建新的指导
-        const apiPayload = { token: '', diseaseIds: [], sendText: '' }
-        apiPayload.token = this.payload.myToken
-        apiPayload.diseaseIds.push(this.diseaseId)
-        apiPayload.sendText = this.templateData
-
-        addNewGuidance(this.customerId, this.diseaseId, apiPayload).then(res => {
-          if (res.status === 201) {
-          this.guidanceId = res.data.id
-          } else {
-            this.notification.open({
-            message: '健康指导新建失败',
-            description: res.message
-          })
-          }
-        })
+        this.chronicId = this.diseaseId
+        this.doRequest()
       }
       // 获取已分级的慢病列表
       const chronicData = this.tableData.filter(chronic => {
@@ -194,25 +202,14 @@ export default {
     },
     handleChange (value) {
       this.selectedData = value
-      this.chronicName = '【' + value + '】'
+      // this.chronicName = '【' + value + '】'
       const chronicData = this.tableData.filter(chronic => {
         if (chronic.chronicDisease.name === value) {
             return chronic
         }
       })
-      const diseaseId = chronicData[0].id
-      // 请求话术模板
-      apiGuidanceTemplates(this.customerId, diseaseId).then(res => {
-        if (res.status === 200) {
-          this.templateData = res.data
-        } else {
-          this.disabled = true
-          this.$notification.info({
-            message: '温馨提示',
-            description: res.message
-          })
-        }
-      })
+      this.chronicId = chronicData[0].id
+      this.doRequest()
     },
     filterOption (input, option) {
       return (
@@ -220,19 +217,19 @@ export default {
       )
     },
     handleOk () {
-      if (this.templateData !== '') {
-        creatGuidance(this.customerId, this.guidanceId).then(res => {
-          if (res.status === 201) {
-            // message.success(res.message)
-            this.sendVisible = true
-            this.$emit('successCreat')
-          } else {
-            message.error(res.message)
-          }
-        })
-      } else {
+      if (this.templateData === '') {
         message.warning('指导内容为空，请先填写')
+        return
       }
+      creatGuidance(this.customerId, this.guidanceId).then(res => {
+        if (res.status === 201) {
+          // message.success(res.message)
+          this.sendVisible = true
+          this.$emit('successCreat')
+        } else {
+          message.error(res.message)
+        }
+      })
     },
     closeSendModel () {
       this.sendVisible = false

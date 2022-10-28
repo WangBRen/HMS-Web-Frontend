@@ -66,12 +66,18 @@
               />
             </a-card>
             <a-card title="慢病随访记录" style="margin-top: 12px;" :loading="loading">
-              <FollowUpRecords
-                :diseaseId="item.id"
-                :customerId="custId"
-                :diseaseObj="item"
-                @addNewDisease="getDiseaseName"
-              />
+              <span v-if="item.status !== 'diagnosed'">
+                <a-icon type="question-circle" />
+                温馨提示：你还没有对该慢病确诊，暂无法进行随访
+              </span>
+              <div v-else>
+                <FollowUpRecords
+                  :diseaseId="item.id"
+                  :customerId="custId"
+                  :diseaseObj="item"
+                  @addNewDisease="getDiseaseName"
+                />
+              </div>
             </a-card>
             <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
               <span v-if="item.level == null">
@@ -79,7 +85,7 @@
                 温馨提示：你还没有对该慢病分级，暂无法进行健康指导
               </span>
               <div v-else>
-                <HealthCoachingRecords :diseaseId="item.id" :customerId="custId"/>
+                <HealthCoachingRecords :diseaseId="item.id" :customerId="custId" @setRefreshCallback="handleSetRefreshCallback"/>
                 <a-button type="primary" class="HealthCoachingBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
               </div>
             </a-card>
@@ -133,6 +139,9 @@ import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
 import AddHealthCoaching from './AddHealthCoaching.vue'
 import HealthCoachingRecords from './HealthCoachingRecords.vue'
+
+let refreshGuidanceTable = null
+
 export default {
   components: {
     FollowUpRecords,
@@ -292,8 +301,12 @@ export default {
     closeCoaching () {
       this.coachingVisible = false
     },
-    successCreatCoaching () {
+    async successCreatCoaching () {
       this.coachingVisible = false
+      refreshGuidanceTable && await refreshGuidanceTable()
+    },
+    handleSetRefreshCallback (loadData) {
+      refreshGuidanceTable = loadData
     }
   }
 }
