@@ -11,7 +11,15 @@
       <div class="card">
         <a-space style="margin-bottom:10px">
           <a-button type="primary" @click="showFollowUpSheet">创建随访单</a-button>
-          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;">+健康指导</a-button>
+          <!-- <a-tooltip placement="top" :visible="disable">
+            <template slot="title">
+              <span>该患者暂无已分级慢病，请分级后再指导</span>
+            </template>
+            <div>
+              <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
+            </div>
+          </a-tooltip> -->
+          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
         </a-space>
         <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
@@ -66,16 +74,28 @@
               />
             </a-card>
             <a-card title="慢病随访记录" style="margin-top: 12px;" :loading="loading">
-              <FollowUpRecords
-                :diseaseId="item.id"
-                :customerId="custId"
-                :diseaseObj="item"
-                @addNewDisease="getDiseaseName"
-              />
+              <span v-if="item.status !== 'diagnosed'">
+                <a-icon type="question-circle" />
+                温馨提示：你还没有对该慢病确诊，暂无法进行随访
+              </span>
+              <div v-else>
+                <FollowUpRecords
+                  :diseaseId="item.id"
+                  :customerId="custId"
+                  :diseaseObj="item"
+                  @addNewDisease="getDiseaseName"
+                />
+              </div>
             </a-card>
             <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
-              <HealthCoachingRecords />
-              <a-button type="primary" class="HealthCoachingBtn" ghost @click="startHealthCoaching">开始指导</a-button>
+              <span v-if="item.level == null">
+                <a-icon type="question-circle" />
+                温馨提示：你还没有对该慢病分级，暂无法进行健康指导
+              </span>
+              <div v-else>
+                <HealthCoachingRecords :diseaseId="item.id" :customerId="custId" @setRefreshCallback="handleSetRefreshCallback"/>
+                <a-button type="primary" class="HealthCoachingBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
+              </div>
             </a-card>
             <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
@@ -107,13 +127,14 @@
       :changeStatusVisible="StatusVisible"
       @onClose="closeStatusModel"
       @successChangeState="updateStatusModel"/>
-    <add-health-coaching
+    <AddHealthCoaching
       :coachingVisible="coachingVisible"
       :customerId="custId"
       :diseaseId="diseaseId"
       :baseInfo="baseInfo"
+      :tableData="tableData"
       @close="closeCoaching"
-      :isShow="isShowSelectChronic"
+      @successCreat="successCreatCoaching"
     />
   </div>
 </template>
@@ -126,6 +147,9 @@ import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
 import AddHealthCoaching from './AddHealthCoaching.vue'
 import HealthCoachingRecords from './HealthCoachingRecords.vue'
+
+const refreshGuidanceTable = {}
+
 export default {
   components: {
     FollowUpRecords,
@@ -184,8 +208,8 @@ export default {
       diseaseObj: {},
       diseaseId: null,
       coachingVisible: false,
-      isShowSelectChronic: true,
-      StatusVisible: false
+      StatusVisible: false,
+      disable: true
     }
   },
   mounted () {
@@ -194,6 +218,7 @@ export default {
   methods: {
     async loadData () {
       this.loading = true
+      // 获取慢病信息
       const resp = await apiGetChronicManage(this.custId)
       this.loading = false
       if (resp.status === 200) {
@@ -207,6 +232,18 @@ export default {
           message: '慢病信息获取失败',
           description: resp.message
         })
+      }
+      // 获取是否有已分级的慢病
+      const chronicData = this.tableData.filter(chronic => {
+        if (chronic.level !== null) {
+            return chronic
+        }
+      })
+      if (chronicData.length > 0) {
+        this.disable = false
+      } else {
+        this.disable = true
+        // this.$message.warning('该患者暂无已分级的慢病，请分级后再指导')
       }
     },
     // 打开慢病管理弹窗
@@ -264,14 +301,22 @@ export default {
     },
     showHealthCoaching () { // 新增健康指导
       this.coachingVisible = true
-      this.isShowSelectChronic = true
+      this.diseaseId = -1
     },
-    startHealthCoaching () {
+    startHealthCoaching (diseaseId) {
       this.coachingVisible = true
-      this.isShowSelectChronic = false
+      this.diseaseId = diseaseId
     },
     closeCoaching () {
       this.coachingVisible = false
+    },
+    async successCreatCoaching (diseaseId) {
+      this.coachingVisible = false
+      const refresh = refreshGuidanceTable['d-' + diseaseId]
+      refresh && await refresh()
+    },
+    handleSetRefreshCallback (diseaseId, loadData) {
+      refreshGuidanceTable['d-' + diseaseId] = loadData
     }
   }
 }
@@ -306,6 +351,6 @@ export default {
 .HealthCoachingBtn{
   width: 260px;
   top: -36px;
-  // z-index: 999;
+  z-index: 999;
 }
 </style>

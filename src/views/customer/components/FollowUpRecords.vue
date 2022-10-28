@@ -190,19 +190,35 @@ export default {
   //   }
   // },
   created () {
-    this.currentSelectedForm.diseaseId = this.diseaseId // take value from props
-    this.$setPageDataLoader(this.onSearch)
+    // this.$setPageDataLoader(this.onSearch)
     this.onSearch()
+    // this.$setPageDataLoader(() => {
+    //   const pages = {
+    //     page: this.pagination.current,
+    //     size: this.pagination.pageSize
+    //   }
+    //   apiFollowUpRecords(this.customerId, this.diseaseId, pages).then(res => {
+    //     if (res.status === 200) {
+    //       this.recordData = res.data.content || []
+    //       this.pagination.total = res.data.totalElements
+    //     } else {
+    //       this.recordData = []
+    //     }
+    //   })
+    // })
+    // this.$reload()
   },
   methods: {
     onPageChange (page, _pageSize) {
       this.pagination.current = page
       this.onSearch()
+      // this.$reload()
     },
     onSizeChange (_current, pageSize) {
         this.pagination.current = 1
         this.pagination.pageSize = pageSize
         this.onSearch()
+        // this.$reload()
     },
     async onSearch () {
       const pages = {
@@ -223,7 +239,7 @@ export default {
       this.formId = formData.id
       this.sendModelVisible = true
       // this.$refs.Visit.openVisit(formData)
-      // this.onSearch()
+      this.onSearch()
     },
     // 随访单分级
     startLevel (text, grecord) {
@@ -263,10 +279,12 @@ export default {
       this.$message.success('发送成功')
       this.sendModelVisible = false
       this.onSearch()
+      // this.$reload()
     },
     handleSuccessLevel () {
       this.currentSelectedForm.visible = false
       this.onSearch()
+      // this.$reload()
     }
   }
 }
