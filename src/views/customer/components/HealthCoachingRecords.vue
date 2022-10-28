@@ -114,6 +114,11 @@ export default {
       }
     }
   },
+  watch: {
+    dataSource () {
+      this.loadData()
+    }
+  },
   mounted () {
     this.loadData()
   },

@@ -43,6 +43,7 @@
         <a-select
           show-search
           placeholder="请选择"
+          :value="selectedData"
           option-filter-prop="children"
           style="width: 200px"
           :filter-option="filterOption"
@@ -120,7 +121,8 @@ export default {
         sendText: ''
       },
       guidanceId: null,
-      sendVisible: false
+      sendVisible: false,
+      selectedData: ''
     }
   },
   watch: {
@@ -139,7 +141,8 @@ export default {
   methods: {
     async loadData () {
       this.chronicName = ''
-      this.chronicSelectData = []
+      this.selectedData = ''
+      this.templateData = ''
       if (this.diseaseId > 0) {
         // 请求话术模板
         const resp = await apiGuidanceTemplates(this.customerId, this.diseaseId)
@@ -190,7 +193,26 @@ export default {
       this.$emit('close')
     },
     handleChange (value) {
+      this.selectedData = value
       this.chronicName = '【' + value + '】'
+      const chronicData = this.tableData.filter(chronic => {
+        if (chronic.chronicDisease.name === value) {
+            return chronic
+        }
+      })
+      const diseaseId = chronicData[0].id
+      // 请求话术模板
+      apiGuidanceTemplates(this.customerId, diseaseId).then(res => {
+        if (res.status === 200) {
+          this.templateData = res.data
+        } else {
+          this.disabled = true
+          this.$notification.info({
+            message: '温馨提示',
+            description: res.message
+          })
+        }
+      })
     },
     filterOption (input, option) {
       return (
