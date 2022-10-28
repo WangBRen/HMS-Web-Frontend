@@ -4,7 +4,9 @@ const api = {
   addChronic: 'chronic-diseases',
   getChronic: 'chronic-diseases',
   editChronic: diseaseId => { return 'chronic-diseases/' + diseaseId },
-  getSpeechList: diseaseId => { return `chronic-diseases/${diseaseId}/templates` }
+  getSpeechList: diseaseId => { return `chronic-diseases/${diseaseId}/templates` },
+  editSpeech: diseaseId => { return `chronic-diseases/${diseaseId}/templates` },
+  getSpeechVariables: diseaseId => { return `chronic-diseases/${diseaseId}/template-variables` }
 }
 
 export function addChronic (parameter) {
@@ -35,6 +37,21 @@ export function editChronic (diseaseId, parameter) {
 export function getSpeechList (diseaseId) {
   return request({
     url: api.getSpeechList(diseaseId),
+    method: 'get'
+  })
+}
+
+export function editSpeech (diseaseId, parameter) {
+  return request({
+    url: api.editSpeech(diseaseId),
+    method: 'put',
+    data: parameter
+  })
+}
+
+export function getSpeechVariables (diseaseId) {
+  return request({
+    url: api.getSpeechVariables(diseaseId),
     method: 'get'
   })
 }
