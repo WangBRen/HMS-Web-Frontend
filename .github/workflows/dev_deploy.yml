@@ -15,8 +15,9 @@ jobs:
         with:
           node-version: '16'
       - run: |
-          npm install
-          npm run build:production
+          npm install --global yarn
+          yarn install
+          yarn build:production
           DEPOLY_DIR=release/$(echo $GITHUB_SHA | cut -c 1-7)
           mkdir -p $DEPOLY_DIR
           cp -r dist/** $DEPOLY_DIR

@@ -3,7 +3,8 @@ import request from '@/utils/request'
 const api = {
   addChronic: 'chronic-diseases',
   getChronic: 'chronic-diseases',
-  editChronic: diseaseId => { return 'chronic-diseases/' + diseaseId }
+  editChronic: diseaseId => { return 'chronic-diseases/' + diseaseId },
+  getSpeechList: diseaseId => { return `chronic-diseases/${diseaseId}/templates` }
 }
 
 export function addChronic (parameter) {
@@ -29,5 +30,11 @@ export function editChronic (diseaseId, parameter) {
     url: api.editChronic(diseaseId),
     method: 'put',
     data: parameter
+  })
+}
+export function getSpeechList (diseaseId) {
+  return request({
+    url: api.getSpeechList(diseaseId),
+    method: 'get'
   })
 }
