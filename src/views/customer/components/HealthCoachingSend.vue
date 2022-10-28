@@ -17,7 +17,7 @@
         <div>健康指导已创建成功，是否发送给用户？</div>
         <div style="margin: 20px auto;display: flex;align-items: center;">
           <span style="width:150px">
-            <a-input placeholder="请输入用户手机号" v-model="phone" prefix="📞" />
+            <a-input placeholder="请输入用户手机号" v-model="phone" prefix="📞" @change="onChange"/>
           </span>
           <!-- <span style="width:280px">
             <a-input-search
@@ -59,7 +59,7 @@ export default {
     return {
       phone: '',
       url: '',
-      disableClickButton: false
+      disableClickButton: true
     }
   },
   mounted () {
@@ -70,7 +70,10 @@ export default {
       if (!this.guidanceId) { return }
       const resp = await guidanceSendingInfo(this.customerId, this.guidanceId)
       if (resp.status === 200) {
-        this.phone = resp.data.targetTelephone
+        if (resp.data.targetTelephone) {
+          this.phone = resp.data.targetTelephone
+          this.disableClickButton = false
+        }
         // this.url = resp.data.url
       } else {
         notification.warning({ message: '获取失败', description: resp.message })
@@ -91,6 +94,13 @@ export default {
     },
     closeCoachingSend () {
       this.$emit('onclose')
+    },
+    onChange () {
+      if (this.phone.length !== 11) {
+        this.disableClickButton = true
+      } else {
+        this.disableClickButton = false
+      }
     }
   },
   created () {

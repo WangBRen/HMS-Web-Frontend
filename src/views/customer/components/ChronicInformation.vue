@@ -241,7 +241,6 @@ export default {
       })
       if (chronicData.length > 0) {
         this.disable = false
-        this.diseaseId = -1
       } else {
         this.disable = true
         // this.$message.warning('该患者暂无已分级的慢病，请分级后再指导')
@@ -302,6 +301,7 @@ export default {
     },
     showHealthCoaching () { // 新增健康指导
       this.coachingVisible = true
+      this.diseaseId = -1
     },
     startHealthCoaching (diseaseId) {
       this.coachingVisible = true
