@@ -54,32 +54,78 @@ export default {
   },
   methods: {
     speechHandleOk () {
-        // console.log('传进来info', this.speechInfo.id)
-        const diseaseId = this.speechInfo.id
-        const apiData = this.formData.map((item) => {
-            const temporaryData = {
-                level: item.level,
-                template: {
-                  templateText: item.template.templateText
+        // 校验
+        // console.log('传进来的', this.formData)
+        var haveArr = [] // 慢病拥有的变量
+        // 可选变量
+        var checkArr = this.variablesArr.map(item => {
+            return item.name
+        })
+        // 遍历读取当前慢病拥有的变量
+        this.formData.forEach(item => {
+            var cutArr = item.template.templateText
+            for (var i = 0; i <= cutArr.length; i++) {
+                // console.log(cutArr.indexOf('}'))
+                if (cutArr.indexOf('${') !== -1 && cutArr.indexOf('}') !== -1) {
+                  haveArr.push(cutArr.slice(cutArr.indexOf('${'), cutArr.indexOf('}') + 1))
                 }
+                // console.log(cutArr)
+                cutArr = cutArr.slice(cutArr.indexOf('}') + 1)
             }
-            return temporaryData
         })
-        const templates = {}
-        templates.templates = apiData
-        apiEditSpeech(diseaseId, templates).then(res => {
-            if (res.status === 200) {
-                this.$message.info('编辑话术成功')
-                this.$emit('closeSpeechModal')
+        // console.log('有的变量', haveArr, '可选变量', checkArr)
+        const resultArr = []
+        haveArr.filter(item => {
+          resultArr.push(checkArr.includes(item))
+          // console.log('校验', checkArr.includes(item))
+        })
+        // console.log('结果', resultArr)
+        var checkIndex = true
+        for (var j = 0; j < resultArr.length; j++) {
+            if (resultArr[j] === false) {
+                checkIndex = false
+                // console.log('返回', checkIndex)
+                break
             } else {
-                this.$message.error('编辑失败')
+                checkIndex = true
+                // console.log('返回', checkIndex)
             }
-        })
-        // console.log('传给后端', templates)
+        }
+        if (checkIndex) {
+            const diseaseId = this.speechInfo.id
+            const apiData = this.formData.map((item) => {
+                const temporaryData = {
+                    level: item.level,
+                    template: {
+                      templateText: item.template.templateText
+                    }
+                }
+                return temporaryData
+            })
+            const templates = {}
+            templates.templates = apiData
+            apiEditSpeech(diseaseId, templates).then(res => {
+                if (res.status === 200) {
+                    this.$message.info('编辑话术成功')
+                    this.$emit('closeSpeechModal')
+                } else {
+                    this.$message.error('编辑失败')
+                }
+            })
+            // console.log('传给后端', templates)
+            // console.log('满足')
+        } else {
+            // console.log('不满足')
+            this.$message.error('使用错误的模板变量，请修改模板')
+        }
+        // 校验
+
+        // console.log('传进来info', this.speechInfo.id)
     },
     speechHandleCancel () {
         this.$emit('closeSpeechModal')
     },
+    // 获取话术变量
     getSpeechVariables (diseaseId) {
       apiGetSpeechVariables(diseaseId).then(res => {
           if (res.status === 200) {
