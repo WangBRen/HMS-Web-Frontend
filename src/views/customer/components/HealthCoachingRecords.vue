@@ -122,7 +122,7 @@ export default {
   },
   mounted () {
     this.loadData()
-    this.$emit('setRefreshCallback', this.loadData)
+    this.$emit('setRefreshCallback', this.diseaseId, this.loadData)
   },
   methods: {
     onPageChange (page, _pageSize) {

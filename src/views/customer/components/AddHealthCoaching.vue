@@ -123,7 +123,7 @@ export default {
       guidanceId: null,
       sendVisible: false,
       selectedData: '',
-      chronicId: ''
+      chronicId: -1
     }
   },
   watch: {
@@ -225,7 +225,7 @@ export default {
         if (res.status === 201) {
           // message.success(res.message)
           this.sendVisible = true
-          this.$emit('successCreat')
+          this.$emit('successCreat', this.chronicId)
         } else {
           message.error(res.message)
         }

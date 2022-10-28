@@ -11,7 +11,15 @@
       <div class="card">
         <a-space style="margin-bottom:10px">
           <a-button type="primary" @click="showFollowUpSheet">创建随访单</a-button>
-          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;">+健康指导</a-button>
+          <!-- <a-tooltip placement="top" :visible="disable">
+            <template slot="title">
+              <span>该患者暂无已分级慢病，请分级后再指导</span>
+            </template>
+            <div>
+              <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
+            </div>
+          </a-tooltip> -->
+          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
         </a-space>
         <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
@@ -140,7 +148,7 @@ import { notification } from 'ant-design-vue'
 import AddHealthCoaching from './AddHealthCoaching.vue'
 import HealthCoachingRecords from './HealthCoachingRecords.vue'
 
-let refreshGuidanceTable = null
+const refreshGuidanceTable = {}
 
 export default {
   components: {
@@ -201,7 +209,7 @@ export default {
       diseaseId: null,
       coachingVisible: false,
       StatusVisible: false,
-      disable: false
+      disable: true
     }
   },
   mounted () {
@@ -226,6 +234,18 @@ export default {
         })
       }
       // 获取是否有已分级的慢病
+      const chronicData = this.tableData.filter(chronic => {
+        if (chronic.level !== null) {
+            return chronic
+        }
+      })
+      if (chronicData.length > 0) {
+        this.disable = false
+        this.diseaseId = -1
+      } else {
+        this.disable = true
+        // this.$message.warning('该患者暂无已分级的慢病，请分级后再指导')
+      }
     },
     // 打开慢病管理弹窗
     // openChronicInfo (custId, userInfo) {
@@ -281,18 +301,7 @@ export default {
       }
     },
     showHealthCoaching () { // 新增健康指导
-      const chronicData = this.tableData.filter(chronic => {
-        if (chronic.level !== null) {
-            return chronic
-        }
-      })
-      if (chronicData.length > 0) {
-        this.coachingVisible = true
-        this.diseaseId = -1
-      } else {
-        this.disable = true
-        this.$message.warning('该患者暂无已分级的慢病，请分级后再指导')
-      }
+      this.coachingVisible = true
     },
     startHealthCoaching (diseaseId) {
       this.coachingVisible = true
@@ -301,12 +310,13 @@ export default {
     closeCoaching () {
       this.coachingVisible = false
     },
-    async successCreatCoaching () {
+    async successCreatCoaching (diseaseId) {
       this.coachingVisible = false
-      refreshGuidanceTable && await refreshGuidanceTable()
+      const refresh = refreshGuidanceTable['d-' + diseaseId]
+      refresh && await refresh()
     },
-    handleSetRefreshCallback (loadData) {
-      refreshGuidanceTable = loadData
+    handleSetRefreshCallback (diseaseId, loadData) {
+      refreshGuidanceTable['d-' + diseaseId] = loadData
     }
   }
 }
