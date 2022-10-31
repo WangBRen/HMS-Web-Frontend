@@ -59,7 +59,9 @@ export default {
     },
     methods: {
         handleProvinceChange (value) {
+            // console.log('1')
             var that = this
+            // console.log(this.provinceData)
             // 循环省级
             this.provinceData.forEach(function (val) {
               if (val.code === value) {
@@ -79,6 +81,7 @@ export default {
                 }
             })
             // 默认市
+            // that.checkCity = that.cityArr[0].name
             that.checkCity = null
             that.checkArea = null
             that.checkStreet = null
@@ -102,6 +105,8 @@ export default {
                 that.checkCity = value2.name
               }
             })
+            // console.log(this.checkCity)
+            // that.checkArea = that.areaArr[0].name
             that.checkArea = null
             that.checkStreet = null
         },
@@ -122,9 +127,11 @@ export default {
                 that.streetArr.push(obj)
               }
             })
+            // this.checkStreet = this.streetArr[0].name
             this.checkStreet = null
         },
         handleStreetChange (value) {
+          // console.log(value)
           var that = this
           this.streetArr.forEach(function (value2) {
             if (value2.code === value) {
@@ -159,13 +166,14 @@ export default {
           })
           this.cityData.forEach(function (value2) {
               if (value2.provinceCode === provinceCode) {
-                // console.log('value2', value2)
+                // console.log('+++', value2)
                 const obj = { code: '', name: '' }
                     obj.code = value2.code
                     obj.name = value2.name
                     that.cityArr.push(obj)
               }
           })
+          // console.log(this.cityArr)
           // 获取市
           // 获取区
           this.cityData.forEach(function (value3) {
@@ -183,6 +191,7 @@ export default {
                   that.areaArr.push(obj)
               }
           })
+          // console.log(this.areaArr)
           // 获取区
           // 获取街道
           this.areaData.forEach(function (value5) {
@@ -197,7 +206,7 @@ export default {
                   const obj = { code: '', name: '' }
                   obj.code = value6.code
                   obj.name = value6.name
-                  that.streetArr.push(obj)
+                  that.areaArr.push(obj)
               }
           })
           // 获取街道
