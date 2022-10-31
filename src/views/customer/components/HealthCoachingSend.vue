@@ -96,7 +96,8 @@ export default {
       this.$emit('onclose')
     },
     onChange () {
-      if (this.phone.length !== 11) {
+      var RegCellPhone = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+      if (this.phone.search(RegCellPhone)) {
         this.disableClickButton = true
       } else {
         this.disableClickButton = false

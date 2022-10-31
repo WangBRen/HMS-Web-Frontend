@@ -2,7 +2,7 @@
   <div>
     <a-modal
       :visible="chronicVisible"
-      :title="`慢病管理【${baseInfo?.name || ''}】`"
+      :title="`慢病管理${baseInfo?'【'+baseInfo.name+'】': ''}`"
       :footer="null"
       @cancel="closeChronicInfo"
       :width="1200"
