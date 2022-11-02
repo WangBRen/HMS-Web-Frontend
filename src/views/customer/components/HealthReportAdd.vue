@@ -42,7 +42,7 @@
                             v-if="item.type === 'Report'"
                             v-model="item.value"
                             name="file"
-                            :multiple="true"
+                            :multiple="false"
                             :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + userInfo.customerId"
                             @change="value => handleChange(value, item)"
                           >
@@ -122,7 +122,7 @@
                 </a-col>
                 <a-col :span="21">
                   <div>
-                    <CheckDia ref="childDia" v-model="formData.diagnosisData" @changes="getDia($event)" />
+                    <CheckDia v-model="formData.diagnosisData" @changes="getDia($event)" />
                   </div>
                 </a-col>
               </a-row>
@@ -493,9 +493,13 @@ export default {
         // 文件上传
         handleChange (info, item) {
           if (info.file.status === 'uploading') {
-            // console.log('上传中的文件', info.file, '上传列表', info.fileList)
           }
+          // 上传成功
           if (info.file.status === 'done') {
+            if (info.fileList.length > 1) {
+              // console.log('删除')
+              info.fileList.shift()
+            }
             const itemArr = []
             for (var i = 0; i < info.fileList.length; i++) {
               // console.log('需要的', info.fileList[i].response.data)
@@ -504,15 +508,23 @@ export default {
             item.value = JSON.stringify(itemArr)
             this.$message.success(`文件上传成功`)
           } else if (info.file.status === 'error') {
+            if (info.fileList.length > 1) {
+              // console.log('删除')
+              info.fileList.shift()
+            }
             this.$message.error(`文件上传失败`)
           } else if (info.file.status === 'removed') {
-            // console.log(info.fileList)
-            const itemArr = []
-            for (var j = 0; j < info.fileList.length; j++) {
-              // console.log('需要的', info.fileList[j].response.data)
-              itemArr.push(info.fileList[j].response.data)
+            if (info.fileList.length > 1) {
+              // console.log('删除')
+              info.fileList.shift()
             }
-            item.value = JSON.stringify(itemArr)
+            item.value = null
+            // console.log(info.fileList)
+            // const itemArr = []
+            // for (var j = 0; j < info.fileList.length; j++) {
+            //   itemArr.push(info.fileList[j].response.data)
+            // }
+            // item.value = JSON.stringify(itemArr)
             this.$message.success(`文件移除成功`)
           }
         }
