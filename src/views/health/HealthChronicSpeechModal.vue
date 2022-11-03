@@ -8,6 +8,13 @@
       @cancel="speechHandleCancel"
       :width="700"
     >
+      <div>
+        <div class="template_title">模板示例:</div>
+        <div>
+          身高为<span style="color: blue;">${身高}</span>cm,体重为<span style="color: blue;">${体重}</span>kg <span style="color: blue;">>>>>>></span> 身高为170cm,体重为50kg
+        </div>
+        <div>话术模板可用后面的代码组合自动获取用户的指标: <span class="variable">${身高} ${体重}</span></div>
+      </div>
       <div v-for="item in formData" :key="item.id" class="template_body">
         <span class="template_title">等级{{ item.level }}话术模板:</span>
         <a-textarea
