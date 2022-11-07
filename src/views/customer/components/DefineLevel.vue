@@ -48,7 +48,7 @@ export default {
       type: Number,
       default: 0
     },
-    followId: {
+    formId: {
       type: Number,
       default: 0
     },
@@ -87,7 +87,7 @@ export default {
         const levelData = { level: 0, remark: '', followUpFormId: 0 }
         levelData.level = this.Grade
         levelData.remark = ''
-        levelData.followUpFormId = this.followId
+        levelData.followUpFormId = this.formId
         return apiformLevels(this.customerId, this.diseaseId, levelData).then(res => {
           if (res.status === 201) {
             this.$confirm({

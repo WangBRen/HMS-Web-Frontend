@@ -10,7 +10,7 @@
     >
       <div class="card">
         <a-space style="margin-bottom:10px">
-          <a-button type="primary" @click="showFollowUpSheet">创建随访单</a-button>
+          <a-button type="primary" @click="showFollowUpSheet" :disabled="disableFollow">创建随访单</a-button>
           <!-- <a-tooltip placement="top" :visible="disable">
             <template slot="title">
               <span>该患者暂无已分级慢病，请分级后再指导</span>
@@ -103,7 +103,7 @@
           </a-row>
         </div>
         <!-- 查看所有随访单 -->
-        <a-card title="全部随访记录" style="margin-top: 30px;" :loading="loading">
+        <a-card title="全部随访记录" style="margin-top: 30px;" :loading="loading" v-show="!disableFollow">
           <FollowUpRecords
             :diseaseId="-1"
             :customerId="custId"
@@ -209,7 +209,8 @@ export default {
       diseaseId: null,
       coachingVisible: false,
       StatusVisible: false,
-      disable: true
+      disable: true,
+      disableFollow: true
     }
   },
   mounted () {
@@ -226,7 +227,7 @@ export default {
           item.showIndex = false
           return item
         })
-        // console.log('tableData', this.tableData)
+        console.log('tableData', this.tableData)
       } else {
         notification.open({
           message: '慢病信息获取失败',
@@ -244,6 +245,17 @@ export default {
       } else {
         this.disable = true
         // this.$message.warning('该患者暂无已分级的慢病，请分级后再指导')
+      }
+      // 判断是否有已确诊的慢病
+      const chronicDiagnosisData = this.tableData.filter(chronic => {
+        if (chronic.status === 'diagnosed') {
+            return chronic
+        }
+      })
+      if (chronicDiagnosisData.length > 0) {
+        this.disableFollow = false
+      } else {
+        this.disableFollow = true
       }
     },
     // 打开慢病管理弹窗

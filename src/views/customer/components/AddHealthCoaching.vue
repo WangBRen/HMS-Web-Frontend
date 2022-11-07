@@ -21,7 +21,7 @@
           </a-col>
           <a-col :span="8">
             <span class="basic-info-label">年龄：</span>
-            <span class="basic-info-value">{{ userAge }}岁</span>
+            <span class="basic-info-value">{{ userAge }}</span>
           </a-col>
           <a-col :span="8">
             <span class="basic-info-label">血型：</span>
@@ -77,6 +77,7 @@ import { getChronicDetail as apiChronicDetail } from '@/api/customer'
 import { getToken } from '@/api/followUpForm'
 import { message } from 'ant-design-vue'
 import HealthCoachingSend from './HealthCoachingSend.vue'
+import { age } from '@/utils/age'
 // import { notification } from 'ant-design-vue'
 export default {
   components: {
@@ -111,7 +112,7 @@ export default {
   data () {
     return {
       loading: false,
-      userAge: 17,
+      userAge: null,
       disabled: false,
       templateData: '',
       chronicName: '',
@@ -196,6 +197,13 @@ export default {
       this.chronicSelectData = chronicData.map(item => {
         return item.chronicDisease.name
       })
+      // 获取年龄
+      const userAge = age(this.baseInfo.birthDate)
+      if (userAge > 0) {
+        this.userAge = userAge + '岁'
+      } else {
+        this.userAge = '/'
+      }
     },
     closeCoachingModel () {
       this.$emit('close')
@@ -243,5 +251,10 @@ export default {
 </script>
 
 <style>
-
+.basic-info-label {
+  display: inline-block;
+  width: 80px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
 </style>

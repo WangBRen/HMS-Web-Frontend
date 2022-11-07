@@ -23,7 +23,7 @@
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">年龄：</span>
-              <span class="basic-info-value">{{ userAge }}岁</span>
+              <span class="basic-info-value">{{ userAge }}</span>
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">血型：</span>
@@ -143,7 +143,7 @@ import { STable } from '@/components'
 import { addNewFollowUpForm as apiCreateFollowUpForm, getPreviewForm, getToken, postFormCreated as apiPostFormCreated } from '@/api/followUpForm'
 import { notification } from 'ant-design-vue'
 import moment from 'moment'
-// import age from '@/utils/age'
+import { age } from '@/utils/age'
 const columns = [
   {
     title: '是否必填',
@@ -321,7 +321,12 @@ export default {
           this.handleChronicDiseaseOK()
         }
       }
-      // this.userAge = age(this.baseInfo.birthDate)
+      const userAge = age(this.baseInfo.birthDate)
+      if (userAge > 0) {
+        this.userAge = userAge + '岁'
+      } else {
+        this.userAge = '/'
+      }
       // console.log('resp', resp)
       // this.payload.hints = ''
       // this.payload.diseases = []
