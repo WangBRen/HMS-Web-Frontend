@@ -97,6 +97,12 @@ export default {
     createButtonVisible: {
       type: Boolean,
       default: true
+    },
+    successRefresh: {
+      type: Function,
+      default: () => {
+        return null
+      }
     }
   },
   data () {
@@ -285,6 +291,7 @@ export default {
       this.currentSelectedForm.visible = false
       this.$message.success('分级成功')
       this.onSearch()
+      this.$emit('successRefresh')
       // this.$reload()
     }
   }

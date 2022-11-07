@@ -84,6 +84,7 @@
                   :customerId="custId"
                   :diseaseObj="item"
                   @addNewDisease="getDiseaseName"
+                  @successRefresh="handleSuccessRefresh"
                 />
               </div>
             </a-card>
@@ -296,6 +297,9 @@ export default {
       this.addFollowFormVisible = true
       this.diseaseId = diseaseId
       // this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
+    },
+    handleSuccessRefresh () {
+      this.loadData()
     },
     // getformData (val, callback) {
     //   this.$refs.FollowUpSheetRef.openSunModel(val, callback)
