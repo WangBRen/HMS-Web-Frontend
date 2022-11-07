@@ -13,14 +13,15 @@
         <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
+        <a @click="openSpeechModal(record)">话术</a>
+        <a-divider type="vertical" />
         <a @click="GradingStandard(record)">分级标准</a>
         <a-divider type="vertical" />
         <a @click="editChronicTable(record)">编辑</a>
-        <a-divider type="vertical" />
-        <a @click="delChronicTable(record)">删除</a>
+        <!-- <a-divider type="vertical" />
+        <a @click="delChronicTable(record)">删除</a> -->
       </span>
     </a-table>
-
     <a-modal
       title="新建慢病"
       v-if="addChronicIndexVisible"
@@ -28,7 +29,14 @@
       @ok="handleOk"
       @cancel="handleCancel"
       :width="700">
-      <a-form-model ref="formData" :rules="rules" :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
+      <a-form-model
+        ref="formData"
+        class="addModal"
+        :rules="rules"
+        validateOnRuleChange
+        :model="formData"
+        :label-col="labelCol"
+        :wrapper-col="wrapperCol">
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢性病" prop="name">
@@ -90,26 +98,53 @@
         </a-row>
       </a-form-model>
     </a-modal>
-    <editChronice ref="editChronic"/>
-    <GradingStandard ref="openChildModel" />
+    <editChronice
+      :editData="editData"
+      :editVisible="editVisible"
+      @closeEditModal="closeEditModal"
+    />
+    <GradingStandard
+      :gradingVisible="gradingVisible"
+      :gradingData="gradingData"
+      @closeGradingModal="closeGradingModal"
+      :gradingInfo="gradingInfo"
+    />
+    <speechChronic
+      :speechVisible="speechVisible"
+      @closeSpeechModal="closeSpeechModal"
+      :speechData="speechData"
+      :speechInfo="speechInfo"
+    />
   </div>
 </template>
 
 <script>
 import { getHealthIndex, getHeathLevels } from '@/api/health'
-import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
+// import { getHealthIndex } from '@/api/health'
+// import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
+import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
+import speechChronic from './HealthChronicSpeechModal.vue'
 import GradingStandard from './components/GradingStandard.vue'
 import { notification } from 'ant-design-vue'
 export default {
     components: {
       getChronicName,
       editChronice,
-      GradingStandard
+      GradingStandard,
+      speechChronic
     },
     data () {
         return {
+          editData: null, // 传给编辑弹窗的数据
+          editVisible: false, // 用于控制编辑弹窗
+          speechData: null, // 传给话术弹窗的数据
+          speechInfo: null, // 话术信息
+          speechVisible: false, // 用于控制话术弹窗
+          gradingVisible: false, // 控制分级弹窗
+          gradingData: null, // 传给分级的数据
+          gradingInfo: null, // 分级信息
           sendFilter: [],
           rules: {
             name: [{
@@ -196,7 +231,6 @@ export default {
           // console.log('接口数据', resData)
           for (var i = 0; i < resData.length; i++) {
             if (resData[i].items) {
-              // console.log('指标', resData[i].items)
               for (var j = 0; j < resData[i].items.length; j++) {
                 // console.log('指标', resData[i].items[j].name)
                 const firstIndex = resData[i]
@@ -212,7 +246,6 @@ export default {
               }
             }
           }
-          // console.log('指标', this.indexArr)
         }
       })
       this.getChronic()
@@ -224,6 +257,22 @@ export default {
             // console.log('新建慢病')
         },
         handleOk () {
+          // console.log('name', this.formData.name, 'des', this.formData.describe)
+          // if ((this.formData.name !== null && this.formData.name !== '') && (this.formData.describe !== null && this.formData.describe !== '')) {
+          //   // this.$message.info('This is a normal message')
+          //   // console.log('完整')
+          // } else {
+          //   if (this.formData.name === null || this.formData.name === '') {
+          //     this.$message.error('慢性病名未填')
+          //   }
+          //   if (this.formData.describe === null || this.formData.describe === '') {
+          //     this.$message.error('慢性病描述未填')
+          //   }
+          //   console.log('不完整')
+          // }
+          // console.log('ref', this.$refs.formData.validate)
+          // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
+          // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
           this.$refs.formData.validate(valid => {
             if (valid) {
               const apiData = {
@@ -238,9 +287,10 @@ export default {
                   this.$message.info('成功添加慢病')
                 }
               })
-              console.log('确定formData', this.formData)
-              console.log('确定apiData', apiData)
+              // console.log('确定formData', this.formData)
+              // console.log('确定apiData', apiData)
             } else {
+              // console.log('原版不完整')
               return false
             }
           })
@@ -309,24 +359,41 @@ export default {
           this.$forceUpdate()
         },
         GradingStandard (data) {
-          // console.log('data', data)
+          // console.log('gradingVisible', this.gradingVisible)
           const diseaseId = data.id
+           this.gradingVisible = true
           getHeathLevels(diseaseId).then(res => {
             if (res.status === 200) {
-              this.$refs.openChildModel.openModel(data)
-              this.$refs.openChildModel.getHealthLevels(res.data)
+              this.gradingInfo = data
+              this.gradingData = []
+              const oldLevels = res.data
+              const aaa = []
+              oldLevels.forEach(function (item) {
+                const levelItem = {
+                  key: item.level,
+                  level: item.level + '级',
+                  describe: item.remark
+                }
+                aaa.push(levelItem)
+              })
+              this.gradingData = aaa
+              // this.$refs.openChildModel.openModel(data)
+              // this.$refs.openChildModel.getHealthLevels(res.data)
             } else {
               notification.warning({ message: '请求失败', description: res.message })
             }
           })
         },
         editChronicTable (data) {
-          this.$refs.editChronic.openModel()
-          this.$refs.editChronic.getChronicData(data)
+          // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
+          this.editData = JSON.parse(JSON.stringify(data))
+          this.editVisible = true
+          // this.$refs.editChronic.openModel()
+          // this.$refs.editChronic.getChronicData(data)
           // console.log('编辑', data)
         },
         delChronicTable (data) {
-          console.log('删除', data)
+          // console.log('删除', data)
         },
         // 获取慢病表
         getChronic () {
@@ -336,12 +403,10 @@ export default {
           }
           apiGetChronic(pages).then(res => {
             if (res.status === 200) {
-              // console.log('慢病接口数据', res.data.content)
               // const resData = res.data.content
               // this.tableData = resData
               this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
               this.pagination.total = res.data.totalElements
-              // console.log('111', resData)
             }
           })
         },
@@ -362,10 +427,8 @@ export default {
           const indexArr = this.indexArr
           // console.log('结果', targetArr)
           // console.log('指标', this.indexArr)
-          // console.log('id', id)
           for (var j = 0; j < indexArr.length; j++) {
             if (indexArr[j].id === value) {
-              // console.log('11', indexArr[j].result)
               for (var i = 0; i < targetArr.length; i++) {
                 if (targetArr[i].indexItemId === value) {
                   const result = indexArr[j].result
@@ -374,6 +437,29 @@ export default {
               }
             }
           }
+        },
+        openSpeechModal (data) {
+          this.speechInfo = data
+          // console.log('话术', data)
+          const diseaseId = data.id
+          apiGetSpeechList(diseaseId).then(res => {
+            if (res.status === 200) {
+              // console.log('话术列表', res.data)
+              this.speechData = res.data
+              this.speechVisible = true
+            } else {
+              this.$message.error('获取失败')
+            }
+          })
+        },
+        closeSpeechModal () {
+          this.speechVisible = false
+        },
+        closeGradingModal () {
+          this.gradingVisible = false
+        },
+        closeEditModal () {
+          this.editVisible = false
         }
     }
 }

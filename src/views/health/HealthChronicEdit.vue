@@ -2,28 +2,29 @@
   <div>
     <a-modal
       :visible="editVisible"
-      title="编辑慢病"
+      v-if="editVisible"
+      :title="'编辑慢病【'+editData.name+'】'"
       @ok="handleOk"
       @cancel="handleCancel"
       :width="700"
     >
-      <a-form-model ref="formData" :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
+      <a-form-model :model="editData" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢性病" prop="name">
-              <a-input v-model="formData.name"></a-input>
+              <a-input v-model="editData.name"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="描述" prop="describe">
-              <a-textarea v-model="formData.describe" placeholder="慢性病描述" :rows="4" />
+              <a-textarea v-model="editData.describe" placeholder="慢性病描述" :rows="4" />
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-divider type="horizontal" dashed style="margin-bottom:24px"/>
-        <a-row v-for="target in formData.items" :key="target.indexItem.id">
+        <a-row v-for="target in editData.items" :key="target.indexItem.id">
           <a-col>
             <a-form-model-item label="指标名">
               <a-row>
@@ -34,9 +35,9 @@
                     </a-select-option>
                   </a-select>
                 </a-col>
-                <a-col :span="2" style="text-align: center;margin: 0 auto;">
+                <!-- <a-col :span="2" style="text-align: center;margin: 0 auto;">
                   <a-icon class="targetIcon" @click="delEdit(target)" type="close-circle" />
-                </a-col>
+                </a-col> -->
               </a-row>
             </a-form-model-item>
           </a-col>
@@ -70,22 +71,34 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-row>
+        <!-- <a-row>
           <a-col :span="22">
             <a-button @click="addEdit" type="dashed" style="display:block;margin:0 auto;width:60%">
               <a-icon type="plus" /> 添加指标
             </a-button>
           </a-col>
-        </a-row>
+        </a-row> -->
       </a-form-model>
     </a-modal>
   </div>
 </template>
 <script>
 import { getHealthIndex } from '@/api/health'
-import { editChronic } from '@/api/chronic'
+import { editChronic as apiEditChronic } from '@/api/chronic'
 
 export default {
+    props: {
+      editVisible: {
+          type: Boolean,
+          default: false
+      },
+      editData: {
+          type: Object,
+          default: function () {
+            return {}
+        }
+      }
+    },
     filters: {
       getRange: function (value, num) {
             // 范围或数值
@@ -106,8 +119,7 @@ export default {
     },
     data () {
         return {
-            formData: {},
-            editVisible: false,
+            // editVisible: false,
             indexArr: [],
             labelCol: { span: 4 },
             wrapperCol: { span: 16 }
@@ -141,72 +153,68 @@ export default {
       })
     },
     methods: {
-        openModel () {
-            // console.log('进入编辑')
-            this.editVisible = true
-        },
-        getChronicData (data) {
-            // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
-            const editData = JSON.parse(JSON.stringify(data))
-            // console.log('获取编辑的数据', editData)
-            this.formData = editData
-        },
         handleOk () {
-            const apiData = this.formData
+            // console.log(this.editData)
+            const apiData = this.editData
             const diseaseId = apiData.id
-            editChronic(diseaseId, apiData).then(res => {
+            apiEditChronic(diseaseId, apiData).then(res => {
                 if (res.status === 200) {
                     // console.log('编辑成功')
                     this.$message.info('成功编辑慢病')
                     this.$parent.getChronic() // 编辑后触发父组件刷新
-                    this.editVisible = false
+                    // this.$parent.closeEditModal()
+                    this.$emit('closeEditModal')
+                    // this.editVisible = false
+                } else {
+                    this.$message.error('编辑失败')
                 }
             })
-            // console.log('确定', this.formData)
+            // console.log('确定', this.editData)
         },
         handleCancel () {
-            this.editVisible = false
+            // this.editVisible = false
+            this.$emit('closeEditModal')
             // console.log('取消')
         },
         filterOption (value, option) {
           return option.componentOptions.children[0].text.indexOf(value) >= 0
-        },
-        addEdit () {
-            const item = {
-                timeid: new Date().getTime(),
-                indexItem: {
-                  id: null,
-                  result: null
-                },
-                coefficient: 1
-            }
-            this.formData.items.push(item)
-        },
-        delEdit (item) {
-            // console.log(item)
-           this.formData.items = this.formData.items.filter(i => i.indexItem.id !== item.indexItem.id)
-        },
-        delEditEnd () {
-            this.formData.items.pop()
-        },
-        changeIndex (id) {
-          const targetArr = this.formData.items
-          const indexArr = this.indexArr
-          // console.log('结果', targetArr)
-        //   console.log('指标', indexArr)
-          // console.log('id', id)
-          for (var j = 0; j < indexArr.length; j++) {
-            if (indexArr[j].id === id) {
-              // console.log('11', indexArr[j].result)
-              for (var i = 0; i < targetArr.length; i++) {
-                if (targetArr[i].indexItem.id === id) {
-                  const result = indexArr[j].result
-                  targetArr[i].indexItem.result = result
-                }
-              }
-            }
-          }
         }
+        // addEdit () {
+        //     const item = {
+        //         timeid: new Date().getTime(),
+        //         indexItem: {
+        //           id: null,
+        //           result: null
+        //         },
+        //         coefficient: 1
+        //     }
+        //     this.editData.items.push(item)
+        // },
+        // delEdit (item) {
+        //     // console.log(item)
+        //    this.editData.items = this.editData.items.filter(i => i.indexItem.id !== item.indexItem.id)
+        // },
+        // delEditEnd () {
+        //     this.editData.items.pop()
+        // },
+        // changeIndex (id) {
+        //   const targetArr = this.editData.items
+        //   const indexArr = this.indexArr
+        //   // console.log('结果', targetArr)
+        //   // console.log('指标', indexArr)
+        //   // console.log('id', id)
+        //   for (var j = 0; j < indexArr.length; j++) {
+        //     if (indexArr[j].id === id) {
+        //       // console.log('11', indexArr[j].result)
+        //       for (var i = 0; i < targetArr.length; i++) {
+        //         if (targetArr[i].indexItem.id === id) {
+        //           const result = indexArr[j].result
+        //           targetArr[i].indexItem.result = result
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
     }
 }
 </script>
