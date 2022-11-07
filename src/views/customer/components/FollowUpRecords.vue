@@ -283,6 +283,7 @@ export default {
     },
     handleSuccessLevel () {
       this.currentSelectedForm.visible = false
+      this.$message.success('分级成功')
       this.onSearch()
       // this.$reload()
     }

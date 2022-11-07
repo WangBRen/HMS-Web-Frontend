@@ -33,7 +33,7 @@
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">年龄：</span>
-              <span class="basic-info-value">{{ baseInfo.age }}岁</span>
+              <span class="basic-info-value">{{ userAge }}</span>
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">血型：</span>
@@ -126,6 +126,7 @@ import DefineLevel from './DefineLevel.vue'
 import { notification, message } from 'ant-design-vue'
 import { abandonFollow as apiAbandonFollow, showFollowForm as apiShowFollowForm } from '@/api/followUpForm'
 // import moment from 'moment'
+import { age } from '@/utils/age'
 const columns = [
   {
     title: '是否必填',
@@ -240,7 +241,8 @@ export default {
       headerTips: '',
       chronicDiseaseId: null,
       gradeModelvisible: false,
-      destroy: false
+      destroy: false,
+      userAge: null
     }
   },
   filters: {
@@ -290,6 +292,13 @@ export default {
         this.chronicDiseaseId = diseaseList[0].chronicDisease.id
       } else {
         this.chronicDiseaseId = undefined
+      }
+      // 获取年龄
+      const userAge = age(this.baseInfo.birthDate)
+      if (userAge > 0) {
+        this.userAge = userAge + '岁'
+      } else {
+        this.userAge = '/'
       }
     },
     handleOnDisableClicked (record, disabled) {
