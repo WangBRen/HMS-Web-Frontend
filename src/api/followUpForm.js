@@ -1,17 +1,22 @@
 import request from '@/utils/request'
 
 const customerApi = {
-    FollowUpSheet: (customerId) => { return `/customers/${customerId}/followup-forms` }, // 创建随访单
+    FollowRecords: (customerId, diseaseId) => `/customers/${customerId}/${diseaseId}/followup-forms`,
+    newFollowUpForm: (customerId) => `/customers/${customerId}/followup-forms`, // 新增随访单
     idempotentToken: '/base/idempotent-token', // 获取token
-    FormSendingInfo: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/sending-info` },
-    PreviewForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/preview-info` }, // 预览随访单
-    SendForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/send` }// 发送随访单
+    FormSendingInfo: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/sending-info`,
+    PreviewForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/preview-info`, // 预览随访单
+    SendForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/send`, // 发送随访单
+    SendLevel: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/levels`, // 分级
+    abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destroy` }, // 废弃随访单
+    createFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/create`, // 创建随访单
+    showFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}`
   }
 
 // 随访记录
-export function getFollowRecords (ChronicDiseaseId, pages) {
+export function getFollowRecords (customerId, diseaseId, pages) {
   return request({
-      url: customerApi.FollowRecords(ChronicDiseaseId),
+      url: customerApi.FollowRecords(customerId, diseaseId),
       method: 'get',
       params: {
           page: pages.page || 1,
@@ -21,9 +26,9 @@ export function getFollowRecords (ChronicDiseaseId, pages) {
 }
 
 // 创建随访单
-export function addFollowUpSheet (customerId, parameter) {
+export function addNewFollowUpForm (customerId, parameter) {
   return request({
-      url: customerApi.FollowUpSheet(customerId),
+      url: customerApi.newFollowUpForm(customerId),
       method: 'post',
       data: parameter
   })
@@ -55,5 +60,33 @@ export function ApiSendForm (customerId, formId, parameter) {
     url: customerApi.SendForm(customerId, formId),
     method: 'post',
     data: parameter
+  })
+}
+// 分级
+export function formLevels (customerId, diseaseId, parameter) {
+  return request({
+    url: customerApi.SendLevel(customerId, diseaseId),
+    method: 'post',
+    data: parameter
+  })
+}
+// 废弃随访单
+export function abandonFollow (customerId, formId) {
+  return request({
+      url: customerApi.abandonFollowForm(customerId, formId),
+      method: 'put'
+  })
+}
+
+export function postFormCreated (customerId, formId) {
+  return request({
+    url: customerApi.createFollowForm(customerId, formId),
+    method: 'post'
+  })
+}
+export function showFollowForm (customerId, formId) {
+  return request({
+    url: customerApi.showFollowForm(customerId, formId),
+    method: 'get'
   })
 }

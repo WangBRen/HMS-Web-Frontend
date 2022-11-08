@@ -1,9 +1,10 @@
 <template>
   <div>
     <a-modal
-      v-model="modalSelf.visible"
+      :visible="visible"
       title="慢病随访单记录表"
       :width="1100"
+      @cancel="handleOnModalCancel"
     >
       <template #footer>
         <a-button type="primary" @click="handlePreview">预览</a-button>
@@ -22,7 +23,7 @@
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">年龄：</span>
-              <span class="basic-info-value">{{ baseInfo.age }}岁</span>
+              <span class="basic-info-value">{{ userAge }}</span>
             </a-col>
             <a-col :span="8">
               <span class="basic-info-label">血型：</span>
@@ -65,7 +66,10 @@
               <span v-else class="disabled-text">{{ text }}</span>
             </span>
             <span slot="TableUnit" slot-scope="text, record">
-              <a-input v-if="!record.isIndex && !record.disabled" v-model="record.unit"/>
+              <span v-if="!record.isIndex && !record.disabled" >
+                <span v-if="record.type !== 'input'">-</span>
+                <a-input v-else v-model="record.unit"/>
+              </span>
               <span v-else-if="!record.disabled">{{ text }}</span>
               <span v-else class="disabled-text">{{ text }}</span>
             </span>
@@ -76,9 +80,9 @@
                   v-model="record.options"
                   v-if="record.type === 'options'"
                   mode="tags"
-                  style="width: 130px"
+                  style="width: 150px;margin-top: 10px;"
                   :token-separators="[' ']"
-                  placeholder="请输入选择项"
+                  placeholder="请输入选项按空格"
                   :options="record.defineOptions"
                   :open="false"
                 ></a-select>
@@ -102,11 +106,12 @@
       </div>
     </a-modal>
     <a-modal
-      v-model="modalPreviewInfo"
+      :visible="modalPreviewInfo"
       :title="`预览随访单【最近编辑时间：${lastUpdateAt}】`"
-      @ok="handleSend"
+      @ok="handlePreviewOK"
+      @cancel="handleOnPreviewModalCancel"
       width="900px"
-      okText="发送">
+      okText="确认创建">
       <div id="container" style="width:100%;height: 900px;pointer-events: none;"></div>
     </a-modal>
     <a-modal v-model="modalSelectChronic.visible" title="选择需要进行随访的慢病" @ok="handleChronicDiseaseOK" width="600px">
@@ -120,16 +125,25 @@
         </a-col>
       </a-row>
     </a-modal>
-    <ChronicInformationVisit ref="Visit"/>
+    <FollowUpFormSend
+      v-if="sendModal"
+      :sendVisible="sendModal"
+      :customerId="customerId"
+      :formId="formId"
+      @onMessageSendSuccess="handleOnSendSuccess"
+      @onclose="closeFollowSend"
+    />
   </div>
 </template>
 
 <script>
-import ChronicInformationVisit from './ChronicInformationVisit.vue'
+import { getChronicManage as apiGetChronicManage, getChronicDetail } from '@/api/customer'
+import FollowUpFormSend from './FollowUpFormSend.vue'
 import { STable } from '@/components'
-import { addFollowUpSheet as apiCreateFollowUpForm, getPreviewForm, getToken } from '@/api/followUpForm'
+import { addNewFollowUpForm as apiCreateFollowUpForm, getPreviewForm, getToken, postFormCreated as apiPostFormCreated } from '@/api/followUpForm'
 import { notification } from 'ant-design-vue'
 import moment from 'moment'
+import { age } from '@/utils/age'
 const columns = [
   {
     title: '是否必填',
@@ -210,13 +224,39 @@ export default {
   name: 'AddFollowUpSheet',
   components: {
     STable,
-    ChronicInformationVisit
+    FollowUpFormSend
+  },
+  props: {
+    customerId: {
+      type: Number,
+      default: null
+    },
+    diseaseId: {
+      type: Number,
+      default: null
+    },
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    baseInfo: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
+    onMessageSent: {
+      type: Function,
+      default: () => {
+        return null
+      }
+    }
   },
   data () {
     return {
       loading: false,
-      totalChronicDiseases: [], // read only
-      baseInfo: {}, // read only
+      totalChronicDiseases: [], // read only 总的慢病
+      // baseInfo: {}, // read only
       payload: { // edit
         myToken: '',
         hints: '',
@@ -225,9 +265,6 @@ export default {
       },
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
-      modalSelf: {
-        visible: false
-      },
       modalPreviewInfo: false,
       modalSelectChronic: {
         visible: false,
@@ -244,7 +281,10 @@ export default {
       // styles:
       cardBodyStyle: {
         padding: '0 0 24px 0'
-      }
+      },
+      sendModal: false,
+      formId: null,
+      userAge: null
     }
   },
   filters: {
@@ -260,33 +300,49 @@ export default {
   mounted () {
     getToken().then(res => {
         if (res.status === 200) {
-            // console.log('唯一 TOKEN 获取成功', res.data)
             this.payload.myToken = res.data
         }
     })
+    this.loadData()
   },
   methods: {
     // 打开创建随访单弹窗
-    openModal (baseInfo, totalChronicDiseases = []) {
-      // console.log('慢病列表', totalChronicDiseases)
-      this.totalChronicDiseases = totalChronicDiseases
-      this.baseInfo = baseInfo || {}
-      this.baseInfo.age = 17
-      // console.log('baseInfo', baseInfo)
-      // re-initial data-source
-      this.payload.diseases = []
-      this.payload.items = []
-      this.modalSelf.visible = true
+    async loadData () {
+      const resp = await apiGetChronicManage(this.customerId)
+      if (resp.status === 200) {
+        this.totalChronicDiseases = resp.data
+      }
+      if (this.diseaseId) {
+        const res = await getChronicDetail(this.customerId, this.diseaseId)
+        if (res.status === 200) {
+          console.log(res)
+          const diseaseObj = res.data
+          this.modalSelectChronic.diseases.push(diseaseObj)
+          this.handleChronicDiseaseOK()
+        }
+      }
+      const userAge = age(this.baseInfo.birthDate)
+      if (userAge > 0) {
+        this.userAge = userAge + '岁'
+      } else {
+        this.userAge = '/'
+      }
+      // console.log('resp', resp)
+      // this.payload.hints = ''
+      // this.payload.diseases = []
+      // this.payload.items = []
+      // if (this.diseaseObj === {}) { return }
+      //   console.log('this.diseaseObj', this.diseaseObj)
+      //   this.modalSelectChronic.diseases.push(this.diseaseObj)
+      //   this.handleChronicDiseaseOK()
     },
     async handlePreview () {
       const resp = await this.doRequest()
-      // console.log({ resp })
       if (resp) {
         if (resp.status === 201) {
           this.modalPreviewInfo = true
-          const formDataId = resp.data.id
-          const customerId = resp.data.customer.id
-          getPreviewForm(customerId, formDataId).then(res => {
+          this.formId = resp.data.id
+          getPreviewForm(this.customerId, this.formId).then(res => {
             if (res.status === 200) {
                 this.lastUpdateAt = moment(res.data.lastUpdateAt).format('YYYY-MM-DD HH:mm:ss')
                 const previewUrl = res.data.url
@@ -300,16 +356,23 @@ export default {
         }
       }
     },
-    handleSend () {
+    handlePreviewOK () {
       // this.createFollowUpList(() => {
-      //   console.log('创建成功')
       // })
       const promise = this.doRequest()
       if (promise) {
         promise.then(res => {
           if (res.status === 201) {
-            // console.log('创建成功的res', res)
-            this.$refs.Visit.openVisit(res.data)
+            const form = res.data
+            // tell server: user create a form here.
+            apiPostFormCreated(this.customerId, form.id).then(res => {
+              if (res.status === 201) {
+                this.sendModal = true
+                this.$message.success('随访单创建成功')
+              }
+            }).catch(res => {
+              notification.warning({ description: res.message || '随访单创建失败' })
+            })
           }
         }).catch(err => {
           notification.warning({ description: err })
@@ -327,15 +390,18 @@ export default {
         notification.warning({ message: '慢病项为空', description: '请至少选择一个慢病' })
         return
       }
+      this.payload.items.forEach(item => {
+        if (!item.name) {
+          notification.warning({ message: '表单项名称为空', description: '请填写表单项名称' })
+          return false
+        }
+      })
 
       // do request
       const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
-      const customerId = this.baseInfo.customerId
       if (this.payload.items.length !== 0) {
-        // console.log('发送给用户的', this.payload)
             apiPayload.hints = this.payload.hints
             this.payload.diseases.forEach(function (diseas) {
-              // console.log(diseas)
               apiPayload.diseaseIds.push(diseas.id)
             })
             this.payload.items.forEach(function (itemVal) {
@@ -357,9 +423,8 @@ export default {
               }
             })
             apiPayload.token = this.payload.myToken
-            // console.log('发给后端的', apiPayload)
       }
-      return apiCreateFollowUpForm(customerId, apiPayload)
+      return apiCreateFollowUpForm(this.customerId, apiPayload)
       // // 调接口创建随访单
       // return apiCreateFollowUpForm(customerId, apiPayload).then(res => {
       //     if (res.status === 201) {
@@ -429,6 +494,20 @@ export default {
     handleChange (record) {
       this.inputType = record
       // console.log(this.inputType)
+    },
+    handleOnSendSuccess () {
+      this.modalPreviewInfo = false
+      this.sendModal = false
+      this.$emit('onMessageSent', true)
+    },
+    handleOnModalCancel () {
+      this.$emit('close')
+    },
+    handleOnPreviewModalCancel () {
+      this.modalPreviewInfo = false
+    },
+    closeFollowSend () {
+      this.sendModal = false
     }
   }
 }

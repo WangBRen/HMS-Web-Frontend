@@ -13,19 +13,30 @@
         <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
       </span>
       <span slot="action" slot-scope="text, record">
-        <a @click="editChronicTable(record)">编辑</a>
+        <a @click="openSpeechModal(record)">话术</a>
         <a-divider type="vertical" />
-        <a @click="delChronicTable(record)">删除</a>
+        <a @click="GradingStandard(record)">分级标准</a>
+        <a-divider type="vertical" />
+        <a @click="editChronicTable(record)">编辑</a>
+        <!-- <a-divider type="vertical" />
+        <a @click="delChronicTable(record)">删除</a> -->
       </span>
     </a-table>
     <a-modal
       title="新建慢病"
+      v-if="addChronicIndexVisible"
       :visible="addChronicIndexVisible"
       @ok="handleOk"
       @cancel="handleCancel"
       :width="700">
-      <a-form-model ref="formData" :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
-        <!-- <a-button @click="resetForm">清空</a-button> -->
+      <a-form-model
+        ref="formData"
+        class="addModal"
+        :rules="rules"
+        validateOnRuleChange
+        :model="formData"
+        :label-col="labelCol"
+        :wrapper-col="wrapperCol">
         <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢性病" prop="name">
@@ -40,45 +51,26 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-divider type="horizontal" />
-        <a-row>
-          <a-col>
-            <span style="font-size: 16px;">指标</span>
-            <a-icon @click="addTargetArr" type="plus-circle" />
-            <a-icon @click="delTargetArrEnd" type="minus-circle" />
-          </a-col>
-        </a-row>
+        <a-divider type="horizontal" dashed style="margin-bottom:24px"/>
         <a-row v-for="target in formData.targetArr" :key="target.id">
           <a-col>
             <a-form-model-item label="指标名">
               <a-row>
-                <a-col :span="18">
+                <a-col :span="22">
                   <getChronicName
-                    @change="({ id }) => { target.indexItemId = id }"
+                    @changeIndex="({ id, filterAr }) => {
+                      target.indexItemId = id;
+                      const filter = filterAr
+                      setChronicName(id, filter)
+                    }"
                     :indexArr="indexArr"
+                    :formData="formData"
+                    :sendFilter="sendFilter"
                   />
                 </a-col>
-                <a-col :span="6" style="text-align: center;margin: 0 auto;">
-                  <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" />
-                  <a-icon class="targetIcon" @click="delTargetArr(target)" type="minus-circle" />
-                </a-col>
-              </a-row>
-            </a-form-model-item>
-          </a-col>
-          <a-col v-show="target.indexItemId">
-            <a-form-model-item label="系数">
-              <a-row>
-                <a-col :span="12">
-                  <a-slider
-                    v-model="target.coefficient"
-                    :default-value="2"
-                    :min="0"
-                    :max="10"
-                    :step="0.01"
-                    @afterChange="changeIndex(target.indexItemId, target.coefficient)"/>
-                </a-col>
-                <a-col :span="6" :push="1">
-                  <a-input-number @change="changeIndex(target.indexItemId, target.coefficient)" v-model="target.coefficient" :min="0" :max="10"></a-input-number>
+                <a-col :span="2" style="text-align: center;margin: 0 auto;">
+                  <!-- <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" /> -->
+                  <a-icon class="targetIcon" @click="delTargetArr(target)" type="close-circle" />
                 </a-col>
               </a-row>
             </a-form-model-item>
@@ -86,32 +78,82 @@
           <a-col v-show="target.indexItemId">
             <a-form-model-item label="结果">
               <a-row>
-                <a-col v-for="(result,index) in target.result" :key="index">
-                  <span v-if="result.type==='range'">{{ result | getRange(target.coefficient) }}</span>
+                <a-col v-for="(result,index) in target.result" :key="index" class="index-result">
+                  <span v-if="result.type==='range'">{{ result | getRange }}</span>
                   <span v-if="result.type==='simple'">{{ result.name }}</span>
                 </a-col>
               </a-row>
             </a-form-model-item>
           </a-col>
         </a-row>
+        <a-row>
+          <a-col :span="22">
+            <!-- <span style="font-size: 16px;">指标</span>
+            <a-icon @click="addTargetArr" type="plus-circle" />
+            <a-icon @click="delTargetArrEnd" type="minus-circle" /> -->
+            <a-button @click="addTargetArr" type="dashed" style="display:block;margin:0 auto;width:60%">
+              <a-icon type="plus" /> 添加指标
+            </a-button>
+          </a-col>
+        </a-row>
       </a-form-model>
     </a-modal>
-    <editChronice ref="editChronic"/>
+    <editChronice
+      :editData="editData"
+      :editVisible="editVisible"
+      @closeEditModal="closeEditModal"
+    />
+    <GradingStandard
+      :gradingVisible="gradingVisible"
+      :gradingData="gradingData"
+      @closeGradingModal="closeGradingModal"
+      :gradingInfo="gradingInfo"
+    />
+    <speechChronic
+      :speechVisible="speechVisible"
+      @closeSpeechModal="closeSpeechModal"
+      :speechData="speechData"
+      :speechInfo="speechInfo"
+    />
   </div>
 </template>
 
 <script>
-import { getHealthIndex } from '@/api/health'
-import { addChronic, getChronic } from '@/api/chronic'
+import { getHealthIndex, getHeathLevels } from '@/api/health'
+// import { getHealthIndex } from '@/api/health'
+// import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
+import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
+import speechChronic from './HealthChronicSpeechModal.vue'
+import GradingStandard from './components/GradingStandard.vue'
+import { notification } from 'ant-design-vue'
 export default {
     components: {
       getChronicName,
-      editChronice
+      editChronice,
+      GradingStandard,
+      speechChronic
     },
     data () {
         return {
+          editData: null, // 传给编辑弹窗的数据
+          editVisible: false, // 用于控制编辑弹窗
+          speechData: null, // 传给话术弹窗的数据
+          speechInfo: null, // 话术信息
+          speechVisible: false, // 用于控制话术弹窗
+          gradingVisible: false, // 控制分级弹窗
+          gradingData: null, // 传给分级的数据
+          gradingInfo: null, // 分级信息
+          sendFilter: [],
+          rules: {
+            name: [{
+              required: true, message: '请输入慢性病名', trigger: 'blur'
+            }],
+            describe: [{
+              required: true, message: '请输入慢性病描述', trigger: 'blur'
+            }]
+          },
           columns: [
             {
               title: '慢性病名',
@@ -143,8 +185,6 @@ export default {
           },
           indexArr: [
           ],
-          targetArr: [
-          ],
           addChronicIndexVisible: false,
           labelCol: { span: 4 },
           wrapperCol: { span: 16 },
@@ -161,18 +201,18 @@ export default {
         }
     },
     filters: {
-      getRange: function (value, num) {
+      getRange: function (value) {
             // 判断范围或数值
             if (value.type === 'range') {
               // 范围
               if (value.start === null) {
                 // 无上界
-                return `${value.name}:\t ${(value.end * 1 + num * 1).toFixed(2) || 'INF'} > 指标值 (${value.unit})`
+                return `${value.name}:\t ${value.end || 'INF'} > 指标值 (${value.unit})`
               } else if (value.end === null) {
                 // 无下界
-                return `${value.name}:\t ${(value.start * 1 - num * 1).toFixed(2) || 'INF'} ≤ 指标值 (${value.unit})`
+                return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 (${value.unit})`
               } else {
-                return `${value.name}:\t ${(value.start * 1 + num * 1).toFixed(2) || 'INF'} ≤ 指标值 < ${(value.end * 1 + num * 1 || 'INF').toFixed(2)} (${value.unit})`
+                return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 < ${(value.end || 'INF')} (${value.unit})`
               }
             } else if (value.type === 'simple') {
             // 数值
@@ -191,7 +231,6 @@ export default {
           // console.log('接口数据', resData)
           for (var i = 0; i < resData.length; i++) {
             if (resData[i].items) {
-              // console.log('指标', resData[i].items)
               for (var j = 0; j < resData[i].items.length; j++) {
                 // console.log('指标', resData[i].items[j].name)
                 const firstIndex = resData[i]
@@ -207,7 +246,6 @@ export default {
               }
             }
           }
-          // console.log('指标', this.indexArr)
         }
       })
       this.getChronic()
@@ -219,20 +257,43 @@ export default {
             // console.log('新建慢病')
         },
         handleOk () {
-          const apiData = {
-            name: this.formData.name,
-            describe: this.formData.describe,
-            items: this.formData.targetArr
-          }
-          addChronic(apiData).then(res => {
-            if (res.status === 201) {
-              // console.log('添加慢病成功，添加的数据', apiData)
-              this.addChronicIndexVisible = false
-              this.$message.info('成功添加慢病')
+          // console.log('name', this.formData.name, 'des', this.formData.describe)
+          // if ((this.formData.name !== null && this.formData.name !== '') && (this.formData.describe !== null && this.formData.describe !== '')) {
+          //   // this.$message.info('This is a normal message')
+          //   // console.log('完整')
+          // } else {
+          //   if (this.formData.name === null || this.formData.name === '') {
+          //     this.$message.error('慢性病名未填')
+          //   }
+          //   if (this.formData.describe === null || this.formData.describe === '') {
+          //     this.$message.error('慢性病描述未填')
+          //   }
+          //   console.log('不完整')
+          // }
+          // console.log('ref', this.$refs.formData.validate)
+          // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
+          // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
+          this.$refs.formData.validate(valid => {
+            if (valid) {
+              const apiData = {
+                name: this.formData.name,
+                describe: this.formData.describe,
+                items: this.formData.targetArr
+              }
+              apiAddChronic(apiData).then(res => {
+                if (res.status === 201) {
+                  // console.log('添加慢病成功，添加的数据', apiData)
+                  this.addChronicIndexVisible = false
+                  this.$message.info('成功添加慢病')
+                }
+              })
+              // console.log('确定formData', this.formData)
+              // console.log('确定apiData', apiData)
+            } else {
+              // console.log('原版不完整')
+              return false
             }
           })
-          // console.log('确定formData', this.formData)
-          // console.log('确定apiData', apiData)
         },
         handleCancel () {
             this.addChronicIndexVisible = false
@@ -243,60 +304,96 @@ export default {
           const item = {
             id: new Date().getTime(),
             indexItemId: null,
-            coefficient: 1,
+            // coefficient: 1,
             result: null
             // 分割
           }
           this.formData.targetArr.push(item)
         },
+        // 从末尾删除
         delTargetArrEnd () {
+          // console.log(this.formData.targetArr[this.formData.targetArr.length - 1])
           this.formData.targetArr.pop()
+          var waitArr = this.indexArr
+          for (var i = 0; i < this.formData.targetArr.length; i++) {
+            // console.log('22222', this.formData.targetArr[i].indexItemId)
+            waitArr = waitArr.filter((item) => {
+              return item.id !== this.formData.targetArr[i].indexItemId
+            })
+          }
+          // 将删除指标后过滤的指标传给子组件
+          this.sendFilter = waitArr
+          // console.log('全部指标', this.indexArr)
+          // console.log('选择的指标', this.formData.targetArr)
+          // console.log('删除过滤后', waitArr)
         },
+        // 从指定位置删除
         delTargetArr (item) {
-          //  const index = this.formData.targetArr.indexOf(item)
           //  console.log(item)
-          //  this.formData.targetArr.splice(index, 1)
-           this.formData.targetArr = this.formData.targetArr.filter(i => i.id !== item.id)
+          this.formData.targetArr = this.formData.targetArr.filter(i => i.id !== item.id)
+          var waitArr = this.indexArr
+          for (var i = 0; i < this.formData.targetArr.length; i++) {
+            // console.log('1111', this.formData.targetArr[i].indexItemId)
+            waitArr = waitArr.filter((item) => {
+              return item.id !== this.formData.targetArr[i].indexItemId
+            })
+          }
+          // console.log('删除过滤后', waitArr)
+          // console.log('选择的指标', this.formData.targetArr)
+          // console.log('全部指标', this.indexArr)
+          // 将删除指标后过滤的指标传给子组件
+          this.sendFilter = waitArr
         },
         // 将输入的内容与显示的内容进行匹配
         filterOption (value, option) {
           return option.componentOptions.children[0].text.indexOf(value) >= 0
         },
-        changeIndex (id, num) {
-          // console.log('1')
-          const targetArr = this.formData.targetArr
-          const indexArr = this.indexArr
-          // console.log('结果', targetArr)
-          // console.log('指标', this.indexArr)
-          // console.log('id', id, '系数', num)
-          for (var j = 0; j < indexArr.length; j++) {
-            if (indexArr[j].id === id) {
-              // console.log('11', indexArr[j].result)
-              for (var i = 0; i < targetArr.length; i++) {
-                if (targetArr[i].indexItemId === id) {
-                  const result = indexArr[j].result
-                  targetArr[i].result = result
-                }
-              }
-            }
-          }
-        },
         resetForm () {
-          // console.log('清空')
           // 不用nextTick会报初始化错误
           this.$nextTick(() => {
-            this.$refs.formData.resetFields()
+            // this.$refs.formData.resetFields()
+            this.formData.name = null
+            this.formData.describe = null
           })
           this.formData.targetArr.length = 0
           this.$forceUpdate()
         },
+        GradingStandard (data) {
+          // console.log('gradingVisible', this.gradingVisible)
+          const diseaseId = data.id
+           this.gradingVisible = true
+          getHeathLevels(diseaseId).then(res => {
+            if (res.status === 200) {
+              this.gradingInfo = data
+              this.gradingData = []
+              const oldLevels = res.data
+              const aaa = []
+              oldLevels.forEach(function (item) {
+                const levelItem = {
+                  key: item.level,
+                  level: item.level + '级',
+                  describe: item.remark
+                }
+                aaa.push(levelItem)
+              })
+              this.gradingData = aaa
+              // this.$refs.openChildModel.openModel(data)
+              // this.$refs.openChildModel.getHealthLevels(res.data)
+            } else {
+              notification.warning({ message: '请求失败', description: res.message })
+            }
+          })
+        },
         editChronicTable (data) {
-          this.$refs.editChronic.openModel()
-          this.$refs.editChronic.getChronicData(data)
+          // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
+          this.editData = JSON.parse(JSON.stringify(data))
+          this.editVisible = true
+          // this.$refs.editChronic.openModel()
+          // this.$refs.editChronic.getChronicData(data)
           // console.log('编辑', data)
         },
         delChronicTable (data) {
-          console.log('删除', data)
+          // console.log('删除', data)
         },
         // 获取慢病表
         getChronic () {
@@ -304,20 +401,14 @@ export default {
             page: this.pagination.current,
             size: this.pagination.pageSize
           }
-          getChronic(pages).then(res => {
+          apiGetChronic(pages).then(res => {
             if (res.status === 200) {
-              console.log('慢病接口数据', res.data.content)
               // const resData = res.data.content
               // this.tableData = resData
               this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
               this.pagination.total = res.data.totalElements
-              // console.log('111', resData)
             }
           })
-        },
-        updateChronic () {
-          // console.log('刷新了吗')
-          this.getChronic()
         },
         onSizeChange (current, pageSize) {
           this.pagination.current = 1
@@ -327,6 +418,48 @@ export default {
         onPageChange (page, pageSize) {
           this.pagination.current = page
           this.getChronic()
+        },
+        setChronicName (value, filter) {
+          // console.log('value', value)
+          // console.log('filter', filter)
+          this.sendFilter = filter
+          const targetArr = this.formData.targetArr
+          const indexArr = this.indexArr
+          // console.log('结果', targetArr)
+          // console.log('指标', this.indexArr)
+          for (var j = 0; j < indexArr.length; j++) {
+            if (indexArr[j].id === value) {
+              for (var i = 0; i < targetArr.length; i++) {
+                if (targetArr[i].indexItemId === value) {
+                  const result = indexArr[j].result
+                  targetArr[i].result = result
+                }
+              }
+            }
+          }
+        },
+        openSpeechModal (data) {
+          this.speechInfo = data
+          // console.log('话术', data)
+          const diseaseId = data.id
+          apiGetSpeechList(diseaseId).then(res => {
+            if (res.status === 200) {
+              // console.log('话术列表', res.data)
+              this.speechData = res.data
+              this.speechVisible = true
+            } else {
+              this.$message.error('获取失败')
+            }
+          })
+        },
+        closeSpeechModal () {
+          this.speechVisible = false
+        },
+        closeGradingModal () {
+          this.gradingVisible = false
+        },
+        closeEditModal () {
+          this.editVisible = false
         }
     }
 }
@@ -336,7 +469,11 @@ export default {
   margin: 1px
 }
 .targetIcon{
-  font-size: 24px;
+  width: 18px;
+  height: 18px;
+  margin-top: 10px;
+  margin-left: 12px;
+  color: #999;
 }
 /* .ant-card-body{
   padding: 10px;
@@ -344,5 +481,10 @@ export default {
 .chronicTable{
   background-color: white;
   padding: 0 20px;
+}
+.index-result{
+  color: #999;
+  line-height: 22px;
+  font-size: 12px;
 }
 </style>

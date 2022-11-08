@@ -11,11 +11,13 @@ const customerApi = {
     editInfoGroupCustomer: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}`, // 编辑用户信息
     updatePhone: (groupId, customerId) => `/groups/${groupId}/customers/${customerId}/phone`,
     UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
-    ChronicManage: customerId => { return `/customers/${customerId}/chronic-diseases` },
+    ChronicManage: customerId => { return `/customers/${customerId}/chronic-diseases` }, // 获取该患者的所有慢病
     editCustomerChronicDiseases: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`,
     // 获取慢病指标历史记录
     getCustomerChronicIndex: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/indexes`,
-    makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`
+    makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`,
+    makeUnexpected: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-unexpected`,
+    getChronicDetail: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -136,4 +138,17 @@ export function makeDiagnosed (customerId, diseaseId, params) {
         method: 'post',
         data: params
     })
+}
+
+export function makeUnexpected (customerId, diseaseId) {
+    return request({
+        url: customerApi.makeUnexpected(customerId, diseaseId),
+        method: 'post'
+    })
+}
+export function getChronicDetail (customerId, diseaseId) {
+  return request({
+      url: customerApi.getChronicDetail(customerId, diseaseId),
+      method: 'get'
+  })
 }

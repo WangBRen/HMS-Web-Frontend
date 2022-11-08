@@ -15,4 +15,7 @@ jobs:
 
       - name: Build App
         run: |
-          npm install && npm run build:development
+          npm install --global yarn
+          yarn install
+          yarn build:production
+        # or build:development

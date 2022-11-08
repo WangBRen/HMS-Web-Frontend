@@ -1,39 +1,58 @@
 <template>
   <div>
     <a-modal
-      forceRender
-      v-model="chronicInfoVisible"
-      v-if="chronicInfoVisible"
-      :title="`慢病管理【${userInfo?.name || ''}】`"
+      :visible="chronicVisible"
+      :title="`慢病管理${baseInfo?'【'+baseInfo.name+'】': ''}`"
       :footer="null"
       @cancel="closeChronicInfo"
       :width="1200"
+      :dialog-style="{ top: '50px' }"
     >
       <div class="card">
         <a-space style="margin-bottom:10px">
-          <a-button type="primary" @click="showFollowUpSheet(tableData)">创建随访单</a-button>
-          <a-button type="primary" ghost style="float: right;">+健康指导</a-button>
+          <a-button type="primary" @click="showFollowUpSheet" :disabled="disableFollow">创建随访单</a-button>
+          <!-- <a-tooltip placement="top" :visible="disable">
+            <template slot="title">
+              <span>该患者暂无已分级慢病，请分级后再指导</span>
+            </template>
+            <div>
+              <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
+            </div>
+          </a-tooltip> -->
+          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
         </a-space>
+        <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
-          <a-row class="card-title">
-            <a-col :span="22" @click="showCard(item.id)">
-              <span style="font-size: 20px;color: white;">慢病名称: </span>
-              <span style="font-size: 20px;color: white;">{{ item.chronicDisease.name }}</span>
-              <span @click="changeStatus(item.status, item)">
-                <a-tag style="margin-left: 10px;" :color="item.status === 'diagnosed' ? 'rgba(217, 0, 27, 0.768627450980392)' : (item.status === 'exception' ? 'blue' : 'rgba(245, 154, 35, 1)')">
-                  {{ item.status | filterChronicStatus }}
-                </a-tag>
-              </span>
-              <span>
-                <a-tag :color="item.level <= 5 ? '' : 'rgba(217, 0, 27, 0.768627450980392)'">{{ item.level }}</a-tag>
-              </span>
-            </a-col>
-            <a-col :span="2">
-              <a :id="'str'+item.id" class="showData" style="font-size: 20px;color: white;" @click="showCard(item.id)">展开</a>
-            </a-col>
-          </a-row>
-          <a-row :id="item.id" class="card-body" style="display: none;">
-            <a-card style="margin-top: 12px;">
+          <div @click="cardShow(item)">
+            <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
+              <a-col :span="23">
+                <span class="all-tags">
+                  <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
+                    {{ item.status | filterChronicStatus }}
+                  </a-tag> -->
+                  <a-tag v-if="item.status==='exception'" color="">系统误判</a-tag>
+                  <span v-if="item.status==='suspect'">
+                    <a-tag color="orange" @click="changeStatus(item.status, item)">
+                      <a-icon type="question-circle" /> 疑似
+                    </a-tag>
+                  </span>
+                  <span v-if="item.status==='diagnosed'" class="all-tags">
+                    <a-tag v-if="item.level === null" color="geekblue">已确诊</a-tag>
+                    <a-tag v-else color="red">{{ item.level.level }}级</a-tag>
+                  </span>
+                </span>
+                <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
+              </a-col>
+              <a-col :span="1">
+                <a style="font-size: 20px;color: inherit;float: right;">
+                  <a-icon v-if="item.showIndex===false" type="right"/>
+                  <a-icon v-if="item.showIndex" type="down"/>
+                </a>
+              </a-col>
+            </a-row>
+          </div>
+          <a-row v-show="item.showIndex" :id="item.id" class="card-body">
+            <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
                 <span>指标项</span>
                 <span style="margin-left: 12px">
@@ -50,23 +69,74 @@
                 </span>
               </template>
               <ChronicInformationEcharts
-                ref="echartsRef"
                 :dataArr="item"
                 :custId="custId"
               />
             </a-card>
-            <a-card title="慢病随访记录" style="margin-top: 12px;">
-              <FollowUpRecords/>
+            <a-card title="慢病随访记录" style="margin-top: 12px;" :loading="loading">
+              <span v-if="item.status !== 'diagnosed'">
+                <a-icon type="question-circle" />
+                温馨提示：你还没有对该慢病确诊，暂无法进行随访
+              </span>
+              <div v-else>
+                <FollowUpRecords
+                  :diseaseId="item.id"
+                  :customerId="custId"
+                  :diseaseObj="item"
+                  @addNewDisease="getDiseaseName"
+                  @successRefresh="handleSuccessRefresh"
+                />
+              </div>
             </a-card>
-            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;">
+            <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
+              <span v-if="item.level == null">
+                <a-icon type="question-circle" />
+                温馨提示：你还没有对该慢病分级，暂无法进行健康指导
+              </span>
+              <div v-else>
+                <HealthCoachingRecords :diseaseId="item.id" :customerId="custId" @setRefreshCallback="handleSetRefreshCallback"/>
+                <a-button type="primary" class="HealthCoachingBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
+              </div>
+            </a-card>
+            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
             </a-card>
           </a-row>
         </div>
+        <!-- 查看所有随访单 -->
+        <a-card title="全部随访记录" style="margin-top: 30px;" :loading="loading" v-show="!disableFollow">
+          <FollowUpRecords
+            :diseaseId="-1"
+            :customerId="custId"
+            :create-button-visible="isShowBtn"
+          />
+        </a-card>
       </div>
-      <AddFollowUpSheet ref="FollowUpSheetRef"/>
+      <AddFollowUpSheet
+        v-if="addFollowFormVisible"
+        :visible="addFollowFormVisible"
+        :customerId="custId"
+        :diseaseId="diseaseId"
+        :baseInfo="baseInfo"
+        @close="closeAddFollowForm"
+        @onMessageSent="handleOnMessageSent"/>
     </a-modal>
-    <ChronicInformationChangeStatus ref="ChangeStatus"/>
+    <ChronicInformationChangeStatus
+      :userInfo="userInfo"
+      :diseaseId="diseaseId"
+      :customerId="custId"
+      :changeStatusVisible="StatusVisible"
+      @onClose="closeStatusModel"
+      @successChangeState="updateStatusModel"/>
+    <AddHealthCoaching
+      :coachingVisible="coachingVisible"
+      :customerId="custId"
+      :diseaseId="diseaseId"
+      :baseInfo="baseInfo"
+      :tableData="tableData"
+      @close="closeCoaching"
+      @successCreat="successCreatCoaching"
+    />
   </div>
 </template>
 <script>
@@ -75,13 +145,20 @@ import FollowUpRecords from './FollowUpRecords.vue'
 import AddFollowUpSheet from './AddFollowUpSheet.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
+import { notification } from 'ant-design-vue'
+import AddHealthCoaching from './AddHealthCoaching.vue'
+import HealthCoachingRecords from './HealthCoachingRecords.vue'
+
+const refreshGuidanceTable = {}
 
 export default {
   components: {
     FollowUpRecords,
     AddFollowUpSheet,
     ChronicInformationChangeStatus,
-    ChronicInformationEcharts
+    ChronicInformationEcharts,
+    AddHealthCoaching,
+    HealthCoachingRecords
   },
   filters: {
     filterTip: function (value) {
@@ -104,64 +181,158 @@ export default {
         }
     }
   },
-  data () {
-    return {
-      userInfo: [],
-      chronicInfoVisible: false,
-      custId: null,
-      tableData: []
+  props: {
+    custId: {
+      type: Number,
+      default: 0
+    },
+    baseInfo: {
+      type: Object,
+      default: function () {
+        return {}
+      }
+    },
+    chronicVisible: {
+      type: Boolean,
+      default: false
     }
   },
+  data () {
+    return {
+      loading: false,
+      userInfo: {},
+      diseaseData: {},
+      // custId: null,
+      tableData: [],
+      isShowBtn: false,
+      addFollowFormVisible: false,
+      diseaseObj: {},
+      diseaseId: null,
+      coachingVisible: false,
+      StatusVisible: false,
+      disable: true,
+      disableFollow: true
+    }
+  },
+  mounted () {
+    this.loadData()
+  },
   methods: {
-    // 打开慢病管理弹窗
-    openChronicInfo (custId, userInfo) {
-      this.chronicInfoVisible = true
-      this.custId = custId
-      this.userInfo = userInfo
-      // console.log(userInfo)
-      apiGetChronicManage(custId).then(res => {
-          if (res.status === 200) {
-              this.tableData = res.data
-          }
-      })
-      // 解决重新打开modal框，文字为收起问题
-      const dom = document.getElementsByClassName('showData')
-      for (var j = 0; j < dom.length; j++) {
-        dom[j].innerHTML = '展开'
-      }
-      // 解决重新打开modal框，文字为收起问题
-    },
-    closeChronicInfo () {
-      this.chronicInfoVisible = false
-    },
-    showCard (id) {
-      if (document.getElementById('str' + id).innerHTML === '展开') {
-        document.getElementById('str' + id).innerHTML = '收起'
-        document.getElementById(id).style.display = 'block'
+    async loadData () {
+      this.loading = true
+      // 获取慢病信息
+      const resp = await apiGetChronicManage(this.custId)
+      this.loading = false
+      if (resp.status === 200) {
+        this.tableData = resp.data.map((item) => {
+          item.showIndex = false
+          return item
+        })
+        console.log('tableData', this.tableData)
       } else {
-        document.getElementById('str' + id).innerHTML = '展开'
-        document.getElementById(id).style.display = 'none'
+        notification.open({
+          message: '慢病信息获取失败',
+          description: resp.message
+        })
       }
+      // 获取是否有已分级的慢病
+      const chronicData = this.tableData.filter(chronic => {
+        if (chronic.level !== null) {
+            return chronic
+        }
+      })
+      if (chronicData.length > 0) {
+        this.disable = false
+      } else {
+        this.disable = true
+        // this.$message.warning('该患者暂无已分级的慢病，请分级后再指导')
+      }
+      // 判断是否有已确诊的慢病
+      const chronicDiagnosisData = this.tableData.filter(chronic => {
+        if (chronic.status === 'diagnosed') {
+            return chronic
+        }
+      })
+      if (chronicDiagnosisData.length > 0) {
+        this.disableFollow = false
+      } else {
+        this.disableFollow = true
+      }
+    },
+    // 打开慢病管理弹窗
+    // openChronicInfo (custId, userInfo) {
+    //   this.chronicInfoVisible = true
+    //   this.custId = custId
+    //   this.userInfo = userInfo
+    //   // console.log(userInfo)
+    // },
+    // renovateData (custId) {
+    //   this.loadData()
+    // },
+    closeChronicInfo () {
+      this.$emit('onclose')
+    },
+    updateStatusModel () {
+      this.StatusVisible = false
+      this.loadData()
+    },
+    closeStatusModel () {
+      this.StatusVisible = false
+    },
+    cardShow (showIndex) {
+      showIndex.showIndex = !showIndex.showIndex
     },
     // 点击修改慢病状态
     changeStatus (status, item) {
-      // console.log('修改状态', status, 'item', item)
+      event.stopPropagation()
+      this.diseaseId = item.id
       if (status === 'suspect') {
-        const userInfo = this.userInfo
-        const diseaseData = item
-        this.$refs.ChangeStatus.openChangeStatus(userInfo, diseaseData)
+        this.StatusVisible = true
       }
     },
-    onChange (value, dateString) {
-      // console.log('Selected Time: ', value)
-      // console.log('Formatted Selected Time: ', dateString)
+    showFollowUpSheet () {
+      this.addFollowFormVisible = true
     },
-    onOk (value) {
-      // console.log('onOk: ', value)
-      this.openChronicInfo()
+    getDiseaseName (diseaseId) {
+      this.addFollowFormVisible = true
+      this.diseaseId = diseaseId
+      // this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
     },
-    showFollowUpSheet (_tableData) {
-      this.$refs.FollowUpSheetRef.openModal(this.userInfo, this.tableData)
+    handleSuccessRefresh () {
+      this.loadData()
+    },
+    // getformData (val, callback) {
+    //   this.$refs.FollowUpSheetRef.openSunModel(val, callback)
+    // }
+    closeAddFollowForm () {
+      this.addFollowFormVisible = false
+    },
+    handleOnMessageSent (success) {
+      if (success) {
+        this.$message.success('发送成功')
+        this.addFollowFormVisible = false
+      } else {
+        // notification.xxx
+      }
+    },
+    showHealthCoaching () { // 新增健康指导
+      this.coachingVisible = true
+      this.diseaseId = -1
+    },
+    startHealthCoaching (diseaseId) {
+      this.coachingVisible = true
+      this.diseaseId = diseaseId
+    },
+    closeCoaching () {
+      this.coachingVisible = false
+    },
+    async successCreatCoaching (diseaseId) {
+      this.coachingVisible = false
+      const refresh = refreshGuidanceTable['d-' + diseaseId]
+      refresh && await refresh()
+    },
+    handleSetRefreshCallback (diseaseId, loadData) {
+      refreshGuidanceTable['d-' + diseaseId] = loadData
     }
   }
 }
@@ -172,148 +343,30 @@ export default {
   padding: 0px 10px;
 }
 .card-row {
-  margin: 6px 0;
+  margin: 8px 0;
+  border: 1px solid #61affe;
+  border-radius: 4px;
 }
 .card-title {
-  background-color: rgba(64, 158, 255, 1);
-  border-radius: 4px;
+  background-color: rgba(97,175,254,.1);
+  border-bottom: none;
   /* margin: 3px 0; */
   /* height: 50px; */
-  padding: 12px;
+  padding: 6px 10px;
 }
 .card-body {
-  border: 1px #eee solid;
+  // border: 1px #eee solid;
   padding: 6px 24px;
-  margin-bottom: 24px;
+  // margin-bottom: 24px;
+  background-color: rgba(97,175,254,.1);
 }
-.title-name{
-  border-style: solid;
-  border-width: 1px;
-  font-size: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.card-index{
-  line-height: 60px;
-}
-.card-index-title{
-  line-height: 60px;
-  border-style: solid;
-  border-width: 1px;
-  border-top-width: 1px;
-  border-left-width: 2px;
+.all-tags>*{
+  width: 65px;
   text-align: center;
-  font-size: 20px;
 }
-.card-index-data{
-  padding-left: 5px;
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  text-align: left;
-  font-size: 14px
-}
-.card-chart{
-  border-style: solid;
-  border-width: 1px;
-}
-.card-indexData-chart{
-  /* height: 350px; */
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-right-width: 2px;
-}
-/* .card-record{
-  height: 500px;
-} */
-.card-record-title{
-  height: 450px;
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-}
-.card-record-table{
-  height: 450px;
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-}
-.card-manage-title{
-  min-height: 100px;
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  min-height: 100px;
-}
-.ant-anchor{
-  width: 100px;
-  line-height: 30px;
-}
-.full-modal {
-  .ant-modal {
-    max-width: 100%;
-    top: 0;
-    padding-bottom: 0;
-    margin: 0;
-  }
-  .ant-modal-content {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh);
-  }
-  .ant-modal-body {
-    flex: 1;
-  }
-}
-.card-manage-title{
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-  border-bottom-width: 2px;
-;
-  border-width: 1px;
-  border-right-width: 2px;
-}
-.card-manage-title{
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-  border-bottom-width: 2px;
-;
-  border-width: 1px;
-  border-right-width: 2px;
-}
-.card-manage-title{
-  border-style: solid;
-  border-width: 1px;
-  border-left-width: 2px;
-  border-bottom-width: 2px;
-}
-.card-manage-body{
-  border-style: solid;
-  border-width: 1px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
+.HealthCoachingBtn{
+  width: 260px;
+  top: -36px;
+  z-index: 999;
 }
 </style>

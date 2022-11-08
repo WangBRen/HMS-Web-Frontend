@@ -59,6 +59,12 @@
               {{ tag | filterHealthStatus }}
             </a-tag>
           </span>
+          <span slot="healthlevel" slot-scope="text, record">
+            <a-tag v-for="tag in record.member.diseases" :key="tag.id">
+              <span>{{ tag.name }}</span>
+              <span v-if="tag.level!==null">:{{ tag.level }}级</span>
+            </a-tag>
+          </span>
           <span slot="cavatar" slot-scope="text, record">
             <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
@@ -112,7 +118,12 @@
       ref="healthDataManagmentRef"
     />
     <!-- 新的慢病 -->
-    <ChronicInformation ref="ChronicInfoRef"/>
+    <ChronicInformation
+      v-if="chronicList.visible"
+      :custId="chronicList.custId"
+      :baseInfo="chronicList.baseInfo"
+      :chronicVisible="chronicList.visible"
+      @onclose="closeChronicModal"/>
   </div>
 </template>
 <script>
@@ -147,6 +158,7 @@ const innerColumns = [
   { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
   { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' }, align: 'center' },
+  { title: '慢病等级', dataIndex: 'member.level', key: 'member.level', scopedSlots: { customRender: 'healthlevel' }, align: 'center' },
   {
     title: '加入时间',
     dataIndex: 'member.createdAt',
@@ -154,7 +166,8 @@ const innerColumns = [
     align: 'center',
     customRender: (text, record, index) => {
       return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
-    }
+    },
+    width: '110px'
   },
   {
     title: '操作',
@@ -223,7 +236,12 @@ export default {
       },
       openHealthvisible: false,
       // 健康报告列表
-      currentCustomerId: -1
+      currentCustomerId: -1,
+      chronicList: {
+        custId: null,
+        baseInfo: {},
+        visible: false
+      }
     }
   },
   created () {
@@ -254,7 +272,15 @@ export default {
     },
     // 点击新的慢病
     chronicInfo (record) {
-      this.$refs.ChronicInfoRef.openChronicInfo(record.member.id, record.member.baseInfo)
+      this.chronicList.custId = record.member.id
+      this.chronicList.baseInfo = record.member.baseInfo
+      this.chronicList.visible = true
+      // this.$refs.ChronicInfoRef.openChronicInfo(record.member.id, record.member.baseInfo)
+    },
+    // 关闭慢病弹窗
+    closeChronicModal () {
+      this.chronicList.custId = -1
+      this.chronicList.visible = false
     },
 
     /**
