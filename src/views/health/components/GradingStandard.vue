@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      :visible="visible1"
+      :visible="gradingVisible"
       v-if="gradingInfo"
       :title="`分级标准【${gradingInfo.name || ''}】`"
       @ok="handleOk"
@@ -46,51 +46,40 @@ export default {
   },
   data () {
     return {
-      visible1: this.gradingVisible,
-      chronicTitle: '',
+      // visible1: this.gradingVisible,
+      // chronicTitle: '',
       // levelArr: [],
       diseaseId: null,
       gradingData1: this.gradingData
     }
   },
   methods: {
-    openModel (data) {
-      this.chronicTitle = data.name
-      this.diseaseId = data.id
-      this.visible1 = true
-    },
-    getHealthLevels (data) {
-      this.levelArr = []
-      // const oldLevels = JSON.parse(JSON.stringify(data))
-      const oldLevels = data
-      const aaa = []
-      oldLevels.forEach(function (item) {
-        const levelItem = {
-          key: item.level,
-          level: item.level + '级',
-          describe: item.remark
-        }
-        aaa.push(levelItem)
-      })
-      this.levelArr = aaa
-    },
+    // openModel (data) {
+      // this.chronicTitle = data.name
+      // this.diseaseId = data.id
+      // this.visible1 = true
+    // },
+    // async getHealthLevels () {
+    //   this.diseaseId = this.gradingInfo.id
+    //   console.log('this.gradingInfo', this.gradingInfo)
+    //   const res = await getHeathLevels(this.diseaseId)
+    //   if (res.status === 200) {
+    //     this.gradingData = res.data
+    //   } else {
+    //     notification.warning({ message: '请求失败', description: res.message })
+    //   }
+    // },
     handleOk () {
-      const apiData = { levels: [] }
-      // console.log('this.levelArr', this.levelArr)
-      this.gradingData1.forEach(function (item) {
-        const levelItem = {
-          level: item.key,
-          remark: item.describe
-         }
-        apiData.levels.push(levelItem)
-      })
+      const apiData = {
+        levels: (this.gradingData1 || []).map((item, index) => {
+          return { level: index + 1, remark: item.describe }
+        })
+      }
       updateHeathLevels(this.gradingInfo.id, apiData).then(res => {
         // console.log('给后端的', apiData)
         if (res.status === 200) {
           this.$message.success('保存成功')
           this.$emit('closeGradingModal')
-          // this.visible1 = false
-          // this.gradingVisible = false
         } else {
           notification.warning({ message: '保存失败', description: res.message })
         }
@@ -98,24 +87,12 @@ export default {
     },
     addLevelArr () {
       if (this.gradingData1.length < 9) {
-        const newLevel = { key: null, level: null, describe: '' }
-        if (this.gradingData1.length === 0) {
-          newLevel.key = 1
-          newLevel.level = newLevel.key + '级'
-          newLevel.describe = ''
-        } else {
-          newLevel.key = this.gradingData1[this.gradingData1.length - 1].key + 1
-          newLevel.level = newLevel.key + '级'
-          newLevel.describe = ''
-        }
-        this.gradingData1.push(newLevel)
+        this.gradingData1.push({ level: null, describe: '' })
       } else {
         message.warning('你已达到分级上限，最高九级')
       }
     },
     deleteLevel (index) {
-      // console.log(this.levelArr)
-      // // this.levelArr = this.levelArr.filter(i => i.key !== keys.key)
       this.gradingData1 = this.gradingData1.filter((item, idx) => idx !== index)
     },
     gradingHandleCancel () {
@@ -126,10 +103,6 @@ export default {
     gradingData () {
       // console.log('++')
       this.gradingData1 = this.gradingData
-    },
-    gradingVisible (newa, old) {
-      this.visible1 = this.gradingVisible
-      // console.log(old, '>>', newa)
     }
   }
 }
