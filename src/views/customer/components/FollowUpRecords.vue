@@ -46,7 +46,11 @@
           <a @click="retransmission(text, scope)">重发</a> |
           <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>
         </span>
-        <a v-else-if="(scope.level===null && diseaseId>0) || (scope.level===null && scope.diseases.length===1) " @click="startLevel(text, scope)">分级</a>
+        <span v-else-if="scope.level===null">
+          <span v-if="scope.destroy" @click="ViewFollowUpTable(text, scope)">已废弃</span>
+          <a v-else-if="diseaseId>0 || scope.diseases.length === 1" @click="startLevel(text, scope)">分级</a>
+          <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
+        </span>
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
