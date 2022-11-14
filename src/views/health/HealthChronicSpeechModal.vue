@@ -12,11 +12,11 @@
       <div class="template_example">
         <div class="template_title">模板示例:</div>
         <div>
-          身高为<span class="check_variable">${身高}</span>cm,体重为<span class="check_variable">${体重}</span>kg <span class="check_variable">>>>>>></span> 身高为170cm,体重为50kg
+          身高为<span class="check_variable">${身高}</span>cm,体重为<span class="check_variable">${体重}</span>kg <span class="check_variable">&nbsp;>>>>>>&nbsp;</span> 身高为170cm,体重为50kg
         </div>
         <div>模板可选变量:
-          <a-tag class="check_variable">${身高}</a-tag>
-          <a-tag class="check_variable">${体重}</a-tag>
+          <a-tag color="blue" class="">${身高}</a-tag>
+          <a-tag color="blue" class="">${体重}</a-tag>
         </div>
         <div>可用后面的代码组合自动获取用户的指标,点击标签可添加至模板中</div>
       </div>
@@ -30,7 +30,7 @@
         />
         <div class="check_variable_list">
           模板可选变量:
-          <a-tag class="check_variable" @click="addTmp(item,variable)" v-for="variable in variablesArr" :key="variable.targetId"> {{ variable.name }} </a-tag>
+          <a-tag color="blue" class="" @click="addTmp(item,variable)" v-for="variable in variablesArr" :key="variable.targetId"> {{ variable.name }} </a-tag>
         </div>
       </a-card>
     </a-modal>
@@ -70,42 +70,32 @@ export default {
       // 校验
       // console.log('传进来的', this.formData)
       var haveArr = [] // 慢病拥有的变量
-      // 可选变量
+      // 保存慢病可选变量
       var checkArr = this.variablesArr.map(item => {
           return item.name
       })
-      // 遍历读取当前慢病拥有的变量
+      // 新方法
       this.formData.forEach(item => {
-        var cutArr = item.template.templateText
-        // console.log('cutArr', cutArr)
-        while (cutArr.length !== 0) {
-          // console.log(cutArr, '截取前', cutArr.length)
-          if (cutArr.indexOf('${') !== -1 && cutArr.indexOf('}') !== -1 && (cutArr.indexOf('${') < cutArr.indexOf('}'))) {
-            haveArr.push(cutArr.slice(cutArr.indexOf('${'), cutArr.indexOf('}') + 1))
-            // console.log('???', cutArr.slice(cutArr.indexOf('${'), cutArr.indexOf('}') + 1))
-            cutArr = cutArr.slice(cutArr.indexOf('}') + 1)
-          } else {
-            cutArr = cutArr.slice(1)
-          }
-          // console.log(cutArr, '截取后cutArr', cutArr.length)
+        if (item.template.templateText !== '') {
+          var cutArr1 = item.template.templateText
+          // 校验规则
+          var cutArr2 = [...cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)]
+          haveArr = haveArr.concat(cutArr2)
         }
       })
-      // console.log('有的变量', haveArr, '可选变量', checkArr)
-      const resultArr = []
+      // 新方法
+      const resultArr = [] // 保存结果
       haveArr.filter(item => {
         resultArr.push(checkArr.includes(item)) // includes 判断一个数组中是否包含某一个元素，有则返回true，没有返回false
-        // console.log('校验', checkArr.includes(item))
       })
       // console.log('结果', resultArr)
-      var checkIndex = true
+      var checkIndex = true // 最终判定，一假即假
       for (var j = 0; j < resultArr.length; j++) {
         if (resultArr[j] === false) {
           checkIndex = false
-          // console.log('返回', checkIndex)
           break
         } else {
           checkIndex = true
-          // console.log('返回', checkIndex)
         }
       }
       // 满足校验
@@ -131,13 +121,10 @@ export default {
           }
         })
         // console.log('传给后端', templates)
-        // console.log('满足')
       } else {
-        // console.log('不满足')
         this.$message.error('使用错误的模板变量，请修改模板')
       }
       // 校验
-      // console.log('传进来info', this.speechInfo.id)
     },
     speechHandleCancel () {
       this.$emit('closeSpeechModal')
@@ -190,10 +177,11 @@ export default {
 </script>
 <style lang="less" scoped>
 .template_title{
-  font-size: 20px;
+  font-size: 16px;
+  font-weight: 600;
 }
 .speech_card{
-  margin: 10px 0;
+  margin: 20px 0;
 }
 .check_variable_list{
   margin-top: 10px;
@@ -202,12 +190,15 @@ export default {
   color: blue;
 }
 .template_example{
+  line-height: 25px;
   opacity: 0.75
 }
 /deep/.ant-card-body{
   padding: 16px;
+  background-color: #fafafa;
 }
 /deep/.ant-card-head{
   padding: 0 16px;
+  background-color: #f0f0f0;
 }
 </style>
