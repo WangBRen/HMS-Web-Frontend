@@ -113,24 +113,26 @@
               </a-col>
             </a-col>
           </a-row>
-          <a-row style="padding-top: 12px; padding-bottom: 12px;">
+          <a-row>
             <a-col>
-              <a-row>
-                <a-col :span="3">
-                  <div class="index-item-title-wrapper">
-                    <div class="index-item-title-sider"/>
-                    <span class="index-item-title"> 诊断结果 </span>
-                  </div>
-                </a-col>
-                <a-col :span="21">
-                  <div>
-                    <CheckDia v-model="formData.diagnosisData" @changes="getDia($event)" />
-                  </div>
-                </a-col>
-              </a-row>
-              <a-row style="margin-bottom: 12px;">
+              <div style="padding:20px 30px; background-color: #f0f0f0;">
+                <a-row>
+                  <a-col :span="3">
+                    <div class="index-item-title-wrapper">
+                      <div class="index-item-title-sider"/>
+                      <span class="index-item-title"> 诊断结果 </span>
+                    </div>
+                  </a-col>
+                  <a-col :span="21">
+                    <div>
+                      <CheckDia v-model="formData.diagnosisData" @changes="getDia($event)" />
+                    </div>
+                  </a-col>
+                </a-row>
+              </div>
+              <a-row style="margin:18px 0 36px 0;">
                 <a-col :span="2" :offset="18">
-                  <span>
+                  <span style="line-height:32px">
                     诊断时间:
                   </span>
                 </a-col>
@@ -157,23 +159,25 @@
               <a-icon class="targetIcon" @click="delIndex(items)" type="close" />
             </a-col>
           </a-row>
-          <a-row style="padding-top: 12px; padding-bottom: 12px;">
+          <a-row>
             <a-col>
-              <a-row>
-                <a-col :span="3">
-                  <div class="index-item-title-wrapper">
-                    <div class="index-item-title-sider"/>
-                    <span class="index-item-title"> 症状 </span>
+              <div style="padding:20px 30px; background-color: #f0f0f0;">
+                <a-row>
+                  <a-col :span="3">
+                    <div class="index-item-title-wrapper">
+                      <div class="index-item-title-sider"/>
+                      <span class="index-item-title"> 症状 </span>
 
-                  </div>
-                </a-col>
-                <a-col :span="21">
-                  <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" />
-                </a-col>
-              </a-row>
-              <a-row style="margin-top:12px;margin-bottom: 12px;">
+                    </div>
+                  </a-col>
+                  <a-col :span="21">
+                    <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                  </a-col>
+                </a-row>
+              </div>
+              <a-row style="margin:18px 0 36px 0;">
                 <a-col :span="2" :offset="18">
-                  <span>
+                  <span style="line-height:32px">
                     诊断时间:
                   </span>
                 </a-col>

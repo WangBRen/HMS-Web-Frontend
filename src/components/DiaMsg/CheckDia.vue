@@ -246,6 +246,7 @@ export default {
 </script>
 <style>
 .selectDia{
-  width: 240px
+  width: 230px;
+  margin-top:2px;
 }
 </style>
