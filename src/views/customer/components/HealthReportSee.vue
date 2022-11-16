@@ -5,12 +5,13 @@
       class="modal"
       v-model="seeReportVisible"
       title="健康信息"
+      :footer="null"
       @cancel="closeSeeModal"
       :width="1150"
     >
-      <template slot="footer">
+      <!-- <template slot="footer">
         <a-button @click="closeSeeModal">取消</a-button>
-      </template>
+      </template> -->
       <a-row :gutter="20">
         <a-col :span="4" class="modalLeft">
           <div class="modal-left-panel">
@@ -42,45 +43,55 @@
                   <a :id="item.indexProjectName" class="project-title">{{ item.indexProjectName }}</a>
                 </a-col>
               </a-row>
-              <!-- 指标 -->
-              <a-row style="padding-top: 24px; padding-bottom: 24px;">
-                <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
-                  <a-row class="index-item" style="#border: 1px #eee solid;">
-                    <a-col :span="8">
-                      <div class="index-item-title-wrapper">
-                        <div class="index-item-title-sider"/>
-                        <span class="index-item-title"> {{ items.name }} </span>
-                      </div>
-                    </a-col>
-                    <a-col :span="15">
-                      <div>
-                        <a class="exTitle">检测值:</a>
-                        <span v-if="items.type === 'Integer' || items.type === 'Float'">
-                          {{ items.value || '--' }} {{ items.unit }}
-                        </span>
-                        <span v-if="items.type === 'Text'">
-                          {{ items.value || '--' }}
-                        </span>
-                        <span v-if="items.type === 'Report'">
-                          <a v-if="items.value" :href="items.value[0].url" target="_blank">{{ items.value[0].fileName }}</a>
-                          <span v-else >--</span>
-                        </span>
-                      </div>
-                      <div>
-                        <a class="exTitle">检测结果:</a>
-                        {{ items.endResult || '无' }}
-                      </div>
-                    </a-col>
-                  </a-row>
-                </a-col>
-              </a-row>
-              <!-- 诊断时间 -->
-              <a-row style="margin-bottom: 36px;">
-                <a-col :span="8" :offset="16">
-                  <span>检测时间：</span>
-                  <div style="float: right; margin-right: 12px;">{{ item.testAt | getMoment }}</div>
-                </a-col>
-              </a-row>
+              <div style="padding: 0 10px">
+                <a-row>
+                  <div class="index-title">
+                    <a-col :span="10"><span>指标名称</span></a-col>
+                    <a-col :span="8"><span>检测值</span></a-col>
+                    <a-col :span="6"><span>检测结果</span></a-col>
+                  </div>
+                </a-row>
+                <!-- 指标 -->
+                <a-row>
+                  <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
+                    <a-row class="index-item">
+                      <a-col :span="10">
+                        <div class="index-item-title-wrapper">
+                          <span> {{ items.name }} </span>
+                        </div>
+                      </a-col>
+                      <a-col :span="8">
+                        <div class="index-item-title-wrapper">
+                          <!-- <a class="exTitle">检测值:</a> -->
+                          <span v-if="items.type === 'Integer' || items.type === 'Float'">
+                            {{ items.value || '--' }} {{ items.unit }}
+                          </span>
+                          <span v-if="items.type === 'Text'">
+                            {{ items.value || '--' }}
+                          </span>
+                          <span v-if="items.type === 'Report'">
+                            <a v-if="items.value" :href="items.value[0].url" target="_blank">{{ items.value[0].fileName }}</a>
+                            <span v-else >--</span>
+                          </span>
+                        </div>
+                      </a-col>
+                      <a-col :span="6">
+                        <div class="index-item-title-wrapper">
+                          <!-- <a class="exTitle">检测结果:</a> -->
+                          {{ items.endResult || '无' }}
+                        </div>
+                      </a-col>
+                    </a-row>
+                  </a-col>
+                </a-row>
+                <!-- 诊断时间 -->
+                <a-row style="margin: 28px 0;">
+                  <a-col :span="6" :offset="18">
+                    <span>检测时间：</span>
+                    <div style="float: right; margin-right: 12px;">{{ item.testAt | getMoment }}</div>
+                  </a-col>
+                </a-row>
+              </div>
             </div>
             <!-- 用户诊断信息 -->
             <div v-if="formData.diseaseAt">
@@ -89,7 +100,7 @@
                   <a id="用户诊断信息" class="project-title">用户诊断信息</a>
                 </a-col>
               </a-row>
-              <a-row>
+              <a-row style="padding-top: 12px;">
                 <a-col>
                   <a-form-model-item>
                     <a-row>
@@ -103,13 +114,9 @@
                         <div>{{ formData.title }}</div>
                       </a-col>
                     </a-row>
-                    <a-row style="margin-bottom: 12px;">
-                      <a-col :span="8" :offset="16">
-                        <!-- 新建 -->
-                        <span>
-                          诊断时间:
-                        </span>
-                        <!-- 查看 -->
+                    <a-row style="margin: 28px 0;">
+                      <a-col :span="6" :offset="18">
+                        <span>检测时间：</span>
                         <div style="float: right; margin-right: 12px;">{{ formData.diseaseAt | getMoment }}</div>
                       </a-col>
                     </a-row>
@@ -124,7 +131,7 @@
                   <a id="用户症状信息" class="project-title">用户症状信息</a>
                 </a-col>
               </a-row>
-              <a-row style="padding-top: 12px; padding-bottom: 12px;">
+              <a-row style="padding-top: 12px;">
                 <a-col>
                   <a-form-model-item>
                     <a-row>
@@ -138,12 +145,9 @@
                         <div>{{ formData.symptom }}</div>
                       </a-col>
                     </a-row>
-                    <a-row style="margin-bottom: 12px;">
-                      <a-col :span="8" :offset="16">
-                        <!-- 新建 -->
-                        <span>
-                          检测时间:
-                        </span>
+                    <a-row style="margin: 28px 0;">
+                      <a-col :span="6" :offset="18">
+                        <span>检测时间：</span>
                         <div style="float: right; margin-right: 12px;">{{ formData.symptomAt | getMoment }}</div>
                       </a-col>
                     </a-row>
@@ -260,12 +264,12 @@ export default {
   border: 1px #eee solid;
   text-align: left;
   width: 186px;
-  padding: 24px 12px;
+  padding: 24px 18px;
 }
 .left-title-wrapper{
-  font-size: 18px;
+  font-size: 14px;
   padding-bottom: 12px;
-  padding: 0 12px 12px 12px;
+  // padding: 0 12px 12px 12px;
 }
 .left-title-wrapper>a {
   color: #333;
@@ -300,9 +304,12 @@ export default {
   font-weight: 700;
 }
 .rightBody{
+  padding: 0 12px;
+}
+.rightBody:hover{
+  background-color: #e6f7ff;
   /* text-align: center; */
   /* height: 240px; */
-  padding: 0 4px;
 }
 .exTitle{
   /* font-size: 18px; */
@@ -321,15 +328,16 @@ export default {
   margin-bottom: 0px
 }
 .index-item-title-wrapper {
-  display: flex;
+  // display: flex;
   height: 34px;
-  align-items: center;
+  // align-items: center;
 }
-.index-item-title {
-  font-size: 14px;
+.index-title {
+  font-size: 16px;
   font-weight: 700;
   padding: 0 12px;
-  line-height: 14px;
+  line-height: 40px;
+  margin-top: 10px;
 }
 .index-item-title-sider {
   width: 8px;
