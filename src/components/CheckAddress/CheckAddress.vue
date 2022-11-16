@@ -2,28 +2,28 @@
   <div>
     <a-row>
       <a-col :span="6">
-        <a-select v-model="checkPro" :default-value="provinceData[0].name" style="" @change="handleProvinceChange">
+        <a-select placeholder="一级行政区" v-model="checkPro" style="" @change="handleProvinceChange">
           <a-select-option v-for="province in provinceData" :key="province.code">
             {{ province.name }}
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6" :push="1">
-        <a-select v-model="checkCity" @change="handleCityChange">
+        <a-select :disabled="!checkPro" placeholder="二级行政区" v-model="checkCity" @change="handleCityChange">
           <a-select-option v-for="city in cityArr" :key="city.code">
             {{ city.name }}
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6" :push="2">
-        <a-select v-model="checkArea" @change="handleAreaChange">
+        <a-select :disabled="!checkCity" placeholder="三级行政区" v-model="checkArea" @change="handleAreaChange">
           <a-select-option v-for="area in areaArr" :key="area.code">
             {{ area.name }}
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6" :push="3">
-        <a-select v-model="checkStreet" @change="handleStreetChange">
+        <a-select :disabled="!checkArea" placeholder="四级行政区" v-model="checkStreet" @change="handleStreetChange">
           <a-select-option v-for="street in streetArr" :key="street.code">
             {{ street.name }}
           </a-select-option>
@@ -49,10 +49,10 @@ export default {
             cityArr: [],
             areaArr: [],
             streetArr: [],
-            checkPro: null,
-            checkCity: null,
-            checkArea: null,
-            checkStreet: null
+            checkPro: undefined,
+            checkCity: undefined,
+            checkArea: undefined,
+            checkStreet: undefined
         }
     },
     mounted () {
@@ -82,9 +82,9 @@ export default {
             })
             // 默认市
             // that.checkCity = that.cityArr[0].name
-            that.checkCity = null
-            that.checkArea = null
-            that.checkStreet = null
+            that.checkCity = undefined
+            that.checkArea = undefined
+            that.checkStreet = undefined
         },
         handleCityChange (value) {
             var that = this
@@ -107,8 +107,8 @@ export default {
             })
             // console.log(this.checkCity)
             // that.checkArea = that.areaArr[0].name
-            that.checkArea = null
-            that.checkStreet = null
+            that.checkArea = undefined
+            that.checkStreet = undefined
         },
         handleAreaChange (value) {
             var that = this
@@ -128,7 +128,7 @@ export default {
                 }
             })
             // this.checkStreet = this.streetArr[0].name
-            this.checkStreet = null
+            this.checkStreet = undefined
         },
         handleStreetChange (value) {
             // console.log(value)

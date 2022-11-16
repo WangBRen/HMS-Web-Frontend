@@ -3,13 +3,14 @@
     <!-- 新建群组&用户 -->
     <a-modal
       v-model="visible"
-      title="新建用户"
+      v-if="visible"
+      :title="groupShow === false ? '新增家庭' : '新增成员'"
       @ok="handleOk"
       @cancel="handleOff"
       destroyOnClose
       :width="1000">
       <a-form-model ref="ruleForm" :model="form" :rules="info_rules" :label-col="labelCol" :wrapper-col="wrapperCol">
-        <a-row>
+        <a-row v-if="groupShow">
           <a-col :span="12">
             <a-form-model-item label="群组" ref="groupId" prop="groupId">
               <a-select :disabled="groupShow" v-model="form.groupId" show-search allowClear>
@@ -23,12 +24,12 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="姓名" ref="name" prop="name">
-              <a-input v-model="form.name"/>
+              <a-input placeholder="请输入姓名" v-model="form.name"/>
             </a-form-model-item>
           </a-col>
           <a-col :span="12" >
             <a-form-model-item label="民族" ref="ethnicGroups" prop="ethnicGroups">
-              <a-select v-model="form.ethnicGroups" show-search>
+              <a-select v-model="form.ethnicGroups" placeholder="请选择民族" show-search>
                 <a-select-option v-for="(item,index) in nationData" :key="index" :value="item">
                   {{ item }}
                 </a-select-option>
@@ -48,7 +49,7 @@
           </a-col>
           <a-col :span="12" >
             <a-form-model-item label="证件号" ref="idNo" prop="idNo">
-              <a-input v-model="form.idNo"/>
+              <a-input placeholder="请输入证件号" v-model="form.idNo"/>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -76,7 +77,7 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="年龄" ref="age" prop="age">
-              <a-input v-model="form.age"/>
+              <a-input placeholder="请输入年龄" v-model="form.age"/>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -103,7 +104,7 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="手机号码" ref="phoneNumber" prop="phoneNumber">
-              <a-input v-model="form.phoneNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
+              <a-input placeholder="请输入手机号" v-model="form.phoneNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
             </a-form-model-item>
           </a-col>
           <a-col :span="12">
@@ -140,12 +141,12 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="紧急联系人" ref="contactName" prop="contactName">
-              <a-input v-model="form.contactName"/>
+              <a-input placeholder="请输入紧急联系人姓名" v-model="form.contactName"/>
             </a-form-model-item>
           </a-col>
           <a-col :span="12">
             <a-form-model-item label="联系人手机号码" ref="contactNumber" prop="contactNumber">
-              <a-input v-model="form.contactNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
+              <a-input placeholder="请输入紧急联系人电话" v-model="form.contactNumber"><a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -159,7 +160,7 @@
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="详细地址:">
-              <a-input v-model="form.homeAddress" placeholder="详细地址"></a-input>
+              <a-input v-model="form.homeAddress" placeholder="请输入详细地址"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -171,7 +172,8 @@
 import moment from 'moment'
 import { nation } from './nation'
 import Address from '@/components/CheckAddress/CheckAddress.vue'
-import { customerRepeat as apiCustomerRepeat, searchCustomerUnderGroup, customerAdd } from '@/api/customer'
+import { customerRepeat as apiCustomerRepeat, searchCustomerUnderGroup as apiSearchCustomerUnderGroup, customerAdd as apiCustomerAdd } from '@/api/customer'
+// import { customerRepeat as apiCustomerRepeat, searchCustomerUnderGroup as apiSearchCustomerUnderGroup } from '@/api/customer'
 import { getCode } from '@/api/login'
 export default {
   components: {
@@ -232,7 +234,7 @@ export default {
                 var month = value.slice(10, 12)
                 var day = value.slice(12, 14)
                 // 自动填写性别
-                if (this.form.gender === '') {
+                if (this.form.gender === undefined) {
                   if (gender % 2 === 0) {
                     this.form.gender = '女'
                   } else {
@@ -285,18 +287,39 @@ export default {
     // 手机号校验
     var checkPhone = (rule, value, callback) => {
       if (value) {
-        apiCustomerRepeat('telephone', value).then(res => {
-          if (res.status === 200) {
-            // 根据接口返回data判断,true为已被注册
-            if (res.data) {
-              callback(new Error('手机号已被注册'))
-            } else {
-              callback()
-            }
-          } else {
+        // 根据groupShow判断从新建群组还是新建用户入口进入
+        if (this.groupShow) {
+          // 如果输入的号码和群主一样，则不用判断
+          if (this.dataTypes.data.manager.telephone === this.form.phoneNumber) {
             callback()
+          } else {
+            apiCustomerRepeat('telephone', value).then(res => {
+              if (res.status === 200) {
+                // 根据接口返回data判断,true为已被注册
+                if (res.data) {
+                  callback(new Error('手机号已被注册'))
+                } else {
+                  callback()
+                }
+              } else {
+                callback(new Error('异常'))
+              }
+            })
           }
-        })
+        } else {
+          apiCustomerRepeat('telephone', value).then(res => {
+            if (res.status === 200) {
+              // 根据接口返回data判断,true为已被注册
+              if (res.data) {
+                callback(new Error('手机号已被注册'))
+              } else {
+                callback()
+              }
+            } else {
+              callback(new Error('异常'))
+            }
+          })
+        }
       } else {
         callback()
       }
@@ -359,15 +382,15 @@ export default {
         token: '',
         code: '',
         name: '',
-        gender: null,
+        gender: undefined,
         birthDate: '',
-        idType: null,
-        eduBG: null,
+        idType: undefined,
+        eduBG: undefined,
         idNo: '',
         phoneNumber: '',
         contactName: '',
         contactNumber: '',
-        ethnicGroups: '',
+        ethnicGroups: undefined,
         province: '',
         city: '',
         area: '',
@@ -375,8 +398,8 @@ export default {
         age: '',
         homeAddress: '',
         address: '',
-        aboBloodType: null, // 血型
-        rhBloodType: null
+        aboBloodType: undefined, // 血型
+        rhBloodType: undefined
       },
       apiForm: {
         nickname: '',
@@ -396,7 +419,7 @@ export default {
           phoneNumber: '',
           contactName: '',
           contactNumber: '',
-          ethnicGroups: '',
+          ethnicGroups: null,
           province: '',
           city: '',
           area: '',
@@ -423,7 +446,7 @@ export default {
           { validator: checkCode, trigger: 'blur' }
         ],
         phoneNumber: [
-          // { required: true, message: '请输入电话号码', trigger: 'blur' },
+          { required: true, message: '请输入电话号码', trigger: 'blur' },
           { len: 11, message: '请输入正确的电话号码' },
           { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' },
           { validator: checkPhone, trigger: 'blur' }
@@ -440,7 +463,7 @@ export default {
           { required: true, message: '请选择性别', trigger: 'blur' }
         ],
         age: [
-          { required: true, message: '请选择年龄', trigger: 'blur' }
+          { required: true, message: '请输入年龄', trigger: 'blur' }
         ],
         birthDate: [
           { required: true, message: '请选择出生日期', trigger: 'blur' }
@@ -453,48 +476,63 @@ export default {
   mounted () {
   },
   methods: {
+    resetData () {
+      const resetData = {
+        groupId: '',
+        token: '',
+        code: '',
+        name: '',
+        gender: undefined,
+        birthDate: '',
+        idType: undefined,
+        eduBG: undefined,
+        idNo: '',
+        phoneNumber: '',
+        contactName: '',
+        contactNumber: '',
+        ethnicGroups: undefined,
+        province: '',
+        city: '',
+        area: '',
+        street: '',
+        age: '',
+        homeAddress: '',
+        address: '',
+        aboBloodType: undefined,
+        rhBloodType: undefined
+      }
+      this.form = resetData
+    },
     addComponent () {
-      searchCustomerUnderGroup('', this.pages).then(res => {
+      apiSearchCustomerUnderGroup('', this.pages).then(res => {
         if (res.status === 200) {
-          this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+        } else {
+          this.$message.error(res.status)
         }
         this.groupIdArr = res.data.content
-        // console.log('群众', this.groupIdArr)
       })
-      // console.log('---', this.form)
-      const form = this.form
-      for (var keys in form) {
-        form[keys] = ''
-      }
+      this.resetData()
       this.groupShow = false
       this.form.groupId = ''
     },
     initComponent () {
-      searchCustomerUnderGroup('', this.pages).then(res => {
+      apiSearchCustomerUnderGroup('', this.pages).then(res => {
         if (res.status === 200) {
-          this.loadingShow = false
           this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+        } else {
+          this.$message.error(res.status)
         }
         this.groupIdArr = res.data.content
-        // console.log('群众', this.groupIdArr)
       })
-      const form = this.form
-      for (var keys in form) {
-        form[keys] = ''
-      }
-      // console.log('loding', this.dataTypesTemp.data)
+      this.resetData()
       this.groupShow = true
       this.form.groupId = this.dataTypesTemp.data.name
-    },
-    // 重置表单
-    resetForm () {
-      this.$refs.ruleForm.resetFields()
     },
     openModel () {
       this.visible = true
     },
-    // 过滤下拉框数据
+    // 过滤数据
     fitSelect (value) {
       if (value) {
         return value
@@ -503,8 +541,7 @@ export default {
       }
     },
     handleOk (e) {
-      // e.preventDefault()
-      // console.log('111')
+      console.log('form', this.form)
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
           const that = this
@@ -521,18 +558,15 @@ export default {
           baseInfo.name = form.name
           baseInfo.gender = form.gender
           baseInfo.idType = form.idType
-          // baseInfo.aboBloodType = form.aboBloodType
-          // baseInfo.rhBloodType = form.rhBloodType
           baseInfo.idNo = form.idNo
           baseInfo.phoneNumber = form.phoneNumber
           baseInfo.contactName = form.contactName
           baseInfo.contactNumber = form.contactNumber
-          // baseInfo.ethnicGroups = form.ethnicGroups
-          baseInfo.province = form.province
-          baseInfo.city = form.city
-          baseInfo.area = form.area
-          baseInfo.street = form.street
-          baseInfo.homeAddress = form.homeAddress
+          baseInfo.province = this.fitSelect(form.province)
+          baseInfo.city = this.fitSelect(form.city)
+          baseInfo.area = this.fitSelect(form.area)
+          baseInfo.street = this.fitSelect(form.street)
+          baseInfo.homeAddress = this.fitSelect(form.homeAddress)
           baseInfo.birthDate = form.birthDate
           if (form.groupId) {
             this.groupIdArr.forEach(function (val) {
@@ -546,10 +580,13 @@ export default {
           // console.log('点击了确定,我是传回后端的数据', this.apiForm)
           const groupId = this.apiForm.groupId
           const apiForm = this.apiForm
-          customerAdd(groupId, apiForm).then(res => {
+          // console.log('apiForm', this.apiForm)
+          apiCustomerAdd(groupId, apiForm).then(res => {
             if (res.status === 200) {
               this.$message.info(res.message)
               // console.log('添加成功', apiForm)
+            } else {
+              this.$message.error(res.status)
             }
           })
           this.visible = false
@@ -561,7 +598,7 @@ export default {
     },
     // 取消
     handleOff () {
-      this.resetForm()
+      this.resetData()
     },
     // 获取子组件地址
     getAddress (value) {
