@@ -112,7 +112,7 @@
           />
         </a-card>
       </div>
-      <AddFollowUpSheet
+      <FollowUpFormAdd
         v-if="addFollowFormVisible"
         :visible="addFollowFormVisible"
         :customerId="custId"
@@ -142,7 +142,7 @@
 <script>
 import { getChronicManage as apiGetChronicManage } from '@/api/customer'
 import FollowUpRecords from './FollowUpRecords.vue'
-import AddFollowUpSheet from './AddFollowUpSheet.vue'
+import FollowUpFormAdd from './FollowUpFormAdd.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
@@ -154,7 +154,7 @@ const refreshGuidanceTable = {}
 export default {
   components: {
     FollowUpRecords,
-    AddFollowUpSheet,
+    FollowUpFormAdd,
     ChronicInformationChangeStatus,
     ChronicInformationEcharts,
     AddHealthCoaching,
