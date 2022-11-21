@@ -97,8 +97,8 @@
     <a-modal v-model="modalSelectChronic.visible" title="选择需要进行随访的慢病" @ok="handleChronicDiseaseOK" width="600px">
       <a-row>
         <a-col :span="24" >
-          <a-checkbox-group v-model="modalSelectChronic.diseases">
-            <a-checkbox :value="item" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
+          <a-checkbox-group v-model="defaultChecked">
+            <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
               {{ item.chronicDisease.name }}
             </a-checkbox>
           </a-checkbox-group>
@@ -251,7 +251,8 @@ export default {
       },
       sendModal: false,
       formId: null,
-      userAge: null
+      userAge: null,
+      defaultChecked: []
     }
   },
   filters: {
@@ -282,9 +283,9 @@ export default {
       if (this.diseaseId) {
         const res = await getChronicDetail(this.customerId, this.diseaseId)
         if (res.status === 200) {
-          console.log(res)
           const diseaseObj = res.data
           this.modalSelectChronic.diseases.push(diseaseObj)
+          this.defaultChecked = [diseaseObj.id]
           this.handleChronicDiseaseOK()
         }
       }
@@ -418,11 +419,6 @@ export default {
     handleOnDisableClicked (record, disabled) {
       // console.log(record, disabled)
       record.disabled = disabled
-    }
-  },
-  watch: {
-    payload () {
-      console.log('随访单新老数据')
     }
   }
 }

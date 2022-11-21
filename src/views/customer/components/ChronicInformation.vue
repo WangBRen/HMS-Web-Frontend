@@ -292,6 +292,7 @@ export default {
     },
     showFollowUpSheet () {
       this.addFollowFormVisible = true
+      this.diseaseId = -1
     },
     getDiseaseName (diseaseId) {
       this.addFollowFormVisible = true
