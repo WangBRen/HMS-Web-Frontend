@@ -112,14 +112,14 @@
           />
         </a-card>
       </div>
-      <AddFollowUpSheet
+      <FollowUpFormAdd
         v-if="addFollowFormVisible"
         :visible="addFollowFormVisible"
         :customerId="custId"
         :diseaseId="diseaseId"
         :baseInfo="baseInfo"
         @close="closeAddFollowForm"
-        @onMessageSent="handleOnMessageSent"/>
+        @successRefresh="handleSuccessRefresh"/>
     </a-modal>
     <ChronicInformationChangeStatus
       :userInfo="userInfo"
@@ -142,7 +142,7 @@
 <script>
 import { getChronicManage as apiGetChronicManage } from '@/api/customer'
 import FollowUpRecords from './FollowUpRecords.vue'
-import AddFollowUpSheet from './AddFollowUpSheet.vue'
+import FollowUpFormAdd from './FollowUpFormAdd.vue'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
@@ -154,7 +154,7 @@ const refreshGuidanceTable = {}
 export default {
   components: {
     FollowUpRecords,
-    AddFollowUpSheet,
+    FollowUpFormAdd,
     ChronicInformationChangeStatus,
     ChronicInformationEcharts,
     AddHealthCoaching,
@@ -292,6 +292,7 @@ export default {
     },
     showFollowUpSheet () {
       this.addFollowFormVisible = true
+      this.diseaseId = -1
     },
     getDiseaseName (diseaseId) {
       this.addFollowFormVisible = true
@@ -307,14 +308,14 @@ export default {
     closeAddFollowForm () {
       this.addFollowFormVisible = false
     },
-    handleOnMessageSent (success) {
-      if (success) {
-        this.$message.success('发送成功')
-        this.addFollowFormVisible = false
-      } else {
-        // notification.xxx
-      }
-    },
+    // handleOnMessageSent (success) {
+    //   if (success) {
+    //     this.$message.success('发送成功')
+    //     this.addFollowFormVisible = false
+    //   } else {
+    //     // notification.xxx
+    //   }
+    // },
     showHealthCoaching () { // 新增健康指导
       this.coachingVisible = true
       this.diseaseId = -1
