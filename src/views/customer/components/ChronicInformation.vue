@@ -119,7 +119,7 @@
         :diseaseId="diseaseId"
         :baseInfo="baseInfo"
         @close="closeAddFollowForm"
-        @onMessageSent="handleOnMessageSent"/>
+        @successRefresh="handleSuccessRefresh"/>
     </a-modal>
     <ChronicInformationChangeStatus
       :userInfo="userInfo"
@@ -307,14 +307,14 @@ export default {
     closeAddFollowForm () {
       this.addFollowFormVisible = false
     },
-    handleOnMessageSent (success) {
-      if (success) {
-        this.$message.success('发送成功')
-        this.addFollowFormVisible = false
-      } else {
-        // notification.xxx
-      }
-    },
+    // handleOnMessageSent (success) {
+    //   if (success) {
+    //     this.$message.success('发送成功')
+    //     this.addFollowFormVisible = false
+    //   } else {
+    //     // notification.xxx
+    //   }
+    // },
     showHealthCoaching () { // 新增健康指导
       this.coachingVisible = true
       this.diseaseId = -1

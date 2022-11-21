@@ -124,6 +124,12 @@ export default {
       default: () => {
         return null
       }
+    },
+    successRefresh: {
+      type: Function,
+      default: () => {
+        return null
+      }
     }
   },
   data () {
@@ -197,6 +203,7 @@ export default {
         if (res.status === 201) {
           this.$message.success('随访单创建成功')
           this.creatStatus = '创建成功'
+          this.$emit('successRefresh')
           this.current = 2
           this.getFormSendingInfo()
         }
@@ -207,6 +214,7 @@ export default {
     },
     handleOnSendSuccess () {
       this.$emit('close')
+      this.$emit('successRefresh')
     },
     async getFormSendingInfo () {
       if (!this.formId) { return }
@@ -223,8 +231,7 @@ export default {
       const apiPhone = this.phone
       const res = await ApiSendForm(this.customerId, this.formId, { telephone: apiPhone })
       if (res.status === 200) {
-        console.log('111111', res)
-        // this.sendTime =
+        this.$emit('successRefresh')
         this.current = 3
         const sendBtn = document.getElementById('sendForm')
         let time = 60
