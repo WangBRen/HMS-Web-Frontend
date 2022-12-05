@@ -305,9 +305,10 @@ export default {
       //   this.handleChronicDiseaseOK()
     },
     handleChronicDiseaseOK () {
-      // console.log('已选的慢病', this.modalSelectChronic.diseases)
       // transfer:
-      this.payload.diseases = this.modalSelectChronic.diseases
+      this.payload.diseases = this.totalChronicDiseases.filter(item => {
+        return this.defaultChecked.includes(item.id)
+      })
       this.modalSelectChronic.visible = false
       // console.log({ diseases: this.payload.diseases })
       // update index table
