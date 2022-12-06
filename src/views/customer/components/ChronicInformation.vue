@@ -78,19 +78,23 @@
                 <span>慢病随访记录</span>
                 <template v-if="item.status == 'diagnosed'">
                   <span style="margin-left: 12px;color:#247;font-size: 14px;">
-                    【下次复查时间：<span v-if="reviewTime">{{ dateTime }}</span>
-                    <a-date-picker
+                    【下次复查时间：<span>{{ dateTime }}</span>
+                    <!-- <a-date-picker
                       v-else
                       show-time
                       :defaultValue="dateTime"
                       type="date"
                       @ok="chooseReviewTime"
                       placeholder="请选择复查时间"
-                    />
+                    /> -->
                     &nbsp;&nbsp;&nbsp;
                     <span v-if="(day == 0&&hour==0&&minute==0&&secord==0)" style="color:red;">已超时</span>
                     <span v-else>剩余{{ day }}天{{ hour }}时{{ minute }}分{{ secord }}秒</span>
                     】
+                  </span>
+                  <span style="color:#666;font-size: 12px;margin-right: 6px;">
+                    间隔: <span v-if="reviewTime">{{ interval }}</span>
+                    <span v-else><a-input-number v-model="interval" :min="1" @change="onChangeInterval" /></span> 天
                   </span>
                   <a v-if="reviewTime" @click="editReviewTime"><a-icon type="form" /></a>
                   <a-button v-else size="small" type="primary" ghost @click="editReviewTime">保存</a-button>
@@ -246,7 +250,9 @@ export default {
       day: '0',
       hour: '0',
       minute: '0',
-      secord: '0'
+      secord: '0',
+      interval: 30, // 间隔天数
+      receiveDate: '' // 最近一次随访回收时间
     }
   },
   mounted () {
@@ -327,17 +333,37 @@ export default {
       if (item.status === 'diagnosed') {
         const pages = {
           page: 1,
-          size: 20
+          size: 30
         }
         const customerId = item.customer.id
         apiFollowUpRecords(customerId, this.diseaseId, pages).then(res => {
           if (res.status === 200) {
             const recordData = (res.data.content || []).filter(item => {
-              return item.sendAt !== null
+              return item.status === 'success'
             })
-            // this.total = res.data.totalElements
-            const dateTime = moment(recordData[0].sendAt).valueOf() + 24 * 7 * 60 * 60 * 1000
-            this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+            // console.log('recordData111', recordData)
+            // 前面请求了前30组数据，若前30组数据都没有回收成功的则请求全部数据
+            if (recordData.length === 0) {
+              const pages = {
+                page: 1,
+                size: res.data.totalElements
+              }
+              apiFollowUpRecords(customerId, this.diseaseId, pages).then(res => {
+                if (res.status === 200) {
+                  const recordData = (res.data.content || []).filter(item => {
+                    return item.status === 'success'
+                  })
+                  this.receiveDate = moment(recordData[0].receivedAt).valueOf()
+                  const dateTime = this.receiveDate + 24 * this.interval * 60 * 60 * 1000
+                  this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+                }
+              })
+            } else {
+              this.receiveDate = moment(recordData[0].receivedAt).valueOf()
+              const dateTime = this.receiveDate + 24 * this.interval * 60 * 60 * 1000
+              // console.log('dateTime', dateTime)
+              this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+            }
           } else {
             this.recordData = []
           }
@@ -410,13 +436,13 @@ export default {
     editReviewTime () {
       this.reviewTime = !this.reviewTime
     },
-    chooseReviewTime (e) {
-      const dateTime = moment(e._d).format('YYYY-MM-DD HH:mm')
-      this.dateTime = dateTime
-      // var nowTime = +new Date()
-      var futureTime = +new Date(e._d)
-      this.getDateTime(futureTime)
-    },
+    // chooseReviewTime (e) {
+    //   const dateTime = moment(e._d).format('YYYY-MM-DD HH:mm')
+    //   this.dateTime = dateTime
+    //   // var nowTime = +new Date()
+    //   var futureTime = +new Date(e._d)
+    //   this.getDateTime(futureTime)
+    // },
     getDateTime (futureTime) {
       if (futureTime > this.nowTime) {
         const totalSeconds = (futureTime - this.nowTime) / 1000
@@ -430,6 +456,16 @@ export default {
         this.minute = 0
         this.secord = 0
       }
+    },
+    onChangeInterval (value) {
+      // const dateTime = moment(e._d).format('YYYY-MM-DD HH:mm')
+      // this.dateTime = dateTime
+      // var nowTime = +new Date()
+      const dateTime = this.receiveDate + 24 * value * 60 * 60 * 1000
+      this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+      var futureTime = dateTime
+      this.getDateTime(futureTime)
+      this.interval = value
     }
   }
 }
