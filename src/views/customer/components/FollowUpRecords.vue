@@ -54,7 +54,7 @@
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
-    <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet">开始随访</a-button>
+    <!-- <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet">开始复查</a-button> -->
     <SeeFollowUpSheet
       v-if="currentSelectedForm.visible"
       :formId="currentSelectedForm.id"
@@ -281,10 +281,10 @@ export default {
       this.sendModelVisible = false
     },
         // 点击创建随访单
-    showFollowUpSheet () {
-      // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
-      this.$emit('addNewDisease', this.diseaseId)
-    },
+    // showFollowUpSheet () {
+    //   // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
+    //   this.$emit('addNewDisease', this.diseaseId)
+    // },
     handleOnMessageSendSuccess (data) {
       this.$message.success('发送成功')
       this.sendModelVisible = false
@@ -303,9 +303,9 @@ export default {
 </script>
 
 <style>
-.follow-start-button {
+/* .follow-start-button {
   width: 260px;
   top: -36px;
   z-index: 999;
-}
+} */
 </style>

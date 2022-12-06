@@ -73,7 +73,32 @@
                 :custId="custId"
               />
             </a-card>
-            <a-card title="慢病随访记录" style="margin-top: 12px;" :loading="loading">
+            <a-card style="margin-top: 12px;" :loading="loading">
+              <template #title>
+                <span>慢病随访记录</span>
+                <template v-if="item.status == 'diagnosed'">
+                  <span style="margin-left: 12px;color:#247;font-size: 14px;">
+                    【下次复查时间：<span v-if="reviewTime">{{ dateTime }}</span>
+                    <a-date-picker
+                      v-else
+                      show-time
+                      :defaultValue="dateTime"
+                      type="date"
+                      @ok="chooseReviewTime"
+                      placeholder="请选择复查时间"
+                    />
+                    &nbsp;&nbsp;&nbsp;
+                    <span v-if="(day == 0&&hour==0&&minute==0&&secord==0)" style="color:red;">已超时</span>
+                    <span v-else>剩余{{ day }}天{{ hour }}时{{ minute }}分{{ secord }}秒</span>
+                    】
+                  </span>
+                  <a v-if="reviewTime" @click="editReviewTime"><a-icon type="form" /></a>
+                  <a-button v-else size="small" type="primary" ghost @click="editReviewTime">保存</a-button>
+                  <a-button @click="showFollowUpSheet(item)" type="primary" class="HealthBtn">
+                    开始复查
+                  </a-button>
+                </template>
+              </template>
               <span v-if="item.status !== 'diagnosed'">
                 <a-icon type="question-circle" />
                 温馨提示：你还没有对该慢病确诊，暂无法进行随访
@@ -83,19 +108,21 @@
                   :diseaseId="item.id"
                   :customerId="custId"
                   :diseaseObj="item"
-                  @addNewDisease="getDiseaseName"
                   @successRefresh="handleSuccessRefresh"
                 />
               </div>
             </a-card>
-            <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
+            <a-card style="margin-top: 12px;" :loading="loading">
+              <template #title>
+                健康指导记录
+                <a-button type="primary" class="HealthBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
+              </template>
               <span v-if="item.level == null">
                 <a-icon type="question-circle" />
                 温馨提示：你还没有对该慢病分级，暂无法进行健康指导
               </span>
               <div v-else>
                 <HealthCoachingRecords :diseaseId="item.id" :customerId="custId" @setRefreshCallback="handleSetRefreshCallback"/>
-                <a-button type="primary" class="HealthCoachingBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
               </div>
             </a-card>
             <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
@@ -143,11 +170,13 @@
 import { getChronicManage as apiGetChronicManage } from '@/api/customer'
 import FollowUpRecords from './FollowUpRecords.vue'
 import FollowUpFormAdd from './FollowUpFormAdd.vue'
+import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
 import AddHealthCoaching from './AddHealthCoaching.vue'
 import HealthCoachingRecords from './HealthCoachingRecords.vue'
+import moment from 'moment'
 
 const refreshGuidanceTable = {}
 
@@ -211,11 +240,25 @@ export default {
       coachingVisible: false,
       StatusVisible: false,
       disable: true,
-      disableFollow: true
+      disableFollow: true,
+      reviewTime: true, // 编辑复查时间
+      dateTime: '',
+      day: '0',
+      hour: '0',
+      minute: '0',
+      secord: '0'
     }
   },
   mounted () {
     this.loadData()
+    this.timer = setInterval(() => {
+      this.nowTime = +new Date()
+      const futureTime = +new Date(this.dateTime)
+      this.getDateTime(futureTime)
+    }, 1000)
+  },
+  beforeDestroy () {
+    clearInterval(this.timer)
   },
   methods: {
     async loadData () {
@@ -279,8 +322,29 @@ export default {
     closeStatusModel () {
       this.StatusVisible = false
     },
-    cardShow (showIndex) {
-      showIndex.showIndex = !showIndex.showIndex
+    cardShow (item) {
+      this.diseaseId = item.id
+      if (item.status === 'diagnosed') {
+        const pages = {
+          page: 1,
+          size: 20
+        }
+        const customerId = item.customer.id
+        apiFollowUpRecords(customerId, this.diseaseId, pages).then(res => {
+          if (res.status === 200) {
+            const recordData = (res.data.content || []).filter(item => {
+              return item.sendAt !== null
+            })
+            // this.total = res.data.totalElements
+            const dateTime = moment(recordData[0].sendAt).valueOf() + 24 * 7 * 60 * 60 * 1000
+            this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+          } else {
+            this.recordData = []
+          }
+        })
+      }
+      console.log('展开的慢病', item)
+      item.showIndex = !item.showIndex
     },
     // 点击修改慢病状态
     changeStatus (status, item) {
@@ -290,15 +354,15 @@ export default {
         this.StatusVisible = true
       }
     },
-    showFollowUpSheet () {
+    showFollowUpSheet (item) {
       this.addFollowFormVisible = true
-      this.diseaseId = -1
+      this.diseaseId = item.id || -1
     },
-    getDiseaseName (diseaseId) {
-      this.addFollowFormVisible = true
-      this.diseaseId = diseaseId
-      // this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
-    },
+    // getDiseaseName (diseaseId) {
+    //   this.addFollowFormVisible = true
+    //   this.diseaseId = diseaseId
+    //   // this.$refs.FollowUpSheetRef.openAddFollow(val, this.tableData)
+    // },
     handleSuccessRefresh () {
       this.loadData()
     },
@@ -334,6 +398,31 @@ export default {
     },
     handleSetRefreshCallback (diseaseId, loadData) {
       refreshGuidanceTable['d-' + diseaseId] = loadData
+    },
+    // 编辑复查时间
+    editReviewTime () {
+      this.reviewTime = !this.reviewTime
+    },
+    chooseReviewTime (e) {
+      const dateTime = moment(e._d).format('YYYY-MM-DD HH:mm')
+      this.dateTime = dateTime
+      // var nowTime = +new Date()
+      var futureTime = +new Date(e._d)
+      this.getDateTime(futureTime)
+    },
+    getDateTime (futureTime) {
+      if (futureTime > this.nowTime) {
+        const totalSeconds = (futureTime - this.nowTime) / 1000
+        this.day = parseInt(totalSeconds / 60 / 60 / 24)
+        this.hour = parseInt(totalSeconds / 60 / 60 % 24)
+        this.minute = parseInt(totalSeconds / 60 % 60)
+        this.secord = parseInt(totalSeconds % 60)
+      } else {
+        this.day = 0
+        this.hour = 0
+        this.minute = 0
+        this.secord = 0
+      }
     }
   }
 }
@@ -365,9 +454,11 @@ export default {
   width: 65px;
   text-align: center;
 }
-.HealthCoachingBtn{
-  width: 260px;
-  top: -36px;
-  z-index: 999;
+.HealthBtn{
+  width: 160px;
+  float: right;
+  border-radius: 3px;
+  // top: -36px;
+  // z-index: 999;
 }
 </style>
