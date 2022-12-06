@@ -238,7 +238,7 @@ const columns = [
   },
   {
     title: '创建时间',
-    dataIndex: 'createAt',
+    dataIndex: 'createdAt',
     scopedSlots: { customRender: 'createTime' },
     sorter: true
   }, {
