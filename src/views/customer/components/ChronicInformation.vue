@@ -343,8 +343,15 @@ export default {
           }
         })
       }
-      console.log('展开的慢病', item)
-      item.showIndex = !item.showIndex
+      if (item.showIndex) {
+        item.showIndex = !item.showIndex
+      } else {
+        this.tableData = this.tableData.map((item) => {
+          item.showIndex = false
+          return item
+        })
+        item.showIndex = true
+      }
     },
     // 点击修改慢病状态
     changeStatus (status, item) {
