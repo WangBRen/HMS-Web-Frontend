@@ -17,7 +17,7 @@
             <a-col :md="13" :sm="24"/>
             <a-col :md="3" :sm="24">
               <span class="table-page-search-submitButtons">
-                <a-button type="primary " style="margin-left: 8px" @click="handleOpen">新建</a-button>
+                <a-button type="primary " style="margin-left: 8px" @click="handleOpen">新建家庭</a-button>
               </span>
             </a-col>
           </a-row>
@@ -33,9 +33,9 @@
         expandRowByClick
       >
         <span slot="action" slot-scope="text, grecord">
-          <a @click="handleAdd(grecord)">新增用户</a>
+          <a @click="handleAdd(grecord)">新增成员</a>
           <a-divider type="vertical" />
-          <a @click="handleEdit(grecord)">添加用户</a>
+          <a @click="handleEdit(grecord)">添加成员</a>
         </span>
         <!-- <span slot="action" slot-scope="text, grecord">
           <a @click="handleEdit(grecord)">添加用户</a>
@@ -138,7 +138,7 @@ import HealthDataManagmentFormVue from './components/HealthDataManagmentForm.vue
 const columns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
-  { title: '群组名称', dataIndex: 'name', key: 'name', align: 'center' },
+  { title: '家庭名称', dataIndex: 'name', key: 'name', align: 'center' },
   { title: '管理员', dataIndex: 'manager.baseInfo.name', key: 'manager.baseInfo.name', align: 'center' },
   { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
   { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },

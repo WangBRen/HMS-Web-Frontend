@@ -2,15 +2,15 @@
 
   <div id="userLayout" :class="['user-layout-wrapper', isMobile && 'mobile']">
     <div class="container">
-      <div class="user-layout-lang">
+      <!-- <div class="user-layout-lang">
         <select-lang class="select-lang-trigger" />
-      </div>
+      </div> -->
       <div class="user-layout-content">
         <div class="top">
           <div class="header">
             <a href="/">
               <img src="~@/assets/logo.svg" class="logo" alt="logo">
-              <span class="title">攸太科技</span>
+              <!-- <span class="title">攸太科技</span> -->
             </a>
           </div>
           <div class="desc">
@@ -21,11 +21,11 @@
         <router-view />
 
         <div class="footer">
-          <div class="links">
+          <!-- <div class="links">
             <a href="_self">帮助</a>
             <a href="_self">隐私</a>
             <a href="_self">条款</a>
-          </div>
+          </div> -->
           <div class="copyright">
             Copyright &copy; 2022 攸太科技
           </div>
@@ -94,7 +94,7 @@ export default {
     }
 
     .user-layout-content {
-      padding: 32px 0 24px;
+      padding: 64px 0 24px;
 
       .top {
         text-align: center;

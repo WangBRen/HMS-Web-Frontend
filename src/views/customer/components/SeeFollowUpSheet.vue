@@ -5,7 +5,7 @@
       @cancel="handleOnModalCancel"
       :title="`慢病随访单记录表${headerTips}`"
       :width="1100"
-      :footer="(followTableData.level==null&&followTableData.status=='success'&&followTableData.diseases.length===1) ? undefined : null"
+      :footer="(followTableData.level==null&&followTableData.status=='success'&&(diseaseId>0 || followTableData.diseases.length === 1)&&!followTableData.destroy) ? undefined : null"
     >
       <template #footer>
         <a-popconfirm

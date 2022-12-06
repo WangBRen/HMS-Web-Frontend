@@ -15,80 +15,82 @@
               <a-form-model :model="formData">
                 <a-form-model-item>
                   <a-row class="project-header">
-                    <a-col :span="5">
+                    <a-col :span="15">
                       <a class="project-title">{{ items.indexId }}</a>
                       <!-- <a-icon class="targetIcon" @click="delIndex(items)" type="close" /> -->
                     </a-col>
-                    <a-col :span="1" :offset="18">
+                    <a-col :span="1" :offset="8">
                       <a-icon class="targetIcon" @click="delIndex(items)" type="close" />
                     </a-col>
                   </a-row>
-                  <a-row v-for="item in items.indexArr" :key="item.id">
-                    <a-col>
-                      <a-row>
-                        <a-col :span="4">
-                          <div class="index-item-title-wrapper">
-                            <div class="index-item-title-sider"/>
-                            <span class="index-item-title"> {{ item.name }} </span>
-                          </div>
-                        </a-col>
-                        <a-col :span="6">
-                          <!-- 整数或小数 -->
-                          <a-input v-if="item.type === 'Integer' || item.type === 'Float'" @change="e => { item.value = e.target.value }" :addonAfter="item.unit"></a-input>
-                          <!-- 主观文本 -->
-                          <a-textarea v-if="item.type === 'Text'" v-model="item.value" :rows="2" />
-                          <!-- 图文报告 -->
-                          <a-upload
-                            v-if="item.type === 'Report'"
-                            v-model="item.value"
-                            name="file"
-                            :multiple="false"
-                            :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + userInfo.customerId"
-                            @change="value => handleChange(value, item)"
-                          >
-                            <a-button> <a-icon type="upload" />上传报告</a-button>
-                          </a-upload>
-                        </a-col>
-                        <a-col :span="2" :offset="2"><span>诊断结果:</span></a-col>
-                        <a-col :span="8">
-                          <a-select @change="e => { item.diaResult = e }">
-                            <a-select-option v-for="result in item.result" :key="result.id" :value="result.name">
-                              {{ result.name }}
-                            </a-select-option>
-                          </a-select>
-                        </a-col>
-                      </a-row>
-                    </a-col>
-                    <a-col>
-                      <a-row>
-                        <a-col style="margin-left: 550px; line-height: 20px;">
-                          <a :id="'str'+item.id" style="line-height: 20px;" @click="showInput(item.id)">展开</a>
-                          <div :id="item.id" style="display: none;">
-                            <div style="padding-top:12px; display: flex;line-height: 20px;">
-                              <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
-                              <div style="color: #00a0e9">
-                                <span style="pointer-events:none;display:block;" v-for="(ranges,index) in item.result" :key="index">
-                                  {{ ranges | getRange }}
-                                  <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
-                                </span>
-                              </div>
+                  <div style="padding:10px 30px; background-color: #f0f0f0;">
+                    <a-row v-for="item in items.indexArr" :key="item.id">
+                      <a-col>
+                        <a-row>
+                          <a-col :span="4">
+                            <div class="index-item-title-wrapper">
+                              <div class="index-item-title-sider"/>
+                              <span class="index-item-title"> {{ item.name }} </span>
                             </div>
-                            <div><a class="exTitle">检查方式:</a>{{ item.testMethod }}</div>
-                            <div><a class="exTitle">建议频率:</a>{{ item.testRateValue + '次/' + item.testRateUnit }}</div>
-                            <div><a class="exTitle">检测环境:</a>{{ item.testEnvironment }}</div>
-                            <div><span class="exTitle">备注:</span>{{ item.remark || '无' }}</div>
-                          </div>
-                        </a-col>
-                      </a-row>
-                    </a-col>
-                  </a-row>
+                          </a-col>
+                          <a-col :span="6">
+                            <!-- 整数或小数 -->
+                            <a-input v-if="item.type === 'Integer' || item.type === 'Float'" @change="e => { item.value = e.target.value }" :addonAfter="item.unit"></a-input>
+                            <!-- 主观文本 -->
+                            <a-textarea v-if="item.type === 'Text'" v-model="item.value" :rows="2" />
+                            <!-- 图文报告 -->
+                            <a-upload
+                              v-if="item.type === 'Report'"
+                              v-model="item.value"
+                              name="file"
+                              :multiple="false"
+                              :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + userInfo.customerId"
+                              @change="value => handleChange(value, item)"
+                            >
+                              <a-button> <a-icon type="upload" />上传报告</a-button>
+                            </a-upload>
+                          </a-col>
+                          <a-col :span="2" :offset="2"><span>诊断结果:</span></a-col>
+                          <a-col :span="8">
+                            <a-select @change="e => { item.diaResult = e }">
+                              <a-select-option v-for="result in item.result" :key="result.id" :value="result.name">
+                                {{ result.name }}
+                              </a-select-option>
+                            </a-select>
+                          </a-col>
+                        </a-row>
+                      </a-col>
+                      <a-col>
+                        <a-row>
+                          <a-col style="margin-left: 550px; line-height: 20px;">
+                            <a :id="'str'+item.id" style="line-height: 20px;" @click="showInput(item.id)">展开</a>
+                            <div :id="item.id" style="display: none;">
+                              <div style="padding-top:12px; display: flex;line-height: 20px;">
+                                <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
+                                <div style="color: #00a0e9">
+                                  <span style="pointer-events:none;display:block;" v-for="(ranges,index) in item.result" :key="index">
+                                    {{ ranges | getRange }}
+                                    <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
+                                  </span>
+                                </div>
+                              </div>
+                              <div><a class="exTitle">检查方式:</a>{{ item.testMethod }}</div>
+                              <div><a class="exTitle">建议频率:</a>{{ item.testRateValue + '次/' + item.testRateUnit }}</div>
+                              <div><a class="exTitle">检测环境:</a>{{ item.testEnvironment }}</div>
+                              <div><span class="exTitle">备注:</span>{{ item.remark || '无' }}</div>
+                            </div>
+                          </a-col>
+                        </a-row>
+                      </a-col>
+                    </a-row>
+                  </div>
                 </a-form-model-item>
               </a-form-model>
             </a-col>
           </a-row>
           <a-row style="margin-bottom: 36px;">
             <a-col :span="6" offset="18">
-              <span>检测时间:</span>
+              <span style="line-height:32px">检测时间:</span>
               <span style="float: right;">
                 <a-date-picker
                   show-time
@@ -111,24 +113,26 @@
               </a-col>
             </a-col>
           </a-row>
-          <a-row style="padding-top: 12px; padding-bottom: 12px;">
+          <a-row>
             <a-col>
-              <a-row>
-                <a-col :span="3">
-                  <div class="index-item-title-wrapper">
-                    <div class="index-item-title-sider"/>
-                    <span class="index-item-title"> 诊断结果 </span>
-                  </div>
-                </a-col>
-                <a-col :span="21">
-                  <div>
-                    <CheckDia v-model="formData.diagnosisData" @changes="getDia($event)" />
-                  </div>
-                </a-col>
-              </a-row>
-              <a-row style="margin-bottom: 12px;">
+              <div style="padding:20px 30px; background-color: #f0f0f0;">
+                <a-row>
+                  <a-col :span="3">
+                    <div class="index-item-title-wrapper">
+                      <div class="index-item-title-sider"/>
+                      <span class="index-item-title"> 诊断结果 </span>
+                    </div>
+                  </a-col>
+                  <a-col :span="21">
+                    <div>
+                      <CheckDia v-model="formData.diagnosisData" @changes="getDia($event)" />
+                    </div>
+                  </a-col>
+                </a-row>
+              </div>
+              <a-row style="margin:18px 0 36px 0;">
                 <a-col :span="2" :offset="18">
-                  <span>
+                  <span style="line-height:32px">
                     诊断时间:
                   </span>
                 </a-col>
@@ -155,23 +159,25 @@
               <a-icon class="targetIcon" @click="delIndex(items)" type="close" />
             </a-col>
           </a-row>
-          <a-row style="padding-top: 12px; padding-bottom: 12px;">
+          <a-row>
             <a-col>
-              <a-row>
-                <a-col :span="3">
-                  <div class="index-item-title-wrapper">
-                    <div class="index-item-title-sider"/>
-                    <span class="index-item-title"> 症状 </span>
+              <div style="padding:20px 30px; background-color: #f0f0f0;">
+                <a-row>
+                  <a-col :span="3">
+                    <div class="index-item-title-wrapper">
+                      <div class="index-item-title-sider"/>
+                      <span class="index-item-title"> 症状 </span>
 
-                  </div>
-                </a-col>
-                <a-col :span="21">
-                  <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" />
-                </a-col>
-              </a-row>
-              <a-row style="margin-top:12px;margin-bottom: 12px;">
+                    </div>
+                  </a-col>
+                  <a-col :span="21">
+                    <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                  </a-col>
+                </a-row>
+              </div>
+              <a-row style="margin:18px 0 36px 0;">
                 <a-col :span="2" :offset="18">
-                  <span>
+                  <span style="line-height:32px">
                     诊断时间:
                   </span>
                 </a-col>
@@ -196,7 +202,7 @@
             <a-icon type="plus" /> 添加指标
           </a-button>
           <a-button @click="delIndexEnd" type="dashed" style="width: 30%">
-            <a-icon type="plus" /> 删除指标
+            <a-icon type="minus" /> 删除指标
           </a-button>
         </a-col>
       </a-row>

@@ -3,8 +3,8 @@
     <a-modal
       forceRender
       destroyOnClose
-      :maskClosable="false"
       :width="1200"
+      :footer="null"
       :visible="openHealthvisible"
       :confirm-loading="confirmLoading"
       @cancel="handleCancel"
@@ -43,12 +43,14 @@
             <a-button type="danger">删除</a-button>
           </a-popconfirm> -->
         </span>
-        <span slot="tags" slot-scope="tags">
+        <span slot="tags" slot-scope="text, record">
           <a-tag
-            v-for="tag in tags"
-            :key="tag"
+            v-for="item in record.projects"
+            :key="item"
             :color=" 'geekblue'"
-          >{{ tag }}</a-tag>
+          >{{ item }}</a-tag>
+          <a-tag v-if="record.symptom" :color=" 'orange'">用户症状</a-tag>
+          <a-tag v-if="record.disease" :color=" 'orange'">用户诊断</a-tag>
         </span>
         <!-- <span slot="updatedAt" slot-scope="text, record">
           {{ record.updatedAt ? moment(record?.updatedAt).format('YYYY-MM-DD HH:mm:ss') : '' }}

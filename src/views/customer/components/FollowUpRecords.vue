@@ -46,11 +46,15 @@
           <a @click="retransmission(text, scope)">重发</a> |
           <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>
         </span>
-        <a v-else-if="(scope.level===null && diseaseId>0) || (scope.level===null && scope.diseases.length===1) " @click="startLevel(text, scope)">分级</a>
+        <span v-else-if="scope.level===null">
+          <span v-if="scope.destroy" @click="ViewFollowUpTable(text, scope)">已废弃</span>
+          <a v-else-if="diseaseId>0 || scope.diseases.length === 1" @click="startLevel(text, scope)">分级</a>
+          <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
+        </span>
         <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
       </span>
     </a-table>
-    <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet">开始随访</a-button>
+    <!-- <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet">开始复查</a-button> -->
     <SeeFollowUpSheet
       v-if="currentSelectedForm.visible"
       :formId="currentSelectedForm.id"
@@ -277,10 +281,10 @@ export default {
       this.sendModelVisible = false
     },
         // 点击创建随访单
-    showFollowUpSheet () {
-      // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
-      this.$emit('addNewDisease', this.diseaseId)
-    },
+    // showFollowUpSheet () {
+    //   // bus.$emit('sendChroName', this.diseaseObj, this.totalChronicDiseases)
+    //   this.$emit('addNewDisease', this.diseaseId)
+    // },
     handleOnMessageSendSuccess (data) {
       this.$message.success('发送成功')
       this.sendModelVisible = false
@@ -299,9 +303,9 @@ export default {
 </script>
 
 <style>
-.follow-start-button {
+/* .follow-start-button {
   width: 260px;
   top: -36px;
   z-index: 999;
-}
+} */
 </style>
