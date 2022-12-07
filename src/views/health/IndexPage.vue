@@ -13,11 +13,11 @@
           <a-button style="float: right" type="primary"> 新建{{ tab.name }}指标 </a-button>
         </div> -->
         <a-table
+          :scroll="{ y: 600 }"
           row-key="id"
           size="small"
           :columns="columns"
           :data-source="tab.items"
-          :scroll="scroll"
           :pagination="false"
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
@@ -409,7 +409,7 @@ const columns = [
     title: '指标名称',
     dataIndex: 'name',
     fixed: 'left',
-    width: 140
+    width: 180
   },
   {
     title: '检测方式',
