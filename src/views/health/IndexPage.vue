@@ -22,70 +22,74 @@
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
           <span slot="conditions" slot-scope="text">
-            <div v-if="text.length > 0" v-for="range_item in text" :key="range_item.id" style="margin-bottom: 6px;">
-              <span v-if="range_item.type === 'simple'">
-                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
-                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
-                  <a-tag v-for="option in range_item.options" :key="option.id" style="margin-bottom: 2px;">
-                    {{ option.name }}
-                  </a-tag>
-                </div>
-              </span>
-              <span v-if="range_item.type === 'range'">
-                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
-                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
-                  <div v-for="option in range_item.options" :key="option.id" style="padding-top: 2px;">
-                    <a-tag> {{ option.name }} </a-tag>:
-                    <span v-if="option.start">
-                      <span style="text-decoration: underline;"> {{ option.start }}</span>
-                      ≤
-                    </span>
-                    <span v-if="option.start && option.end"> 且 </span>
-                    <span v-if="option.end">
-                      &lt;
-                      <span style="text-decoration: underline;"> {{ option.end }}</span>
-                    </span>
-                    {{ range_item.unit }}
+            <div v-if="text.length > 0">
+              <div v-for="range_item in text" :key="range_item.id" style="margin-bottom: 6px;">
+                <span v-if="range_item.type === 'simple'">
+                  <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
+                    <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
+                    <a-tag v-for="option in range_item.options" :key="option.id" style="margin-bottom: 2px;">
+                      {{ option.name }}
+                    </a-tag>
                   </div>
-                </div>
-              </span>
+                </span>
+                <span v-if="range_item.type === 'range'">
+                  <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
+                    <a-divider style="font-size: 12px; color: #999; margin: 4px 0;" orientation="left"> {{ range_item.name }} </a-divider>
+                    <div v-for="option in range_item.options" :key="option.id" style="padding-top: 2px;">
+                      <a-tag> {{ option.name }} </a-tag>:
+                      <span v-if="option.start">
+                        <span style="text-decoration: underline;"> {{ option.start }}</span>
+                        ≤
+                      </span>
+                      <span v-if="option.start && option.end"> 且 </span>
+                      <span v-if="option.end">
+                        &lt;
+                        <span style="text-decoration: underline;"> {{ option.end }}</span>
+                      </span>
+                      {{ range_item.unit }}
+                    </div>
+                  </div>
+                </span>
+              </div>
             </div>
             <div v-if="text.length === 0"> - </div>
           </span>
           <span slot="result" slot-scope="text">
-            <span v-if="text.length" v-for="range_item in text" :key="range_item.id">
-              <span v-if="range_item.type === 'simple'">
-                <a-tag color="#2db7f5" style="font-weight: 700; margin-bottom: 2px;"> {{ range_item.name }} </a-tag>
-              </span>
-              <div v-if="range_item.type === 'range'">
-                <!-- <div style="font-size: 12px; padding-bottom: 2px; white-space: nowrap;"> -->
-                <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px; margin-bottom: 6px; white-space: nowrap;">
-                  <a-divider style="font-size: 12px; color: #999; margin: 4px 0; font-weight: 700;" orientation="left">
-                    <a-tag color="#2db7f5" style="font-weight: 700"> {{ range_item.name }} </a-tag>
-                  </a-divider>
-                  <span v-if="range_item.products">
-                    <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
-                      <span v-if="prod.conditionFilters?.length">
-                        <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
-                          {{ filter.option?.name }}
-                        </a-tag>:
-                      </span>
-                      <span v-if="prod.start">
-                        <span style="text-decoration: underline;"> {{ prod.start }}</span>
-                        ≤
-                      </span>
-                      <span v-if="prod.start && prod.end"> 且 </span>
-                      <span v-if="prod.end">
-                        &lt;
-                        <span style="text-decoration: underline;"> {{ prod.end }}</span>
-                      </span>
-                      {{ prod.unit }}
-                    </div>
-                  </span>
+            <div v-if="text.length">
+              <span v-for="range_item in text" :key="range_item.id">
+                <span v-if="range_item.type === 'simple'">
+                  <a-tag color="#2db7f5" style="font-weight: 700; margin-bottom: 2px;"> {{ range_item.name }} </a-tag>
+                </span>
+                <div v-if="range_item.type === 'range'">
+                  <!-- <div style="font-size: 12px; padding-bottom: 2px; white-space: nowrap;"> -->
+                  <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px; margin-bottom: 6px; white-space: nowrap;">
+                    <a-divider style="font-size: 12px; color: #999; margin: 4px 0; font-weight: 700;" orientation="left">
+                      <a-tag color="#2db7f5" style="font-weight: 700"> {{ range_item.name }} </a-tag>
+                    </a-divider>
+                    <span v-if="range_item.products">
+                      <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
+                        <span v-if="prod.conditionFilters?.length">
+                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
+                            {{ filter.option?.name }}
+                          </a-tag>:
+                        </span>
+                        <span v-if="prod.start">
+                          <span style="text-decoration: underline;"> {{ prod.start }}</span>
+                          ≤
+                        </span>
+                        <span v-if="prod.start && prod.end"> 且 </span>
+                        <span v-if="prod.end">
+                          &lt;
+                          <span style="text-decoration: underline;"> {{ prod.end }}</span>
+                        </span>
+                        {{ prod.unit }}
+                      </div>
+                    </span>
+                  </div>
+                  <!-- </div> -->
                 </div>
-                <!-- </div> -->
-              </div>
-            </span>
+              </span>
+            </div>
             <span v-if="!text.length"> - </span>
           </span>
           <span slot="action" slot-scope="text, record" style="white-space: nowrap;">
@@ -204,26 +208,27 @@
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定条件： </a-col>
                     <a-col :span="21" v-if="condition.type == 'range'" style="padding-left: 4px;">
-                      <div v-if="condition.options" v-for="option in condition.options" :key="option.id">
-                        <a-col :span="6" style="padding-left: 0px;">
-                          <a-input type="text" v-model="option.name" placeholder="可选择项名称"/>
-                        </a-col>
-                        <a-col :span="17" style="display: flex; align-items: center;">
-                          <a-input type="text" v-model="option.start" placeholder="数值下界" style="width: 40%" :addonAfter="condition.unit"/>
-                          <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 条件值 &lt; </div>
-                          <a-input type="text" v-model="option.end" placeholder="数值上界" style="width: 40%" :addonAfter="condition.unit"/>
-                        </a-col>
-                        <a-col :span="1">
-                          <a-icon type="close" @click="handleAddNewConditionOptionRemove(condition, option)"/>
-                        </a-col>
+                      <div v-if="condition.options">
+                        <div v-for="option in condition.options" :key="option.id">
+                          <a-col :span="6" style="padding-left: 0px;">
+                            <a-input type="text" v-model="option.name" placeholder="可选择项名称"/>
+                          </a-col>
+                          <a-col :span="17" style="display: flex; align-items: center;">
+                            <a-input type="text" v-model="option.start" placeholder="数值下界" style="width: 40%" :addonAfter="condition.unit"/>
+                            <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 条件值 &lt; </div>
+                            <a-input type="text" v-model="option.end" placeholder="数值上界" style="width: 40%" :addonAfter="condition.unit"/>
+                          </a-col>
+                          <a-col :span="1">
+                            <a-icon type="close" @click="handleAddNewConditionOptionRemove(condition, option)"/>
+                          </a-col>
+                        </div>
                       </div>
                       <a-button style="width: 100%" type="dashed" @click="handleAddNewConditionRange(condition)"> 增添一组条件选项 </a-button>
                     </a-col>
                     <a-col :span="21" v-if="condition.type == 'simple'" style="padding-left: 4px;">
-                      <div>
+                      <div v-if="condition.options">
                         <a-tag
                           type="text"
-                          v-if="condition.options"
                           v-for="option in condition.options"
                           :key="option.id"
                           closable
@@ -284,8 +289,8 @@
                           />
                         </a-col>
                         <a-col :span="19">
-                          <div v-if="result_option.products" v-for="prod in result_option.products" :key="prod.id">
-                            <div>
+                          <div v-if="result_option.products">
+                            <div v-for="prod in result_option.products" :key="prod.id">
                               <a-row>
                                 <a-col :span="10" v-if="prod.conditionFilters.length > 0">
                                   <span v-for="(opt, idx) in prod.conditionFilters" :key="idx">
@@ -326,10 +331,9 @@
                       <a-button style="width: 100%" type="dashed" @click="handleAddNewResultRange(current.result)"> 增添一组结果选项 </a-button>
                     </a-col>
                     <a-col :span="24" v-if="current.result.type == 'simple'" style="padding-left: 12px;">
-                      <div>
+                      <div v-if="current.result.options">
                         <a-tag
                           type="text"
-                          v-if="current.result.options"
                           v-for="option in current.result.options"
                           :key="option.id"
                           closable
