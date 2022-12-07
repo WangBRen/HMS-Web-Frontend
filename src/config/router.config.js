@@ -137,7 +137,7 @@ export const asyncRouterMap = [
             name: 'chronic',
             component: () => import('@/views/health/HealthChronic'),
             // meta: { title: '慢病管理' }
-            meta: { title: 'menu.health.chronic', keepAlive: true, permission: ['chronic_management'] }
+            meta: { title: 'menu.health.chronic', keepAlive: true, permission: ['health_disease'] }
 
           },
           {
