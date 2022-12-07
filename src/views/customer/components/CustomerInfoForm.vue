@@ -582,7 +582,7 @@ export default {
           const apiForm = this.apiForm
           // console.log('apiForm', this.apiForm)
           apiCustomerAdd(groupId, apiForm).then(res => {
-            if (res.status === 200) {
+            if (res.status === 201) {
               this.$message.info(res.message)
               // console.log('添加成功', apiForm)
             } else {
