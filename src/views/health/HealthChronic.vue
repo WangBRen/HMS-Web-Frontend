@@ -158,7 +158,8 @@ export default {
             {
               title: '慢性病名',
               dataIndex: 'name',
-              key: 'name'
+              key: 'name',
+              width: 120
             },
             {
               title: '慢性病描述',
@@ -174,7 +175,9 @@ export default {
             {
               title: '操作',
               key: 'action',
-              scopedSlots: { customRender: 'action' }
+              scopedSlots: { customRender: 'action' },
+              width: 200,
+              align: 'center'
             }
           ],
           tableData: [],
