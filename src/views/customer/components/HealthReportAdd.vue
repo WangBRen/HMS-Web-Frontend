@@ -52,7 +52,8 @@
                           </a-col>
                           <a-col :span="2" :offset="2"><span>诊断结果:</span></a-col>
                           <a-col :span="8">
-                            <a-select @change="e => { item.diaResult = e }">
+                            <a-textarea placeholder="请输入诊断结果" :auto-size="{ minRows: 2, maxRows: 6 }" v-if="(item.result.length === 0)"/>
+                            <a-select @change="e => { item.diaResult = e }" v-else>
                               <a-select-option v-for="result in item.result" :key="result.id" :value="result.name">
                                 {{ result.name }}
                               </a-select-option>
@@ -241,7 +242,10 @@
       <div>
         <a-row>
           <a-col :span="12" class="indexCol" v-for="item in filterHealthIndexData" :key="item.name">
-            <a-button class="indexButton" @click="checkIndex(item.name)">
+            <a-button class="indexButton special_index" @click="checkIndex(item.name)" v-if="item.name === '用户诊断信息' || item.name === '用户症状信息'">
+              {{ item.name }}
+            </a-button>
+            <a-button class="indexButton" @click="checkIndex(item.name)" v-else>
               {{ item.name }}
             </a-button>
           </a-col>
@@ -611,5 +615,10 @@ export default {
     /* margin: 5px; */
     border-style: dashed;
     background-color: #fdfdfd;
+}
+.special_index{
+    color: #fa8c16;
+    background: #fff7e6;
+    border-color: #ffd591;
 }
 </style>
