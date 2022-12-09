@@ -69,6 +69,15 @@
                                 <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
                                 <div style="color: #00a0e9">
                                   <span style="pointer-events:none;display:block;" v-for="(ranges,index) in item.result" :key="index">
+                                    <a-tag v-for="condition in ranges.conditionFilters" :key="condition.conditionId">
+                                      <span v-for="conditions in item.conditions" :key="conditions.id">
+                                        <sapn v-if="(conditions.id === condition.conditionId)">
+                                          <span v-for="i in conditions.options" :key="i.id">
+                                            <span v-if="(i.id === condition.optionId)">{{ i.name }}</span>
+                                          </span>
+                                        </sapn>
+                                      </span>
+                                    </a-tag>
                                     {{ ranges | getRange }}
                                     <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
                                   </span>
