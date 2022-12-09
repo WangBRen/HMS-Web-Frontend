@@ -51,7 +51,7 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-row>
+        <!-- <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢病资料">
               <a-upload
@@ -64,7 +64,7 @@
               </a-upload>
             </a-form-model-item>
           </a-col>
-        </a-row>
+        </a-row> -->
         <a-divider type="horizontal" dashed style="margin-bottom:24px">添加指标</a-divider>
         <div class="index-tip"><a-icon type="info-circle" /> 请慎重添加指标，添加后将不能删除和编辑指标</div>
         <a-row v-for="target in formData.targetArr" :key="target.id">
