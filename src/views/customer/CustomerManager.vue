@@ -69,6 +69,8 @@
             <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
           <span slot="operation" slot-scope="text, record">
+            <a @click="seeUser(record)">个人信息</a>
+            <a-divider type="vertical" />
             <a @click="handleHealthData(record)">健康信息</a>
             <a-divider type="vertical" />
             <a @click="chronicInfo(record)">慢病管理</a>
@@ -124,6 +126,11 @@
       :baseInfo="chronicList.baseInfo"
       :chronicVisible="chronicList.visible"
       @onclose="closeChronicModal"/>
+    <SeeUserMsg
+      :seeVisible="seeVisible"
+      :seeData="seeData"
+      @closeSeeModal="closeSeeModal"
+    />
   </div>
 </template>
 <script>
@@ -134,6 +141,7 @@ import CustomerInfoForm from './components/CustomerInfoForm.vue'
 import EditUserMsg from './components/EditUserMsg.vue'
 import AddNewUserVue from './components/AddNewUser.vue'
 import HealthDataManagmentFormVue from './components/HealthDataManagmentForm.vue'
+import SeeUserMsg from './components/SeeUserMsg.vue'
 
 const columns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
@@ -194,7 +202,8 @@ export default {
     AddNewUserVue,
     HealthDataManagmentFormVue,
     EditUserMsg,
-    ChronicInformation
+    ChronicInformation,
+    SeeUserMsg
   },
   filters: {
     filterHealthStatus: function (value) {
@@ -222,6 +231,8 @@ export default {
   },
   data () {
     return {
+      seeData: null,
+      seeVisible: false,
       dataTypes: {},
       loadingShow: true,
       data: [],
@@ -348,6 +359,14 @@ export default {
           that.$message.error(res.message || '移除失败')
         }
       })
+    },
+    seeUser (record) {
+      // console.log(record)
+      this.seeData = record
+      this.seeVisible = true
+    },
+    closeSeeModal () {
+      this.seeVisible = false
     }
   }
 }
