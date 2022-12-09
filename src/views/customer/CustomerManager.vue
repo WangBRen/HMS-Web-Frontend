@@ -138,18 +138,28 @@ import HealthDataManagmentFormVue from './components/HealthDataManagmentForm.vue
 const columns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
-  { title: '家庭名称', dataIndex: 'name', key: 'name', align: 'center' },
+  { title: '家庭名称',
+    dataIndex: 'name',
+    key: 'name',
+    align: 'center',
+    sorter: (a, b) => {
+      if (a.name === null || b.name === null) {
+        return a.manager.nickname.localeCompare(b.manager.nickname)
+      } else a.name.localeCompare(b.name)
+    }
+  },
   { title: '管理员', dataIndex: 'manager.baseInfo.name', key: 'manager.baseInfo.name', align: 'center' },
-  { title: '联系方式', dataIndex: 'manager.telephone', key: 'manager.telephone', align: 'center' },
-  { title: '成员人数', dataIndex: 'members.length', key: 'members.length', align: 'center' },
+  { title: '创建者', dataIndex: 'createdBy.nickname', key: 'createdBy.nickname', align: 'center' },
+  { title: '成员数', dataIndex: 'members.length', key: 'members.length', align: 'center', width: 100, sorter: (a, b) => a.members.length - b.members.length },
   {
     title: '创建时间',
     dataIndex: 'createdAt',
     key: 'createdAt',
     align: 'center',
-    customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+    customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : '',
+    sorter: (a, b) => Date.parse(a.createdAt.toString()) - Date.parse(b.createdAt.toString())
   },
-  { title: '操作', dataIndex: '', key: 'operation', align: 'center', scopedSlots: { customRender: 'action' } }
+  { title: '操作', dataIndex: '', key: 'operation', align: 'center', scopedSlots: { customRender: 'action' }, width: 170 }
 ]
 
 const innerColumns = [
