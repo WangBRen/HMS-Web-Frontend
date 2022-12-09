@@ -51,6 +51,20 @@
             </a-form-model-item>
           </a-col>
         </a-row>
+        <a-row>
+          <a-col :span="24">
+            <a-form-model-item label="慢病资料">
+              <a-upload
+                name="file"
+                multiple
+                :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-'"
+                @change="value => handleChange(value)"
+              >
+                <a-button><a-icon type="upload" />上传慢病资料</a-button>
+              </a-upload>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
         <a-divider type="horizontal" dashed style="margin-bottom:24px">添加指标</a-divider>
         <div class="index-tip"><a-icon type="info-circle" /> 请慎重添加指标，添加后将不能删除和编辑指标</div>
         <a-row v-for="target in formData.targetArr" :key="target.id">
@@ -137,92 +151,92 @@ export default {
       speechChronic
     },
     data () {
-        return {
-          editData: null, // 传给编辑弹窗的数据
-          editVisible: false, // 用于控制编辑弹窗
-          speechData: null, // 传给话术弹窗的数据
-          speechInfo: null, // 话术信息
-          speechVisible: false, // 用于控制话术弹窗
-          gradingVisible: false, // 控制分级弹窗
-          gradingData: null, // 传给分级的数据
-          gradingInfo: null, // 分级信息
-          sendFilter: [],
-          rules: {
-            name: [{
-              required: true, message: '请输入慢性病名', trigger: 'blur'
-            }],
-            describe: [{
-              required: true, message: '请输入慢性病描述', trigger: 'blur'
-            }]
+      return {
+        editData: null, // 传给编辑弹窗的数据
+        editVisible: false, // 用于控制编辑弹窗
+        speechData: null, // 传给话术弹窗的数据
+        speechInfo: null, // 话术信息
+        speechVisible: false, // 用于控制话术弹窗
+        gradingVisible: false, // 控制分级弹窗
+        gradingData: null, // 传给分级的数据
+        gradingInfo: null, // 分级信息
+        sendFilter: [],
+        rules: {
+          name: [{
+            required: true, message: '请输入慢性病名', trigger: 'blur'
+          }],
+          describe: [{
+            required: true, message: '请输入慢性病描述', trigger: 'blur'
+          }]
+        },
+        columns: [
+          {
+            title: '慢性病名',
+            dataIndex: 'name',
+            key: 'name',
+            width: 120
           },
-          columns: [
-            {
-              title: '慢性病名',
-              dataIndex: 'name',
-              key: 'name',
-              width: 120
-            },
-            {
-              title: '慢性病描述',
-              dataIndex: 'describe',
-              key: 'describe'
-            },
-            {
-              title: '指标',
-              dataIndex: 'items',
-              key: 'items',
-              scopedSlots: { customRender: 'items' }
-            },
-            {
-              title: '操作',
-              key: 'action',
-              scopedSlots: { customRender: 'action' },
-              width: 200,
-              align: 'center'
-            }
-          ],
-          tableData: [],
-          formData: {
-            name: null,
-            describe: null,
-            targetArr: []
+          {
+            title: '慢性病描述',
+            dataIndex: 'describe',
+            key: 'describe'
           },
-          indexArr: [
-          ],
-          addChronicIndexVisible: false,
-          labelCol: { span: 4 },
-          wrapperCol: { span: 16 },
-          pagination: {
-            total: 0,
-            current: 1,
-            pageSize: 10, // 默认每页显示数量
-            // showSizeChanger: true, // 显示可改变每页数量
-            // pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-            showTotal: total => `共 ${total} 个慢病`, // 显示总数
-            onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
-            onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+          {
+            title: '指标',
+            dataIndex: 'items',
+            key: 'items',
+            scopedSlots: { customRender: 'items' }
+          },
+          {
+            title: '操作',
+            key: 'action',
+            scopedSlots: { customRender: 'action' },
+            width: 200,
+            align: 'center'
           }
+        ],
+        tableData: [],
+        formData: {
+          name: null,
+          describe: null,
+          targetArr: []
+        },
+        indexArr: [
+        ],
+        addChronicIndexVisible: false,
+        labelCol: { span: 4 },
+        wrapperCol: { span: 16 },
+        pagination: {
+          total: 0,
+          current: 1,
+          pageSize: 10, // 默认每页显示数量
+          // showSizeChanger: true, // 显示可改变每页数量
+          // pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+          showTotal: total => `共 ${total} 个慢病`, // 显示总数
+          onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+          onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
         }
+      }
     },
     filters: {
       getRange: function (value) {
-            // 判断范围或数值
-            if (value.type === 'range') {
-              // 范围
-              if (value.start === null) {
-                // 无上界
-                return `${value.name}:\t ${value.end || 'INF'} > 指标值 (${value.unit})`
-              } else if (value.end === null) {
-                // 无下界
-                return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 (${value.unit})`
-              } else {
-                return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 < ${(value.end || 'INF')} (${value.unit})`
-              }
-            } else if (value.type === 'simple') {
-            // 数值
-              return value.value
-            }
+        // 判断范围或数值
+        if (value.type === 'range') {
+          // 范围
+          if (value.start === null) {
+            // 无上界
+            return `${value.name}:\t ${value.end || 'INF'} > 指标值 (${value.unit})`
+          } else if (value.end === null) {
+            // 无下界
+            return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 (${value.unit})`
+          } else {
+            return `${value.name}:\t ${value.start || 'INF'} ≤ 指标值 < ${(value.end || 'INF')} (${value.unit})`
+          }
+        } else if (value.type === 'simple') {
+        // 数值
+          return value.value
         }
+      }
     },
     created () {
       this.$setPageDataLoader(this.getChronic)
@@ -255,220 +269,220 @@ export default {
       this.getChronic()
     },
     methods: {
-        addChronic () {
-            this.addChronicIndexVisible = true
-            this.resetForm()
-            // console.log('新建慢病')
-        },
-        handleOk () {
-          // console.log('name', this.formData.name, 'des', this.formData.describe)
-          // if ((this.formData.name !== null && this.formData.name !== '') && (this.formData.describe !== null && this.formData.describe !== '')) {
-          //   // this.$message.info('This is a normal message')
-          //   // console.log('完整')
-          // } else {
-          //   if (this.formData.name === null || this.formData.name === '') {
-          //     this.$message.error('慢性病名未填')
-          //   }
-          //   if (this.formData.describe === null || this.formData.describe === '') {
-          //     this.$message.error('慢性病描述未填')
-          //   }
-          //   console.log('不完整')
-          // }
-          // console.log('ref', this.$refs.formData.validate)
-          // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
-          // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
-          if (this.formData.targetArr.length === 0) {
-            this.$message.warning('请添加指标')
-          } else {
-              this.$refs.formData.validate(valid => {
-              if (valid) {
-                const apiData = {
-                  name: this.formData.name,
-                  describe: this.formData.describe,
-                  items: this.formData.targetArr
-                }
-                apiAddChronic(apiData).then(res => {
-                  if (res.status === 201) {
-                    // console.log('添加慢病成功，添加的数据', apiData)
-                    this.addChronicIndexVisible = false
-                    this.$message.info('成功添加慢病')
-                  }
-                })
-                // console.log('确定formData', this.formData)
-                // console.log('确定apiData', apiData)
-              } else {
-                // console.log('原版不完整')
-                return false
+      addChronic () {
+        this.addChronicIndexVisible = true
+        this.resetForm()
+        // console.log('新建慢病')
+      },
+      handleOk () {
+        // console.log('name', this.formData.name, 'des', this.formData.describe)
+        // if ((this.formData.name !== null && this.formData.name !== '') && (this.formData.describe !== null && this.formData.describe !== '')) {
+        //   // this.$message.info('This is a normal message')
+        //   // console.log('完整')
+        // } else {
+        //   if (this.formData.name === null || this.formData.name === '') {
+        //     this.$message.error('慢性病名未填')
+        //   }
+        //   if (this.formData.describe === null || this.formData.describe === '') {
+        //     this.$message.error('慢性病描述未填')
+        //   }
+        //   console.log('不完整')
+        // }
+        // console.log('ref', this.$refs.formData.validate)
+        // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
+        // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
+        if (this.formData.targetArr.length === 0) {
+          this.$message.warning('请添加指标')
+        } else {
+            this.$refs.formData.validate(valid => {
+            if (valid) {
+              const apiData = {
+                name: this.formData.name,
+                describe: this.formData.describe,
+                items: this.formData.targetArr
               }
-            })
-          }
-        },
-        handleCancel () {
-            this.addChronicIndexVisible = false
-            // console.log('取消')
-        },
-        // 添加指标
-        addTargetArr () {
-          const item = {
-            id: new Date().getTime(),
-            indexItemId: null,
-            // coefficient: 1,
-            result: null
-            // 分割
-          }
-          this.formData.targetArr.push(item)
-        },
-        // 从末尾删除
-        delTargetArrEnd () {
-          // console.log(this.formData.targetArr[this.formData.targetArr.length - 1])
-          this.formData.targetArr.pop()
-          var waitArr = this.indexArr
-          for (var i = 0; i < this.formData.targetArr.length; i++) {
-            // console.log('22222', this.formData.targetArr[i].indexItemId)
-            waitArr = waitArr.filter((item) => {
-              return item.id !== this.formData.targetArr[i].indexItemId
-            })
-          }
-          // 将删除指标后过滤的指标传给子组件
-          this.sendFilter = waitArr
-          // console.log('全部指标', this.indexArr)
-          // console.log('选择的指标', this.formData.targetArr)
-          // console.log('删除过滤后', waitArr)
-        },
-        // 从指定位置删除
-        delTargetArr (item) {
-          //  console.log(item)
-          this.formData.targetArr = this.formData.targetArr.filter(i => i.id !== item.id)
-          var waitArr = this.indexArr
-          for (var i = 0; i < this.formData.targetArr.length; i++) {
-            // console.log('1111', this.formData.targetArr[i].indexItemId)
-            waitArr = waitArr.filter((item) => {
-              return item.id !== this.formData.targetArr[i].indexItemId
-            })
-          }
-          // console.log('删除过滤后', waitArr)
-          // console.log('选择的指标', this.formData.targetArr)
-          // console.log('全部指标', this.indexArr)
-          // 将删除指标后过滤的指标传给子组件
-          this.sendFilter = waitArr
-        },
-        // 将输入的内容与显示的内容进行匹配
-        filterOption (value, option) {
-          return option.componentOptions.children[0].text.indexOf(value) >= 0
-        },
-        resetForm () {
-          // 不用nextTick会报初始化错误
-          this.$nextTick(() => {
-            // this.$refs.formData.resetFields()
-            this.formData.name = null
-            this.formData.describe = null
-          })
-          this.formData.targetArr.length = 0
-          this.$forceUpdate()
-        },
-        GradingStandard (data) {
-          // console.log('gradingVisible', this.gradingVisible)
-          const diseaseId = data.id
-           this.gradingVisible = true
-          getHeathLevels(diseaseId).then(res => {
-            if (res.status === 200) {
-              this.gradingInfo = data
-              this.gradingData = []
-              const oldLevels = res.data
-              const aaa = []
-              oldLevels.forEach(function (item) {
-                const levelItem = {
-                  key: item.level,
-                  level: item.level + '级',
-                  describe: item.remark
+              apiAddChronic(apiData).then(res => {
+                if (res.status === 201) {
+                  // console.log('添加慢病成功，添加的数据', apiData)
+                  this.addChronicIndexVisible = false
+                  this.$message.info('成功添加慢病')
                 }
-                aaa.push(levelItem)
               })
-              this.gradingData = aaa
-              // this.$refs.openChildModel.openModel(data)
-              // this.$refs.openChildModel.getHealthLevels(res.data)
+              // console.log('确定formData', this.formData)
+              // console.log('确定apiData', apiData)
             } else {
-              notification.warning({ message: '请求失败', description: res.message })
+              // console.log('原版不完整')
+              return false
             }
           })
-        },
-        editChronicTable (data) {
-          // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
-          this.editData = JSON.parse(JSON.stringify(data))
-          this.editVisible = true
-          // this.$refs.editChronic.openModel()
-          // this.$refs.editChronic.getChronicData(data)
-          // console.log('编辑', data)
-        },
-        delChronicTable (data) {
-          // console.log('删除', data)
-        },
-        // 获取慢病表
-        getChronic () {
-          const pages = {
-            page: this.pagination.current,
-            size: this.pagination.pageSize
+        }
+      },
+      handleCancel () {
+        this.addChronicIndexVisible = false
+        // console.log('取消')
+      },
+      // 添加指标
+      addTargetArr () {
+        const item = {
+          id: new Date().getTime(),
+          indexItemId: null,
+          // coefficient: 1,
+          result: null
+          // 分割
+        }
+        this.formData.targetArr.push(item)
+      },
+      // 从末尾删除
+      delTargetArrEnd () {
+        // console.log(this.formData.targetArr[this.formData.targetArr.length - 1])
+        this.formData.targetArr.pop()
+        var waitArr = this.indexArr
+        for (var i = 0; i < this.formData.targetArr.length; i++) {
+          // console.log('22222', this.formData.targetArr[i].indexItemId)
+          waitArr = waitArr.filter((item) => {
+            return item.id !== this.formData.targetArr[i].indexItemId
+          })
+        }
+        // 将删除指标后过滤的指标传给子组件
+        this.sendFilter = waitArr
+        // console.log('全部指标', this.indexArr)
+        // console.log('选择的指标', this.formData.targetArr)
+        // console.log('删除过滤后', waitArr)
+      },
+      // 从指定位置删除
+      delTargetArr (item) {
+        //  console.log(item)
+        this.formData.targetArr = this.formData.targetArr.filter(i => i.id !== item.id)
+        var waitArr = this.indexArr
+        for (var i = 0; i < this.formData.targetArr.length; i++) {
+          // console.log('1111', this.formData.targetArr[i].indexItemId)
+          waitArr = waitArr.filter((item) => {
+            return item.id !== this.formData.targetArr[i].indexItemId
+          })
+        }
+        // console.log('删除过滤后', waitArr)
+        // console.log('选择的指标', this.formData.targetArr)
+        // console.log('全部指标', this.indexArr)
+        // 将删除指标后过滤的指标传给子组件
+        this.sendFilter = waitArr
+      },
+      // 将输入的内容与显示的内容进行匹配
+      filterOption (value, option) {
+        return option.componentOptions.children[0].text.indexOf(value) >= 0
+      },
+      resetForm () {
+        // 不用nextTick会报初始化错误
+        this.$nextTick(() => {
+          // this.$refs.formData.resetFields()
+          this.formData.name = null
+          this.formData.describe = null
+        })
+        this.formData.targetArr.length = 0
+        this.$forceUpdate()
+      },
+      GradingStandard (data) {
+        // console.log('gradingVisible', this.gradingVisible)
+        const diseaseId = data.id
+        this.gradingVisible = true
+        getHeathLevels(diseaseId).then(res => {
+          if (res.status === 200) {
+            this.gradingInfo = data
+            this.gradingData = []
+            const oldLevels = res.data
+            const aaa = []
+            oldLevels.forEach(function (item) {
+              const levelItem = {
+                key: item.level,
+                level: item.level + '级',
+                describe: item.remark
+              }
+              aaa.push(levelItem)
+            })
+            this.gradingData = aaa
+            // this.$refs.openChildModel.openModel(data)
+            // this.$refs.openChildModel.getHealthLevels(res.data)
+          } else {
+            notification.warning({ message: '请求失败', description: res.message })
           }
-          apiGetChronic(pages).then(res => {
-            if (res.status === 200) {
-              // const resData = res.data.content
-              // this.tableData = resData
-              this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-              this.pagination.total = res.data.totalElements
-            }
-          })
-        },
-        onSizeChange (current, pageSize) {
-          this.pagination.current = 1
-          this.pagination.pageSize = pageSize
-          this.getChronic()
-        },
-        onPageChange (page, pageSize) {
-          this.pagination.current = page
-          this.getChronic()
-        },
-        setChronicName (value, filter) {
-          // console.log('value', value)
-          // console.log('filter', filter)
-          this.sendFilter = filter
-          const targetArr = this.formData.targetArr
-          const indexArr = this.indexArr
-          // console.log('结果', targetArr)
-          // console.log('指标', this.indexArr)
-          for (var j = 0; j < indexArr.length; j++) {
-            if (indexArr[j].id === value) {
-              for (var i = 0; i < targetArr.length; i++) {
-                if (targetArr[i].indexItemId === value) {
-                  const result = indexArr[j].result
-                  targetArr[i].result = result
-                }
+        })
+      },
+      editChronicTable (data) {
+        // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
+        this.editData = JSON.parse(JSON.stringify(data))
+        this.editVisible = true
+        // this.$refs.editChronic.openModel()
+        // this.$refs.editChronic.getChronicData(data)
+        // console.log('编辑', data)
+      },
+      delChronicTable (data) {
+        // console.log('删除', data)
+      },
+      // 获取慢病表
+      getChronic () {
+        const pages = {
+          page: this.pagination.current,
+          size: this.pagination.pageSize
+        }
+        apiGetChronic(pages).then(res => {
+          if (res.status === 200) {
+            // const resData = res.data.content
+            // this.tableData = resData
+            this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+            this.pagination.total = res.data.totalElements
+          }
+        })
+      },
+      onSizeChange (current, pageSize) {
+        this.pagination.current = 1
+        this.pagination.pageSize = pageSize
+        this.getChronic()
+      },
+      onPageChange (page, pageSize) {
+        this.pagination.current = page
+        this.getChronic()
+      },
+      setChronicName (value, filter) {
+        // console.log('value', value)
+        // console.log('filter', filter)
+        this.sendFilter = filter
+        const targetArr = this.formData.targetArr
+        const indexArr = this.indexArr
+        // console.log('结果', targetArr)
+        // console.log('指标', this.indexArr)
+        for (var j = 0; j < indexArr.length; j++) {
+          if (indexArr[j].id === value) {
+            for (var i = 0; i < targetArr.length; i++) {
+              if (targetArr[i].indexItemId === value) {
+                const result = indexArr[j].result
+                targetArr[i].result = result
               }
             }
           }
-        },
-        openSpeechModal (data) {
-          this.speechInfo = data
-          // console.log('话术', data)
-          const diseaseId = data.id
-          apiGetSpeechList(diseaseId).then(res => {
-            if (res.status === 200) {
-              // console.log('话术列表', res.data)
-              this.speechData = res.data
-              this.speechVisible = true
-            } else {
-              this.$message.error('获取失败')
-            }
-          })
-        },
-        closeSpeechModal () {
-          this.speechVisible = false
-        },
-        closeGradingModal () {
-          this.gradingVisible = false
-        },
-        closeEditModal () {
-          this.editVisible = false
         }
+      },
+      openSpeechModal (data) {
+        this.speechInfo = data
+        // console.log('话术', data)
+        const diseaseId = data.id
+        apiGetSpeechList(diseaseId).then(res => {
+          if (res.status === 200) {
+            // console.log('话术列表', res.data)
+            this.speechData = res.data
+            this.speechVisible = true
+          } else {
+            this.$message.error('获取失败')
+          }
+        })
+      },
+      closeSpeechModal () {
+        this.speechVisible = false
+      },
+      closeGradingModal () {
+        this.gradingVisible = false
+      },
+      closeEditModal () {
+        this.editVisible = false
+      }
     }
 }
 </script>
