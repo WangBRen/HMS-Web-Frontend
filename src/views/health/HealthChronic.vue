@@ -51,7 +51,8 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-divider type="horizontal" dashed style="margin-bottom:24px"/>
+        <a-divider type="horizontal" dashed style="margin-bottom:24px">添加指标</a-divider>
+        <div class="index-tip"><a-icon type="info-circle" /> 请慎重添加指标，添加后将不能删除和编辑指标</div>
         <a-row v-for="target in formData.targetArr" :key="target.id">
           <a-col>
             <a-form-model-item label="指标名">
@@ -276,27 +277,31 @@ export default {
           // console.log('ref', this.$refs.formData.validate)
           // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
           // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
-          this.$refs.formData.validate(valid => {
-            if (valid) {
-              const apiData = {
-                name: this.formData.name,
-                describe: this.formData.describe,
-                items: this.formData.targetArr
-              }
-              apiAddChronic(apiData).then(res => {
-                if (res.status === 201) {
-                  // console.log('添加慢病成功，添加的数据', apiData)
-                  this.addChronicIndexVisible = false
-                  this.$message.info('成功添加慢病')
+          if (this.formData.targetArr.length === 0) {
+            this.$message.warning('请添加指标')
+          } else {
+              this.$refs.formData.validate(valid => {
+              if (valid) {
+                const apiData = {
+                  name: this.formData.name,
+                  describe: this.formData.describe,
+                  items: this.formData.targetArr
                 }
-              })
-              // console.log('确定formData', this.formData)
-              // console.log('确定apiData', apiData)
-            } else {
-              // console.log('原版不完整')
-              return false
-            }
-          })
+                apiAddChronic(apiData).then(res => {
+                  if (res.status === 201) {
+                    // console.log('添加慢病成功，添加的数据', apiData)
+                    this.addChronicIndexVisible = false
+                    this.$message.info('成功添加慢病')
+                  }
+                })
+                // console.log('确定formData', this.formData)
+                // console.log('确定apiData', apiData)
+              } else {
+                // console.log('原版不完整')
+                return false
+              }
+            })
+          }
         },
         handleCancel () {
             this.addChronicIndexVisible = false
@@ -489,5 +494,12 @@ export default {
   color: #999;
   line-height: 22px;
   font-size: 12px;
+}
+.index-tip{
+  text-align: center;
+  margin-bottom: 20px;
+  color: rgb(228, 152, 11);
+  font-size: 17px;
+  letter-spacing: 0.1em;
 }
 </style>
