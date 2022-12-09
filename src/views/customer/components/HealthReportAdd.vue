@@ -129,6 +129,18 @@
                     </div>
                   </a-col>
                 </a-row>
+                <div class="index-item-title" style="margin:16px 700px 0 8px;">
+                  上传诊断文件：
+                  <a-upload
+                    name="file"
+                    :multiple="true"
+                    :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + customerId"
+                    :default-file-list="defaultFileList"
+                    @change="handleChange"
+                  >
+                    <a-button> <a-icon type="upload" />点击上传</a-button>
+                  </a-upload>
+                </div>
               </div>
               <a-row style="margin:18px 0 36px 0;">
                 <a-col :span="2" :offset="18">
@@ -268,7 +280,8 @@ export default {
             addReportVisible: false,
             addIndexVisible: false,
             labelCol: { span: 4 },
-            wrapperCol: { span: 16 }
+            wrapperCol: { span: 16 },
+            defaultFileList: []
         }
     },
     mounted () {
