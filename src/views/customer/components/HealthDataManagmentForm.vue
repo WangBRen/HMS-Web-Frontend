@@ -134,7 +134,7 @@ export default {
           align: 'center',
           width: 260,
           customRender: (text, record) => {
-            return record ? record.createdBy : ''
+            return record.createdBy ? record.createdBy.nickname : ''
           }
         },
         {
