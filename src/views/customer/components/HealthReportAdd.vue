@@ -202,11 +202,17 @@
                     <div class="index-item-title-wrapper">
                       <div class="index-item-title-sider"/>
                       <span class="index-item-title"> 症状 </span>
-
                     </div>
                   </a-col>
                   <a-col :span="21">
-                    <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                    <!-- <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" /> -->
+                    <!-- <a-select mode="tags" style="width: 100%;" placeholder="请输入症状，按回车确认" @change="handleChangeSymptom">
+                      <a-select-option v-for="i in symptomData2" :key="i.name">
+                        {{ i.name }}
+                      </a-select-option>
+                    </a-select> -->
+                    <Symptom v-model="formData.symptomData" @changeSymptom="getSymptom($event)"/>
+                    <!-- <span v-for="symptom in symptomData2" :key="symptom">【{{ symptom.name }}】</span> -->
                   </a-col>
                 </a-row>
               </div>
@@ -269,11 +275,13 @@
 </template>
 <script>
 import { getHealthIndex, addHealthReport } from '@/api/health'
-// import { getHealthIndex } from '@/api/health'
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
+import Symptom from '@/components/DiaMsg/UserSymptom.vue'
+// import symptom from '@/components/DiaMsg/symptom.json'
 export default {
     components: {
-        CheckDia
+        CheckDia,
+        Symptom
     },
     filters: {
         getRange: function (value) {
@@ -307,8 +315,8 @@ export default {
             addIndexVisible: false,
             labelCol: { span: 4 },
             wrapperCol: { span: 16 },
-            defaultFileList: [],
-            conditionValue: ''
+            defaultFileList: []
+            // symptomData2: symptom
         }
     },
     mounted () {
@@ -525,6 +533,9 @@ export default {
             this.formData.diagnosisData = value
             // console.log('我是诊断结果', value)
         },
+        getSymptom (value) {
+          this.formData.symptomData = value
+        },
         openIndexModal () {
             var healthIndexData = JSON.parse(JSON.stringify(this.healthIndexData))
             for (var i = 0; i < this.formData.indexArr.length; i++) {
@@ -687,5 +698,9 @@ export default {
     color: #fa8c16;
     background: #fff7e6;
     border-color: #ffd591;
+}
+
+.ant-select-selection--multiple{
+  height: 90px;
 }
 </style>
