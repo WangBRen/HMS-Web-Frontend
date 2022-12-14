@@ -266,7 +266,7 @@ export default {
     },
     // 创建报告单成功后刷新
     RefreshReport () {
-      this.this.findCustomerHealthReports()
+      this.findCustomerHealthReports()
     }
   }
   // watch: {

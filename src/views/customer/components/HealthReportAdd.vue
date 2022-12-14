@@ -159,7 +159,7 @@
                     :multiple="true"
                     :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + customerId"
                     :default-file-list="defaultFileList"
-                    @change="handleChange"
+                    @change="value => handleUpload(value, formData)"
                   >
                     <a-button> <a-icon type="upload" />点击上传</a-button>
                   </a-upload>
@@ -378,6 +378,7 @@ export default {
                 } else if (formData.diagnosisData && formData.diagnosisTime) {
                   apiData.diseaseId = formData.diagnosisData
                   apiData.diseaseAt = formData.diagnosisTime
+                  apiData.diseaseFiles = formData.diseaseFiles
                   indexItem = indexItem + 1
                 } else if (formData.diagnosisData === null && formData.diagnosisTime === null) {
                   // console.log(formData)
@@ -585,6 +586,17 @@ export default {
             // item.value = JSON.stringify(itemArr)
             this.$message.success(`文件移除成功`)
           }
+        },
+        handleUpload (fileInfo, formData) {
+          const files = []
+          if (fileInfo.file.status === 'done' || fileInfo.file.status === 'removed') {
+            for (var i of fileInfo.fileList) {
+              if (i.response) {
+                files.push(i.response.data)
+              }
+            }
+          } else if (fileInfo.file.status === 'error') { this.$message.error(`文件上传失败,请删除上传失败的文件`) }
+          formData.diseaseFiles = files
         },
         handleBlur (item) {
           console.log(item)
