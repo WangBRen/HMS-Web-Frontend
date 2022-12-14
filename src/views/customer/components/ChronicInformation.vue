@@ -143,7 +143,7 @@
             <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
                 健康指导记录
-                <a-button type="primary" class="HealthBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
+                <a-button v-if="item.level !== null" type="primary" class="HealthBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
               </template>
               <span v-if="item.level == null">
                 <a-icon type="question-circle" />
@@ -439,7 +439,7 @@ export default {
     // },
     showHealthCoaching () { // 新增健康指导
       this.coachingVisible = true
-      this.diseaseId = -1
+      this.diseaseId = null
     },
     startHealthCoaching (diseaseId) {
       this.coachingVisible = true

@@ -406,6 +406,7 @@ export default {
                       if (res.status === 201) {
                           this.$message.info('成功新建报告单')
                           this.addReportVisible = false
+                          this.$emit('successCreatReport')
                       }
                   })
                 }

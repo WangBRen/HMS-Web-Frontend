@@ -78,7 +78,7 @@
     />
     <AddHealthData ref="child" /> -->
     <HealthReportSee ref="seeReport" />
-    <HealthReportAdd ref="addReport" />
+    <HealthReportAdd ref="addReport" @successCreatReport="RefreshReport"/>
   </div>
 </template>
 <script>
@@ -263,6 +263,10 @@ export default {
           this.$refs.seeReport.seeReportCom(res.data)
         }
       })
+    },
+    // 创建报告单成功后刷新
+    RefreshReport () {
+      this.this.findCustomerHealthReports()
     }
   }
   // watch: {
