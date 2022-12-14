@@ -35,7 +35,7 @@
                           </a-col>
                           <a-col :span="6">
                             <!-- 整数或小数 -->
-                            <a-input v-if="item.type === 'Integer' || item.type === 'Float'" @change="e => { item.value = e.target.value }" :addonAfter="item.unit"></a-input>
+                            <a-input v-if="item.type === 'Integer' || item.type === 'Float'" @change="e => { item.value = e.target.value }" :addonAfter="item.unit" @blur="handleBlur(item)"></a-input>
                             <!-- 主观文本 -->
                             <a-textarea v-if="item.type === 'Text'" v-model="item.value" :rows="2" />
                             <!-- 图文报告 -->
@@ -53,7 +53,7 @@
                           <a-col :span="2" :offset="2"><span>诊断结果:</span></a-col>
                           <a-col :span="8">
                             <a-textarea placeholder="请输入诊断结果" :auto-size="{ minRows: 2, maxRows: 6 }" v-if="(item.result.length === 0)"/>
-                            <a-select @change="e => { item.diaResult = e }" v-else>
+                            <a-select v-else @change="changeResult" v-model="item.diaResult">
                               <a-select-option v-for="result in item.result" :key="result.id" :value="result.name">
                                 {{ result.name }}
                               </a-select-option>
@@ -63,22 +63,35 @@
                       </a-col>
                       <a-col>
                         <a-row>
-                          <a-col style="margin-left: 550px; line-height: 20px;">
+                          <a-col :span="10">
+                            <span v-if="item.conditions.length > 0">
+                              <span v-for="conditions in item.conditions" :key="conditions.id" style="margin-left: 20px;">
+                                {{ conditions.name }}:
+                                <a-radio-group button-style="solid" @change="value => onChangeCondition(value, conditions, item)" size="small">
+                                  <a-radio-button v-for="condition in conditions.options" :key="condition.id" :value="condition.name">{{ condition.name }}</a-radio-button>
+                                </a-radio-group>
+                              </span>
+                            </span>
+                          </a-col>
+                          <a-col :span="2"></a-col>
+                          <a-col :span="12" style=" line-height: 20px;">
                             <a :id="'str'+item.id" style="line-height: 20px;" @click="showInput(item.id)">展开</a>
                             <div :id="item.id" style="display: none;">
                               <div style="padding-top:12px; display: flex;line-height: 20px;">
                                 <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
                                 <div style="color: #00a0e9">
                                   <span style="pointer-events:none;display:block;" v-for="(ranges,index) in item.result" :key="index">
+                                    <!-- 显示参考结果的条件，如性别、年龄 -->
                                     <a-tag v-for="condition in ranges.conditionFilters" :key="condition.conditionId">
-                                      <span v-for="conditions in item.conditions" :key="conditions.id">
-                                        <sapn v-if="(conditions.id === condition.conditionId)">
-                                          <span v-for="i in conditions.options" :key="i.id">
+                                      <span v-for="conditionItem in item.conditions" :key="conditionItem.id">
+                                        <template v-if="(conditionItem.id === condition.conditionId)">
+                                          <span v-for="i in conditionItem.options" :key="i.id">
                                             <span v-if="(i.id === condition.optionId)">{{ i.name }}</span>
                                           </span>
-                                        </sapn>
+                                        </template>
                                       </span>
                                     </a-tag>
+                                    <!-- {{ ranges }} -->
                                     {{ ranges | getRange }}
                                     <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
                                   </span>
@@ -146,7 +159,7 @@
                     :multiple="true"
                     :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + userInfo.name + '-' + customerId"
                     :default-file-list="defaultFileList"
-                    @change="handleChange"
+                    @change="value => handleUpload(value, formData)"
                   >
                     <a-button> <a-icon type="upload" />点击上传</a-button>
                   </a-upload>
@@ -189,11 +202,17 @@
                     <div class="index-item-title-wrapper">
                       <div class="index-item-title-sider"/>
                       <span class="index-item-title"> 症状 </span>
-
                     </div>
                   </a-col>
                   <a-col :span="21">
-                    <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" />
+                    <!-- <a-textarea v-model="formData.symptomData" placeholder="填写用户症状信息" :rows="4" /> -->
+                    <!-- <a-select mode="tags" style="width: 100%;" placeholder="请输入症状，按回车确认" @change="handleChangeSymptom">
+                      <a-select-option v-for="i in symptomData2" :key="i.name">
+                        {{ i.name }}
+                      </a-select-option>
+                    </a-select> -->
+                    <Symptom v-model="formData.symptomData" @changeSymptom="getSymptom($event)"/>
+                    <!-- <span v-for="symptom in symptomData2" :key="symptom">【{{ symptom.name }}】</span> -->
                   </a-col>
                 </a-row>
               </div>
@@ -256,11 +275,13 @@
 </template>
 <script>
 import { getHealthIndex, addHealthReport } from '@/api/health'
-// import { getHealthIndex } from '@/api/health'
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
+import Symptom from '@/components/DiaMsg/UserSymptom.vue'
+// import symptom from '@/components/DiaMsg/symptom.json'
 export default {
     components: {
-        CheckDia
+        CheckDia,
+        Symptom
     },
     filters: {
         getRange: function (value) {
@@ -295,6 +316,7 @@ export default {
             labelCol: { span: 4 },
             wrapperCol: { span: 16 },
             defaultFileList: []
+            // symptomData2: symptom
         }
     },
     mounted () {
@@ -356,6 +378,7 @@ export default {
                 } else if (formData.diagnosisData && formData.diagnosisTime) {
                   apiData.diseaseId = formData.diagnosisData
                   apiData.diseaseAt = formData.diagnosisTime
+                  apiData.diseaseFiles = formData.diseaseFiles
                   indexItem = indexItem + 1
                 } else if (formData.diagnosisData === null && formData.diagnosisTime === null) {
                   // console.log(formData)
@@ -384,6 +407,7 @@ export default {
                       if (res.status === 201) {
                           this.$message.info('成功新建报告单')
                           this.addReportVisible = false
+                          this.$emit('successCreatReport')
                       }
                   })
                 }
@@ -511,6 +535,9 @@ export default {
             this.formData.diagnosisData = value
             // console.log('我是诊断结果', value)
         },
+        getSymptom (value) {
+          this.formData.symptomData = value
+        },
         openIndexModal () {
             var healthIndexData = JSON.parse(JSON.stringify(this.healthIndexData))
             for (var i = 0; i < this.formData.indexArr.length; i++) {
@@ -559,6 +586,70 @@ export default {
             // item.value = JSON.stringify(itemArr)
             this.$message.success(`文件移除成功`)
           }
+        },
+        handleUpload (fileInfo, formData) {
+          const files = []
+          if (fileInfo.file.status === 'done' || fileInfo.file.status === 'removed') {
+            for (var i of fileInfo.fileList) {
+              if (i.response) {
+                files.push(i.response.data)
+              }
+            }
+          } else if (fileInfo.file.status === 'error') { this.$message.error(`文件上传失败,请删除上传失败的文件`) }
+          formData.diseaseFiles = files
+        },
+        handleBlur (item) {
+          console.log(item)
+          if (item.value === '' || item.value === null) {
+            item.diaResult = ''
+          } else if (item.conditions.length === 0) {
+            for (const i of item.result) {
+              if ((i.start == null || i.start === '') && Number(item.value) < Number(i.end)) {
+                item.diaResult = i.name
+                break
+              } else if (Number(item.value) >= Number(i.start) && Number(item.value) < Number(i.end)) {
+                item.diaResult = i.name
+                break
+              } else if (i.end == null && Number(item.value) >= Number(i.start)) {
+                item.diaResult = i.name
+                break
+              } else { item.diaResult = '' }
+            }
+          } else {
+
+          }
+          this.$forceUpdate()
+        },
+        onChangeCondition (e, condition, item) {
+          console.log(item, condition, e.target.value)
+          const optionId = condition.options.filter(i => { if (i.name === e.target.value) return true })
+          const resultList = item.result.filter(result => {
+            for (const i of result.conditionFilters) {
+              if (i.conditionId === condition.id && i.optionId === optionId[0].id) {
+                return true
+              }
+            }
+          })
+          // item.result = resultList
+          if (item.value !== '' && item.value !== null) {
+            for (const i of resultList) {
+              if ((i.start == null || i.start === '') && Number(item.value) < Number(i.end)) {
+                item.diaResult = i.name
+                break
+              } else if (Number(item.value) >= Number(i.start) && Number(item.value) < Number(i.end)) {
+                item.diaResult = i.name
+                break
+              } else if (i.end == null && Number(item.value) >= Number(i.start)) {
+                item.diaResult = i.name
+                break
+              } else { item.diaResult = '' }
+            }
+          }
+          this.$forceUpdate()
+          // console.log('resultList', optionId[0].id, resultList)
+        },
+        changeResult () {
+          this.$forceUpdate()
         }
     }
 }
@@ -620,5 +711,9 @@ export default {
     color: #fa8c16;
     background: #fff7e6;
     border-color: #ffd591;
+}
+
+.ant-select-selection--multiple{
+  height: 90px;
 }
 </style>

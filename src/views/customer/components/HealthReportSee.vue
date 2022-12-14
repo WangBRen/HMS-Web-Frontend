@@ -114,6 +114,16 @@
                         <div>{{ formData.title }}</div>
                       </a-col>
                     </a-row>
+                    <a-row>
+                      <a-col :span="3">
+                        <div class="index-item-title-wrapper">
+                          <span class="index-item-title" style="margin-left:8px;"> 诊断文件： </span>
+                        </div>
+                      </a-col>
+                      <a-col :span="21">
+                        <div v-for="file in formData.diseaseFiles" :key="file.index"><a :href="file.url" target="_blank"><a-icon type="file-image" /> {{ file.fileName }}</a></div>
+                      </a-col>
+                    </a-row>
                     <a-row style="margin: 28px 0;">
                       <a-col :span="6" :offset="18">
                         <span>检测时间：</span>
