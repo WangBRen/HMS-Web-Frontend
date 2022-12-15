@@ -108,10 +108,12 @@
     <a-modal
       :title="mode === 'create' ? `新建 ${this.currentProjectName()} 指标条目` : `编辑 ${this.currentProjectName()} 指标条目【${current.name}】`"
       style="top: 20px"
-      :width="920"
-      v-model="visible"
+      :width="1000"
+      v-if="visible"
+      :visible="visible"
       @ok="handleOkDone"
       ok-text="确定"
+      @cancel="closeModal"
     >
       <a-form :form="form" v-model="current">
         <a-row :gutter="48">
@@ -279,7 +281,7 @@
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定结果： </a-col>
                     <a-col :span="24" v-if="current.result.type == 'range'" style="padding-left: 12px;">
-                      <div v-for="result_option in current.result.options" :key="result_option.id">
+                      <div v-for="result_option in current.result.options" :key="result_option.id" style="display:inline-block;position: relative;">
                         <a-col :span="4" style="padding-left: 0px;">
                           <a-input
                             type="text"
@@ -288,18 +290,18 @@
                             placeholder="名称，如：偏高、偏低、正常"
                           />
                         </a-col>
-                        <a-col :span="19">
+                        <a-col :span="14">
                           <div v-if="result_option.products">
                             <div v-for="prod in result_option.products" :key="prod.id">
                               <a-row>
-                                <a-col :span="10" v-if="prod.conditionFilters.length > 0">
+                                <a-col :span="7" v-if="prod.conditionFilters.length > 0">
                                   <span v-for="(opt, idx) in prod.conditionFilters" :key="idx">
                                     <span v-if="idx > 0" style="padding-right: 4px;"> + </span>
                                     <a-tag> {{ opt.option?.name }} </a-tag>
                                   </span>
                                   <span>:</span>
                                 </a-col>
-                                <a-col :span="prod.conditionFilters.length > 0 ? 14 : 24" style="display: flex; align-items: center;">
+                                <a-col :span="prod.conditionFilters.length > 0 ? 17 : 24" style="display: flex; align-items: center;">
                                   <a-input
                                     type="text"
                                     :value="prod.start"
@@ -323,6 +325,14 @@
                               </a-row>
                             </div>
                           </div>
+                        </a-col>
+                        <a-col :span="5">
+                          <a-textarea
+                            style="height: 100%;"
+                            v-model="value"
+                            placeholder="指标结果备注"
+                            autosize
+                          />
                         </a-col>
                         <a-col :span="1">
                           <a-icon type="close" @click="handleAddNewResultOptionRemove(current.result, result_option)"/>
