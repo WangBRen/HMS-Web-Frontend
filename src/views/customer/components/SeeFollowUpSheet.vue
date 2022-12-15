@@ -85,6 +85,13 @@
           </div> -->
         </a-card>
         <!-- 指标选择结束 -->
+        <a-card title="用户症状" :loading="loading" class="card" :body-style="cardBodyStyle">
+          <div class="hint-textarea" >用户没有填写症状</div>
+        </a-card>
+        <a-card title="用药情况及不良反应" :loading="loading" class="card" :body-style="cardBodyStyle">
+          <a-table bordered :data-source="dataSource" :columns="idrugColumns" rowKey="id" :pagination="false">
+          </a-table>
+        </a-card>
       </div>
       <DefineLevel
         v-if="gradeModelvisible"
@@ -165,6 +172,23 @@ const columns = [
     align: 'center'
   }
 ]
+const idrugColumns = [
+  {
+    title: '药品名称',
+    dataIndex: 'idrugName',
+    align: 'center'
+  },
+  {
+    title: '使用剂量',
+    dataIndex: 'idrugdose',
+    align: 'center'
+  },
+  {
+    title: '不良反应',
+    dataIndex: 'reactions',
+    align: 'center'
+  }
+]
 
 const options = [
   {
@@ -223,6 +247,8 @@ export default {
         age: null
       }, // read only
       itemColumns: columns, // read only
+      idrugColumns,
+      dataSource: [],
       itemTypeOptions: options, // read only
       // gradeOptions: gradeOptions,
       followTableData: {},
@@ -406,7 +432,7 @@ export default {
 }
 .hint-textarea {
   border: none;
-  padding: 24px;
+  padding: 16px 24px;
 }
 .FailReason{
   display: flex;

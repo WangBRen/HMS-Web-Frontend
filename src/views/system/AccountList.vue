@@ -59,6 +59,11 @@
         </a-row>
       </div>
       <a-tag color="blue" slot="status" slot-scope="text">{{ text | statusFilter }}</a-tag>
+      <span slot="displayName" slot-scope="text, record">
+        <span v-for="item in roles" :key="item.id">
+          <a-tag v-if="(item.name===record.roleName)">{{ item.displayName }}</a-tag>
+        </span>
+      </span>
       <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
       <span slot="action" slot-scope="text, record">
         <a @click="handleEdit(record)">编辑</a>
@@ -221,6 +226,11 @@ const columns = [
     dataIndex: 'nickname'
   },
   {
+    title: '用户角色',
+    dataIndex: 'displayName',
+    scopedSlots: { customRender: 'displayName' }
+  },
+  {
     title: '状态',
     dataIndex: 'status',
     customRender: (status) => {
@@ -260,6 +270,7 @@ export default {
         list: [],
         initialValue: -1
       },
+      roles: [],
       createModalVisible: false,
 
       description: '列表使用场景：后台管理中的权限管理以及角色管理，可用于基于 RBAC 设计的角色权限控制，颗粒度细到每一个操作类型。',
@@ -319,6 +330,7 @@ export default {
     })
 
     getRoleList().then(res => {
+      this.roles = res.data || []
       this.role.list = (res.data || []).filter(role => role.name !== 'root')
       if (this.role.list.length > 0) {
         this.role.initialValue = this.role.list[0].id

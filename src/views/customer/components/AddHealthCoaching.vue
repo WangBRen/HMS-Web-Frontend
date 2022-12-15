@@ -38,7 +38,7 @@
         </a-row>
       </a-card>
       <div style="margin: 24px 0"></div>
-      <div v-if="diseaseId < 0">
+      <!-- <div v-if="diseaseId < 0">
         <span>选择需要指导的慢病：</span>
         <a-select
           show-search
@@ -51,7 +51,7 @@
         >
           <a-select-option v-for="item in chronicSelectData" :key="item">{{ item }}</a-select-option>
         </a-select>
-      </div>
+      </div> -->
       <div style="margin: 24px 0"></div>
       <a-textarea
         v-model="templateData"

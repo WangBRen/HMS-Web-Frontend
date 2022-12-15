@@ -10,17 +10,41 @@
     >
       <div class="card">
         <a-space style="margin-bottom:10px">
-          <a-button type="primary" @click="showFollowUpSheet" :disabled="disableFollow">创建随访单</a-button>
-          <!-- <a-tooltip placement="top" :visible="disable">
-            <template slot="title">
-              <span>该患者暂无已分级慢病，请分级后再指导</span>
-            </template>
-            <div>
-              <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
-            </div>
-          </a-tooltip> -->
-          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;" :disabled="disable">+健康指导</a-button>
+          <a-button type="primary" @click="showFollowUpSheet">健康随访</a-button>
+          <a-button type="primary" ghost @click="showHealthCoaching" style="float: right;">+健康指导</a-button>
         </a-space>
+        <a-collapse style="margin-bottom: 30px;">
+          <template #expandIcon="props">
+            <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
+          </template>
+          <a-collapse-panel header="日常健康管理" class="customStyle">
+            <a-card style="margin-top: 12px;" :loading="loading">
+              <template #title>
+                <span>指标项</span>
+              </template>
+              暂无相关指标
+            </a-card>
+            <a-card title="健康随访记录" style="margin-top: 12px;" :loading="loading">
+              暂无健康随访记录
+            </a-card>
+            <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
+              暂无健康指导记录
+            </a-card>
+            <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
+              <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
+            </a-card>
+          </a-collapse-panel>
+        </a-collapse>
+        <a-divider >慢病管理</a-divider>
+        <a-config-provider v-if="(tableData.length === 0)">
+          <template #renderEmpty>
+            <div style="text-align: center">
+              <a-icon type="file-protect" style="font-size: 40px;line-height: 60px;" />
+              <p>暂时还没有发现慢病哦</p>
+            </div>
+          </template>
+          <a-list/>
+        </a-config-provider>
         <a-skeleton active :loading="loading"/>
         <div class="card-row" v-for="item in tableData" :key="item.id">
           <div @click="cardShow(item)">
@@ -119,7 +143,7 @@
             <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
                 健康指导记录
-                <a-button type="primary" class="HealthBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
+                <a-button v-if="item.level !== null" type="primary" class="HealthBtn" ghost @click="startHealthCoaching(item.id)">开始指导</a-button>
               </template>
               <span v-if="item.level == null">
                 <a-icon type="question-circle" />
@@ -415,7 +439,7 @@ export default {
     // },
     showHealthCoaching () { // 新增健康指导
       this.coachingVisible = true
-      this.diseaseId = -1
+      this.diseaseId = null
     },
     startHealthCoaching (diseaseId) {
       this.coachingVisible = true
@@ -503,5 +527,20 @@ export default {
   border-radius: 3px;
   // top: -36px;
   // z-index: 999;
+}
+.customStyle{
+  background: rgba(73,204,144,.1);
+  border-color: #49cc90;
+  border-radius: 4px;
+  // margin-bottom: 24px;
+  // line-height: 36px;
+}
+.customStyle .ant-collapse-content{
+  background-color: rgba(73,204,144,.0);
+}
+.ant-collapse{
+  border: 1px solid #49cc90;
+  font-size: 17px;
+  border-radius: 4px;
 }
 </style>

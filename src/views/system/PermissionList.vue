@@ -8,19 +8,20 @@
 
     <a-table :columns="columns" :data-source="data" :row-key="record => record.id" style="background-color:white">
       <!-- <a slot="displayName" slot-scope="displayName">{{ displayName }}</a> -->
-      <span slot="permissions" slot-scope="permissions">
-        <a-tag
+      <span slot="permissions" slot-scope="permissions" >
+        <span
           v-for="tag in permissions"
-          v-if="tag.canCreate || tag.canEdit || tag.canView || tag.canDelete"
           :key="tag.permission"
         >
-          <a-tooltip>
-            <template slot="title">
-              {{ tag.describe }}
-            </template>
-            {{ tag.name }}
-          </a-tooltip>
-        </a-tag>
+          <a-tag v-if="tag.canCreate || tag.canEdit || tag.canView || tag.canDelete">
+            <a-tooltip>
+              <template slot="title">
+                {{ tag.describe }}
+              </template>
+              {{ tag.name }}
+            </a-tooltip>
+          </a-tag>
+        </span>
       </span>
       <span slot="action" slot-scope="text, record">
         <a @click="openModal('edit', record)">编辑</a>
@@ -87,7 +88,8 @@ export default {
           dataIndex: 'displayName',
           key: 'displayName',
           title: '角色',
-          scopedSlots: { customRender: 'displayName' }
+          scopedSlots: { customRender: 'displayName' },
+          width: 130
         },
         {
           title: '唯一标识',
@@ -109,7 +111,8 @@ export default {
         {
           title: '操作',
           key: 'action',
-          scopedSlots: { customRender: 'action' }
+          scopedSlots: { customRender: 'action' },
+          width: 130
         }
       ],
       current: {

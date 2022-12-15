@@ -49,8 +49,22 @@
             :key="item"
             :color=" 'geekblue'"
           >{{ item }}</a-tag>
-          <a-tag v-if="record.symptom" :color=" 'orange'">用户症状</a-tag>
-          <a-tag v-if="record.disease" :color=" 'orange'">用户诊断</a-tag>
+          <span v-if="record.symptom">
+            <a-tooltip placement="top">
+              <template slot="title">
+                {{ record.symptom }}
+              </template>
+              <a-tag :color=" 'orange'">用户症状</a-tag>
+            </a-tooltip>
+          </span>
+          <span v-if="record.disease">
+            <a-tooltip placement="top">
+              <template slot="title">
+                {{ record.disease.title }}
+              </template>
+              <a-tag :color=" 'volcano'">用户诊断</a-tag>
+            </a-tooltip>
+          </span>
         </span>
         <!-- <span slot="updatedAt" slot-scope="text, record">
           {{ record.updatedAt ? moment(record?.updatedAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
@@ -64,7 +78,7 @@
     />
     <AddHealthData ref="child" /> -->
     <HealthReportSee ref="seeReport" />
-    <HealthReportAdd ref="addReport" />
+    <HealthReportAdd ref="addReport" @successCreatReport="RefreshReport"/>
   </div>
 </template>
 <script>
@@ -114,18 +128,36 @@ export default {
           }
         },
         {
+          title: '创建人',
+          dataIndex: 'createdBy',
+          key: 'createdBy',
+          align: 'center',
+          width: 260,
+          customRender: (text, record) => {
+            return record.createdBy ? record.createdBy.nickname : ''
+          }
+        },
+        {
           title: '健康项目名称',
           dataIndex: 'projects',
           key: 'projects',
           align: 'center',
-          scopedSlots: { customRender: 'tags' }
+          scopedSlots: { customRender: 'tags' },
+          filters: [{ text: '用户诊断', value: 'disease' },
+                    { text: '用户症状', value: 'symptom' },
+                    { text: '其他指标', value: 'projects' }],
+          onFilter: (value, record) => {
+            if (value === 'disease' && record.disease !== null) { return true }
+            if (value === 'symptom' && record.symptom !== null) { return true }
+            if (value === 'projects' && record.projects.length !== 0) { return true }
+          }
         },
         {
           title: '操作',
           dataIndex: 'action',
           align: 'center',
           scopedSlots: { customRender: 'action' },
-          width: 260
+          width: 230
         }
       ],
       // dataColums: [],
@@ -231,6 +263,10 @@ export default {
           this.$refs.seeReport.seeReportCom(res.data)
         }
       })
+    },
+    // 创建报告单成功后刷新
+    RefreshReport () {
+      this.findCustomerHealthReports()
     }
   }
   // watch: {
