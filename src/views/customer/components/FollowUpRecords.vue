@@ -200,6 +200,59 @@ export default {
   //   }
   // },
   created () {
+    if (this.diseaseId === -2) {
+      this.recordColumns = [
+      {
+          title: '创建日期',
+          dataIndex: 'createdAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.createdAt ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '创建人',
+          dataIndex: 'createdBy',
+          align: 'center',
+          scopedSlots: { customRender: 'HealthSpecialistRender' }
+        },
+        {
+          title: '随访慢病',
+          dataIndex: 'diseases',
+          align: 'center',
+          width: '20%',
+          scopedSlots: { customRender: 'chronicDisease' }
+        },
+        {
+          title: '回收结果',
+          dataIndex: 'result',
+          align: 'center',
+          scopedSlots: { customRender: 'result' }
+        },
+        {
+          title: '发送时间',
+          dataIndex: 'sendAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.sendAt ? moment(record.sendAt).format('MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '回收时间',
+          dataIndex: 'receivedAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.receivedAt ? moment(record.receivedAt).format('MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '操作',
+          dataIndex: 'action',
+          align: 'center',
+          scopedSlots: { customRender: 'action' }
+        }
+      ]
+    }
     // this.$setPageDataLoader(this.onSearch)
     this.onSearch()
     // this.$setPageDataLoader(() => {
@@ -238,6 +291,7 @@ export default {
       apiFollowUpRecords(this.customerId, this.diseaseId, pages).then(res => {
         if (res.status === 200) {
           this.recordData = res.data.content || []
+          console.log('this.recordData', this.recordData)
           this.pagination.total = res.data.totalElements
         } else {
           this.recordData = []

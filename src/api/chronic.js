@@ -55,3 +55,9 @@ export function getSpeechVariables (diseaseId) {
     method: 'get'
   })
 }
+export function getAllChronic () {
+  return request({
+    url: api.getChronic,
+    method: 'get'
+  })
+}
