@@ -217,13 +217,6 @@ export default {
           scopedSlots: { customRender: 'HealthSpecialistRender' }
         },
         {
-          title: '随访慢病',
-          dataIndex: 'diseases',
-          align: 'center',
-          width: '20%',
-          scopedSlots: { customRender: 'chronicDisease' }
-        },
-        {
           title: '回收结果',
           dataIndex: 'result',
           align: 'center',

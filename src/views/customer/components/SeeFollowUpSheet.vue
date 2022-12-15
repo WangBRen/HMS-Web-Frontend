@@ -50,11 +50,11 @@
           </a-row>
         </a-card>
         <a-card v-if="hintShow" title="填写提示" :loading="loading" class="card" :body-style="cardBodyStyle">
-          <span class="hint-textarea" >{{ followTableData.hints }}</span>
+          <div class="hint-textarea" >{{ followTableData.hints }}</div>
         </a-card>
         <!-- 慢病选择开始 -->
-        <a-card title="慢病选择" :loading="loading" class="card">
-          <div v-if="followTableData.diseases">
+        <a-card title="慢病选择" :loading="loading" class="card" v-if="(followTableData.diseases || []).length>0">
+          <div>
             <span v-for="item in followTableData.diseases" :key="item.id"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
           </div>
         </a-card>
@@ -309,7 +309,11 @@ export default {
           tips = `【未分级】`
         }
       }
-      this.headerTips = tips
+      if (followTableData.diseases.length === 0) {
+        this.headerTips = ''
+      } else {
+        this.headerTips = tips
+      }
       if (followTableData.hints === '') {
         this.hintShow = false
       }
@@ -432,7 +436,7 @@ export default {
 }
 .hint-textarea {
   border: none;
-  padding: 16px 24px;
+  padding: 16px 24px 0 24px;
 }
 .FailReason{
   display: flex;

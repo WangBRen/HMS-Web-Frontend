@@ -390,12 +390,17 @@ export default {
         }
       })
       // do request
-      const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
+      let apiPayload = {}
+      if (this.diseaseId > 0) {
+        apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
+        this.payload.diseases.forEach(function (diseas) {
+          apiPayload.diseaseIds.push(diseas.id)
+        })
+      } else {
+        apiPayload = { items: [], hints: null, token: '' }
+      }
       if (this.payload.items.length !== 0) {
             apiPayload.hints = this.payload.hints
-            this.payload.diseases.forEach(function (diseas) {
-              apiPayload.diseaseIds.push(diseas.id)
-            })
             this.payload.items.forEach(function (itemVal) {
               const item = {
                 indexItemId: itemVal.indexId,

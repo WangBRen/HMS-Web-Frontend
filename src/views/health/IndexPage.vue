@@ -329,7 +329,8 @@
                         <a-col :span="5">
                           <a-textarea
                             style="height: 100%;"
-                            v-model="value"
+                            :value="result_option.remark"
+                            @change="e => { result_option.remark = e.target.value }"
                             placeholder="指标结果备注"
                             autosize
                           />
@@ -692,7 +693,7 @@ export default {
       const originalProducts = (this.current.result.options || []).map(option => option.products).flat()
       const options = (this.current.result.options || []).map((option, index) => {
         const preparedProducts = descartProduct(conditions).map(condFilters => { // prod: [{男}, {女}]
-          return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null }
+          return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null, remark: null }
         })
         // 判断原始值是否填写，保留用户填写内容
         const newProducts = preparedProducts.map(prod => {
