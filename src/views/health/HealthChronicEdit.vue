@@ -48,19 +48,19 @@
             <a-form-model-item label="指标名">
               <a-row>
                 <a-col :span="22">
-                  <a-select :disabled="!target.timeid" @change="selectIndex" v-model="target.indexItem.id" show-search :filterOption="filterOption">
+                  <a-select :disabled="!target.timeid" v-model="target.indexItem.id" show-search :filterOption="filterOption">
                     <a-select-option v-for="item in indexArr" :key="item.id">
                       {{ item.name }} - <span style="font-size: 11px; color: #999">({{ item.category }})</span>
                     </a-select-option>
                   </a-select>
                 </a-col>
-                <a-col :span="2" v-show="target.timeid">
+                <!-- <a-col :span="2" v-show="target.timeid">
                   <a-icon @click="delEdit(target)" type="close-circle" />
-                </a-col>
+                </a-col> -->
               </a-row>
             </a-form-model-item>
           </a-col>
-          <a-col v-show="target.indexItem.id">
+          <a-col>
             <a-form-model-item label="结果">
               <a-row>
                 <a-col v-for="(result,index) in target.indexItem.result" :key="index" class="index-result">
@@ -78,13 +78,44 @@
             </a-button>
           </a-col>
         </a-row> -->
+        <a-row v-if="newIndex.length">
+          <a-col>
+            <a-form-model-item label="新增指标名">
+              <a-row>
+                <a-col :span="22">
+                  <a-select @change="selectIndex" v-model="newIndex[0].indexItem.id" show-search :filterOption="filterOption">
+                    <a-select-option v-for="item in indexArr" :key="item.id">
+                      {{ item.name }} - <span style="font-size: 11px; color: #999">({{ item.category }})</span>
+                    </a-select-option>
+                  </a-select>
+                </a-col>
+                <a-col :span="2">
+                  <a-icon @click="delNewIndex" type="close-circle" />
+                </a-col>
+              </a-row>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row v-if="newIndex.length">
+          <a-col :span="4" :push="10">
+            <a-button @click="okIndex">确定</a-button>
+          </a-col>
+        </a-row>
+        <a-row v-if="!newIndex.length">
+          <a-col :span="24">
+            <a-button @click="addIndex" type="dashed" style="display:block;margin:0 auto;width:60%">
+              <a-icon type="plus" /> 添加指标，<span class="index_tip"><a-icon type="info-circle" />指标添加后不能删除</span>
+            </a-button>
+          </a-col>
+        </a-row>
       </a-form-model>
     </a-modal>
   </div>
 </template>
 <script>
 import { getHealthIndex } from '@/api/health'
-import { editChronic as apiEditChronic } from '@/api/chronic'
+import { editChronic as apiEditChronic, editChronicIndex as apiEditChronicIndex } from '@/api/chronic'
+// import { editChronicIndex as apiEditChronicIndex } from '@/api/chronic'
 
 export default {
   props: {
@@ -123,7 +154,8 @@ export default {
       labelCol: { span: 4 },
       wrapperCol: { span: 16 },
       loadList: [],
-      fiterArr: []
+      fiterArr: [],
+      newIndex: []
     }
   },
   mounted () {
@@ -174,10 +206,11 @@ export default {
           this.$emit('closeEditModal')
           // this.editVisible = false
         } else {
-          this.$message.error(res.message, '编辑失败')
+          this.$message.error(res.message)
         }
       })
       // console.log('确定', this.editData)
+      // console.log('确定', this.newIndex)
     },
     handleCancel () {
       // this.editVisible = false
@@ -200,17 +233,48 @@ export default {
       }
       this.editData.items.push(item)
     },
+    addIndex () {
+      const item = {
+        timeid: new Date().getTime(),
+        indexItem: {
+          id: null,
+          result: null
+        }
+      }
+      this.newIndex.push(item)
+      // console.log(this.newIndex.length, 'newIndex', this.newIndex)
+    },
+    delNewIndex () {
+      this.newIndex.length = 0
+      this.$forceUpdate()
+      // console.log(this.newIndex.length, '11', this.newIndex)
+    },
+    okIndex () {
+      const diseaseId = this.editData.id
+      const apiData = {
+        indexItemId: this.newIndex[0].indexItem.id,
+        coefficient: 0
+       }
+      apiEditChronicIndex(diseaseId, apiData).then(res => {
+        if (res.status === 201) {
+          this.$message.info('编辑慢病指标成功')
+          this.newIndex.length = 0
+          this.$parent.getChronic() // 编辑后触发父组件刷新
+          this.$parent.refEditDate(this.editData)
+          // console.log('数据', this.editData)
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    },
     handleChange (item) {
       if (item.file.status === 'done') {
-        // console.log('上传', item.file)
+        // console.log('上传成功', item.file)
         this.loadList.push(item.file.response.data)
-        // console.log('上传成功', this.loadList)
       } else if (item.file.status === 'error') {
         // console.log('上传失败')
       } else if (item.file.status === 'removed') {
         const newArr = []
-        // console.log('load', this.loadList)
-        // console.log('item', item.fileList)
         for (let i = 0; i < this.loadList.length; i++) {
           for (let j = 0; j < item.fileList.length; j++) {
             if (this.loadList[i].fileName === item.fileList[j].name) {
@@ -251,5 +315,8 @@ export default {
 .upload_tip{
   color: rgb(228, 152, 11);
   font-size: 17px;
+}
+.index_tip{
+  color: rgb(228, 152, 11);
 }
 </style>

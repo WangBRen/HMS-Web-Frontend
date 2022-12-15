@@ -138,7 +138,7 @@
 import { getHealthIndex, getHeathLevels } from '@/api/health'
 // import { getHealthIndex } from '@/api/health'
 // import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
-import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
+import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList, getOneChronic as apiGetOneChronic } from '@/api/chronic'
 // import { getChronic as apiGetChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
 
 import getChronicName from './components/HealthChronicName.vue'
@@ -279,22 +279,6 @@ export default {
         // console.log('新建慢病')
       },
       handleOk () {
-        // console.log('name', this.formData.name, 'des', this.formData.describe)
-        // if ((this.formData.name !== null && this.formData.name !== '') && (this.formData.describe !== null && this.formData.describe !== '')) {
-        //   // this.$message.info('This is a normal message')
-        //   // console.log('完整')
-        // } else {
-        //   if (this.formData.name === null || this.formData.name === '') {
-        //     this.$message.error('慢性病名未填')
-        //   }
-        //   if (this.formData.describe === null || this.formData.describe === '') {
-        //     this.$message.error('慢性病描述未填')
-        //   }
-        //   console.log('不完整')
-        // }
-        // console.log('ref', this.$refs.formData.validate)
-        // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
-        // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
         if (this.formData.targetArr.length === 0) {
           this.$message.warning('请添加指标')
         } else {
@@ -396,11 +380,23 @@ export default {
       },
       editChronicTable (data) {
         // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
+        // console.log('刷新', data)
         this.editVisible = true
         this.editData = JSON.parse(JSON.stringify(data))
         // this.$refs.editChronic.openModel()
         // this.$refs.editChronic.getChronicData(data)
         // console.log('编辑', data)
+      },
+      refEditDate (item) {
+        apiGetOneChronic(item.id).then(res => {
+          if (res.status === 200) {
+            // console.log(res.data)
+            this.editData = res.data
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+        // console.log(this.tableData, '刷新', item.id)
       },
       delChronicTable (data) {
         // console.log('删除', data)
