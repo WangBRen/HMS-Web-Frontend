@@ -18,6 +18,8 @@
         <a @click="GradingStandard(record)">分级标准</a>
         <a-divider type="vertical" />
         <a @click="editChronicTable(record)">编辑</a>
+        <a-divider type="vertical" />
+        <a @click="openMedicineModal(record)">药物</a>
         <!-- <a-divider type="vertical" />
         <a @click="delChronicTable(record)">删除</a> -->
       </span>
@@ -28,6 +30,7 @@
       :visible="addChronicIndexVisible"
       @ok="handleOk"
       @cancel="handleCancel"
+      :maskClosable="false"
       :width="700">
       <a-form-model
         ref="formData"
@@ -131,6 +134,12 @@
       :speechData="speechData"
       :speechInfo="speechInfo"
     />
+    <medicineChronic
+      :medicineVisible="medicineVisible"
+      @closeMedicineModal="closeMedicineModal"
+      :medicineData="medicineData"
+      :medicineInfo="medicineInfo"
+    />
   </div>
 </template>
 
@@ -145,13 +154,15 @@ import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
 import speechChronic from './HealthChronicSpeechModal.vue'
 import GradingStandard from './components/GradingStandard.vue'
+import medicineChronic from './HealthChronicMedicine.vue'
 import { notification } from 'ant-design-vue'
 export default {
     components: {
       getChronicName,
       editChronice,
       GradingStandard,
-      speechChronic
+      speechChronic,
+      medicineChronic
     },
     data () {
       return {
@@ -163,6 +174,9 @@ export default {
         gradingVisible: false, // 控制分级弹窗
         gradingData: null, // 传给分级的数据
         gradingInfo: null, // 分级信息
+        medicineData: [], // 传给药物弹窗的数据
+        medicineInfo: null, // 药物信息
+        medicineVisible: false, // 用于控制药物弹窗
         sendFilter: [],
         rules: {
           name: [{
@@ -194,7 +208,7 @@ export default {
             title: '操作',
             key: 'action',
             scopedSlots: { customRender: 'action' },
-            width: 200,
+            width: 250,
             align: 'center'
           }
         ],
@@ -469,8 +483,6 @@ export default {
         this.editVisible = false
       },
       handleChange (item) {
-        // console.log('11', item)
-        // console.log('formData', this.formData.files)
         if (item.file.status === 'done') {
           // console.log('上传的', item.file)
           this.formData.files.push(item.file.response.data)
@@ -489,6 +501,25 @@ export default {
           this.formData.files = newArr
           // console.log('删除成功', this.formData.files)
         }
+      },
+      openMedicineModal (data) {
+        this.medicineInfo = data
+        this.medicineData = [
+          {
+            name: '测试药物名',
+            target: '治疗测试', // 治疗目标
+            category: '双胍类', // 药物类别
+            dose: '100mg', // 剂量
+            frequency: '1', // 次数
+            company: '日', // 单位
+            reaction: '呕吐头晕' // 不良反应
+          }
+        ]
+        this.medicineVisible = true
+        console.log('medicineData', this.medicineData)
+      },
+      closeMedicineModal () {
+        this.medicineVisible = false
       }
     }
 }
