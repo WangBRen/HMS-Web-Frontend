@@ -5,7 +5,6 @@ const customerApi = {
   guidanceTemplates: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/templates`, // 获取指导内容模板
   addNewGuidance: (customerId) => `/customers/${customerId}/health-guidances`, // 新建新的指导
   creatGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/create`, // 创建健康指导
-  creatHealthGuidance: (customerId) => `/customers/${customerId}/health-guidances/create`, // 健康指导
   guidanceSendingInfo: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/sending-info`, // 健康指导待发送
   ApiSendGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/send`, // 发送健康指导
   guidanceSee: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}` // 查看健康指导
@@ -40,12 +39,6 @@ export function addNewGuidance (customerId, parameter) {
 export function creatGuidance (customerId, guidanceId) {
   return request({
       url: customerApi.creatGuidance(customerId, guidanceId),
-      method: 'post'
-  })
-}
-export function creatHealthGuidance (customerId) {
-  return request({
-      url: customerApi.creatHealthGuidance(customerId),
       method: 'post'
   })
 }

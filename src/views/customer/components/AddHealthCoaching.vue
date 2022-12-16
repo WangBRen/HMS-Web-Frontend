@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { getGuidanceTemplates as apiGuidanceTemplates, creatGuidance, creatHealthGuidance, addNewGuidance } from '@/api/guidance'
+import { getGuidanceTemplates as apiGuidanceTemplates, creatGuidance, addNewGuidance } from '@/api/guidance'
 import { getChronicDetail as apiChronicDetail } from '@/api/customer'
 import { getToken } from '@/api/followUpForm'
 import { message } from 'ant-design-vue'
@@ -240,22 +240,13 @@ export default {
         })
         }
       if (this.guidanceId) {
-        if (this.diseaseId === null) {
-          const res = await creatHealthGuidance(this.customerId)
-          if (res.status === 201) {
-            // message.success(res.message)
-            this.sendVisible = true
-            this.$emit('successCreat', this.chronicId)
-          }
+        const res = await creatGuidance(this.customerId, this.guidanceId)
+        if (res.status === 201) {
+          // message.success(res.message)
+          this.sendVisible = true
+          this.$emit('successCreat', this.chronicId)
         } else {
-          const res = await creatGuidance(this.customerId, this.guidanceId)
-          if (res.status === 201) {
-            // message.success(res.message)
-            this.sendVisible = true
-            this.$emit('successCreat', this.chronicId)
-          } else {
-            message.error(res.message)
-          }
+          message.error(res.message)
         }
       }
     },

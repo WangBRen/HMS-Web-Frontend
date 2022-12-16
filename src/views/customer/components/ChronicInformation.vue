@@ -455,6 +455,7 @@ export default {
       this.coachingVisible = false
     },
     async successCreatCoaching (diseaseId) {
+      this.loadData()
       this.coachingVisible = false
       const refresh = refreshGuidanceTable['d-' + diseaseId]
       refresh && await refresh()
