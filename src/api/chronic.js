@@ -58,11 +58,6 @@ export function getSpeechVariables (diseaseId) {
   })
 }
 
-export function getAllChronic () {
-  return request({
-    url: api.getChronic,
-
-
 export function editChronicIndex (diseaseId, parameter) {
   return request({
     url: api.editChronicIndex(diseaseId),
@@ -74,7 +69,6 @@ export function editChronicIndex (diseaseId, parameter) {
 export function getOneChronic (diseaseId) {
   return request({
     url: api.getOneChronic(diseaseId),
-
     method: 'get'
   })
 }
