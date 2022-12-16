@@ -290,7 +290,7 @@
                             placeholder="名称，如：偏高、偏低、正常"
                           />
                         </a-col>
-                        <a-col :span="14">
+                        <a-col :span="13">
                           <div v-if="result_option.products">
                             <div v-for="prod in result_option.products" :key="prod.id">
                               <a-row>
@@ -301,24 +301,24 @@
                                   </span>
                                   <span>:</span>
                                 </a-col>
-                                <a-col :span="prod.conditionFilters.length > 0 ? 17 : 24" style="display: flex; align-items: center;">
+                                <a-col :span="prod.conditionFilters.length > 0 ? 16 : 24" style="display: flex; align-items: center;">
                                   <a-input
                                     type="text"
                                     :value="prod.start"
                                     @change="e => { prod.start = e.target.value }"
                                     :key="prod.id + '-start'"
                                     placeholder="数值下界"
-                                    style="width: 40%"
+                                    style="width: 42%"
                                     :addonAfter="current.unit"
                                   />
-                                  <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
+                                  <div style="width: 28%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
                                   <a-input
                                     type="text"
                                     :value="prod.end"
                                     @change="e => { prod.end = e.target.value }"
                                     :key="prod.id + '-end'"
                                     placeholder="数值上界"
-                                    style="width: 40%"
+                                    style="width: 42%"
                                     :addonAfter="current.unit"
                                   />
                                 </a-col>
@@ -326,7 +326,7 @@
                             </div>
                           </div>
                         </a-col>
-                        <a-col :span="5">
+                        <a-col :span="6">
                           <a-textarea
                             style="height: 100%;"
                             :value="result_option.remark"
@@ -691,6 +691,7 @@ export default {
       // console.log('prepared products', conditions, descartProduct(conditions))
       // prepared:
       const originalProducts = (this.current.result.options || []).map(option => option.products).flat()
+      console.log('this.current', this.current)
       const options = (this.current.result.options || []).map((option, index) => {
         const preparedProducts = descartProduct(conditions).map(condFilters => { // prod: [{男}, {女}]
           return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null, remark: null }
