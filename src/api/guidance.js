@@ -36,9 +36,9 @@ export function addNewGuidance (customerId, parameter) {
       data: parameter
   })
 }
-export function creatGuidance (customerId, diseaseId) {
+export function creatGuidance (customerId, guidanceId) {
   return request({
-      url: customerApi.creatGuidance(customerId, diseaseId),
+      url: customerApi.creatGuidance(customerId, guidanceId),
       method: 'post'
   })
 }

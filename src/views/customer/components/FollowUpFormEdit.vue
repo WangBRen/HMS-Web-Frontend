@@ -41,7 +41,10 @@
         </a-button>
       </template>
       <div v-if="payload.diseases">
-        <span v-for="item in payload.diseases" :key="item.id"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
+        <span v-for="item in payload.diseases" :key="item.id">
+          <span v-if="diseaseId"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
+          <span v-else><a-tag color="blue">{{ item.name }}</a-tag></span>
+        </span>
       </div>
     </a-card>
     <!-- 指标选择开始 -->
@@ -99,7 +102,8 @@
         <a-col :span="24" >
           <a-checkbox-group v-model="defaultChecked">
             <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
-              {{ item.chronicDisease.name }}
+              <span v-if="diseaseId">{{ item.chronicDisease.name }}</span>
+              <span v-else>{{ item.name }}</span>
             </a-checkbox>
           </a-checkbox-group>
         </a-col>
@@ -113,6 +117,7 @@ import { getChronicManage as apiGetChronicManage, getChronicDetail } from '@/api
 // import { getToken } from '@/api/followUpForm'
 import { age } from '@/utils/age'
 import { notification } from 'ant-design-vue'
+import { getAllChronic } from '@/api/chronic'
 const columns = [
   {
     title: '是否必填',
@@ -252,7 +257,8 @@ export default {
       sendModal: false,
       formId: null,
       userAge: null,
-      defaultChecked: []
+      defaultChecked: [],
+      totalIndexOfThisPeople: []
     }
   },
   filters: {
@@ -276,17 +282,22 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     async loadData () {
-      const resp = await apiGetChronicManage(this.customerId)
-      if (resp.status === 200) {
-        this.totalChronicDiseases = resp.data
-      }
-      if (this.diseaseId) {
+      if (this.diseaseId !== null) {
+        const resp = await apiGetChronicManage(this.customerId)
+        if (resp.status === 200) {
+          this.totalChronicDiseases = resp.data
+        }
         const res = await getChronicDetail(this.customerId, this.diseaseId)
         if (res.status === 200) {
           const diseaseObj = res.data
           this.modalSelectChronic.diseases.push(diseaseObj)
           this.defaultChecked = [diseaseObj.id]
           this.handleChronicDiseaseOK()
+        }
+      } else {
+        const res = await getAllChronic()
+        if (res.status === 200) {
+          this.totalChronicDiseases = res.data.content
         }
       }
       const userAge = age(this.baseInfo.birthDate)
@@ -305,16 +316,23 @@ export default {
       //   this.handleChronicDiseaseOK()
     },
     handleChronicDiseaseOK () {
+      console.log(this.totalChronicDiseases, this.defaultChecked)
       // transfer:
       this.payload.diseases = this.totalChronicDiseases.filter(item => {
         return this.defaultChecked.includes(item.id)
       })
+      console.log(this.payload.diseases)
       this.modalSelectChronic.visible = false
       // console.log({ diseases: this.payload.diseases })
       // update index table
-      const totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.chronicDisease.items).flat().map(item => item.indexItem)
+      if (this.diseaseId === null) {
+        this.totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.items).flat().map(item => item.indexItem)
+      } else {
+        this.totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.chronicDisease.items).flat().map(item => item.indexItem)
+      }
       // console.log('totalIndexOfThisPeople', totalIndexOfThisPeople)
-      const items = totalIndexOfThisPeople.map(index => {
+      const items = this.totalIndexOfThisPeople.map(index => {
+        console.log('index', index)
         return {
           id: index.id,
           indexId: index.id,
@@ -372,12 +390,17 @@ export default {
         }
       })
       // do request
-      const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
+      let apiPayload = {}
+      if (this.diseaseId > 0) {
+        apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
+        this.payload.diseases.forEach(function (diseas) {
+          apiPayload.diseaseIds.push(diseas.id)
+        })
+      } else {
+        apiPayload = { items: [], hints: null, token: '' }
+      }
       if (this.payload.items.length !== 0) {
             apiPayload.hints = this.payload.hints
-            this.payload.diseases.forEach(function (diseas) {
-              apiPayload.diseaseIds.push(diseas.id)
-            })
             this.payload.items.forEach(function (itemVal) {
               const item = {
                 indexItemId: itemVal.indexId,

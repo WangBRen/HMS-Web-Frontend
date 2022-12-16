@@ -200,6 +200,52 @@ export default {
   //   }
   // },
   created () {
+    if (this.diseaseId === -2) {
+      this.recordColumns = [
+      {
+          title: '创建日期',
+          dataIndex: 'createdAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.createdAt ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '创建人',
+          dataIndex: 'createdBy',
+          align: 'center',
+          scopedSlots: { customRender: 'HealthSpecialistRender' }
+        },
+        {
+          title: '回收结果',
+          dataIndex: 'result',
+          align: 'center',
+          scopedSlots: { customRender: 'result' }
+        },
+        {
+          title: '发送时间',
+          dataIndex: 'sendAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.sendAt ? moment(record.sendAt).format('MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '回收时间',
+          dataIndex: 'receivedAt',
+          align: 'center',
+          customRender: (text, record, index) => {
+            return record.receivedAt ? moment(record.receivedAt).format('MM-DD HH:mm:ss') : '-'
+          }
+        },
+        {
+          title: '操作',
+          dataIndex: 'action',
+          align: 'center',
+          scopedSlots: { customRender: 'action' }
+        }
+      ]
+    }
     // this.$setPageDataLoader(this.onSearch)
     this.onSearch()
     // this.$setPageDataLoader(() => {
