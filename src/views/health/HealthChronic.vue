@@ -51,20 +51,22 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <!-- <a-row>
+        <a-row>
           <a-col :span="24">
             <a-form-model-item label="慢病资料">
               <a-upload
+                v-model="formData.files"
                 name="file"
                 multiple
-                :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-'"
+                :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane'"
                 @change="value => handleChange(value)"
               >
+                <!-- :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + formData.name" -->
                 <a-button><a-icon type="upload" />上传慢病资料</a-button>
               </a-upload>
             </a-form-model-item>
           </a-col>
-        </a-row> -->
+        </a-row>
         <a-divider type="horizontal" dashed style="margin-bottom:24px">添加指标</a-divider>
         <div class="index-tip"><a-icon type="info-circle" /> 请慎重添加指标，添加后将不能删除和编辑指标</div>
         <a-row v-for="target in formData.targetArr" :key="target.id">
@@ -104,8 +106,7 @@
         <a-row>
           <a-col :span="22">
             <!-- <span style="font-size: 16px;">指标</span>
-            <a-icon @click="addTargetArr" type="plus-circle" />
-            <a-icon @click="delTargetArrEnd" type="minus-circle" /> -->
+            <a-icon @click="addTargetArr" type="plus-circle" />-->
             <a-button @click="addTargetArr" type="dashed" style="display:block;margin:0 auto;width:60%">
               <a-icon type="plus" /> 添加指标
             </a-button>
@@ -137,7 +138,9 @@
 import { getHealthIndex, getHeathLevels } from '@/api/health'
 // import { getHealthIndex } from '@/api/health'
 // import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
-import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
+import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList, getOneChronic as apiGetOneChronic } from '@/api/chronic'
+// import { getChronic as apiGetChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
+
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
 import speechChronic from './HealthChronicSpeechModal.vue'
@@ -199,6 +202,7 @@ export default {
         formData: {
           name: null,
           describe: null,
+          files: [],
           targetArr: []
         },
         indexArr: [
@@ -275,22 +279,6 @@ export default {
         // console.log('新建慢病')
       },
       handleOk () {
-        // console.log('name', this.formData.name, 'des', this.formData.describe)
-        // if ((this.formData.name !== null && this.formData.name !== '') && (this.formData.describe !== null && this.formData.describe !== '')) {
-        //   // this.$message.info('This is a normal message')
-        //   // console.log('完整')
-        // } else {
-        //   if (this.formData.name === null || this.formData.name === '') {
-        //     this.$message.error('慢性病名未填')
-        //   }
-        //   if (this.formData.describe === null || this.formData.describe === '') {
-        //     this.$message.error('慢性病描述未填')
-        //   }
-        //   console.log('不完整')
-        // }
-        // console.log('ref', this.$refs.formData.validate)
-        // console.log('class', document.getElementsByClassName('addModal')[0].__vue__.validate)
-        // document.getElementsByClassName('addModal')[0].__vue__.validate(valid => {
         if (this.formData.targetArr.length === 0) {
           this.$message.warning('请添加指标')
         } else {
@@ -299,6 +287,7 @@ export default {
               const apiData = {
                 name: this.formData.name,
                 describe: this.formData.describe,
+                files: this.formData.files,
                 items: this.formData.targetArr
               }
               apiAddChronic(apiData).then(res => {
@@ -306,9 +295,12 @@ export default {
                   // console.log('添加慢病成功，添加的数据', apiData)
                   this.addChronicIndexVisible = false
                   this.$message.info('成功添加慢病')
+                } else {
+                  this.$message.err(res.message)
                 }
               })
               // console.log('确定formData', this.formData)
+              // this.addChronicIndexVisible = false
               // console.log('确定apiData', apiData)
             } else {
               // console.log('原版不完整')
@@ -332,23 +324,6 @@ export default {
         }
         this.formData.targetArr.push(item)
       },
-      // 从末尾删除
-      delTargetArrEnd () {
-        // console.log(this.formData.targetArr[this.formData.targetArr.length - 1])
-        this.formData.targetArr.pop()
-        var waitArr = this.indexArr
-        for (var i = 0; i < this.formData.targetArr.length; i++) {
-          // console.log('22222', this.formData.targetArr[i].indexItemId)
-          waitArr = waitArr.filter((item) => {
-            return item.id !== this.formData.targetArr[i].indexItemId
-          })
-        }
-        // 将删除指标后过滤的指标传给子组件
-        this.sendFilter = waitArr
-        // console.log('全部指标', this.indexArr)
-        // console.log('选择的指标', this.formData.targetArr)
-        // console.log('删除过滤后', waitArr)
-      },
       // 从指定位置删除
       delTargetArr (item) {
         //  console.log(item)
@@ -366,10 +341,6 @@ export default {
         // 将删除指标后过滤的指标传给子组件
         this.sendFilter = waitArr
       },
-      // 将输入的内容与显示的内容进行匹配
-      filterOption (value, option) {
-        return option.componentOptions.children[0].text.indexOf(value) >= 0
-      },
       resetForm () {
         // 不用nextTick会报初始化错误
         this.$nextTick(() => {
@@ -377,6 +348,7 @@ export default {
           this.formData.name = null
           this.formData.describe = null
         })
+        this.formData.files.length = 0
         this.formData.targetArr.length = 0
         this.$forceUpdate()
       },
@@ -408,11 +380,23 @@ export default {
       },
       editChronicTable (data) {
         // 需要解除双向绑定，不然在编辑框改变数据，table里面的数据也会跟着变
-        this.editData = JSON.parse(JSON.stringify(data))
+        // console.log('刷新', data)
         this.editVisible = true
+        this.editData = JSON.parse(JSON.stringify(data))
         // this.$refs.editChronic.openModel()
         // this.$refs.editChronic.getChronicData(data)
         // console.log('编辑', data)
+      },
+      refEditDate (item) {
+        apiGetOneChronic(item.id).then(res => {
+          if (res.status === 200) {
+            // console.log(res.data)
+            this.editData = res.data
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+        // console.log(this.tableData, '刷新', item.id)
       },
       delChronicTable (data) {
         // console.log('删除', data)
@@ -449,6 +433,7 @@ export default {
         const indexArr = this.indexArr
         // console.log('结果', targetArr)
         // console.log('指标', this.indexArr)
+        // console.log('sendFilter', this.sendFilter)
         for (var j = 0; j < indexArr.length; j++) {
           if (indexArr[j].id === value) {
             for (var i = 0; i < targetArr.length; i++) {
@@ -482,6 +467,28 @@ export default {
       },
       closeEditModal () {
         this.editVisible = false
+      },
+      handleChange (item) {
+        // console.log('11', item)
+        // console.log('formData', this.formData.files)
+        if (item.file.status === 'done') {
+          // console.log('上传的', item.file)
+          this.formData.files.push(item.file.response.data)
+          // console.log('上传成功', this.formData.files)
+        } else if (item.file.status === 'error') {
+          // console.log('上传失败', this.formData.files)
+        } else if (item.file.status === 'removed') {
+          const newArr = []
+          for (let i = 0; i < this.formData.files.length; i++) {
+            for (let j = 0; j < item.fileList.length; j++) {
+              if (this.formData.files[i].fileName === item.fileList[j].name) {
+                newArr.push(this.formData.files[i])
+              }
+            }
+          }
+          this.formData.files = newArr
+          // console.log('删除成功', this.formData.files)
+        }
       }
     }
 }
