@@ -329,8 +329,8 @@
                         <a-col :span="6">
                           <a-textarea
                             style="height: 100%;"
-                            :value="result_option.remark"
-                            @change="e => { result_option.remark = e.target.value }"
+                            :value="result_option.products[0].remark"
+                            @change="e => { result_option.products[0].remark = e.target.value }"
                             placeholder="指标结果备注"
                             autosize
                           />
@@ -635,6 +635,7 @@ export default {
       }
     },
     openModal (mode, record) {
+      console.log('编辑数据', mode, record)
       const reform = (data) => {
         if (!data) return null
         // conditions:
@@ -653,11 +654,15 @@ export default {
         // console.log({ resultOptions })
         // return
         const view = { ...data, conditions, result }
+        console.log('view', view)
         // console.log({ view })
         return JSON.parse(JSON.stringify(view))
       }
+      console.log('999999999999999000000000', reform(record), this.current)
       this.mode = mode
       this.current = reform(record) || InitialPropOfModel
+      console.log('999999999999999000000000', reform(record), this.current)
+      console.log('0000000000', this.current)
       this.visible = true
       this.updateCurrentProducts()
     },
@@ -691,7 +696,6 @@ export default {
       // console.log('prepared products', conditions, descartProduct(conditions))
       // prepared:
       const originalProducts = (this.current.result.options || []).map(option => option.products).flat()
-      console.log('this.current', this.current)
       const options = (this.current.result.options || []).map((option, index) => {
         const preparedProducts = descartProduct(conditions).map(condFilters => { // prod: [{男}, {女}]
           return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null, remark: null }
@@ -700,7 +704,8 @@ export default {
         const newProducts = preparedProducts.map(prod => {
           const original = originalProducts.find(originalProd => originalProd.id === prod.id)
           if (original) {
-            return { ...prod, name: original.name, start: original.start, end: original.end }
+            console.log('originaloriginal', original)
+            return { ...prod, name: original.name, start: original.start, end: original.end, remark: original.remark }
           }
           return prod
         })
@@ -732,6 +737,7 @@ export default {
       // })
       // console.log('[range] rendering...', options)
       this.current.result.options = options
+      console.log('this.current.result.options', this.current.result.options)
       this.$forceUpdate()
       // this.current.products = products
       // this.current.result.options = options
@@ -794,7 +800,7 @@ export default {
     },
     handleAddNewConditionRange (condition) { // type: range
       const options = condition.options || []
-      options.push({ id: randomId(), name: '', start: null, end: null })
+      options.push({ id: randomId(), name: '', start: null, end: null, remark: null })
       condition.options = options
       this.updateCurrentProducts()
     },
@@ -805,7 +811,7 @@ export default {
     handleAddNewResultSelectType (condition) {
       switch (condition.type) {
         case 'range':
-          condition.options = [{ id: randomId(), name: '示例', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, conditionFilters: [] }] }]
+          condition.options = [{ id: randomId(), name: '示例', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, reamrk: null, conditionFilters: [] }] }]
           condition.pending_value = ''
           break
         case 'simple':
@@ -829,7 +835,7 @@ export default {
     handleAddNewResultRange (condition) { // type: range
       // console.log('result.options:', { condition })
       const options = condition.options || []
-      options.push({ id: randomId(), name: '', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, conditionFilters: [] }] })
+      options.push({ id: randomId(), name: '', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, reamrk: null, conditionFilters: [] }] })
       condition.options = options
       this.$forceUpdate()
       this.updateCurrentProducts()
@@ -844,6 +850,7 @@ export default {
       // reform to payload
       const reform = (payload) => {
         // if (payload.result.type === 'range') {
+          // console.log('pppppppppppp', payload)
         const result = (payload.result.options || []).map(resultOption => {
           return (resultOption.products || []).map(prod => {
             // const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
@@ -854,6 +861,7 @@ export default {
               type: payload.result.type,
               start: prod.start,
               end: prod.end,
+              remark: resultOption.remark,
               conditionFilters: prod.conditionFilters
             }
           })
@@ -912,6 +920,7 @@ export default {
       if (this.mode === 'create') {
         // create
         resp = await apiCreateIndexItem(projectName, payload)
+        console.log('apiCreateIndexItem', payload)
       } else {
         // update
         resp = await apiUpdateIndexItem(projectName, payload.id, payload)
