@@ -48,7 +48,15 @@
       </div>
     </a-card>
     <!-- 指标选择开始 -->
-    <a-card title="指标选择" :loading="loading" class="card" :body-style="cardBodyStyle">
+    <a-card :loading="loading" class="card" :body-style="cardBodyStyle">
+      <template #title>
+        <span>指标选择</span>
+        <span style="margin-left:20px;font-size:14px;color:#888;">检查项目:
+          <span v-for="project in projects" :key="project.id">
+            【{{ project.name }}】
+          </span>
+        </span>
+      </template>
       <a-table bordered :data-source="payload.items" :columns="itemColumns" rowKey="id" :pagination="false">
         <span slot="checked" slot-scope="text, record">
           <a-checkbox v-model="record.isChecked" :disabled="record.disabled"/>
@@ -114,10 +122,11 @@
 
 <script>
 import { getChronicManage as apiGetChronicManage, getChronicDetail } from '@/api/customer'
+import { getHealthIndex } from '@/api/health'
 // import { getToken } from '@/api/followUpForm'
 import { age } from '@/utils/age'
 import { notification } from 'ant-design-vue'
-import { getAllChronic } from '@/api/chronic'
+import { getChronic } from '@/api/chronic'
 const columns = [
   {
     title: '是否必填',
@@ -258,7 +267,8 @@ export default {
       formId: null,
       userAge: null,
       defaultChecked: [],
-      totalIndexOfThisPeople: []
+      totalIndexOfThisPeople: [],
+      projects: []
     }
   },
   filters: {
@@ -282,6 +292,7 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     async loadData () {
+      console.log('this.diseaseId', this.diseaseId)
       if (this.diseaseId !== null) {
         const resp = await apiGetChronicManage(this.customerId)
         if (resp.status === 200) {
@@ -295,7 +306,8 @@ export default {
           this.handleChronicDiseaseOK()
         }
       } else {
-        const res = await getAllChronic()
+        const pages = { page: 1, size: 10 }
+        const res = await getChronic(pages)
         if (res.status === 200) {
           this.totalChronicDiseases = res.data.content
         }
@@ -316,14 +328,11 @@ export default {
       //   this.handleChronicDiseaseOK()
     },
     handleChronicDiseaseOK () {
-      console.log(this.totalChronicDiseases, this.defaultChecked)
       // transfer:
       this.payload.diseases = this.totalChronicDiseases.filter(item => {
         return this.defaultChecked.includes(item.id)
       })
-      console.log(this.payload.diseases)
       this.modalSelectChronic.visible = false
-      // console.log({ diseases: this.payload.diseases })
       // update index table
       if (this.diseaseId === null) {
         this.totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.items).flat().map(item => item.indexItem)
@@ -332,7 +341,6 @@ export default {
       }
       // console.log('totalIndexOfThisPeople', totalIndexOfThisPeople)
       const items = this.totalIndexOfThisPeople.map(index => {
-        console.log('index', index)
         return {
           id: index.id,
           indexId: index.id,
@@ -354,6 +362,20 @@ export default {
         return array
       }, [])
       this.payload.items = items
+      this.getHealthIndex()
+    },
+    // 获取指标项目名
+    async getHealthIndex () {
+      const res = await getHealthIndex()
+      if (res.status === 200) {
+        this.projects = (res.data || []).filter(project => {
+          for (var index of project.items) {
+            for (var i of this.payload.items) {
+              if (i.id === index.id) { return true }
+            }
+          }
+        })
+      }
     },
     handleAddIndex () {
       const itemObject = {
