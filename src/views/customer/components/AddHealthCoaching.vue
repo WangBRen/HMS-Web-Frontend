@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { getGuidanceTemplates as apiGuidanceTemplates, addNewGuidance, creatGuidance } from '@/api/guidance'
+import { getGuidanceTemplates as apiGuidanceTemplates, creatGuidance, creatHealthGuidance, addNewGuidance } from '@/api/guidance'
 import { getChronicDetail as apiChronicDetail } from '@/api/customer'
 import { getToken } from '@/api/followUpForm'
 import { message } from 'ant-design-vue'
@@ -123,15 +123,16 @@ export default {
       },
       guidanceId: null,
       sendVisible: false,
-      selectedData: '',
+      // selectedData: '',
       chronicId: -1
     }
   },
   watch: {
     coachingVisible (newVal, oldVal) {
-      // if newVisible == true then loadData
+      console.log(newVal, oldVal)
       if (newVal !== oldVal && newVal) {
         getToken().then(res => {
+          console.log('token', res)
           if (res.status === 200) {
               this.payload.myToken = res.data
           }
@@ -141,6 +142,11 @@ export default {
     }
   },
   mounted () {
+    // getToken().then(res => {
+    //   if (res.status === 200) {
+    //       this.payload.myToken = res.data
+    //   }
+    // })
     this.loadData()
   },
   methods: {
@@ -163,40 +169,25 @@ export default {
       } else {
         this.$message.error('慢病名称获取失败')
       }
-      // 创建新的指导
-      const apiPayload = { token: '', diseaseIds: [], sendText: '' }
-      apiPayload.token = this.payload.myToken
-      apiPayload.diseaseIds.push(this.chronicId)
-      apiPayload.sendText = this.templateData
-
-      addNewGuidance(this.customerId, apiPayload).then(res => {
-        if (res.status === 201) {
-        this.guidanceId = res.data.id
-        } else {
-          this.notification.open({
-          message: '健康指导新建失败',
-          description: res.message
-        })
-        }
-      })
     },
     loadData () {
       this.chronicName = ''
-      this.selectedData = ''
+      // this.selectedData = ''
       this.templateData = ''
       if (this.diseaseId > 0) {
+        console.log(11111111111)
         this.chronicId = this.diseaseId
         this.doRequest()
       }
       // 获取已分级的慢病列表
-      const chronicData = this.tableData.filter(chronic => {
-        if (chronic.level !== null) {
-            return chronic
-        }
-      })
-      this.chronicSelectData = chronicData.map(item => {
-        return item.chronicDisease.name
-      })
+      // const chronicData = this.tableData.filter(chronic => {
+      //   if (chronic.level !== null) {
+      //       return chronic
+      //   }
+      // })
+      // this.chronicSelectData = chronicData.map(item => {
+      //   return item.chronicDisease.name
+      // })
       // 获取年龄
       const userAge = age(this.baseInfo.birthDate)
       if (userAge > 0) {
@@ -208,36 +199,65 @@ export default {
     closeCoachingModel () {
       this.$emit('close')
     },
-    handleChange (value) {
-      this.selectedData = value
-      // this.chronicName = '【' + value + '】'
-      const chronicData = this.tableData.filter(chronic => {
-        if (chronic.chronicDisease.name === value) {
-            return chronic
-        }
-      })
-      this.chronicId = chronicData[0].id
-      this.doRequest()
-    },
+    // handleChange (value) {
+    //   this.selectedData = value
+    //   // this.chronicName = '【' + value + '】'
+    //   const chronicData = this.tableData.filter(chronic => {
+    //     if (chronic.chronicDisease.name === value) {
+    //         return chronic
+    //     }
+    //   })
+    //   this.chronicId = chronicData[0].id
+    //   this.doRequest()
+    // },
     filterOption (input, option) {
       return (
         option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
       )
     },
-    handleOk () {
+     async handleOk () {
       if (this.templateData === '') {
         message.warning('指导内容为空，请先填写')
         return
       }
-      creatGuidance(this.customerId, this.guidanceId).then(res => {
+      // 创建新的指导
+      let apiPayload = {}
+      if (this.diseaseId === null) {
+        apiPayload = { token: '', sendText: '' }
+      } else {
+        apiPayload = { token: '', diseaseIds: [], sendText: '' }
+        apiPayload.diseaseIds.push(this.chronicId)
+      }
+      apiPayload.token = this.payload.myToken
+      apiPayload.sendText = this.templateData
+      const res = await addNewGuidance(this.customerId, apiPayload)
         if (res.status === 201) {
-          // message.success(res.message)
-          this.sendVisible = true
-          this.$emit('successCreat', this.chronicId)
+        this.guidanceId = res.data.id
         } else {
-          message.error(res.message)
+          this.notification.open({
+          message: '健康指导新建失败',
+          description: res.message
+        })
         }
-      })
+      if (this.guidanceId) {
+        if (this.diseaseId === null) {
+          const res = await creatHealthGuidance(this.customerId)
+          if (res.status === 201) {
+            // message.success(res.message)
+            this.sendVisible = true
+            this.$emit('successCreat', this.chronicId)
+          }
+        } else {
+          const res = await creatGuidance(this.customerId, this.guidanceId)
+          if (res.status === 201) {
+            // message.success(res.message)
+            this.sendVisible = true
+            this.$emit('successCreat', this.chronicId)
+          } else {
+            message.error(res.message)
+          }
+        }
+      }
     },
     closeSendModel () {
       this.sendVisible = false

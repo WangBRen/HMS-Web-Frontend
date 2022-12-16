@@ -189,7 +189,6 @@
       @onClose="closeStatusModel"
       @successChangeState="updateStatusModel"/>
     <AddHealthCoaching
-      v-if="coachingVisible"
       :coachingVisible="coachingVisible"
       :customerId="custId"
       :diseaseId="diseaseId"

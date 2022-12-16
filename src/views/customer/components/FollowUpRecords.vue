@@ -284,7 +284,6 @@ export default {
       apiFollowUpRecords(this.customerId, this.diseaseId, pages).then(res => {
         if (res.status === 200) {
           this.recordData = res.data.content || []
-          console.log('this.recordData', this.recordData)
           this.pagination.total = res.data.totalElements
         } else {
           this.recordData = []
