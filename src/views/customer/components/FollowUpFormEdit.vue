@@ -51,10 +51,17 @@
     <a-card :loading="loading" class="card" :body-style="cardBodyStyle">
       <template #title>
         <span>指标选择</span>
-        <span style="margin-left:20px;font-size:14px;color:#888;">检查项目:
-          <span v-for="project in projects" :key="project.id">
-            【{{ project.name }}】
-          </span>
+        <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">检查项目:
+          <a-tooltip>
+            <template slot="title">
+              <span v-for="project in projects" :key="project.id">
+                【{{ project.name }}】
+              </span>
+            </template>
+            <span v-for="project in projects" :key="project.id">
+              【{{ project.name }}】
+            </span>
+          </a-tooltip>
         </span>
       </template>
       <a-table bordered :data-source="payload.items" :columns="itemColumns" rowKey="id" :pagination="false">
