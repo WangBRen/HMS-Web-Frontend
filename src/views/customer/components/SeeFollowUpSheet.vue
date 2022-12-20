@@ -352,10 +352,11 @@ export default {
     // 获取指标项目名
     async getHealthIndex () {
       const res = await getHealthIndex()
+      const items = this.items.filter(item => { if (item.indexItem !== null) return true })
       if (res.status === 200) {
         this.projects = (res.data || []).filter(project => {
           for (var index of project.items) {
-            for (var i of this.items) {
+            for (var i of items) {
               if (i.indexItem.id === index.id) {
                 return true
               }
