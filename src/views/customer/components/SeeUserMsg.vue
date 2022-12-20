@@ -177,6 +177,28 @@
             </a-row>
           </a-col>
         </a-row>
+        <a-row>
+          <a-col :span="12">
+            <a-row class="info">
+              <a-col :span="8" class="info_title">
+                <span >单位：</span>
+              </a-col>
+              <a-col :span="16">
+                <span class="info_index">{{ seeData.member.baseInfo.company }}</span>
+              </a-col>
+            </a-row>
+          </a-col>
+          <a-col :span="12">
+            <a-row class="info">
+              <a-col :span="8" class="info_title">
+                <span >社区：</span>
+              </a-col>
+              <a-col :span="12">
+                <span class="info_index">{{ seeData.member.baseInfo.community }}</span>
+              </a-col>
+            </a-row>
+          </a-col>
+        </a-row>
       </div>
     </a-modal>
   </div>

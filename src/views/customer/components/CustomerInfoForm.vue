@@ -7,6 +7,7 @@
       :title="groupShow === false ? '新增家庭' : '新增成员'"
       @ok="handleOk"
       @cancel="handleOff"
+      :maskClosable="false"
       destroyOnClose
       :width="1000">
       <a-form-model ref="ruleForm" :model="form" :rules="info_rules" :label-col="labelCol" :wrapper-col="wrapperCol">
@@ -161,6 +162,18 @@
           <a-col :span="12">
             <a-form-model-item label="详细地址:">
               <a-input v-model="form.homeAddress" placeholder="请输入详细地址"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12">
+            <a-form-model-item label="单位:" ref="company" prop="company">
+              <a-input v-model="form.company" placeholder="请输入单位"></a-input>
+            </a-form-model-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-model-item label="社区:" ref="community" prop="community">
+              <a-input v-model="form.community" placeholder="请输入社区"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -399,7 +412,9 @@ export default {
         homeAddress: '',
         address: '',
         aboBloodType: undefined, // 血型
-        rhBloodType: undefined
+        rhBloodType: undefined,
+        company: '',
+        community: ''
       },
       apiForm: {
         nickname: '',
@@ -424,7 +439,9 @@ export default {
           city: '',
           area: '',
           street: '',
-          homeAddress: ''
+          homeAddress: '',
+          company: '',
+          community: ''
         }
       },
       // 用户信息规则
@@ -438,6 +455,12 @@ export default {
           //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
           { validator: checkIdno, trigger: 'blur' }
         ],
+        // company: [
+        //   { required: true, message: '请选择所在的单位', trigger: 'blur' }
+        // ],
+        // community: [
+        //   { required: true, message: '请输入所在的社区', trigger: 'blur' }
+        // ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
@@ -499,7 +522,9 @@ export default {
         homeAddress: '',
         address: '',
         aboBloodType: undefined,
-        rhBloodType: undefined
+        rhBloodType: undefined,
+        company: '',
+        community: ''
       }
       this.form = resetData
     },
@@ -541,7 +566,7 @@ export default {
       }
     },
     handleOk (e) {
-      console.log('form', this.form)
+      // console.log('form', this.form)
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
           const that = this
@@ -559,6 +584,8 @@ export default {
           baseInfo.gender = form.gender
           baseInfo.idType = form.idType
           baseInfo.idNo = form.idNo
+          baseInfo.company = form.company
+          baseInfo.community = form.community
           baseInfo.phoneNumber = form.phoneNumber
           baseInfo.contactName = form.contactName
           baseInfo.contactNumber = form.contactNumber
@@ -584,12 +611,12 @@ export default {
           apiCustomerAdd(groupId, apiForm).then(res => {
             if (res.status === 201) {
               this.$message.info(res.message)
+              this.visible = false
               // console.log('添加成功', apiForm)
             } else {
               this.$message.error(res.status)
             }
           })
-          this.visible = false
         } else {
           // console.log('信息确定', this.form)
         }
