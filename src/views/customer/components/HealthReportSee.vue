@@ -158,7 +158,7 @@
                         </div>
                       </a-col>
                       <a-col :span="21">
-                        <div>{{ formData.symptom }}</div>
+                        <span v-for="item in formData.symptom" :key="item.index">【{{ item }}】、</span>
                       </a-col>
                     </a-row>
                     <a-row style="margin: 28px 0;">

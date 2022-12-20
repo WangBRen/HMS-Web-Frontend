@@ -49,7 +49,7 @@
             :key="item"
             :color=" 'geekblue'"
           >{{ item }}</a-tag>
-          <span v-if="record.symptom">
+          <span v-if="record.symptom.length > 0">
             <a-tooltip placement="top">
               <template slot="title">
                 {{ record.symptom }}
@@ -192,7 +192,6 @@ export default {
      * 查找用户自己的指标
      */
     async findCustomerHealthReports () {
-      console.log('CustimerId', this.custId)
       this.loadingShow = true
       // this.dataSource = []
       const pages = {
