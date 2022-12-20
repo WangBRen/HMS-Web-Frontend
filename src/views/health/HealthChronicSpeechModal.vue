@@ -6,7 +6,7 @@
       :title="'编辑话术【'+speechInfo.name+'】'"
       @ok="speechHandleOk"
       @cancel="speechHandleCancel"
-      :width="700"
+      :width="1100"
     >
       <!-- 模板示例 -->
       <div class="template_example">
@@ -22,12 +22,32 @@
       </div>
 
       <a-card class="speech_card" v-for="item in formData" :key="item.id" :title="'等级'+item.level+'话术模板'">
-        <a-textarea
-          :id="item.id"
-          v-model="item.template.templateText"
-          placeholder="请编辑话术模板"
-          :auto-size="{ minRows: 2, maxRows: 6 }"
-        />
+        <a-tabs type="card">
+          <a-tab-pane key="1" tab="生活指导">
+            <a-textarea
+              :id="item.id"
+              v-model="item.template.templateText"
+              placeholder="请编辑生活话术模板"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+            />
+          </a-tab-pane>
+          <a-tab-pane key="2" tab="运动指导">
+            <a-textarea
+              :id="item.id"
+              v-model="item.template.templateText"
+              placeholder="请编辑运动话术模板"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+            />
+          </a-tab-pane>
+          <a-tab-pane key="3" tab="饮食指导">
+            <a-textarea
+              :id="item.id"
+              v-model="item.template.templateText"
+              placeholder="请编辑饮食话术模板"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+            />
+          </a-tab-pane>
+        </a-tabs>
         <div class="check_variable_list">
           模板可选变量:
           <a-tag color="blue" class="" @click="addTmp(item,variable)" v-for="variable in variablesArr" :key="variable.targetId"> {{ variable.name }} </a-tag>

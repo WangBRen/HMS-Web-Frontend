@@ -69,7 +69,7 @@
                     <span v-if="range_item.products">
                       <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
                         <span v-if="prod.conditionFilters?.length">
-                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
+                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId+Math.random()">
                             {{ filter.option?.name }}
                           </a-tag>:
                         </span>
@@ -261,6 +261,22 @@
           </a-col>
         </a-row>
         <a-row :gutter="24">
+          <a-col style="display: flex; align-items: center;width: 600px;">
+            <span style="width:100px;font-weight: bold;">参考范围：</span>
+            <a-input
+              type="text"
+              placeholder="数值下界"
+              style="width: 42%"
+              :addonAfter="current.unit"
+            />
+            <div style="width: 14%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
+            <a-input
+              type="text"
+              placeholder="数值上界"
+              style="width: 42%"
+              :addonAfter="current.unit"
+            />
+          </a-col>
           <a-col :span="24">
             <a-form-item label="参考结果">
               <a-row
@@ -329,10 +345,9 @@
                         <a-col :span="6">
                           <a-textarea
                             style="height: 100%;"
-                            :value="result_option.products[0].remark"
-                            @change="e => { result_option.products[0].remark = e.target.value }"
+                            v-model="result_option.products[0].remark"
                             placeholder="指标结果备注"
-                            autosize
+                            autoSize
                           />
                         </a-col>
                         <a-col :span="1">
@@ -373,6 +388,9 @@
         </a-row>
         <a-row :gutter="24">
           <a-col>
+            <a-form-item label="指标意义">
+              <a-input type="textarea" v-model="current.meaning"/>
+            </a-form-item>
             <a-form-item label="备注">
               <a-input type="textarea" v-model="current.remark"/>
             </a-form-item>
@@ -627,7 +645,6 @@ export default {
           })
           return { ...record, items }
         })
-        // console.log({ data })
         this.data = data
         if (!this.currentTabKey && resp.data.length > 0) {
           this.currentTabKey = ref(resp.data[0].id)
@@ -635,7 +652,6 @@ export default {
       }
     },
     openModal (mode, record) {
-      console.log('编辑数据', mode, record)
       const reform = (data) => {
         if (!data) return null
         // conditions:
@@ -651,18 +667,12 @@ export default {
           options: resultOptions,
           pending_value: ''
         }
-        // console.log({ resultOptions })
         // return
         const view = { ...data, conditions, result }
-        console.log('view', view)
-        // console.log({ view })
         return JSON.parse(JSON.stringify(view))
       }
-      console.log('999999999999999000000000', reform(record), this.current)
       this.mode = mode
       this.current = reform(record) || InitialPropOfModel
-      console.log('999999999999999000000000', reform(record), this.current)
-      console.log('0000000000', this.current)
       this.visible = true
       this.updateCurrentProducts()
     },
@@ -704,7 +714,6 @@ export default {
         const newProducts = preparedProducts.map(prod => {
           const original = originalProducts.find(originalProd => originalProd.id === prod.id)
           if (original) {
-            console.log('originaloriginal', original)
             return { ...prod, name: original.name, start: original.start, end: original.end, remark: original.remark }
           }
           return prod
@@ -737,7 +746,6 @@ export default {
       // })
       // console.log('[range] rendering...', options)
       this.current.result.options = options
-      console.log('this.current.result.options', this.current.result.options)
       this.$forceUpdate()
       // this.current.products = products
       // this.current.result.options = options
@@ -861,7 +869,7 @@ export default {
               type: payload.result.type,
               start: prod.start,
               end: prod.end,
-              remark: resultOption.remark,
+              remark: prod.remark,
               conditionFilters: prod.conditionFilters
             }
           })
