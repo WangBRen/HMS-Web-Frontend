@@ -20,6 +20,7 @@
                   placeholder="请输入关键字"
                   enter-button="查询"
                   :loading="confirmLoading"
+                  v-model="wordValue"
                   @search="findCustomerHealthReports"
                 />
               </a-form-item>
@@ -148,7 +149,7 @@ export default {
                     { text: '其他指标', value: 'projects' }],
           onFilter: (value, record) => {
             if (value === 'disease' && record.disease !== null) { return true }
-            if (value === 'symptom' && record.symptom !== null) { return true }
+            if (value === 'symptom' && record.symptom.length > 0) { return true }
             if (value === 'projects' && record.projects.length !== 0) { return true }
           }
         },
@@ -164,6 +165,7 @@ export default {
       confirmLoading: false,
       filtersVisible: false,
       saveTableTitle: [],
+      wordValue: '',
       pages: {},
       pagination: {
         total: 0,
@@ -191,14 +193,14 @@ export default {
     /**
      * 查找用户自己的指标
      */
-    async findCustomerHealthReports () {
+    findCustomerHealthReports (value) {
       this.loadingShow = true
       // this.dataSource = []
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
       }
-      await apiGetHealthReports(this.custId, pages).then(res => {
+      apiGetHealthReports(this.custId, value, pages).then(res => {
       if (res.status === 200) {
         this.loadingShow = false
         this.dataSource = res.data.content || []
@@ -211,12 +213,12 @@ export default {
     },
     onPageChange (page, _pageSize) {
       this.pagination.current = page
-       this.findCustomerHealthReports()
+      this.findCustomerHealthReports(this.wordValue)
     },
     onSizeChange (_current, pageSize) {
         this.pagination.current = 1
         this.pagination.pageSize = pageSize
-        this.findCustomerHealthReports()
+        this.findCustomerHealthReports(this.wordValue)
     },
     // 点击了取消
     handleCancel () {

@@ -261,6 +261,22 @@
           </a-col>
         </a-row>
         <a-row :gutter="24">
+          <a-col style="display: flex; align-items: center;width: 600px;">
+            <span style="width:100px;font-weight: bold;">参考范围：</span>
+            <a-input
+              type="text"
+              placeholder="数值下界"
+              style="width: 42%"
+              :addonAfter="current.unit"
+            />
+            <div style="width: 14%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
+            <a-input
+              type="text"
+              placeholder="数值上界"
+              style="width: 42%"
+              :addonAfter="current.unit"
+            />
+          </a-col>
           <a-col :span="24">
             <a-form-item label="参考结果">
               <a-row
