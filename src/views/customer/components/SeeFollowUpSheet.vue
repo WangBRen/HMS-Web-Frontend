@@ -50,16 +50,31 @@
           </a-row>
         </a-card>
         <a-card v-if="hintShow" title="填写提示" :loading="loading" class="card" :body-style="cardBodyStyle">
-          <span class="hint-textarea" >{{ followTableData.hints }}</span>
+          <div class="hint-textarea" >{{ followTableData.hints }}</div>
         </a-card>
         <!-- 慢病选择开始 -->
-        <a-card title="慢病选择" :loading="loading" class="card">
-          <div v-if="followTableData.diseases">
+        <a-card title="慢病选择" :loading="loading" class="card" v-if="(followTableData.diseases || []).length>0">
+          <div>
             <span v-for="item in followTableData.diseases" :key="item.id"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
           </div>
         </a-card>
         <!-- 指标选择开始 -->
-        <a-card title="指标选择" :loading="loading" class="card" :body-style="cardBodyStyle">
+        <a-card :loading="loading" class="card" :body-style="cardBodyStyle">
+          <template #title>
+            <span>指标选择</span>
+            <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">检查项目:
+              <a-tooltip>
+                <template slot="title">
+                  <span v-for="project in projects" :key="project.id">
+                    【{{ project.name }}】
+                  </span>
+                </template>
+                <span v-for="project in projects" :key="project.id">
+                  【{{ project.name }}】
+                </span>
+              </a-tooltip>
+            </span>
+          </template>
           <a-table bordered :data-source="followTableData.items" :columns="itemColumns" rowKey="id" :pagination="false">
             <span slot="checked" slot-scope="text, record">
               <a-checkbox v-model="record.required" disabled/>
@@ -131,6 +146,7 @@
 <script>
 import DefineLevel from './DefineLevel.vue'
 import { notification, message } from 'ant-design-vue'
+import { getHealthIndex } from '@/api/health'
 import { abandonFollow as apiAbandonFollow, showFollowForm as apiShowFollowForm } from '@/api/followUpForm'
 // import moment from 'moment'
 import { age } from '@/utils/age'
@@ -268,7 +284,8 @@ export default {
       chronicDiseaseId: null,
       gradeModelvisible: false,
       destroy: false,
-      userAge: null
+      userAge: null,
+      projects: [] // 指标对应的项目
     }
   },
   filters: {
@@ -309,7 +326,11 @@ export default {
           tips = `【未分级】`
         }
       }
-      this.headerTips = tips
+      if (followTableData.diseases.length === 0) {
+        this.headerTips = ''
+      } else {
+        this.headerTips = tips
+      }
       if (followTableData.hints === '') {
         this.hintShow = false
       }
@@ -325,6 +346,24 @@ export default {
         this.userAge = userAge + '岁'
       } else {
         this.userAge = '/'
+      }
+      this.getHealthIndex()
+    },
+    // 获取指标项目名
+    async getHealthIndex () {
+      const res = await getHealthIndex()
+      const items = this.items.filter(item => { if (item.indexItem !== null) return true })
+      if (res.status === 200) {
+        this.projects = (res.data || []).filter(project => {
+          for (var index of project.items) {
+            for (var i of items) {
+              if (i.indexItem.id === index.id) {
+                return true
+              }
+            }
+          }
+        })
+        console.log(this.projects)
       }
     },
     handleOnDisableClicked (record, disabled) {
@@ -432,7 +471,7 @@ export default {
 }
 .hint-textarea {
   border: none;
-  padding: 16px 24px;
+  padding: 16px 24px 0 24px;
 }
 .FailReason{
   display: flex;

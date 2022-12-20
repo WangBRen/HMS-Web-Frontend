@@ -25,10 +25,15 @@
               暂无相关指标
             </a-card>
             <a-card title="健康随访记录" style="margin-top: 12px;" :loading="loading">
-              暂无健康随访记录
+              <!-- 暂无健康随访记录 -->
+              <FollowUpRecords
+                :diseaseId="-2"
+                :customerId="custId"
+                @successRefresh="handleSuccessRefresh"/>
             </a-card>
             <a-card title="健康指导记录" style="margin-top: 12px;" :loading="loading">
-              暂无健康指导记录
+              <!-- 暂无健康指导记录 -->
+              <HealthCoachingRecords :diseaseId="-2" :customerId="custId" @setRefreshCallback="handleSetRefreshCallback"/>
             </a-card>
             <a-card title="管理目标" style="margin-top: 12px; margin-bottom: 12px;" :loading="loading">
               <span>根据慢病管理中显示慢病已设定的管理目标，当首次随访完成后显示</span>
@@ -292,6 +297,7 @@ export default {
   },
   methods: {
     async loadData () {
+      console.log(this.diseaseId)
       this.loading = true
       // 获取慢病信息
       const resp = await apiGetChronicManage(this.custId)
@@ -413,7 +419,7 @@ export default {
     },
     showFollowUpSheet (item) {
       this.addFollowFormVisible = true
-      this.diseaseId = item.id || -1
+      this.diseaseId = item.id || null
     },
     // getDiseaseName (diseaseId) {
     //   this.addFollowFormVisible = true
@@ -449,6 +455,7 @@ export default {
       this.coachingVisible = false
     },
     async successCreatCoaching (diseaseId) {
+      this.loadData()
       this.coachingVisible = false
       const refresh = refreshGuidanceTable['d-' + diseaseId]
       refresh && await refresh()

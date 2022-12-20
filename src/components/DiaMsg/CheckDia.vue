@@ -4,35 +4,60 @@
       <a-col :span="6">
         <a-select class="selectDia" v-model="firstLev" @change="firstChange">
           <a-select-option v-for="first in firstData" :key="first.id">
-            {{ first.title }}
+            <a-tooltip placement="left">
+              <template slot="title">
+                {{ first.title }}
+              </template>
+              {{ first.title }}
+            </a-tooltip>
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6">
         <a-select class="selectDia" v-model="secLev" @change="secChange" :disabled="!firstLev">
           <a-select-option v-for="second in secArr" :key="second.id">
-            {{ second.title }}
+            <a-tooltip placement="left">
+              <template slot="title">
+                {{ second.title }}
+              </template>
+              {{ second.title }}
+            </a-tooltip>
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6">
         <a-select class="selectDia" v-model="thirdLev" @change="thirdChange" :disabled="!secLev">
           <a-select-option v-for="third in thirdArr" :key="third.id">
-            {{ third.title }}
+            <a-tooltip placement="left">
+              <template slot="title">
+                {{ third.title }}
+              </template>
+              {{ third.title }}
+            </a-tooltip>
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="6">
         <a-select class="selectDia" v-model="fourLev" @change="fourChange" :disabled="!thirdLev">
           <a-select-option v-for="four in fourArr" :key="four.id">
-            {{ four.title }}
+            <a-tooltip placement="left">
+              <template slot="title">
+                {{ four.title }}
+              </template>
+              {{ four.title }}
+            </a-tooltip>
           </a-select-option>
         </a-select>
       </a-col>
       <a-col :span="10">
         <a-select class="selectDia" v-model="fifthLev" @change="fifthChange" :disabled="!fourLev">
           <a-select-option v-for="fifth in fifthArr" :key="fifth.id">
-            {{ fifth.title }}
+            <a-tooltip placement="left">
+              <template slot="title">
+                {{ fifth.title }}
+              </template>
+              {{ fifth.title }}
+            </a-tooltip>
           </a-select-option>
         </a-select>
       </a-col>

@@ -69,7 +69,7 @@
                     <span v-if="range_item.products">
                       <div v-for="prod in range_item.products" :key="prod.id" style="margin-bottom: 2px;">
                         <span v-if="prod.conditionFilters?.length">
-                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId">
+                          <a-tag v-for="filter in prod.conditionFilters" :key="filter.optionId+Math.random()">
                             {{ filter.option?.name }}
                           </a-tag>:
                         </span>
@@ -108,10 +108,12 @@
     <a-modal
       :title="mode === 'create' ? `新建 ${this.currentProjectName()} 指标条目` : `编辑 ${this.currentProjectName()} 指标条目【${current.name}】`"
       style="top: 20px"
-      :width="920"
-      v-model="visible"
+      :width="1000"
+      v-if="visible"
+      :visible="visible"
       @ok="handleOkDone"
       ok-text="确定"
+      @cancel="closeModal"
     >
       <a-form :form="form" v-model="current">
         <a-row :gutter="48">
@@ -259,6 +261,24 @@
           </a-col>
         </a-row>
         <a-row :gutter="24">
+          <a-col style="display: flex; align-items: center;width: 600px;">
+            <span style="width:100px;font-weight: bold;">参考范围：</span>
+            <a-input
+              type="text"
+              v-model="current.min"
+              placeholder="数值下界"
+              style="width: 42%"
+              :addonAfter="current.unit"
+            />
+            <div style="width: 14%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
+            <a-input
+              type="text"
+              v-model="current.max"
+              placeholder="数值上界"
+              style="width: 42%"
+              :addonAfter="current.unit"
+            />
+          </a-col>
           <a-col :span="24">
             <a-form-item label="参考结果">
               <a-row
@@ -279,7 +299,7 @@
                   <a-row :gutter="24">
                     <a-col :span="3" style="white-space: nowrap;"> 判定结果： </a-col>
                     <a-col :span="24" v-if="current.result.type == 'range'" style="padding-left: 12px;">
-                      <div v-for="result_option in current.result.options" :key="result_option.id">
+                      <div v-for="result_option in current.result.options" :key="result_option.id" style="display:inline-block;position: relative;">
                         <a-col :span="4" style="padding-left: 0px;">
                           <a-input
                             type="text"
@@ -288,41 +308,49 @@
                             placeholder="名称，如：偏高、偏低、正常"
                           />
                         </a-col>
-                        <a-col :span="19">
+                        <a-col :span="13">
                           <div v-if="result_option.products">
                             <div v-for="prod in result_option.products" :key="prod.id">
                               <a-row>
-                                <a-col :span="10" v-if="prod.conditionFilters.length > 0">
+                                <a-col :span="7" v-if="prod.conditionFilters.length > 0">
                                   <span v-for="(opt, idx) in prod.conditionFilters" :key="idx">
                                     <span v-if="idx > 0" style="padding-right: 4px;"> + </span>
                                     <a-tag> {{ opt.option?.name }} </a-tag>
                                   </span>
                                   <span>:</span>
                                 </a-col>
-                                <a-col :span="prod.conditionFilters.length > 0 ? 14 : 24" style="display: flex; align-items: center;">
+                                <a-col :span="prod.conditionFilters.length > 0 ? 16 : 24" style="display: flex; align-items: center;">
                                   <a-input
                                     type="text"
                                     :value="prod.start"
                                     @change="e => { prod.start = e.target.value }"
                                     :key="prod.id + '-start'"
                                     placeholder="数值下界"
-                                    style="width: 40%"
+                                    style="width: 42%"
                                     :addonAfter="current.unit"
                                   />
-                                  <div style="width: 20%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
+                                  <div style="width: 28%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
                                   <a-input
                                     type="text"
                                     :value="prod.end"
                                     @change="e => { prod.end = e.target.value }"
                                     :key="prod.id + '-end'"
                                     placeholder="数值上界"
-                                    style="width: 40%"
+                                    style="width: 42%"
                                     :addonAfter="current.unit"
                                   />
                                 </a-col>
                               </a-row>
                             </div>
                           </div>
+                        </a-col>
+                        <a-col :span="6">
+                          <a-textarea
+                            style="height: 100%;"
+                            v-model="result_option.products[0].remark"
+                            placeholder="指标结果备注"
+                            autoSize
+                          />
                         </a-col>
                         <a-col :span="1">
                           <a-icon type="close" @click="handleAddNewResultOptionRemove(current.result, result_option)"/>
@@ -362,6 +390,9 @@
         </a-row>
         <a-row :gutter="24">
           <a-col>
+            <a-form-item label="指标意义">
+              <a-input type="textarea" v-model="current.meaning"/>
+            </a-form-item>
             <a-form-item label="备注">
               <a-input type="textarea" v-model="current.remark"/>
             </a-form-item>
@@ -616,7 +647,6 @@ export default {
           })
           return { ...record, items }
         })
-        // console.log({ data })
         this.data = data
         if (!this.currentTabKey && resp.data.length > 0) {
           this.currentTabKey = ref(resp.data[0].id)
@@ -639,10 +669,8 @@ export default {
           options: resultOptions,
           pending_value: ''
         }
-        // console.log({ resultOptions })
         // return
         const view = { ...data, conditions, result }
-        // console.log({ view })
         return JSON.parse(JSON.stringify(view))
       }
       this.mode = mode
@@ -682,13 +710,13 @@ export default {
       const originalProducts = (this.current.result.options || []).map(option => option.products).flat()
       const options = (this.current.result.options || []).map((option, index) => {
         const preparedProducts = descartProduct(conditions).map(condFilters => { // prod: [{男}, {女}]
-          return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null }
+          return { id: prodId(condFilters, option.id), conditionFilters: condFilters, name: 'descart-placeholder', start: null, end: null, value: null, remark: null }
         })
         // 判断原始值是否填写，保留用户填写内容
         const newProducts = preparedProducts.map(prod => {
           const original = originalProducts.find(originalProd => originalProd.id === prod.id)
           if (original) {
-            return { ...prod, name: original.name, start: original.start, end: original.end }
+            return { ...prod, name: original.name, start: original.start, end: original.end, remark: original.remark }
           }
           return prod
         })
@@ -782,7 +810,7 @@ export default {
     },
     handleAddNewConditionRange (condition) { // type: range
       const options = condition.options || []
-      options.push({ id: randomId(), name: '', start: null, end: null })
+      options.push({ id: randomId(), name: '', start: null, end: null, remark: null })
       condition.options = options
       this.updateCurrentProducts()
     },
@@ -793,7 +821,7 @@ export default {
     handleAddNewResultSelectType (condition) {
       switch (condition.type) {
         case 'range':
-          condition.options = [{ id: randomId(), name: '示例', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, conditionFilters: [] }] }]
+          condition.options = [{ id: randomId(), name: '示例', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, reamrk: null, conditionFilters: [] }] }]
           condition.pending_value = ''
           break
         case 'simple':
@@ -817,7 +845,7 @@ export default {
     handleAddNewResultRange (condition) { // type: range
       // console.log('result.options:', { condition })
       const options = condition.options || []
-      options.push({ id: randomId(), name: '', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, conditionFilters: [] }] })
+      options.push({ id: randomId(), name: '', products: [{ id: 'prodn>' + randomId(), name: null, start: null, end: null, reamrk: null, conditionFilters: [] }] })
       condition.options = options
       this.$forceUpdate()
       this.updateCurrentProducts()
@@ -832,6 +860,7 @@ export default {
       // reform to payload
       const reform = (payload) => {
         // if (payload.result.type === 'range') {
+          // console.log('pppppppppppp', payload)
         const result = (payload.result.options || []).map(resultOption => {
           return (resultOption.products || []).map(prod => {
             // const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
@@ -842,6 +871,7 @@ export default {
               type: payload.result.type,
               start: prod.start,
               end: prod.end,
+              remark: prod.remark,
               conditionFilters: prod.conditionFilters
             }
           })
@@ -900,6 +930,7 @@ export default {
       if (this.mode === 'create') {
         // create
         resp = await apiCreateIndexItem(projectName, payload)
+        console.log('apiCreateIndexItem', payload)
       } else {
         // update
         resp = await apiUpdateIndexItem(projectName, payload.id, payload)

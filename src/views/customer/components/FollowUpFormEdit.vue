@@ -41,11 +41,29 @@
         </a-button>
       </template>
       <div v-if="payload.diseases">
-        <span v-for="item in payload.diseases" :key="item.id"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
+        <span v-for="item in payload.diseases" :key="item.id">
+          <span v-if="diseaseId"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span>
+          <span v-else><a-tag color="blue">{{ item.name }}</a-tag></span>
+        </span>
       </div>
     </a-card>
     <!-- 指标选择开始 -->
-    <a-card title="指标选择" :loading="loading" class="card" :body-style="cardBodyStyle">
+    <a-card :loading="loading" class="card" :body-style="cardBodyStyle">
+      <template #title>
+        <span>指标选择</span>
+        <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">检查项目:
+          <a-tooltip>
+            <template slot="title">
+              <span v-for="project in projects" :key="project.id">
+                【{{ project.name }}】
+              </span>
+            </template>
+            <span v-for="project in projects" :key="project.id">
+              【{{ project.name }}】
+            </span>
+          </a-tooltip>
+        </span>
+      </template>
       <a-table bordered :data-source="payload.items" :columns="itemColumns" rowKey="id" :pagination="false">
         <span slot="checked" slot-scope="text, record">
           <a-checkbox v-model="record.isChecked" :disabled="record.disabled"/>
@@ -99,7 +117,8 @@
         <a-col :span="24" >
           <a-checkbox-group v-model="defaultChecked">
             <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
-              {{ item.chronicDisease.name }}
+              <span v-if="diseaseId">{{ item.chronicDisease.name }}</span>
+              <span v-else>{{ item.name }}</span>
             </a-checkbox>
           </a-checkbox-group>
         </a-col>
@@ -110,9 +129,11 @@
 
 <script>
 import { getChronicManage as apiGetChronicManage, getChronicDetail } from '@/api/customer'
+import { getHealthIndex } from '@/api/health'
 // import { getToken } from '@/api/followUpForm'
 import { age } from '@/utils/age'
 import { notification } from 'ant-design-vue'
+import { getChronic } from '@/api/chronic'
 const columns = [
   {
     title: '是否必填',
@@ -252,7 +273,9 @@ export default {
       sendModal: false,
       formId: null,
       userAge: null,
-      defaultChecked: []
+      defaultChecked: [],
+      totalIndexOfThisPeople: [],
+      projects: []
     }
   },
   filters: {
@@ -276,17 +299,24 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     async loadData () {
-      const resp = await apiGetChronicManage(this.customerId)
-      if (resp.status === 200) {
-        this.totalChronicDiseases = resp.data
-      }
-      if (this.diseaseId) {
+      console.log('this.diseaseId', this.diseaseId)
+      if (this.diseaseId !== null) {
+        const resp = await apiGetChronicManage(this.customerId)
+        if (resp.status === 200) {
+          this.totalChronicDiseases = resp.data
+        }
         const res = await getChronicDetail(this.customerId, this.diseaseId)
         if (res.status === 200) {
           const diseaseObj = res.data
           this.modalSelectChronic.diseases.push(diseaseObj)
           this.defaultChecked = [diseaseObj.id]
           this.handleChronicDiseaseOK()
+        }
+      } else {
+        const pages = { page: 1, size: 10 }
+        const res = await getChronic(pages)
+        if (res.status === 200) {
+          this.totalChronicDiseases = res.data.content
         }
       }
       const userAge = age(this.baseInfo.birthDate)
@@ -310,11 +340,14 @@ export default {
         return this.defaultChecked.includes(item.id)
       })
       this.modalSelectChronic.visible = false
-      // console.log({ diseases: this.payload.diseases })
       // update index table
-      const totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.chronicDisease.items).flat().map(item => item.indexItem)
+      if (this.diseaseId === null) {
+        this.totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.items).flat().map(item => item.indexItem)
+      } else {
+        this.totalIndexOfThisPeople = (this.payload.diseases || []).map(dis => dis.chronicDisease.items).flat().map(item => item.indexItem)
+      }
       // console.log('totalIndexOfThisPeople', totalIndexOfThisPeople)
-      const items = totalIndexOfThisPeople.map(index => {
+      const items = this.totalIndexOfThisPeople.map(index => {
         return {
           id: index.id,
           indexId: index.id,
@@ -336,6 +369,20 @@ export default {
         return array
       }, [])
       this.payload.items = items
+      this.getHealthIndex()
+    },
+    // 获取指标项目名
+    async getHealthIndex () {
+      const res = await getHealthIndex()
+      if (res.status === 200) {
+        this.projects = (res.data || []).filter(project => {
+          for (var index of project.items) {
+            for (var i of this.payload.items) {
+              if (i.id === index.id) { return true }
+            }
+          }
+        })
+      }
     },
     handleAddIndex () {
       const itemObject = {
@@ -372,12 +419,17 @@ export default {
         }
       })
       // do request
-      const apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
+      let apiPayload = {}
+      if (this.diseaseId > 0) {
+        apiPayload = { diseaseIds: [], items: [], hints: null, token: '' }
+        this.payload.diseases.forEach(function (diseas) {
+          apiPayload.diseaseIds.push(diseas.id)
+        })
+      } else {
+        apiPayload = { items: [], hints: null, token: '' }
+      }
       if (this.payload.items.length !== 0) {
             apiPayload.hints = this.payload.hints
-            this.payload.diseases.forEach(function (diseas) {
-              apiPayload.diseaseIds.push(diseas.id)
-            })
             this.payload.items.forEach(function (itemVal) {
               const item = {
                 indexItemId: itemVal.indexId,

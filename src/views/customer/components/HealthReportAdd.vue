@@ -390,7 +390,7 @@ export default {
                   this.$message.error('用户症状信息检测时间未填写')
                 } else if ((formData.symptomData === null || formData.symptomData === '') && formData.symptomTime !== null) {
                   // console.log(formData)
-                  this.$message.error('用户症状信息诊断结果未填写')
+                  this.$message.error('用户症状信息未填写')
                 } else if (formData.symptomData && formData.symptomTime) {
                   apiData.symptom = formData.symptomData
                   apiData.symptomAt = formData.symptomTime

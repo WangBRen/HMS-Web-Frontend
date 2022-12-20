@@ -46,21 +46,23 @@
               <div style="padding: 0 10px">
                 <a-row>
                   <div class="index-title">
-                    <a-col :span="10"><span>指标名称</span></a-col>
-                    <a-col :span="8"><span>检测值</span></a-col>
-                    <a-col :span="6"><span>检测结果</span></a-col>
+                    <a-col :span="7"><span>指标名称</span></a-col>
+                    <a-col :span="5"><span>检测值</span></a-col>
+                    <a-col :span="4"><span>参考范围</span></a-col>
+                    <a-col :span="4"><span>检测结果</span></a-col>
+                    <a-col :span="4"><span>结果意义</span></a-col>
                   </div>
                 </a-row>
                 <!-- 指标 -->
                 <a-row>
                   <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
                     <a-row class="index-item">
-                      <a-col :span="10">
+                      <a-col :span="7">
                         <div class="index-item-title-wrapper">
                           <span> {{ items.name }} </span>
                         </div>
                       </a-col>
-                      <a-col :span="8">
+                      <a-col :span="5">
                         <div class="index-item-title-wrapper">
                           <!-- <a class="exTitle">检测值:</a> -->
                           <span v-if="items.type === 'Integer' || items.type === 'Float'">
@@ -75,10 +77,25 @@
                           </span>
                         </div>
                       </a-col>
-                      <a-col :span="6">
+                      <a-col :span="4">
+                        <div class="index-item-title-wrapper">
+                          <!-- <span v-for="resultValue in items.result" :key="resultValue.id">
+                            <span v-if="resultValue.name.indexOf('正常') != -1">
+                              {{ resultValue.start }}-{{ resultValue.end }}
+                            </span>
+                          </span> -->
+                          {{ items.min }}-{{ items.max }}
+                        </div>
+                      </a-col>
+                      <a-col :span="4">
                         <div class="index-item-title-wrapper">
                           <!-- <a class="exTitle">检测结果:</a> -->
                           {{ items.endResult || '无' }}
+                        </div>
+                      </a-col>
+                      <a-col :span="4">
+                        <div class="index-item-title-wrapper">
+                          <span v-for="i in items.result" :key="i.id"><span v-if="i.name ===items.endResult">{{ i.remark }}</span></span>
                         </div>
                       </a-col>
                     </a-row>
@@ -152,7 +169,7 @@
                         </div>
                       </a-col>
                       <a-col :span="21">
-                        <div>{{ formData.symptom }}</div>
+                        <span v-for="item in formData.symptom" :key="item.index">【{{ item }}】、</span>
                       </a-col>
                     </a-row>
                     <a-row style="margin: 28px 0;">
@@ -195,7 +212,7 @@ export default {
     getHealthIndex().then(res => {
       if (res.status === 200) {
         this.healthIndex = res.data
-        // console.log('总指标', this.healthIndex)
+        console.log('总指标', this.healthIndex)
       }
     })
   },
@@ -216,6 +233,7 @@ export default {
               items: healthData[j].items
             }
             this.formData.testData.push(aa)
+            console.log('this.formData.testData', this.formData.testData)
           }
         }
       }
@@ -296,7 +314,7 @@ export default {
   border-style: solid;
   border-width: 1px;
   border-color: #eee;
-  padding: 24px 12px;
+  // padding: 24px 12px;
 }
 .project-header {
   background: linear-gradient(to bottom right, #00a0e9, #00abb9);
@@ -339,7 +357,7 @@ export default {
 }
 .index-item-title-wrapper {
   // display: flex;
-  height: 34px;
+  // height: 34px;
   // align-items: center;
 }
 .index-title {
