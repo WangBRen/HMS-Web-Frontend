@@ -265,6 +265,7 @@
             <span style="width:100px;font-weight: bold;">参考范围：</span>
             <a-input
               type="text"
+              v-model="current.min"
               placeholder="数值下界"
               style="width: 42%"
               :addonAfter="current.unit"
@@ -272,6 +273,7 @@
             <div style="width: 14%; font-size: 12px; text-align: center; color: #999;"> ≤ 指标值 &lt; </div>
             <a-input
               type="text"
+              v-model="current.max"
               placeholder="数值上界"
               style="width: 42%"
               :addonAfter="current.unit"
