@@ -79,11 +79,12 @@
                       </a-col>
                       <a-col :span="4">
                         <div class="index-item-title-wrapper">
-                          <span v-for="resultValue in items.result" :key="resultValue.id">
+                          <!-- <span v-for="resultValue in items.result" :key="resultValue.id">
                             <span v-if="resultValue.name.indexOf('正常') != -1">
                               {{ resultValue.start }}-{{ resultValue.end }}
                             </span>
-                          </span>
+                          </span> -->
+                          {{ items.min }}-{{ items.max }}
                         </div>
                       </a-col>
                       <a-col :span="4">
