@@ -95,7 +95,17 @@
                       </a-col>
                       <a-col :span="4">
                         <div class="index-item-title-wrapper">
-                          <span v-for="i in items.result" :key="i.id"><span v-if="i.name ===items.endResult">{{ i.remark }}</span></span>
+                          <div v-for="i in items.result" :key="i.id">
+                            <div v-if="i.name ===items.endResult" style="width:160px;white-space: nowrap;overflow:hidden;text-overflow:ellipsis;">
+                              <a-tooltip placement="topLeft">
+                                <template slot="title">
+                                  {{ i.remark }}
+                                </template>
+                                {{ i.remark }}
+                                <!-- <a >查看</a> -->
+                              </a-tooltip>
+                            </div>
+                          </div>
                         </div>
                       </a-col>
                     </a-row>

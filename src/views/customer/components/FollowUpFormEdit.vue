@@ -121,6 +121,7 @@
               <span v-else>{{ item.name }}</span>
             </a-checkbox>
           </a-checkbox-group>
+          <a-pagination v-model="current" :total="50" show-less-items />
         </a-col>
       </a-row>
     </a-modal>
@@ -275,7 +276,8 @@ export default {
       userAge: null,
       defaultChecked: [],
       totalIndexOfThisPeople: [],
-      projects: []
+      projects: [],
+      current: 2
     }
   },
   filters: {
