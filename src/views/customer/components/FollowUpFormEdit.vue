@@ -121,7 +121,6 @@
               <span v-else>{{ item.name }}</span>
             </a-checkbox>
           </a-checkbox-group>
-          <a-pagination v-model="current" :total="50" show-less-items />
         </a-col>
       </a-row>
     </a-modal>
@@ -276,8 +275,7 @@ export default {
       userAge: null,
       defaultChecked: [],
       totalIndexOfThisPeople: [],
-      projects: [],
-      current: 2
+      projects: []
     }
   },
   filters: {
@@ -315,7 +313,7 @@ export default {
           this.handleChronicDiseaseOK()
         }
       } else {
-        const pages = { page: 1, size: 10 }
+        const pages = { page: 1, size: 100 }
         const res = await getChronic(pages)
         if (res.status === 200) {
           this.totalChronicDiseases = res.data.content
