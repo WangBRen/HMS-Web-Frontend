@@ -171,7 +171,9 @@ export default {
           province: null,
           city: null,
           area: null,
-          street: null
+          street: null,
+          company: null,
+          community: null
         }
       },
       tabPosition: 'left',
@@ -233,7 +235,9 @@ export default {
         province: arrData.baseInfo.province,
         city: arrData.baseInfo.city,
         area: arrData.baseInfo.area,
-        street: arrData.baseInfo.street
+        street: arrData.baseInfo.street,
+        company: arrData.baseInfo.company,
+        community: arrData.baseInfo.community
       }
       const arrAddress = { province: arrData.baseInfo.province, city: arrData.baseInfo.city, area: arrData.baseInfo.area, street: arrData.baseInfo.street }
       // 不用nextTick会报初始化错误
