@@ -349,7 +349,6 @@
                             style="height: 100%;"
                             v-model="result_option.products[0].remark"
                             placeholder="指标结果备注"
-                            autoSize
                           />
                         </a-col>
                         <a-col :span="1">

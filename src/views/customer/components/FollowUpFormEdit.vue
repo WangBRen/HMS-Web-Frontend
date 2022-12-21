@@ -313,7 +313,7 @@ export default {
           this.handleChronicDiseaseOK()
         }
       } else {
-        const pages = { page: 1, size: 10 }
+        const pages = { page: 1, size: 100 }
         const res = await getChronic(pages)
         if (res.status === 200) {
           this.totalChronicDiseases = res.data.content

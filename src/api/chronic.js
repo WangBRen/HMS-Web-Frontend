@@ -25,7 +25,7 @@ export function getChronic (pages) {
     method: 'get',
     params: {
       page: pages.page || 1,
-      siez: pages.size || 10
+      size: pages.size || 10
     }
   })
 }
