@@ -1,0 +1,246 @@
+<template>
+  <div>
+    <a-card>
+      <div style="padding-bottom: 8px">
+        <a-button @click="openMedModal('add')" type="primary" style="margin-right: 12px">新建治疗目标</a-button>
+        <a-button @click="openMedModal('edit')" type="primary">编辑{{ getProName() }}名称</a-button>
+        <a-button @click="openItemModal('add')" type="primary" style="float: right;">新建{{ getProName() }}药物</a-button>
+      </div>
+      <a-tabs v-model="checkTabKey">
+        <a-tab-pane v-for="tab in testData" :key="tab.id" :tab="tab.goal">
+          <a-table
+            :scroll="{ y: 600 }"
+            size="small"
+            row-key="id"
+            :columns="columns"
+            :data-source="tab.item"
+            :pagination="false"
+          >
+            <span slot="dosage" slot-scope="text, record">
+              {{ record.frequency }}次/{{ record.unit }}，每次{{ text }}
+            </span>
+            <span slot="action" slot-scope="text, record">
+              <a @click="openItemModal('edit', record)">编辑</a>|
+              <a>删除</a>
+            </span>
+          </a-table>
+        </a-tab-pane>
+      </a-tabs>
+    </a-card>
+
+    <a-modal
+      :visible="MedVisible"
+      v-if="MedVisible"
+      :title="'新建药物'"
+      @ok="handAddOk"
+      @cancel="handleAddCancel"
+      :width="700"
+    >
+      <div>
+        <a-row>
+          <a-col :span="4" style="text-align: right;line-height: 30px;">
+            治疗目标:&nbsp;
+          </a-col>
+          <a-col :span="20">
+            <a-input v-model="MedData.name" placeholder="输入治疗目标" ></a-input>
+          </a-col>
+        </a-row>
+      </div>
+    </a-modal>
+
+    <addMedicine
+      :addVisible="addVisible"
+      :medicineData="medicineData"
+      :mode="mode"
+      @closeAddModal="closeAddModal"
+    />
+  </div>
+</template>
+<script>
+import addMedicine from './components/ChronicMedicineAdd.vue'
+import { getMedicine } from '@/api/medicine'
+
+const columns = [
+  {
+    title: '药物类别',
+    dataIndex: 'type'
+  },
+  {
+    title: '药物名',
+    dataIndex: 'name'
+  },
+  {
+    title: '使用剂量',
+    dataIndex: 'dosage',
+    scopedSlots: { customRender: 'dosage' }
+  },
+  {
+    title: '不良反应',
+    dataIndex: 'sideEffect'
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createdAt'
+  },
+  {
+    title: '操作',
+    key: 'action',
+    scopedSlots: { customRender: 'action' }
+  }
+]
+export default {
+  components: {
+    addMedicine
+  },
+  name: 'APP',
+  data () {
+    return {
+      mode: '',
+      addVisible: false,
+      medicineData: null,
+      checkTabKey: null,
+      MedVisible: false,
+      MedData: {
+        name: null,
+        index: null
+      },
+      columns,
+      testData: [
+        {
+          id: '1',
+          goal: '治疗目标1',
+          item: [
+            {
+              id: '11',
+              name: '药物名11',
+              type: '药物类别1',
+              usage: '用法1',
+              dosage: '100mg',
+              frequency: '1',
+              unit: '日',
+              sideEffect: '不良反应1',
+              taboo: '禁忌1',
+              attention: '注意事项1',
+              createdAt: '-----'
+            },
+            {
+              id: '12',
+              name: '药物名12',
+              type: '药物类别1',
+              usage: '用法1',
+              dosage: '1吨',
+              frequency: '3',
+              unit: 'kg',
+              sideEffect: '不良反应1',
+              taboo: '禁忌1',
+              attention: '注意事项1',
+              createdAt: '-----'
+            }
+          ]
+        },
+        {
+          id: '2',
+          goal: '治疗目标2',
+          item: [
+            {
+              id: '21',
+              name: '药物名21',
+              type: '药物类别2',
+              usage: '用法2',
+              dosage: '剂量2',
+              frequency: '频率2',
+              unit: '单位2',
+              sideEffect: '不良反应2',
+              taboo: '禁忌2',
+              attention: '注意事项2',
+              createdAt: '创建时间2'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  methods: {
+    getMedinine () {
+      getMedicine().then(res => {
+        if (res.status === 200) {
+          console.log('获取成功', res.data)
+        } else {
+          console.log('获取失败')
+        }
+      })
+    },
+    getProName () {
+      // return this.checkTabKey
+      const project = (this.testData || []).find(tab => tab.id === this.checkTabKey)
+      // console.log(this.checkTabKey, 'project', this.testData)
+      if (project) {
+        return project.goal
+      } else {
+        return ''
+      }
+    },
+    openMedModal (index) {
+      console.log('弹窗')
+      switch (index) {
+        case 'add':
+          this.MedData.name = ''
+          this.MedData.index = 'add'
+          this.MedVisible = true
+          break
+        case 'edit':
+          this.MedData.name = this.getProName()
+          // const apiName = '接口'
+          // this.MedData.name = '' + apiName
+          this.MedData.index = 'edit'
+          this.MedVisible = true
+          break
+      }
+    },
+    openItemModal (mode, data) {
+      console.log('mode', mode)
+      console.log('data', data)
+      switch (mode) {
+        case 'add':
+          this.medicineData = {}
+          this.mode = mode
+          this.addVisible = true
+          break
+        case 'edit':
+          this.mode = mode
+          this.medicineData = JSON.parse(JSON.stringify(data))
+          this.addVisible = true
+      }
+    },
+    closeAddModal () {
+      this.addVisible = false
+    },
+    handAddOk () {
+      if (this.MedData.name) {
+        console.log('确定', this.MedData.name)
+      } else {
+        this.$message.error('治疗目标不能为空')
+        console.log('错误', this.MedData.name)
+      }
+    },
+    handleAddCancel () {
+      this.MedVisible = false
+      console.log('取消')
+    }
+  },
+  created () {
+  },
+  mounted () {
+    this.checkTabKey = this.testData[0].id
+    this.getMedinine()
+  },
+  watch: {
+    checkTabKey (newData, oldData) {
+      console.log(oldData, 'checkTabKey', newData)
+    }
+  }
+}
+</script>
+<style scoped>
+
+</style>
