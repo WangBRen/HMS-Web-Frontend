@@ -356,25 +356,24 @@
                       <a-button style="width: 100%" type="dashed" @click="handleAddNewResultRange(current.result)"> 增添一组结果选项 </a-button>
                     </a-col>
                     <a-col :span="24" v-if="current.result.type == 'simple'" style="padding-left: 12px;">
-                      <a-row v-if="current.result.options">
-                        <span
-                          type="text"
+                      <span v-if="current.result.options">
+                        <a-row
                           v-for="option in current.result.options"
                           :key="option.id"
-                          closable
-                          @close="handleAddNewResultOptionRemove(current.result, option)"
                         >
-
-                          <a-tag>{{ option.name }}</a-tag>
-                          <!-- {{ current.result }} -->
-                          <a-col :span="6">
+                          <a-col :span="3"><a-tag>{{ option.name }}</a-tag></a-col>
+                          <a-col :span="19" style="margin:10px;">
                             <a-textarea
                               style="height: 100%;"
                               placeholder="指标结果备注"
+                              v-model="option.products[0].remark"
                             />
                           </a-col>
-                        </span>
-                      </a-row>
+                          <a-col :span="1">
+                            <a-icon type="close" @click="handleAddNewResultOptionRemove(current.result, option)"/>
+                          </a-col>
+                        </a-row>
+                      </span>
                       <div style="width: 100%">
                         <a-col :span="9" style="padding: 0;">
                           <a-input type="text" v-model="current.result.pending_value" placeholder="如：偏高、偏低、正常"/>
@@ -678,6 +677,7 @@ export default {
       }
     },
     openModal (mode, record) {
+      console.log('recordrecordrecord', record)
       const reform = (data) => {
         if (!data) return null
         // conditions:
@@ -856,12 +856,13 @@ export default {
       }
     },
     handleAddNewResultOption (condition) { // type: simple
+      console.log('condition', condition)
       if (!condition.pending_value || !condition.pending_value.trim()) {
         console.warn('Value Not Valid')
         return
       }
       const options = condition.options || []
-      options.push({ id: randomId(), name: condition.pending_value })
+      options.push({ id: randomId(), name: condition.pending_value, products: [{ remark: '' }] })
       condition.options = options
       condition.pending_value = ''
       this.$forceUpdate()
@@ -883,22 +884,22 @@ export default {
       e.preventDefault()
       // reform to payload
       const reform = (payload) => {
-        // if (payload.result.type === 'range') {
-          // console.log('pppppppppppp', payload)
-        const result = (payload.result.options || []).map(resultOption => {
-          return (resultOption.products || []).map(prod => {
-            // const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
-            return {
-              id: resultOption.id,
-              name: resultOption.name,
-              unit: payload.unit, // use main unit, for index
-              type: payload.result.type,
-              start: prod.start,
-              end: prod.end,
-              remark: prod.remark,
-              conditionFilters: prod.conditionFilters
-            }
-          })
+        if (payload.result.type === 'range') {
+          console.log('pppppppppppp', payload)
+          const result = (payload.result.options || []).map(resultOption => {
+            return (resultOption.products || []).map(prod => {
+              // const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
+              return {
+                id: resultOption.id,
+                name: resultOption.name,
+                unit: payload.unit, // use main unit, for index
+                type: payload.result.type,
+                start: prod.start,
+                end: prod.end,
+                remark: prod.remark,
+                conditionFilters: prod.conditionFilters
+              }
+            })
           // if (resultOption.products) {
           //   return resultOption.products.map(prod => {
           //     const conditionFilters = (prod.conditionFilters || []).map(p => { return { conditionId: p.conditionId, optionId: p.optionId } })
@@ -922,11 +923,24 @@ export default {
           //   end: resultOption.end,
           //   conditionFilters: [] // none
           // }
-        }).flat()
-        return { ...payload, result }
-        // }
-        // return payload
+          }).flat()
+          return { ...payload, result }
+        }
+        if (payload.result.type === 'simple') {
+          const result = (payload.result.options || []).map(resultOption => {
+            return {
+              id: resultOption.id,
+              name: resultOption.name,
+              remark: resultOption.products[0].remark,
+              type: 'simple'
+            }
+          })
+          return { ...payload, result }
+        } else {
+          return payload
+        }
       }
+      console.log('this.currentthis.current', this.current)
       const payload = reform(this.current || {})
       const projectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
       // valid payload
