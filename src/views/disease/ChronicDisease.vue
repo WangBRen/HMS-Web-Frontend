@@ -2,12 +2,12 @@
   <div :bordered="false">
     <!-- 所有慢病 -->
     <a-tabs default-active-key="1" @change="callback">
-      <a-tab-pane v-for="disease in diseaseData" :key="disease" :tab="disease.diseaseName">
+      <a-tab-pane v-for="disease in diseaseData" :key="disease.diseaseId" :tab="disease.diseaseName">
         <a-table :columns="columns" :data-source="customers" style="background:#fff;padding: 0 10px;">
           <a slot="name" slot-scope="text, scope" @click="showChroncInfo(scope)">{{ text }}</a>
           <span slot="state" slot-scope="text, scope">
             <span v-for="Mydisease in scope.diseasesDetail" :key="Mydisease.id">
-              <span v-if="Mydisease.chronicDisease.name === diseaseName">
+              <span v-if="Mydisease.chronicDisease.id === diseaseId">
                 <a-tag color="orange" v-if="Mydisease.status === 'suspect'">疑似</a-tag>
                 <a-tag v-if="Mydisease.status === 'exception'">系统误判</a-tag>
                 <span v-if="Mydisease.status === 'diagnosed'">
@@ -24,11 +24,16 @@
         </a-table>
         <a-row style="margin-top:20px" :gutter="16">
           <a-col :span="16">
-            <a-table :columns="columnForm" :data-source="forms">
+            <a-table :columns="columnForm" :data-source="AllFollowForms" style="background:#fff;">
               <a slot="name" slot-scope="text">{{ text }}</a>
-              <span slot="state" slot-scope="text, scope">
-                {{ scope }}
-                <!-- <span v-for=""></span> -->
+              <span slot="result" slot-scope="text, record" rowkey="">
+                <a-tag v-if="record.sendAt=== null" color="#ccc">已创建</a-tag>
+                <a-tag v-else-if="record.status==='failure'" color="orange">超时</a-tag>
+                <a-tag v-else-if="record.receivedAt===null" color="#999">回收中</a-tag>
+                <a-tag v-if="record.status==='success'" color="geekblue">已回收</a-tag>
+              </span>
+              <span slot="operation">
+                <a>查看随访单</a>
               </span>
             </a-table>
           </a-col>
@@ -60,11 +65,11 @@ import { getChronic } from '@/api/customer'
 import { allFollowForm } from '@/api/followUpForm'
 import { age } from '@/utils/age'
 import ChronicInformation from '../customer/components/ChronicInformation.vue'
+import moment from 'moment'
 const columns = [
   {
     title: '姓名',
     dataIndex: 'nickname',
-    key: 'nickname',
     scopedSlots: { customRender: 'name' }
   },
   {
@@ -92,13 +97,25 @@ const columnForm = [
     title: '姓名'
   },
   {
-    title: '随访时间'
+    title: '随访时间',
+    customRender: (text, record) => {
+      return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+    }
   },
   {
-    title: '回收结果'
+    title: '随访健康师',
+    customRender: (text, record) => {
+      return record.createdBy ? record.createdBy.nickname : ''
+    }
   },
   {
-    title: '操作'
+    title: '回收结果',
+    align: 'center',
+    scopedSlots: { customRender: 'result' }
+  },
+  {
+    title: '操作',
+    scopedSlots: { customRender: 'operation' }
   }
 ]
 export default {
@@ -111,7 +128,7 @@ export default {
       columnForm,
       diseaseData: [], // 所有人得的慢病
       customers: [], // 当前慢病下的人
-      forms: [], // 当前慢病下的随访记录
+      AllFollowForms: [], // 当前慢病下的随访记录
       diseaseChoose: '', // 当前选中慢病
       chronicList: { visible: '', custId: null, baseInfo: {} },
       messages: [
@@ -144,7 +161,6 @@ export default {
   methods: {
     loadDate () {
       this.getChronic()
-      this.getAllFollowForm()
       // this.onSearchCustomer()
     },
     // 获取慢病表
@@ -177,15 +193,21 @@ export default {
           map.set(item.diseaseId, item)
         }
         this.diseaseData = [...map.values()]
-        this.diseaseName = this.diseaseData[0].diseaseName
+        const diseaseChoose = this.diseaseData[0]
+        this.diseaseId = diseaseChoose.diseaseId
         this.customerData = customerData
-        this.filterMember(customerData, this.diseaseData[0])
+        this.filterMember(customerData, diseaseChoose.diseaseId)
+        if (diseaseChoose.diseaseId) {
+          this.getAllFollowForm(diseaseChoose.diseaseId)
+        }
       }
     },
     // 获取该慢病下的随访记录
-    async getAllFollowForm () {
-      const res = await allFollowForm(-1, this.diseaseChoose.diseaseId)
-      console.log('所有随访单', res)
+    async getAllFollowForm (diseaseId) {
+      const res = await allFollowForm(-1, diseaseId)
+      if (res.status === 200) {
+        this.AllFollowForms = res.data.content
+      }
     },
     // onSearchCustomer (value) {
     //   const pages = {
@@ -214,11 +236,11 @@ export default {
     //   })
     // },
     // 过滤有这种慢病的人
-    filterMember (customerData, diseaseChoose) {
+    filterMember (customerData, diseaseId) {
       const customers = new Set()
       for (var i of customerData) {
         for (var j of i.diseasesDetail) {
-          if (diseaseChoose.diseaseId === j.chronicDisease.id) {
+          if (diseaseId === j.chronicDisease.id) {
             customers.add(i)
           }
         }
@@ -229,7 +251,8 @@ export default {
     callback (key) {
       console.log('切换慢病', key)
       this.filterMember(this.customerData, key)
-      this.diseaseName = key.diseaseName
+      this.diseaseId = key
+      this.getAllFollowForm(key)
     },
     getAge (birthDate) {
       return age(birthDate)
