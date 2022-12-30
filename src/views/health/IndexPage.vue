@@ -1,11 +1,9 @@
 <template>
   <a-card :bordered="false">
-    <div class="table-page-search-wrapper">
-    </div>
     <div style="padding-bottom: 8px">
       <a-button type="primary" @click="openProjectModal('create')" style="margin-right: 12px"> 新建指标项目 </a-button>
-      <a-button type="primary" @click="openProjectModal('edit')" style="margin-right: 12px"> 编辑{{ currentProjectName() }}项目名称 </a-button>
-      <a-button type="primary" @click="openModal('create')" style="margin-right: 12px; float: right"> 新建{{ currentProjectName() }}指标条目 </a-button>
+      <a-button type="primary" @click="openProjectModal('edit')" style="margin-right: 12px"> 编辑{{ ProjectName() }}项目名称 </a-button>
+      <a-button type="primary" @click="openModal('create')" style="margin-right: 12px; float: right"> 新建{{ ProjectName() }}指标条目 </a-button>
     </div>
     <a-tabs v-model="currentTabKey">
       <a-tab-pane v-for="tab in data" :key="tab.id" :tab="tab.name" >
@@ -13,7 +11,7 @@
           <a-button style="float: right" type="primary"> 新建{{ tab.name }}指标 </a-button>
         </div> -->
         <a-table
-          :scroll="{ y: 600 }"
+          :scroll="{ x: 600 }"
           row-key="id"
           size="small"
           :columns="columns"
@@ -21,8 +19,8 @@
           :pagination="false"
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
-          <span slot="conditions" slot-scope="text">
-            <div v-if="text.length > 0">
+          <span slot="referenceRange" slot-scope="text, record">{{ record.min }}-{{ record.max }}
+            <!-- <div v-if="text.length > 0">
               <div v-for="range_item in text" :key="range_item.id" style="margin-bottom: 6px;">
                 <span v-if="range_item.type === 'simple'">
                   <div style="font-size: 12px; border: 1px solid #ddd; border-radius: 12px; padding: 4px 8px 8px 8px;">
@@ -51,8 +49,8 @@
                   </div>
                 </span>
               </div>
-            </div>
-            <div v-if="text.length === 0"> - </div>
+            </div> -->
+            <!-- <div v-if="text.length === 0"> - </div> -->
           </span>
           <span slot="result" slot-scope="text">
             <div v-if="text.length">
@@ -358,17 +356,25 @@
                       <a-button style="width: 100%" type="dashed" @click="handleAddNewResultRange(current.result)"> 增添一组结果选项 </a-button>
                     </a-col>
                     <a-col :span="24" v-if="current.result.type == 'simple'" style="padding-left: 12px;">
-                      <div v-if="current.result.options">
-                        <a-tag
+                      <a-row v-if="current.result.options">
+                        <span
                           type="text"
                           v-for="option in current.result.options"
                           :key="option.id"
                           closable
                           @close="handleAddNewResultOptionRemove(current.result, option)"
                         >
-                          {{ option.name }}
-                        </a-tag>
-                      </div>
+
+                          <a-tag>{{ option.name }}</a-tag>
+                          <!-- {{ current.result }} -->
+                          <a-col :span="6">
+                            <a-textarea
+                              style="height: 100%;"
+                              placeholder="指标结果备注"
+                            />
+                          </a-col>
+                        </span>
+                      </a-row>
                       <div style="width: 100%">
                         <a-col :span="9" style="padding: 0;">
                           <a-input type="text" v-model="current.result.pending_value" placeholder="如：偏高、偏低、正常"/>
@@ -443,17 +449,19 @@ const columns = [
     title: '指标名称',
     dataIndex: 'name',
     fixed: 'left',
-    width: 180
+    width: 200
   },
   {
     title: '检测方式',
     dataIndex: 'testMethod',
-    width: 80
+    align: 'center',
+    width: 100
   },
   {
     title: '指标类型',
     dataIndex: 'type',
     width: 80,
+    align: 'center',
     customRender: (text) => {
       switch (text) {
         case 'Integer':
@@ -471,6 +479,7 @@ const columns = [
     title: '指标单位',
     dataIndex: 'unit',
     width: 80,
+    align: 'center',
     customRender: (status) => {
       switch (status) {
         case 'inactive':
@@ -484,10 +493,11 @@ const columns = [
     }
   },
   {
-    title: '参考条件',
-    dataIndex: 'conditions',
-    width: 240,
-    scopedSlots: { customRender: 'conditions' }
+    title: '参考范围',
+    dataIndex: 'referenceRange',
+    width: 150,
+    scopedSlots: { customRender: 'referenceRange' },
+    align: 'center'
   },
   {
     title: '参考结果',
@@ -509,23 +519,30 @@ const columns = [
   {
     title: '检测环境',
     dataIndex: 'testEnvironment',
+    width: 100
+  },
+  {
+    title: '指标意义',
+    dataIndex: 'meaning',
     width: 80
   },
   {
     title: '备注',
     dataIndex: 'remark',
-    width: 80
+    width: 100
   },
   {
     title: '创建时间',
     dataIndex: 'createdAt',
     width: 100,
-    scopedSlots: { customRender: 'createTime' }
+    scopedSlots: { customRender: 'createTime' },
+    align: 'center'
   }, {
     title: '操作',
     dataIndex: 'action',
-    width: 80,
+    width: 100,
     fixed: 'right',
+    align: 'center',
     scopedSlots: { customRender: 'action' }
   }
 ]
@@ -582,6 +599,14 @@ export default {
   },
   methods: {
     currentProjectName () {
+      const project = (this.data || []).find(tab => tab.id === this.currentTabKey + 0)
+      // console.log({ data: this.data, project, key: this.currentTabKey })
+      if (project) {
+        return project.name
+      }
+      return ''
+    },
+    ProjectName () {
       const project = (this.data || []).find(tab => tab.id === this.currentTabKey + 0)
       // console.log({ data: this.data, project, key: this.currentTabKey })
       if (project) {
