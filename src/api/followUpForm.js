@@ -10,7 +10,8 @@ const customerApi = {
     SendLevel: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/levels`, // 分级
     abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destroy` }, // 废弃随访单
     createFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/create`, // 创建随访单
-    showFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}`
+    showFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}`,
+    allFollowForm: (customerId, diseaseId) => `customers/${customerId}/${diseaseId}/followup-forms/all` // 某一慢病下所有的随访单
   }
 
 // 随访记录
@@ -87,6 +88,12 @@ export function postFormCreated (customerId, formId) {
 export function showFollowForm (customerId, formId) {
   return request({
     url: customerApi.showFollowForm(customerId, formId),
+    method: 'get'
+  })
+}
+export function allFollowForm (customerId, diseaseId) {
+  return request({
+    url: customerApi.allFollowForm(customerId, diseaseId),
     method: 'get'
   })
 }

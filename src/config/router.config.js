@@ -123,14 +123,30 @@ export const asyncRouterMap = [
           }
         ]
       },
-
+      // 慢病管理
+      {
+        path: '/disease',
+        component: RouteView,
+        redirect: '/disease/ChronicDisease',
+        name: 'ChronicDisease',
+        meta: { title: 'menu.daily.management', icon: 'schedule', keepAlive: true, permission: ['disease'] },
+        children: [
+          {
+            path: '/disease/ChronicDisease',
+            name: 'ChronicDisease',
+            component: () => import('@/views/disease/ChronicDisease'),
+            // meta: { title: '慢病管理' }
+            meta: { title: 'menu.disease', keepAlive: true, permission: ['health_disease'] }
+          }
+        ]
+      },
       // account
       {
         path: '/health',
         component: RouteView,
         redirect: '/health/indexes',
         name: 'health',
-        meta: { title: 'menu.health', icon: 'user', keepAlive: true, permission: ['health_index'] },
+        meta: { title: 'menu.health', icon: 'file-search', keepAlive: true, permission: ['health_index'] },
         children: [
           {
             path: '/health/chronic',

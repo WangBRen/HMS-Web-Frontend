@@ -17,7 +17,8 @@ const customerApi = {
     getCustomerChronicIndex: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/indexes`,
     makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`,
     makeUnexpected: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-unexpected`,
-    getChronicDetail: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`
+    getChronicDetail: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`,
+    getChronic: `/groups/search-customers-disease` // 获取得过的慢病
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -150,5 +151,15 @@ export function getChronicDetail (customerId, diseaseId) {
   return request({
       url: customerApi.getChronicDetail(customerId, diseaseId),
       method: 'get'
+  })
+}
+export function getChronic (pages) {
+  return request({
+      url: customerApi.getChronic,
+      method: 'get',
+      params: {
+        page: pages.page || 1,
+        size: pages.size || 20
+    }
   })
 }

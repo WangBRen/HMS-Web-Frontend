@@ -1,7 +1,5 @@
 <template>
   <a-card :bordered="false">
-    <div class="table-page-search-wrapper">
-    </div>
     <div style="padding-bottom: 8px">
       <a-button type="primary" @click="openProjectModal('create')" style="margin-right: 12px"> 新建指标项目 </a-button>
       <a-button type="primary" @click="openProjectModal('edit')" style="margin-right: 12px"> 编辑{{ ProjectName() }}项目名称 </a-button>
@@ -358,17 +356,25 @@
                       <a-button style="width: 100%" type="dashed" @click="handleAddNewResultRange(current.result)"> 增添一组结果选项 </a-button>
                     </a-col>
                     <a-col :span="24" v-if="current.result.type == 'simple'" style="padding-left: 12px;">
-                      <div v-if="current.result.options">
-                        <a-tag
+                      <a-row v-if="current.result.options">
+                        <span
                           type="text"
                           v-for="option in current.result.options"
                           :key="option.id"
                           closable
                           @close="handleAddNewResultOptionRemove(current.result, option)"
                         >
-                          {{ option.name }}
-                        </a-tag>
-                      </div>
+
+                          <a-tag>{{ option.name }}</a-tag>
+                          <!-- {{ current.result }} -->
+                          <a-col :span="6">
+                            <a-textarea
+                              style="height: 100%;"
+                              placeholder="指标结果备注"
+                            />
+                          </a-col>
+                        </span>
+                      </a-row>
                       <div style="width: 100%">
                         <a-col :span="9" style="padding: 0;">
                           <a-input type="text" v-model="current.result.pending_value" placeholder="如：偏高、偏低、正常"/>
