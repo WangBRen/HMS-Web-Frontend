@@ -132,11 +132,34 @@ export const asyncRouterMap = [
         meta: { title: 'menu.daily.management', icon: 'schedule', keepAlive: true, permission: ['disease'] },
         children: [
           {
-            path: '/disease/ChronicDisease',
-            name: 'ChronicDisease',
+            path: '/disease/chronic-disease',
+            name: 'chronic-disease',
             component: () => import('@/views/disease/ChronicDisease'),
             // meta: { title: '慢病管理' }
             meta: { title: 'menu.disease', keepAlive: true, permission: ['health_disease'] }
+          }
+        ]
+      },
+      // 健康小站
+      {
+        path: '/station',
+        component: RouteView,
+        redirect: '/station/indexes',
+        name: 'station',
+        meta: { title: 'menu.station', icon: 'bank', keepAlive: true, permission: ['health_index'] },
+        children: [
+          {
+            path: '/station/station-manage',
+            name: 'station-manage',
+            component: () => import('@/views/station/StationManage'),
+            meta: { title: 'menu.station.manage', keepAlive: true, permission: ['health_disease'] }
+
+          },
+          {
+            path: '/station/appointment-record',
+            name: 'appointment-record',
+            component: () => import('@/views/station/AppointmentRecord'),
+            meta: { title: 'menu.station.appointment', keepAlive: true, permission: ['health_index'] }
           }
         ]
       },

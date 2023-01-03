@@ -3,8 +3,8 @@
     <!-- 所有慢病 -->
     <a-tabs default-active-key="1" @change="callback">
       <a-tab-pane v-for="disease in diseaseData" :key="disease.diseaseId" :tab="disease.diseaseName">
-        <a-table :columns="columns" :data-source="customers" style="background:#fff;padding: 0 10px;">
-          <a slot="name" slot-scope="text, scope" @click="showChroncInfo(scope)">{{ text }}</a>
+        <a-table :columns="columns" :data-source="customers" :customRow="rowClick" style="background:#fff;padding: 0 10px;">
+          <a slot="name" slot-scope="text, scope" @click.stop="seeUser(scope)">{{ text }}</a>
           <span slot="state" slot-scope="text, scope">
             <span v-for="Mydisease in scope.diseasesDetail" :key="Mydisease.id">
               <span v-if="Mydisease.chronicDisease.id === diseaseId">
@@ -21,23 +21,26 @@
           <span slot="sexAge" slot-scope="text, scope">
             {{ scope.baseInfo.gender }} {{ getAge(scope.baseInfo.birthDate) }}
           </span>
+          <span slot="operation" slot-scope="text, scope">
+            <a @click.stop="handleHealthData(scope)">健康信息</a>
+          </span>
         </a-table>
         <a-row style="margin-top:20px" :gutter="16">
-          <a-col :span="16">
-            <a-table :columns="columnForm" :data-source="AllFollowForms" style="background:#fff;">
-              <a slot="name" slot-scope="text">{{ text }}</a>
-              <span slot="result" slot-scope="text, record" rowkey="">
-                <a-tag v-if="record.sendAt=== null" color="#ccc">已创建</a-tag>
-                <a-tag v-else-if="record.status==='failure'" color="orange">超时</a-tag>
-                <a-tag v-else-if="record.receivedAt===null" color="#999">回收中</a-tag>
-                <a-tag v-if="record.status==='success'" color="geekblue">已回收</a-tag>
-              </span>
-              <span slot="operation">
-                <a>查看随访单</a>
-              </span>
-            </a-table>
-          </a-col>
-          <a-col :span="8">
+          <!-- <a-col :span="16"> -->
+          <a-table :columns="columnForm" :data-source="AllFollowForms" style="background:#fff;padding: 0 10px;">
+            <a slot="name" slot-scope="text">{{ text }}</a>
+            <span slot="result" slot-scope="text, record" rowkey="">
+              <a-tag v-if="record.sendAt=== null" color="#ccc">已创建</a-tag>
+              <a-tag v-else-if="record.status==='failure'" color="orange">超时</a-tag>
+              <a-tag v-else-if="record.receivedAt===null" color="#999">回收中</a-tag>
+              <a-tag v-if="record.status==='success'" color="geekblue">已回收</a-tag>
+            </span>
+            <span slot="operation" slot-scope="text, scope">
+              <a @click="ViewFollowUpTable(text, scope)">查看随访单</a>
+            </span>
+          </a-table>
+          <!-- </a-col> -->
+          <!-- <a-col :span="8">
             <a-card title="消息通知" :bordered="false">
               <a slot="extra" href="#">more</a>
               <div class="list">
@@ -46,7 +49,7 @@
                 </div>
               </div>
             </a-card>
-          </a-col>
+          </a-col> -->
         </a-row>
       </a-tab-pane>
     </a-tabs>
@@ -56,6 +59,27 @@
       :baseInfo="chronicList.baseInfo"
       :chronicVisible="chronicList.visible"
       @onclose="closeChronicModal"/>
+    <!-- 查看健康信息 -->
+    <HealthDataManagmentFormVue
+      :openHealthvisible="openHealthvisible"
+      @handleCancel="handleCancel"
+      :customerId="currentCustomerId"
+      ref="healthDataManagmentRef"
+    />
+    <!-- 查看随访单 -->
+    <SeeFollowUpSheet
+      v-if="currentSelectedForm.visible"
+      :formId="currentSelectedForm.id"
+      :customerId="customerId"
+      :diseaseId="currentSelectedForm.diseaseId"
+      :visible="currentSelectedForm.visible"
+      @onclose="closeFollowUpFormModal"
+      @grandFatherMethod="handleSuccessLevel"/>
+    <SeeUserMsg
+      :seeVisible="seeVisible"
+      :seeData="seeData"
+      @closeSeeModal="closeSeeModal"
+    />
   </div>
 </template>
 
@@ -65,12 +89,19 @@ import { getChronic } from '@/api/customer'
 import { allFollowForm } from '@/api/followUpForm'
 import { age } from '@/utils/age'
 import ChronicInformation from '../customer/components/ChronicInformation.vue'
+import HealthDataManagmentFormVue from '../customer/components/HealthDataManagmentForm.vue'
+import SeeFollowUpSheet from '../customer/components/SeeFollowUpSheet.vue'
+import SeeUserMsg from '../customer/components/SeeUserMsg.vue'
 import moment from 'moment'
 const columns = [
   {
     title: '姓名',
     dataIndex: 'nickname',
     scopedSlots: { customRender: 'name' }
+  },
+  {
+    title: '手机号',
+    dataIndex: 'telephone'
   },
   {
     title: '性别 / 年龄',
@@ -89,13 +120,12 @@ const columns = [
     title: '随访倒计时'
   },
   {
-    title: '操作'
+    title: '操作',
+    align: 'center',
+    scopedSlots: { customRender: 'operation' }
   }
 ]
 const columnForm = [
-  {
-    title: '姓名'
-  },
   {
     title: '随访时间',
     customRender: (text, record) => {
@@ -103,7 +133,15 @@ const columnForm = [
     }
   },
   {
+    title: '随访用户',
+    align: 'center',
+    customRender: (text, record) => {
+      return record ? record.customer.nickname : ''
+    }
+  },
+  {
     title: '随访健康师',
+    align: 'center',
     customRender: (text, record) => {
       return record.createdBy ? record.createdBy.nickname : ''
     }
@@ -115,12 +153,16 @@ const columnForm = [
   },
   {
     title: '操作',
+    align: 'center',
     scopedSlots: { customRender: 'operation' }
   }
 ]
 export default {
   components: {
-    ChronicInformation
+    ChronicInformation,
+    HealthDataManagmentFormVue,
+    SeeFollowUpSheet,
+    SeeUserMsg
   },
   data () {
     return {
@@ -131,18 +173,15 @@ export default {
       AllFollowForms: [], // 当前慢病下的随访记录
       diseaseChoose: '', // 当前选中慢病
       chronicList: { visible: '', custId: null, baseInfo: {} },
-      messages: [
-        { id: '1', name: '张三', date: '18:21', content: '提交一条随访单' },
-        { id: '2', name: '李四', date: '16:28', content: '提交一条随访单' },
-        { id: '3', name: '李四', date: '13:26', content: '提交一条随访单' },
-        { id: '4', name: '李四', date: '昨天', content: '提交一条随访单' },
-        { id: '5', name: '李四', date: '12月25日', content: '提交一条随访单' },
-        { id: '5', name: '李四', date: '12月25日', content: '提交一条随访单' },
-        { id: '5', name: '李四', date: '12月25日', content: '提交一条随访单' },
-        { id: '5', name: '李四', date: '12月25日', content: '提交一条随访单' },
-        { id: '5', name: '李四', date: '12月25日', content: '提交一条随访单' },
-        { id: '6', name: '王五', date: '12月21日', content: '复查时间将至' }
-      ],
+      openHealthvisible: false,
+      currentCustomerId: null,
+      currentSelectedForm: {
+        id: -1,
+        visible: false,
+        diseaseId: -1
+      },
+      seeData: null,
+      seeVisible: false,
       pagination: {
         total: 0,
         current: 1,
@@ -257,13 +296,60 @@ export default {
     getAge (birthDate) {
       return age(birthDate)
     },
-    showChroncInfo (record) {
-      this.chronicList.custId = record.id
-      this.chronicList.baseInfo = record.baseInfo
-      this.chronicList.visible = true
+    seeUser (record) {
+      this.seeData = record.baseInfo
+      this.seeVisible = true
+    },
+    closeSeeModal () {
+      this.seeVisible = false
     },
     closeChronicModal () {
       this.chronicList.visible = false
+    },
+    // 查看健康信息
+    handleHealthData (record) {
+      console.log('recordrecord', record)
+      this.currentCustomerId = record.id
+      this.openHealthvisible = true
+      this.$refs.healthDataManagmentRef.setCustomerId(record.id, record)
+      this.$refs.healthDataManagmentRef.findCustomerHealthReports()
+    },
+    handleCancel () {
+      this.openHealthvisible = false
+    },
+    // 查看随访单
+    ViewFollowUpTable (text, grecord) {
+      this.customerId = grecord.customerId
+      this.openFollowUpFormModal(grecord.id)
+    },
+    openFollowUpFormModal (formId, diseaseId) {
+      this.currentSelectedForm.id = formId
+      this.currentSelectedForm.visible = true
+      if (diseaseId) {
+        this.currentSelectedForm.diseaseId = diseaseId
+      }
+    },
+    closeFollowUpFormModal () {
+      this.currentSelectedForm.id = -1
+      this.currentSelectedForm.visible = false
+    },
+    handleSuccessLevel () {
+      this.currentSelectedForm.visible = false
+      this.$message.success('分级成功')
+      this.onSearch()
+      this.$emit('successRefresh')
+      // this.$reload()
+    },
+    rowClick (record) {
+      return {
+        on: {
+          click: () => {
+            this.chronicList.custId = record.id
+            this.chronicList.baseInfo = record.baseInfo
+            this.chronicList.visible = true
+          }
+        }
+      }
     }
   }
 }
