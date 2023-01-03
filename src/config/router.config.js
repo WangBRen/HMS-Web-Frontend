@@ -136,7 +136,7 @@ export const asyncRouterMap = [
             name: 'chronic-disease',
             component: () => import('@/views/disease/ChronicDisease'),
             // meta: { title: '慢病管理' }
-            meta: { title: 'menu.disease', keepAlive: true, permission: ['health_disease'] }
+            meta: { title: 'menu.chronic-management', keepAlive: true, permission: ['chronic_management'] }
           }
         ]
       },
@@ -146,20 +146,20 @@ export const asyncRouterMap = [
         component: RouteView,
         redirect: '/station/indexes',
         name: 'station',
-        meta: { title: 'menu.station', icon: 'bank', keepAlive: true, permission: ['health_index'] },
+        meta: { title: 'menu.station', icon: 'bank', keepAlive: true, permission: ['health_station'] },
         children: [
           {
             path: '/station/station-manage',
             name: 'station-manage',
             component: () => import('@/views/station/StationManage'),
-            meta: { title: 'menu.station.manage', keepAlive: true, permission: ['health_disease'] }
+            meta: { title: 'menu.station.manage', keepAlive: true, permission: ['station_manage'] }
 
           },
           {
             path: '/station/appointment-record',
             name: 'appointment-record',
             component: () => import('@/views/station/AppointmentRecord'),
-            meta: { title: 'menu.station.appointment', keepAlive: true, permission: ['health_index'] }
+            meta: { title: 'menu.station.appointment', keepAlive: true, permission: ['station_appointment'] }
           }
         ]
       },
