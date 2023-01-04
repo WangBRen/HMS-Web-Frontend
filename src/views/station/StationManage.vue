@@ -4,15 +4,26 @@
       <a-button type="primary" @click="addStation" style="margin-bottom:10px;">
         新增小站
       </a-button>
-      <a-table :columns="columns" :data-source="dataSource"></a-table>
+      <a-table :columns="columns" :data-source="dataSource">
+        <span slot="operation" slot-scope="text, record">
+          <a @click="editStation(record)">编辑</a>
+          <!-- <a>删除</a> -->
+        </span>
+      </a-table>
     </a-card>
-    <HealthStationAdd v-if="stationVisible" :visible="stationVisible" @successAddStation="closeAddStationModel"/>
+    <HealthStationAdd
+      v-if="stationVisible"
+      :visible="stationVisible"
+      :stationId="stationId"
+      :stationInfo="stationInfo"
+      @successAddStation="closeAddStationModel"
+    />
   </div>
 </template>
 
 <script>
 import HealthStationAdd from './components/HeathStationAdd.vue'
-import { getStations } from '@/api/station'
+import { getStations, getStationInfo } from '@/api/station'
 const columns = [
   {
     title: '小站名称',
@@ -35,7 +46,8 @@ const columns = [
     width: 200
   },
   {
-    title: '操作'
+    title: '操作',
+    scopedSlots: { customRender: 'operation' }
   }
 ]
 export default {
@@ -47,7 +59,9 @@ export default {
       dataSource: [
       ],
       columns,
-      stationVisible: false
+      stationVisible: false,
+      stationId: null,
+      stationInfo: {}
     }
   },
   mounted () {
@@ -65,7 +79,18 @@ export default {
       this.stationVisible = true
     },
     closeAddStationModel () {
+      console.log('编辑')
       this.stationVisible = false
+      this.loadData()
+    },
+    editStation (record) {
+      console.log(record)
+      this.stationId = record.id
+      getStationInfo(this.stationId).then(res => {
+        this.stationInfo = res.data
+        this.stationVisible = true
+      })
+      // editstation(record.id)
     }
   }
 }
