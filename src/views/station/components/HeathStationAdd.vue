@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="新增小站"
+    :title="title"
     :visible="visible"
     @ok="handleOk"
     @cancel="handleCancel"
@@ -59,13 +59,23 @@
 
 <script>
 import { getUserList } from '@/api/manage'
-import { addStation } from '@/api/station'
+import { addStation, editstation } from '@/api/station'
 
 export default {
   props: {
     visible: {
       type: Boolean,
       default: false
+    },
+    stationId: {
+      type: Number,
+      default: null
+    },
+    stationInfo: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     },
     successAddStation: {
       type: Function,
@@ -96,11 +106,21 @@ export default {
         phone: [{ required: true, message: '请输入小站联系电话', trigger: 'blur' }],
         stationmaster: [{ required: true, message: '请选择小站管理员', trigger: 'change' }],
         stationStatus: [{ required: true, message: '请选择营业状态', trigger: 'change' }]
-      }
+      },
+      title: '新增小站'
     }
   },
   mounted () {
     this.getUser()
+    if (this.stationId) {
+      this.title = '编辑小站'
+      this.form.name = this.stationInfo.name
+      this.form.address = this.stationInfo.address
+      this.form.phone = this.stationInfo.phone
+      this.form.doctors = this.stationInfo.doctors
+      this.form.stationmaster = this.stationInfo.manager.nickname
+      this.form.remark = this.stationInfo.remark
+    }
   },
   methods: {
     handleOk () {
@@ -127,9 +147,16 @@ export default {
     },
     // 提交表单
     async postForm (apiForm) {
-      const res = await addStation(apiForm)
-      if (res.status === 201) {
-        this.$emit('successAddStation')
+      if (this.stationId) {
+        const res = await editstation(this.stationId, apiForm)
+        if (res.status === 200) {
+          this.$emit('successAddStation')
+        }
+      } else {
+        const res = await addStation(apiForm)
+        if (res.status === 201) {
+          this.$emit('successAddStation')
+        }
       }
     },
     handleCancel () {
