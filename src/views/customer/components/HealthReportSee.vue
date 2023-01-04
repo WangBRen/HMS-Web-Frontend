@@ -46,22 +46,23 @@
               <div style="padding: 0 10px">
                 <a-row>
                   <div class="index-title">
-                    <a-col :span="8"><span>指标名称</span></a-col>
-                    <a-col :span="5"><span>检测值</span></a-col>
+                    <a-col :span="7"><span>指标名称</span></a-col>
+                    <a-col :span="6"><span>检测值</span></a-col>
+                    <a-col :span="6"><span>参考范围</span></a-col>
                     <a-col :span="5"><span>检测结果</span></a-col>
-                    <a-col :span="6"><span>结果意义</span></a-col>
+                    <!-- <a-col :span="4"><span>结果意义</span></a-col> -->
                   </div>
                 </a-row>
                 <!-- 指标 -->
                 <a-row>
                   <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
                     <a-row class="index-item">
-                      <a-col :span="8">
+                      <a-col :span="7">
                         <div class="index-item-title-wrapper">
                           <span> {{ items.name }} </span>
                         </div>
                       </a-col>
-                      <a-col :span="5">
+                      <a-col :span="6">
                         <div class="index-item-title-wrapper">
                           <!-- <a class="exTitle">检测值:</a> -->
                           <span v-if="items.type === 'Integer' || items.type === 'Float'">
@@ -76,17 +77,36 @@
                           </span>
                         </div>
                       </a-col>
+                      <a-col :span="6">
+                        <div class="index-item-title-wrapper">
+                          <!-- <span v-for="resultValue in items.result" :key="resultValue.id">
+                            <span v-if="resultValue.name.indexOf('正常') != -1">
+                              {{ resultValue.start }}-{{ resultValue.end }}
+                            </span>
+                          </span> -->
+                          {{ items.min }}-{{ items.max }}
+                        </div>
+                      </a-col>
                       <a-col :span="5">
                         <div class="index-item-title-wrapper">
                           <!-- <a class="exTitle">检测结果:</a> -->
                           {{ items.endResult || '无' }}
                         </div>
                       </a-col>
-                      <a-col :span="6">
+                      <!-- <a-col :span="4">
                         <div class="index-item-title-wrapper">
-                          <span v-for="i in items.result" :key="i.id"><span v-if="i.name ===items.endResult">{{ i.remark }}</span></span>
+                          <div v-for="i in items.result" :key="i.id">
+                            <div v-if="i.name ===items.endResult" style="width:160px;white-space: nowrap;overflow:hidden;text-overflow:ellipsis;">
+                              <a-tooltip placement="topLeft">
+                                <template slot="title">
+                                  {{ i.remark }}
+                                </template>
+                                {{ i.remark }}
+                              </a-tooltip>
+                            </div>
+                          </div>
                         </div>
-                      </a-col>
+                      </a-col> -->
                     </a-row>
                   </a-col>
                 </a-row>
@@ -96,6 +116,21 @@
                     <span>检测时间：</span>
                     <div style="float: right; margin-right: 12px;">{{ item.testAt | getMoment }}</div>
                   </a-col>
+                </a-row>
+                <div style="font-size:16px;font-weight:600;color:#888;padding:10px;">异常指标小结：</div>
+                <a-row v-for="items in item.items" :key="items.id" style="background:#F4F8FA;">
+                  <div v-if="(items.max!==null && items.value > items.max) || (items.min!==null && items.value < items.min)">
+                    <a-col :span="5" style="color:#00A3DB;padding: 10px;">
+                      {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
+                    </a-col>
+                    <a-col :span="19">
+                      <div v-for="i in items.result" :key="i.id">
+                        <div v-if="i.name ===items.endResult" style="padding:5px 10px;">
+                          {{ i.remark }}
+                        </div>
+                      </div>
+                    </a-col>
+                  </div>
                 </a-row>
               </div>
             </div>
@@ -158,7 +193,7 @@
                         </div>
                       </a-col>
                       <a-col :span="21">
-                        <div>{{ formData.symptom }}</div>
+                        <span v-for="item in formData.symptom" :key="item.index">【{{ item }}】、</span>
                       </a-col>
                     </a-row>
                     <a-row style="margin: 28px 0;">
@@ -222,6 +257,7 @@ export default {
               items: healthData[j].items
             }
             this.formData.testData.push(aa)
+            console.log('this.formData.testData', this.formData.testData)
           }
         }
       }
@@ -345,7 +381,7 @@ export default {
 }
 .index-item-title-wrapper {
   // display: flex;
-  height: 34px;
+  // height: 34px;
   // align-items: center;
 }
 .index-title {

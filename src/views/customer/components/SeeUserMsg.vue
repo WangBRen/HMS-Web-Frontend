@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      :title="'个人信息【'+ seeData.member.baseInfo.name +'】'"
+      :title="'个人信息【'+ seeData.name +'】'"
       :visible="seeVisible"
       @cancel="closeSeeModal"
       v-if="seeVisible"
@@ -18,7 +18,7 @@
                 <span >姓名：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.name }}</span>
+                <span class="info_index">{{ seeData.name }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -28,7 +28,7 @@
                 <span >民族：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.ethnicGroups }}</span>
+                <span class="info_index">{{ seeData.ethnicGroups }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -40,7 +40,7 @@
                 <span >证件类型：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.idType }}</span>
+                <span class="info_index">{{ seeData.idType }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -50,7 +50,7 @@
                 <span >证件号码：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.idNo }}</span>
+                <span class="info_index">{{ seeData.idNo }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -62,7 +62,7 @@
                 <span >性别：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.gender }}</span>
+                <span class="info_index">{{ seeData.gender }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -72,7 +72,7 @@
                 <span >出生日期：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.birthDate | filterBirth }}</span>
+                <span class="info_index">{{ seeData.birthDate | filterBirth }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -84,7 +84,7 @@
                 <span >年龄：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.birthDate | filterAge }}</span>
+                <span class="info_index">{{ seeData.birthDate | filterAge }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -96,7 +96,7 @@
                 <span >手机号：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.phoneNumber }}</span>
+                <span class="info_index">{{ seeData.phoneNumber }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -106,7 +106,7 @@
                 <span >教育背景：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.eduBG }}</span>
+                <span class="info_index">{{ seeData.eduBG }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -118,7 +118,7 @@
                 <span >血型：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.aboBloodType }}</span>
+                <span class="info_index">{{ seeData.aboBloodType }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -128,7 +128,7 @@
                 <span >Rh血型：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.rhBloodType }}</span>
+                <span class="info_index">{{ seeData.rhBloodType }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -140,7 +140,7 @@
                 <span >紧急联系人：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.contactName }}</span>
+                <span class="info_index">{{ seeData.contactName }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -150,7 +150,7 @@
                 <span >联系人电话：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.contactNumber }}</span>
+                <span class="info_index">{{ seeData.contactNumber }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -162,7 +162,7 @@
                 <span >住址：</span>
               </a-col>
               <a-col :span="16">
-                <span class="info_index">{{ seeData.member.baseInfo.province + seeData.member.baseInfo.city + seeData.member.baseInfo.area + seeData.member.baseInfo.street }}</span>
+                <span class="info_index">{{ seeData.province + seeData.city + seeData.area + seeData.street }}</span>
               </a-col>
             </a-row>
           </a-col>
@@ -172,7 +172,29 @@
                 <span >详细住址：</span>
               </a-col>
               <a-col :span="12">
-                <span class="info_index">{{ seeData.member.baseInfo.homeAddress }}</span>
+                <span class="info_index">{{ seeData.homeAddress }}</span>
+              </a-col>
+            </a-row>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col :span="12">
+            <a-row class="info">
+              <a-col :span="8" class="info_title">
+                <span >单位：</span>
+              </a-col>
+              <a-col :span="16">
+                <span class="info_index">{{ seeData.company }}</span>
+              </a-col>
+            </a-row>
+          </a-col>
+          <a-col :span="12">
+            <a-row class="info">
+              <a-col :span="8" class="info_title">
+                <span >社区：</span>
+              </a-col>
+              <a-col :span="12">
+                <span class="info_index">{{ seeData.community }}</span>
               </a-col>
             </a-row>
           </a-col>

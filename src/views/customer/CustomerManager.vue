@@ -362,7 +362,7 @@ export default {
     },
     seeUser (record) {
       // console.log(record)
-      this.seeData = record
+      this.seeData = record.member.baseInfo
       this.seeVisible = true
     },
     closeSeeModal () {

@@ -123,14 +123,53 @@ export const asyncRouterMap = [
           }
         ]
       },
+      // 慢病管理
+      {
+        path: '/disease',
+        component: RouteView,
+        redirect: '/disease/ChronicDisease',
+        name: 'ChronicDisease',
+        meta: { title: 'menu.daily.management', icon: 'schedule', keepAlive: true, permission: ['disease'] },
+        children: [
+          {
+            path: '/disease/chronic-disease',
+            name: 'chronic-disease',
+            component: () => import('@/views/disease/ChronicDisease'),
+            // meta: { title: '慢病管理' }
+            meta: { title: 'menu.chronic-management', keepAlive: true, permission: ['chronic_management'] }
+          }
+        ]
+      },
+      // 健康小站
+      {
+        path: '/station',
+        component: RouteView,
+        redirect: '/station/indexes',
+        name: 'station',
+        meta: { title: 'menu.station', icon: 'bank', keepAlive: true, permission: ['health_station'] },
+        children: [
+          {
+            path: '/station/station-manage',
+            name: 'station-manage',
+            component: () => import('@/views/station/StationManage'),
+            meta: { title: 'menu.station.manage', keepAlive: true, permission: ['station_manage'] }
 
+          },
+          {
+            path: '/station/appointment-record',
+            name: 'appointment-record',
+            component: () => import('@/views/station/AppointmentRecord'),
+            meta: { title: 'menu.station.appointment', keepAlive: true, permission: ['station_appointment'] }
+          }
+        ]
+      },
       // account
       {
         path: '/health',
         component: RouteView,
         redirect: '/health/indexes',
         name: 'health',
-        meta: { title: 'menu.health', icon: 'user', keepAlive: true, permission: ['health_index'] },
+        meta: { title: 'menu.health', icon: 'file-search', keepAlive: true, permission: ['health_index'] },
         children: [
           {
             path: '/health/chronic',

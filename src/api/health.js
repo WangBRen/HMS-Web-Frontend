@@ -40,11 +40,12 @@ export function getHealthCustomerReport (customerId, reportId) {
     })
 }
 
-export function getHealthReport (customerId, pages) {
+export function getHealthReport (customerId, values, pages) {
     return request({
         url: customerApi.healthReport(customerId),
         method: 'get',
         params: {
+            word: values || '',
             page: pages.page || 1,
             size: pages.size || 10
         }
