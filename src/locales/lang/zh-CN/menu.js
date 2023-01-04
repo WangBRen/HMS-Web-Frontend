@@ -47,4 +47,5 @@ export default {
     'menu.station': '健康小站',
     'menu.station.manage': '小站管理',
     'menu.station.appointment': '健康预约'
+    'menu.health.medicine': '药物管理'
 }

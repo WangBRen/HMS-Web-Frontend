@@ -185,6 +185,12 @@ export const asyncRouterMap = [
             component: () => import('@/views/health/IndexPage'),
             meta: { title: 'menu.health.indexes', keepAlive: true, permission: ['health_index'] }
           }
+          // {
+          //   path: '/health/medicine',
+          //   name: 'medicine',
+          //   component: () => import('@/views/health/ChronicMedicineManage'),
+          //   meta: { title: 'menu.health.medicine', keepAlive: true }
+          // }
         ]
       },
       {
