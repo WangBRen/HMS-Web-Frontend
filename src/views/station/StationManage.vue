@@ -41,6 +41,9 @@ const columns = [
     title: '健康师'
   },
   {
+    title: '营业状态'
+  },
+  {
     title: '地址',
     dataIndex: 'address',
     width: 200
@@ -71,20 +74,18 @@ export default {
     async loadData () {
       const res = await getStations()
       if (res.status === 200) {
-        console.log(res)
         this.dataSource = res.data
       }
     },
     addStation () {
+      this.stationId = null
       this.stationVisible = true
     },
     closeAddStationModel () {
-      console.log('编辑')
       this.stationVisible = false
       this.loadData()
     },
     editStation (record) {
-      console.log(record)
       this.stationId = record.id
       getStationInfo(this.stationId).then(res => {
         this.stationInfo = res.data
