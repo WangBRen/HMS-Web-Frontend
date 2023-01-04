@@ -46,6 +46,6 @@ export default {
     'menu.chronic-management': '慢病管理',
     'menu.station': '健康小站',
     'menu.station.manage': '小站管理',
-    'menu.station.appointment': '健康预约'
+    'menu.station.appointment': '健康预约',
     'menu.health.medicine': '药物管理'
 }
