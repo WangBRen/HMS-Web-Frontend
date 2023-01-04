@@ -6,7 +6,7 @@
       :title="'编辑话术【'+speechInfo.name+'】'"
       @ok="speechHandleOk"
       @cancel="speechHandleCancel"
-      :width="700"
+      :width="1100"
     >
       <!-- 模板示例 -->
       <div class="template_example">
@@ -18,19 +18,41 @@
           <a-tag color="blue" class="">${身高}</a-tag>
           <a-tag color="blue" class="">${体重}</a-tag>
         </div>
-        <div>可用后面的代码组合自动获取用户的指标,点击标签可添加至模板中</div>
+        <!-- <div>可用后面的代码组合自动获取用户的指标,点击标签可添加至模板中</div> -->
+        <div>可用后面的代码组合自动获取用户的指标</div>
       </div>
 
       <a-card class="speech_card" v-for="item in formData" :key="item.id" :title="'等级'+item.level+'话术模板'">
-        <a-textarea
-          :id="item.id"
-          v-model="item.template.templateText"
-          placeholder="请编辑话术模板"
-          :auto-size="{ minRows: 2, maxRows: 6 }"
-        />
+        <a-tabs type="card">
+          <a-tab-pane key="1" tab="生活指导">
+            <a-textarea
+              :id="item.id+'lifeTemplate'"
+              v-model="item.lifeTemplate.templateText"
+              placeholder="请编辑生活话术模板"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+            />
+          </a-tab-pane>
+          <a-tab-pane key="2" tab="运动指导">
+            <a-textarea
+              :id="item.id+'sportTemplate'"
+              v-model="item.sportTemplate.templateText"
+              placeholder="请编辑运动话术模板"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+            />
+          </a-tab-pane>
+          <a-tab-pane key="3" tab="饮食指导">
+            <a-textarea
+              :id="item.id+'dietTemplate'"
+              v-model="item.dietTemplate.templateText"
+              placeholder="请编辑饮食话术模板"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+            />
+          </a-tab-pane>
+        </a-tabs>
         <div class="check_variable_list">
           模板可选变量:
-          <a-tag color="blue" class="" @click="addTmp(item,variable)" v-for="variable in variablesArr" :key="variable.targetId"> {{ variable.name }} </a-tag>
+          <!-- <a-tag color="blue" class="" @click="addTmp(item,variable)" v-for="variable in variablesArr" :key="variable.targetId"> {{ variable.name }} </a-tag> -->
+          <a-tag color="blue" class="" v-for="variable in variablesArr" :key="variable.targetId"> {{ variable.name }} </a-tag>
         </div>
       </a-card>
     </a-modal>
@@ -70,21 +92,43 @@ export default {
       // 校验
       // console.log('传进来的', this.formData)
       var haveArr = [] // 慢病拥有的变量
+      // console.log('慢病拥有的变量', haveArr)
       // 保存慢病可选变量
       var checkArr = this.variablesArr.map(item => {
           return item.name
       })
+      // console.log('保存慢病可选变量', checkArr)
       // 新方法
       this.formData.forEach(item => {
-        if (item.template.templateText !== '') {
-          var cutArr1 = item.template.templateText
-          // 校验规则
-          var cutArr2 = [...cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)]
-          haveArr = haveArr.concat(cutArr2)
+        // console.log('lifeTemplate', item.lifeTemplate.templateText)
+        if (item.lifeTemplate.templateText !== '' && item.lifeTemplate.templateText !== null) {
+          const cutArr1 = item.lifeTemplate.templateText
+          // // 校验规则
+          if (cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)) {
+            const cutArr2 = [...cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)]
+            haveArr = haveArr.concat(cutArr2)
+          }
+        }
+        if (item.dietTemplate.templateText !== '' && item.dietTemplate.templateText !== null) {
+          const cutArr1 = item.dietTemplate.templateText
+          // // 校验规则
+          if (cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)) {
+            const cutArr2 = [...cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)]
+            haveArr = haveArr.concat(cutArr2)
+          }
+        }
+        if (item.sportTemplate.templateText !== '' && item.sportTemplate.templateText !== null) {
+          const cutArr1 = item.sportTemplate.templateText
+          // // 校验规则
+          if (cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)) {
+            const cutArr2 = [...cutArr1.match(/\$\{\}|\$\{[\u20-\u9fa5]+\}/g)]
+            haveArr = haveArr.concat(cutArr2)
+          }
         }
       })
       // 新方法
       const resultArr = [] // 保存结果
+      // console.log('haveArr', haveArr)
       haveArr.filter(item => {
         resultArr.push(checkArr.includes(item)) // includes 判断一个数组中是否包含某一个元素，有则返回true，没有返回false
       })
@@ -104,14 +148,21 @@ export default {
         const apiData = this.formData.map((item) => {
           const temporaryData = {
             level: item.level,
-            template: {
-              templateText: item.template.templateText
+            dietTemplate: {
+              templateText: item.dietTemplate.templateText
+            },
+            lifeTemplate: {
+              templateText: item.lifeTemplate.templateText
+            },
+            sportTemplate: {
+              templateText: item.sportTemplate.templateText
             }
           }
           return temporaryData
         })
         const templates = {}
         templates.templates = apiData
+        // console.log('确定formData', apiData)
         apiEditSpeech(diseaseId, templates).then(res => {
           if (res.status === 200) {
             this.$message.info('编辑话术成功')
@@ -139,10 +190,11 @@ export default {
       })
     },
     addTmp (item, check) {
-      // console.log(item.template.templateText, check.name)
-      const tmpText = item.template.templateText
-      const test = document.getElementById(item.id)
-      item.template.templateText = tmpText.slice(0, test.selectionStart) + check.name + tmpText.slice(test.selectionEnd)
+      // console.log(item, check.name)
+      const tmpText = item.lifeTemplate.templateText
+      const test = document.getElementById(item.id + 'lifeTemplate')
+      // console.log('test', test.selectionStart)
+      item.lifeTemplate.templateText = tmpText.slice(0, test.selectionStart) + check.name + tmpText.slice(test.selectionEnd)
       // console.log('endDom', test.selectionStart, 'offset', test.selectionEnd)
     }
   },
@@ -153,19 +205,18 @@ export default {
   watch: {
     // 处理数组
     speechData () {
-      // console.log('speechData')
       this.formData = this.speechData
       // console.log('formData', this.formData)
-      this.formData.forEach(item => {
-        // console.log(item)
-        if (!item.template) {
-          const objData = {
-            templateText: '',
-            templateVariables: ''
-          }
-          item.template = objData
-        }
-      })
+      // this.formData.forEach(item => {
+      //   // console.log(item)
+      //   if (!item.template) {
+      //     const objData = {
+      //       templateText: '',
+      //       templateVariables: ''
+      //     }
+      //     item.template = objData
+      //   }
+      // })
     },
     speechInfo () {
       // console.log('info', this.speechInfo.id)

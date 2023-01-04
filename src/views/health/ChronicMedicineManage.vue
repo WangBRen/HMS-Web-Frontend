@@ -3,21 +3,24 @@
     <a-card>
       <div style="padding-bottom: 8px">
         <a-button @click="openMedModal('add')" type="primary" style="margin-right: 12px">新建治疗目标</a-button>
-        <a-button @click="openMedModal('edit')" type="primary">编辑{{ getProName() }}名称</a-button>
+        <a-button @click="openMedModal('edit')" type="primary">编辑{{ getProName() }}治疗目标名称</a-button>
         <a-button @click="openItemModal('add')" type="primary" style="float: right;">新建{{ getProName() }}药物</a-button>
       </div>
       <a-tabs v-model="checkTabKey">
-        <a-tab-pane v-for="tab in testData" :key="tab.id" :tab="tab.goal">
+        <a-tab-pane v-for="tab in medArr" :key="tab.id" :tab="tab.name">
           <a-table
             :scroll="{ y: 600 }"
             size="small"
             row-key="id"
             :columns="columns"
-            :data-source="tab.item"
+            :data-source="tab.medicines"
             :pagination="false"
           >
             <span slot="dosage" slot-scope="text, record">
               {{ record.frequency }}次/{{ record.unit }}，每次{{ text }}
+            </span>
+            <span slot="createdAt" slot-scope="text, record">
+              {{ record.createdAt | getMoment }}
             </span>
             <span slot="action" slot-scope="text, record">
               <a @click="openItemModal('edit', record)">编辑</a>|
@@ -31,7 +34,7 @@
     <a-modal
       :visible="MedVisible"
       v-if="MedVisible"
-      :title="'新建药物'"
+      :title="MedData.index === 'edit' ? '编辑治疗目标' : '新建治疗目标'"
       @ok="handAddOk"
       @cancel="handleAddCancel"
       :width="700"
@@ -58,8 +61,8 @@
 </template>
 <script>
 import addMedicine from './components/ChronicMedicineAdd.vue'
-import { getMedicine } from '@/api/medicine'
-
+import { getMedicine as apiGetMedicine, editMedicineGoal as apiEditMedicineGoal, addMedicine as apiAddMedicine } from '@/api/medicine'
+import moment from 'moment'
 const columns = [
   {
     title: '药物类别',
@@ -80,7 +83,9 @@ const columns = [
   },
   {
     title: '创建时间',
-    dataIndex: 'createdAt'
+    dataIndex: 'createdAt',
+    scopedSlots: { customRender: 'createdAt' }
+
   },
   {
     title: '操作',
@@ -93,6 +98,15 @@ export default {
     addMedicine
   },
   name: 'APP',
+  filters: {
+    getMoment: function (value) {
+      if (value === null) {
+        return ''
+      } else {
+        return moment(value).format('YYYY-MM-DD HH:mm')
+      }
+    }
+  },
   data () {
     return {
       mode: '',
@@ -157,14 +171,17 @@ export default {
             }
           ]
         }
-      ]
+      ],
+      medArr: []
     }
   },
   methods: {
     getMedinine () {
-      getMedicine().then(res => {
+      apiGetMedicine().then(res => {
         if (res.status === 200) {
-          console.log('获取成功', res.data)
+          this.medArr = res.data
+          console.log('获取成功', this.medArr)
+          this.checkTabKey = this.medArr[0].id
         } else {
           console.log('获取失败')
         }
@@ -172,10 +189,10 @@ export default {
     },
     getProName () {
       // return this.checkTabKey
-      const project = (this.testData || []).find(tab => tab.id === this.checkTabKey)
+      const project = (this.medArr || []).find(tab => tab.id === this.checkTabKey)
       // console.log(this.checkTabKey, 'project', this.testData)
       if (project) {
-        return project.goal
+        return project.name
       } else {
         return ''
       }
@@ -190,8 +207,6 @@ export default {
           break
         case 'edit':
           this.MedData.name = this.getProName()
-          // const apiName = '接口'
-          // this.MedData.name = '' + apiName
           this.MedData.index = 'edit'
           this.MedVisible = true
           break
@@ -216,11 +231,46 @@ export default {
       this.addVisible = false
     },
     handAddOk () {
-      if (this.MedData.name) {
-        console.log('确定', this.MedData.name)
-      } else {
-        this.$message.error('治疗目标不能为空')
-        console.log('错误', this.MedData.name)
+      switch (this.MedData.index) {
+        case 'edit':
+          if (this.MedData.name) {
+            console.log(this.getProName(), '确定', this.MedData.name)
+            const apiData = { goal: this.MedData.name }
+            apiEditMedicineGoal(this.getProName(), apiData).then(res => {
+              if (res.status === 200) {
+                console.log('成功', res)
+                this.$message.info('编辑治疗目标成功')
+                this.MedVisible = false
+                this.getMedinine()
+              } else {
+                this.$message.error('编辑失败', res.message)
+              }
+            })
+            break
+          } else {
+            this.$message.error('治疗目标不能为空')
+            break
+          }
+        case 'add' :
+          if (this.MedData.name) {
+            console.log(this.getProName(), '确定', this.MedData.name)
+            apiAddMedicine(this.MedData.name).then(res => {
+              if (res.status === 201) {
+                console.log('成功', res)
+                this.$message.info('新建治疗目标成功')
+                this.MedVisible = false
+                this.getMedinine()
+              } else {
+                this.$message.error('新建失败', res.message)
+                // console.log(res)
+              }
+            })
+            break
+          } else {
+            this.$message.error('治疗目标不能为空')
+            console.log('错误', this.MedData.name)
+            break
+          }
       }
     },
     handleAddCancel () {
@@ -231,7 +281,6 @@ export default {
   created () {
   },
   mounted () {
-    this.checkTabKey = this.testData[0].id
     this.getMedinine()
   },
   watch: {
