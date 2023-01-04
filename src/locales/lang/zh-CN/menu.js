@@ -41,5 +41,11 @@ export default {
     'menu.user-management': '用户管理',
     'menu.health': '健康资料管理',
     'menu.health.indexes': '指标管理',
-    'menu.health.chronic': '病症管理'
+    'menu.health.chronic': '病症管理',
+    'menu.daily.management': '日常管理',
+    'menu.chronic-management': '慢病管理',
+    'menu.station': '健康小站',
+    'menu.station.manage': '小站管理',
+    'menu.station.appointment': '健康预约',
+    'menu.health.medicine': '药物管理'
 }
