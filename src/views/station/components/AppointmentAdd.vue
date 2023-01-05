@@ -1,0 +1,168 @@
+<template>
+  <a-modal
+    :title="title"
+    :visible="visible"
+    @ok="handleOk"
+    @cancel="handleCancel"
+    :width="800"
+  >
+    <a-form-model :model="form" :label-col="labelCol" :wrapper-col="wrapperCol" ref="ruleForm" :rules="rules">
+      <a-form-model-item label="预约用户" prop="name">
+        <a-input v-model="form.name" placeholder="请输入用户姓名"/>
+      </a-form-model-item>
+      <!-- <a-form-model-item label="用户电话" prop="phone">
+        <a-input v-model="form.phone" placeholder="请输入用户电话"/>
+      </a-form-model-item> -->
+      <a-form-model-item label="预约日期">
+        <a-date-picker
+          v-model="form.date1"
+          show-time
+          type="date"
+          placeholder="请选择预约日期"
+          style="width: 100%;"
+        />
+      </a-form-model-item>
+      <a-form-model-item label="预约项目" prop="stationType">
+        <a-radio-group v-model="form.stationType" button-style="solid" @change="changeProject">
+          <a-radio-button value="STATION">小站预约</a-radio-button>
+          <a-radio-button value="EXAMINATION">体检预约</a-radio-button>
+        </a-radio-group>
+      </a-form-model-item>
+      <a-form-model-item label="预约地点" prop="address">
+        <a-select v-model="form.address" placeholder="请选择小站" @change="changeStation">
+          <a-select-option v-for="item in filterStations" :key="item.index" :value="item.id">
+            {{ item.name }}
+          </a-select-option>
+        </a-select>
+      </a-form-model-item>
+      <a-form-model-item label="预约备注">
+        <a-input v-model="form.remark" type="textarea" />
+      </a-form-model-item>
+    </a-form-model>
+  </a-modal>
+</template>
+
+<script>
+import { getStations, addAppointment, putAppointment } from '@/api/station'
+import { getChronic } from '@/api/customer'
+
+export default {
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    bookingId: {
+      type: Number,
+      default: null
+    },
+    appointmentInfo: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
+    successAppointment: {
+      type: Function,
+      default: () => {
+        return null
+      }
+    }
+  },
+  data () {
+    return {
+      labelCol: { span: 6 },
+      wrapperCol: { span: 14 },
+      form: {
+        name: '',
+        // phone: '',
+        date1: '',
+        stationType: '',
+        address: '',
+        remark: ''
+      },
+      stations: [],
+      filterStations: [],
+      rules: {
+        name: [{ required: true, message: '请输入用户姓名', trigger: 'blur' }],
+        // phone: [{ required: true, message: '请输入用户电话', trigger: 'blur' }],
+        address: [{ required: true, message: '请选择预约地点', trigger: 'change' }],
+        stationType: [{ required: true, message: '请选择预约项目', trigger: 'change' }]
+      },
+      title: '新增预约'
+    }
+  },
+  mounted () {
+    this.loadData()
+    if (this.bookingId) {
+      console.log('77777777', this.appointmentInfo)
+      this.title = '编辑预约信息'
+      this.form.name = this.appointmentInfo.customer.nickname
+      this.form.address = this.appointmentInfo.healthStation.name
+      this.form.date1 = this.appointmentInfo.bookingDate
+      this.form.stationType = this.appointmentInfo.type
+      this.form.remark = this.appointmentInfo.remark
+    }
+  },
+  methods: {
+    async loadData () {
+      const res = await getStations()
+      if (res.status === 200) {
+        this.stations = res.data
+      }
+      const pages = {
+        page: 1,
+        size: 100
+      }
+      const resp = await getChronic(pages)
+      console.log(resp)
+    },
+    handleOk () {
+      this.$refs.ruleForm.validate(valid => {
+        if (valid) {
+          const payload = {}
+          payload.customerId = 6
+          payload.bookingTime = this.form.date1
+          payload.remark = this.form.remark
+          payload.type = this.form.stationType
+          payload.status = 'UNEXECUTED'
+          console.log('form', this.form)
+          if (this.bookingId) {
+            putAppointment(this.stationId, this.bookingId).then(res => {
+              console.log(res)
+            })
+          } else {
+            addAppointment(this.stationId, payload).then(res => {
+              if (res.status === 200) {
+                this.$message.success('新增预约成功')
+                this.$emit('successAppointment')
+              }
+            })
+          }
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    handleCancel () {
+      this.$emit('successAppointment')
+    },
+    changeProject (e) {
+      console.log(e)
+      this.filterStations = this.stations.filter(item => {
+        console.log(item)
+        if (item.type === e.target.value) { return true }
+      })
+    },
+    changeStation (e) {
+      console.log(e)
+      this.stationId = e
+    }
+  }
+}
+</script>
+
+<style>
+
+</style>
