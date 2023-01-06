@@ -10,7 +10,7 @@
       :maskClosable="false"
     >
       <div>
-        <a-form-model :label-col="labelCol" :wrapper-col="wrapperCol" :rules="rules">
+        <a-form-model :model="medicineData" :label-col="labelCol" :wrapper-col="wrapperCol" :rules="rules" ref="ruleForm">
           <a-row>
             <a-col :span="12">
               <a-form-model-item label="药物名" prop="name">
@@ -25,7 +25,7 @@
           </a-row>
           <a-row>
             <a-col :span="12">
-              <a-form-model-item label="使用剂量">
+              <a-form-model-item label="使用剂量" prop="dosage">
                 <a-row>
                   <a-col :span="8">
                     <a-input addonAfter="次" v-model="medicineData.frequency"></a-input>
@@ -74,6 +74,7 @@
   </div>
 </template>
 <script>
+import { addMedicineItem as apiAddMedicineItem, editMedicineItem as apiEditMedicineItem } from '@/api/medicine'
 export default {
   props: {
     addVisible: {
@@ -84,6 +85,10 @@ export default {
       type: String,
       default: ' '
     },
+    goalName: {
+      type: String,
+      default: ''
+    },
     medicineData: {
       type: Object,
       default: function () {
@@ -93,6 +98,14 @@ export default {
   },
   name: 'APP',
   data () {
+    var checkDosage = (rule, value, callback) => {
+      // console.log('medicineData', this.medicineData)
+      if (this.medicineData.unit && this.medicineData.frequency) {
+        callback()
+      } else {
+        callback(new Error('请输入剂量'))
+      }
+    }
     return {
       labelCol: { span: 6 },
       wrapperCol: { span: 18 },
@@ -102,22 +115,79 @@ export default {
         ],
         type: [
           { required: true, message: '请输入药物名', trigger: 'blur' }
+        ],
+        dosage: [
+          { required: true, message: '请输入剂量', trigger: 'blur' },
+          { validator: checkDosage, trigger: 'blur' }
         ]
       }
     }
   },
   methods: {
     handleOk () {
-      console.log('mode', this.mode)
-      console.log('确定', this.medicineData)
+      // console.log('mode', this.mode)
+      // console.log('goalname', this.goalName)
+      // console.log('确定', this.medicineData.id)
       if (this.mode === 'add') {
-
+        this.$refs.ruleForm.validate(valid => {
+          if (valid) {
+            const apiData = {
+              name: this.medicineData.name,
+              type: this.medicineData.type,
+              unit: this.medicineData.unit,
+              usage: this.medicineData.usage || '',
+              dosage: this.medicineData.dosage,
+              frequency: this.medicineData.frequency || '',
+              sideEffect: this.medicineData.sideEffect || '',
+              taboo: this.medicineData.taboo || '',
+              attention: this.medicineData.attention || ''
+            }
+            apiAddMedicineItem(this.goalName, apiData).then(res => {
+              if (res.status === 201) {
+                // console.log('成功', res)
+                this.$emit('closeAddModal')
+                this.$parent.getMedinine()
+              } else {
+                this.$message.error('失败，' + res.message)
+              }
+            })
+            // console.log(this.goalName, '验证通过', apiData)
+          } else {
+            // console.log('验证未通过')
+          }
+        })
       } else if (this.mode === 'edit') {
-
+        this.$refs.ruleForm.validate(valid => {
+          if (valid) {
+            const apiData = {
+              name: this.medicineData.name,
+              type: this.medicineData.type,
+              unit: this.medicineData.unit,
+              usage: this.medicineData.usage || '',
+              dosage: this.medicineData.dosage,
+              frequency: this.medicineData.frequency || '',
+              sideEffect: this.medicineData.sideEffect || '',
+              taboo: this.medicineData.taboo || '',
+              attention: this.medicineData.attention || ''
+            }
+            apiEditMedicineItem(this.goalName, this.medicineData.id, apiData).then(res => {
+              if (res.status === 200) {
+                // console.log('成功', res)
+                this.$emit('closeAddModal')
+                this.$parent.getMedinine()
+              } else {
+                this.$message.error('失败，' + res.message)
+              }
+            })
+            // console.log('验证通过', apiData)
+          } else {
+            // console.log('验证未通过')
+          }
+        })
       }
     },
     handleCancel () {
-      console.log('取消')
+      // console.log('取消')
       this.$emit('closeAddModal')
     }
   },

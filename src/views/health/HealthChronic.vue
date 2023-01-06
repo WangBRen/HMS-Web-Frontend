@@ -504,19 +504,10 @@ export default {
       },
       openMedicineModal (data) {
         this.medicineInfo = data
-        this.medicineData = [
-          {
-            name: '测试药物名',
-            target: '治疗测试', // 治疗目标
-            category: '双胍类', // 药物类别
-            dose: '100mg', // 剂量
-            frequency: '1', // 次数
-            company: '日', // 单位
-            reaction: '呕吐头晕' // 不良反应
-          }
-        ]
+        this.medicineData = data.medicines
         this.medicineVisible = true
-        console.log('medicineData', this.medicineData)
+        // console.log('medicineData', this.medicineData)
+        // console.log('medicineInfo', data)
       },
       closeMedicineModal () {
         this.medicineVisible = false
