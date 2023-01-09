@@ -12,9 +12,9 @@
         </span>
         <span slot="status" slot-scope="text">
           <a v-if="text.status === 'UNEXECUTED'" @click="changeStatus(text)"><a-icon type="question-circle" /> 未处理</a>
-          <span v-if="text.status === 'EXECUTED'"><a-icon type="check-circle" /> 已签到</span>
+          <span style="color: #1890FF;" v-if="text.status === 'EXECUTED'"><a-icon type="check-circle" /> 已签到</span>
           <span v-if="text.status === 'CANCELED'"><a-icon type="stop" /> 已取消</span>
-          <span style="color:red" v-if="text.status === 'DELAYED'"><a-icon type="warning" /> 推迟</span>
+          <a style="color:red" v-if="text.status === 'DELAYED'" @click="changeStatus(text)"><a-icon type="warning" /> 推迟</a>
         </span>
         <span slot="operation" slot-scope="text, record">
           <a @click="editAppointment(record)"><a-icon type="edit" /> 编辑</a>
@@ -29,11 +29,14 @@
       @cancel="handleCancel"
     >
       <div class="radios">
-        <a-radio-group v-model="statusChange">
+        <a-radio-group v-model="statusChange" @change="onChangeStatus">
           <a-radio value="EXECUTED">预约签到</a-radio>
           <a-radio value="DELAYED">预约推迟</a-radio>
           <a-radio value="CANCELED">取消预约</a-radio>
         </a-radio-group>
+        <div style="margin: 15px 42px;" v-show="showTime" >
+          预约时间：<a-date-picker show-time v-model="appointmentTime" placeholder="请选择时间" />
+        </div>
       </div>
     </a-modal>
     <AppointmentAdd
@@ -49,7 +52,7 @@
 <script>
 import moment from 'moment'
 import AppointmentAdd from './components/AppointmentAdd.vue'
-import { getAppointments, signInAppointment } from '@/api/station'
+import { getAppointments, putAppointment } from '@/api/station'
 const columns = [
   {
     title: '预约用户',
@@ -102,7 +105,10 @@ export default {
       visible: false,
       bookingId: '',
       stationId: 4,
-      appointmentInfo: {}
+      recordData: {},
+      appointmentInfo: {},
+      showTime: false,
+      appointmentTime: null
     }
   },
   mounted () {
@@ -129,25 +135,50 @@ export default {
       this.bookingId = record.id
     },
     changeStatus (e) {
+      this.recordData = e
       this.statusChange = ''
       this.bookingId = e.id
       this.visible = true
+      this.showTime = false
+      this.appointmentTime = null
+    },
+    onChangeStatus (e) {
+      if (e.target.value === 'DELAYED') {
+        this.showTime = true
+      } else {
+        this.showTime = false
+      }
     },
     handleCancel () {
       this.visible = false
     },
     handleOk () {
       if (this.statusChange !== '') {
-        signInAppointment(this.stationId, this.bookingId, this.statusChange).then(res => {
+        if (this.statusChange === 'DELAYED' && this.appointmentTime === null) {
+          this.$message.warning('请选择预约时间')
+          return
+        }
+        const payload = {}
+        payload.customerId = this.recordData.customer.id
+        payload.bookingTime = this.appointmentTime || this.recordData.bookingDate
+        payload.remark = this.recordData.remark
+        payload.type = this.recordData.type
+        payload.status = this.statusChange
+        putAppointment(this.stationId, this.bookingId, payload).then(res => {
           if (res.status === 200) {
             this.visible = false
             if (this.statusChange === 'EXECUTED') {
               this.$message.success('签到成功')
             } else if (this.statusChange === 'DELAYED') {
               this.$message.success('该预约已推迟')
+            } else if (this.statusChange === 'CANCELED') {
+              this.$message.success('已取消')
             }
+            this.loadData()
           }
         })
+        // signInAppointment(this.stationId, this.bookingId, this.statusChange).then(res => {
+        // })
       }
     }
   }

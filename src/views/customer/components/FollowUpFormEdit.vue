@@ -47,11 +47,26 @@
         </span>
       </div>
     </a-card>
+    <!-- 检查项目选择开始 -->
+    <a-card :loading="loading" class="card">
+      <template #title>
+        <span>检查项目选择</span>
+        <a-button @click="openObjectModal" type="dashed" style="float: right">
+          <a-icon type="plus" /> 选择检查项目
+        </a-button>
+      </template>
+      <div v-if="payload.projects">
+        <span v-for="item in payload.projects" :key="item.id">
+          <!-- <span v-if="diseaseId"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span> -->
+          <span><a-tag color="orange">{{ item.name }}</a-tag></span>
+        </span>
+      </div>
+    </a-card>
     <!-- 指标选择开始 -->
     <a-card :loading="loading" class="card" :body-style="cardBodyStyle">
       <template #title>
         <span>指标选择</span>
-        <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">检查项目:
+        <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">必查项目:
           <a-tooltip>
             <template slot="title">
               <span v-for="project in projects" :key="project.id">
@@ -116,9 +131,23 @@
       <a-row>
         <a-col :span="24" >
           <a-checkbox-group v-model="defaultChecked">
-            <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
+            <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="chronicCheckbox">
               <span v-if="diseaseId">{{ item.chronicDisease.name }}</span>
               <span v-else>{{ item.name }}</span>
+            </a-checkbox>
+          </a-checkbox-group>
+        </a-col>
+      </a-row>
+    </a-modal>
+    <!-- 选择检查项目弹框 -->
+    <a-modal v-model="modalProject.visible" title="选择需要进行检查的项目" @ok="handleProjectOK" width="800px">
+      <a-row>
+        <a-col :span="24" >
+          <a-checkbox-group v-model="defaultProject">
+            <a-checkbox :value="item.id" v-for="item in modalProject.projects" :key="item.id" class="projectCheckbox">
+              <span>
+                {{ item.name | ellipsis }}
+              </span>
             </a-checkbox>
           </a-checkbox-group>
         </a-col>
@@ -249,7 +278,8 @@ export default {
         myToken: '',
         hints: '',
         diseases: [],
-        items: []
+        items: [],
+        projects: []
       },
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
@@ -257,6 +287,10 @@ export default {
       modalSelectChronic: {
         visible: false,
         diseases: [] // used for: save select chronic diseases
+      },
+      modalProject: {
+        visible: false,
+        projects: []
       },
       defineOptions: [
         {
@@ -274,8 +308,9 @@ export default {
       formId: null,
       userAge: null,
       defaultChecked: [],
+      defaultProject: [],
       totalIndexOfThisPeople: [],
-      projects: []
+      projects: [] // 指标相关项目
     }
   },
   filters: {
@@ -286,6 +321,12 @@ export default {
         case 'options': return '选项'
         case 'upload': return '文件'
       }
+    },
+    ellipsis (value) {
+      if (value.length > 10) {
+        return value.slice(0, 12) + '...'
+      }
+      return value
     }
   },
   mounted () {
@@ -371,6 +412,12 @@ export default {
       this.payload.items = items
       this.getHealthIndex()
     },
+    handleProjectOK () {
+      this.payload.projects = this.modalProject.projects.filter(item => {
+        return this.defaultProject.includes(item.id)
+      })
+      this.modalProject.visible = false
+    },
     // 获取指标项目名
     async getHealthIndex () {
       const res = await getHealthIndex()
@@ -382,6 +429,11 @@ export default {
             }
           }
         })
+          this.defaultProject = this.projects.map(project => {
+            return project.id
+          })
+          this.payload.projects = this.projects
+        this.modalProject.projects = res.data // 总的检查项目
       }
     },
     handleAddIndex () {
@@ -400,6 +452,9 @@ export default {
     },
     openChronicDiseaseModal () {
         this.modalSelectChronic.visible = true
+    },
+    openObjectModal () {
+        this.modalProject.visible = true
     },
     // 创建随访单
     doRequest () {
@@ -478,11 +533,16 @@ export default {
 </script>
 
 <style>
-.checkbox {
+.chronicCheckbox {
   display: inline-block;
   width: 266px;
   height: 30px;
   margin-left: 8px;
+}
+.projectCheckbox{
+  margin-left: 8px;
+  height: 30px;
+  width: 242px;
 }
 .modal-container {
   /* padding: 0 24px; */

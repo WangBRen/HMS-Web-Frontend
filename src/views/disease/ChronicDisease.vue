@@ -123,7 +123,8 @@ const columns = [
     scopedSlots: { customRender: 'state' }
   },
   {
-    title: '复查时间'
+    title: '复查时间',
+    customRender: (text, record, index) => record ? moment(record.diseasesDetail.lastReceivedAt).format('YYYY-MM-DD HH:mm') : ''
   },
   {
     title: '随访倒计时'

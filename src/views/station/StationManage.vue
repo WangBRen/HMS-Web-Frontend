@@ -17,7 +17,7 @@
         <span slot="stationStatus" slot-scope="text">
           <span style="color: #1890FF;" v-if="text.status === 'OPEN'"><a-icon type="smile" /> 营业中</span>
           <span style="color: orange;" v-if="text.status === 'CLOSED'"><a-icon type="coffee" /> 休息中</span>
-          <span v-if="text.status === 'DISABLED'">暂停</span>
+          <span v-if="text.status === 'DISABLED'"><a-icon type="stop" /> 暂停</span>
         </span>
         <span slot="type" slot-scope="text">
           <a-tag color="blue" v-if="text.type === 'STATION'">健康小站</a-tag>
