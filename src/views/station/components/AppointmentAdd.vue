@@ -8,7 +8,11 @@
   >
     <a-form-model :model="form" :label-col="labelCol" :wrapper-col="wrapperCol" ref="ruleForm" :rules="rules">
       <a-form-model-item label="预约用户" prop="name">
-        <a-input v-model="form.name" placeholder="请输入用户姓名"/>
+        <a-select v-model="form.name" placeholder="请选择用户" @change="changeName">
+          <a-select-option v-for="item in customers" :key="item.id" :value="item.id">
+            {{ item.nickname }}
+          </a-select-option>
+        </a-select>
       </a-form-model-item>
       <!-- <a-form-model-item label="用户电话" prop="phone">
         <a-input v-model="form.phone" placeholder="请输入用户电话"/>
@@ -82,6 +86,7 @@ export default {
         remark: ''
       },
       stations: [],
+      customers: [],
       filterStations: [],
       rules: {
         name: [{ required: true, message: '请输入用户姓名', trigger: 'blur' }],
@@ -89,13 +94,14 @@ export default {
         address: [{ required: true, message: '请选择预约地点', trigger: 'change' }],
         stationType: [{ required: true, message: '请选择预约项目', trigger: 'change' }]
       },
-      title: '新增预约'
+      title: '新增预约',
+      stationId: 4,
+      customerId: null
     }
   },
   mounted () {
     this.loadData()
     if (this.bookingId) {
-      console.log('77777777', this.appointmentInfo)
       this.title = '编辑预约信息'
       this.form.name = this.appointmentInfo.customer.nickname
       this.form.address = this.appointmentInfo.healthStation.name
@@ -115,21 +121,21 @@ export default {
         size: 100
       }
       const resp = await getChronic(pages)
-      console.log(resp)
+      if (resp.status === 200) {
+        this.customers = resp.data.content
+      }
     },
     handleOk () {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
           const payload = {}
-          payload.customerId = 6
+          payload.customerId = this.customerId
           payload.bookingTime = this.form.date1
           payload.remark = this.form.remark
           payload.type = this.form.stationType
           payload.status = 'UNEXECUTED'
-          console.log('form', this.form)
           if (this.bookingId) {
-            putAppointment(this.stationId, this.bookingId).then(res => {
-              console.log(res)
+            putAppointment(this.stationId, this.bookingId, payload).then(res => {
             })
           } else {
             addAppointment(this.stationId, payload).then(res => {
@@ -149,15 +155,15 @@ export default {
       this.$emit('successAppointment')
     },
     changeProject (e) {
-      console.log(e)
       this.filterStations = this.stations.filter(item => {
-        console.log(item)
         if (item.type === e.target.value) { return true }
       })
     },
     changeStation (e) {
-      console.log(e)
       this.stationId = e
+    },
+    changeName (e) {
+      this.customerId = e
     }
   }
 }
