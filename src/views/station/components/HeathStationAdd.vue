@@ -210,7 +210,7 @@ export default {
       if (res.status === 200) {
         this.doctors = res.data.content
         this.managers = this.doctors.filter(item => {
-          return item.roleName === 'jk'
+          return item.roleName === 'Manager'
         })
       }
     }

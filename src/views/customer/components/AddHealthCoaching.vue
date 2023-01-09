@@ -54,10 +54,22 @@
       </div> -->
       <div style="margin: 24px 0"></div>
       <a-textarea
-        v-model="templateData"
+        v-model="lifeTemplate"
         :loading="loading"
-        placeholder="请输入健康指导..."
-        :auto-size="{ minRows: 10, maxRows: 20 }"
+        placeholder="请输入生活指导..."
+        :auto-size="{ minRows: 6, maxRows: 20 }"
+      />
+      <a-textarea
+        v-model="sportTemplate"
+        :loading="loading"
+        placeholder="请输入运动指导..."
+        :auto-size="{ minRows: 6, maxRows: 20 }"
+      />
+      <a-textarea
+        v-model="dietTemplate"
+        :loading="loading"
+        placeholder="请输入饮食指导..."
+        :auto-size="{ minRows: 6, maxRows: 20 }"
       />
     </a-modal>
     <HealthCoachingSend
@@ -114,7 +126,9 @@ export default {
       loading: false,
       userAge: null,
       disabled: false,
-      templateData: '',
+      lifeTemplate: '',
+      sportTemplate: '',
+      dietTemplate: '',
       chronicName: '',
       chronicSelectData: [],
       payload: {
@@ -129,10 +143,8 @@ export default {
   },
   watch: {
     coachingVisible (newVal, oldVal) {
-      console.log(newVal, oldVal)
       if (newVal !== oldVal && newVal) {
         getToken().then(res => {
-          console.log('token', res)
           if (res.status === 200) {
               this.payload.myToken = res.data
           }
@@ -154,6 +166,7 @@ export default {
       // 请求话术模板
       const resp = await apiGuidanceTemplates(this.customerId, this.chronicId)
       if (resp.status === 200) {
+        console.log('data', resp)
         this.templateData = resp.data
       } else {
         this.disabled = true
@@ -175,7 +188,6 @@ export default {
       // this.selectedData = ''
       this.templateData = ''
       if (this.diseaseId > 0) {
-        console.log(11111111111)
         this.chronicId = this.diseaseId
         this.doRequest()
       }
