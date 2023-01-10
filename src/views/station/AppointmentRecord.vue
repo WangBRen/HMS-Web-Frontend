@@ -4,7 +4,7 @@
       <a-button type="primary" @click="addAppointment" style="margin-bottom:10px;">
         新增预约
       </a-button>
-      <span style="margin-left:20px;">今日预约统计：上午 <span style="font-size:20px;">2</span> 人，下午 <span style="font-size:20px;">5</span> 人</span>
+      <span style="margin-left:20px;">今日预约统计：上午 <span style="font-size:20px;">{{ morningNum }}</span> 人，下午 <span style="font-size:20px;">{{ afternoonNum }}</span> 人</span>
       <a-table :columns="columns" :data-source="dataSource">
         <span slot="type" slot-scope="text">
           <a-tag v-if="text === 'EXAMINATION'" color="green">体检预约</a-tag>
@@ -108,7 +108,9 @@ export default {
       recordData: {},
       appointmentInfo: {},
       showTime: false,
-      appointmentTime: null
+      appointmentTime: null,
+      morningNum: 0,
+      afternoonNum: 0
     }
   },
   mounted () {
@@ -119,6 +121,19 @@ export default {
       const res = await getAppointments(this.stationId)
       if (res.status === 200) {
         this.dataSource = res.data
+        const myDate = moment(new Date()).format('YYYY-MM-DD')
+        this.morningNum = 0
+        this.afternoonNum = 0
+        res.data.forEach(item => {
+          const hour = moment(item.bookingDate).format('HH')
+          const appoint = moment(item.bookingDate).format('YYYY-MM-DD')
+          // console.log('123', hour, appoint, myDate)
+          if (hour < 12 && appoint === myDate) {
+            this.morningNum++
+          } else if (appoint === myDate) {
+            this.afternoonNum++
+          }
+        })
       }
     },
     addAppointment () {
