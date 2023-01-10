@@ -3,60 +3,86 @@
     <a-modal
       :visible="medicineVisible"
       v-if="medicineVisible"
-      :title="'慢病药物'"
+      :title="'编辑药物【'+medicineInfo.name+'】'"
       @ok="medicineHandleOk"
       @cancel="medicineHandleCancel"
       :width="1300"
       :maskClosable="false"
+      :ok-button-props="{ style: {display: 'none'} }"
     >
       <div >
-        <div class="medicine_body" v-for="(item, index) in medicineDatas" :key="index">
-          <a-row style="margin: 10px;">
-            <a-col :span="4">
-              <a-input v-model="item.target" addonBefore="治疗目标"></a-input>
-            </a-col>
-            <a-col :span="4">
-              <a-input v-model="item.category" addonBefore="类别"></a-input>
-            </a-col>
-            <a-col :span="4">
-              <a-input v-model="item.name" addonBefore="药名"></a-input>
-            </a-col>
-            <a-col :span="7" :push="2">
-              <a-input v-model="item.frequency" addonBefore="使用剂量:" addonAfter="次" style="width: 45%;"></a-input>
-              <span style="width: 5%; text-align: center; line-height: 2">/</span>
-              <a-select v-model="item.company" style="width: 20%;">
-                <a-select-option value="年">年</a-select-option>
-                <a-select-option value="月">月</a-select-option>
-                <a-select-option value="周">周</a-select-option>
-                <a-select-option value="日">日</a-select-option>
-              </a-select>
-            </a-col>
-            <a-col :span="4">
-              <a-input v-model="item.dose" addonBefore="每次"></a-input>
-            </a-col>
-          </a-row>
-          <a-row style="margin: 10px;">
-            <a-col :span="2" style="text-align: right;">
-              <span>不良反应：</span>
-            </a-col>
-            <a-col :span="16">
-              <a-textarea v-model="item.reaction" :auto-size="{ minRows: 3, maxRows: 5 }"></a-textarea>
-            </a-col>
-            <a-col :span="4" style="text-align: center;margin: 0 auto;">
-              <a-icon class="targetIcon" @click="delMedicine(index)" type="close-circle" />
-            </a-col>
-          </a-row>
-        </div>
-        <a-button @click="addMedicine">
-          <a-icon type="plus"/>添加药物
-        </a-button>
-        <a-button @click="test">测试</a-button>
+        <a-card>
+          <div style="padding-bottom: 8px">
+            <a-select style="width: 200px" placeholder="请选择药物" v-model="checkItemid" show-search :filterOption="filterOption">
+              <a-select-option v-for="item in medAllData" :key="item.id">
+                {{ item.name }}
+              </a-select-option>
+            </a-select>
+            <a-button type="primary" @click="addMed" style="margin-left: 12px">添加药物</a-button>
+          </div>
+          <a-table
+            :scroll="{ y: 600 }"
+            size="small"
+            :columns="columns"
+            :rowKey="(record,index)=>{return index}"
+            :data-source="medicineDatas"
+            :pagination="false"
+          >
+            <span slot="dosage" slot-scope="text, record">
+              {{ record.medicine.frequency }}次/{{ record.medicine.unit }}，每次{{ text }}
+            </span>
+            <span slot="createdAt" slot-scope="text, record">
+              {{ record.createdAt | getMoment }}
+            </span>
+            <span slot="action" slot-scope="text, record">
+              <a-popconfirm
+                title="确定删除此药物吗?"
+                @confirm="delOk(record)"
+                @cancel="delCel"
+              >
+                <a>删除</a>
+              </a-popconfirm>
+            </span>
+          </a-table>
+        </a-card>
       </div>
     </a-modal>
   </div>
 </template>
 <script>
+import moment from 'moment'
+import { getMedicine as apiGetMedicine, addMedicineToChronic as apiAddMedicineToChronic, delMedicineToChronic as apiDelMedicineToChronic } from '@/api/medicine'
+import { getOneChronic as apiGetOneChronic } from '@/api/chronic'
+const columns = [
+  {
+    title: '药物类别',
+    dataIndex: 'medicine.type'
+  },
+  {
+    title: '药物名',
+    dataIndex: 'medicine.name'
+  },
+  {
+    title: '使用剂量',
+    dataIndex: 'medicine.dosage',
+    scopedSlots: { customRender: 'dosage' }
+  },
+  {
+    title: '不良反应',
+    dataIndex: 'medicine.sideEffect'
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'medicine.createdAt',
+    scopedSlots: { customRender: 'createdAt' }
 
+  },
+  {
+    title: '操作',
+    key: 'action',
+    scopedSlots: { customRender: 'action' }
+  }
+]
 export default {
   props: {
     medicineVisible: {
@@ -76,14 +102,26 @@ export default {
       }
     }
   },
+  filters: {
+    getMoment: function (value) {
+      if (value === null) {
+        return ''
+      } else {
+        return moment(value).format('YYYY-MM-DD HH:mm')
+      }
+    }
+  },
   data () {
     return {
+      columns,
+      checkItemid: undefined,
+      medAllData: [],
       medicineDatas: this.medicineData
     }
   },
   methods: {
     medicineHandleOk () {
-      console.log('1', this.medicineDatas)
+      // console.log('1', this.medicineDatas)
       const medData = this.medicineDatas
       for (const item of medData) {
         // console.log(item)
@@ -95,63 +133,104 @@ export default {
             break
           }
         }
-        console.log(okIndex)
+        // console.log(okIndex)
         if (okIndex === false) {
-          console.log('结束')
+          // console.log('结束')
           break
         }
       }
       if (okIndex) {
-        console.log('调接口')
+        // console.log('调接口')
       } else {
-        console.log('提示')
+        // console.log('提示')
       }
     },
     medicineHandleCancel () {
       this.$emit('closeMedicineModal')
     },
-    addMedicine () {
-      console.log(this.medicineDatas, '111')
-      this.medicineDatas.push({
-        name: '',
-        target: '', // 治疗目标
-        category: '', // 药物类别
-        dose: '', // 剂量
-        frequency: '', // 次数
-        company: '', // 单位
-        reaction: '' // 不良反应
+    getMedinine () {
+      apiGetMedicine().then(res => {
+        if (res.status === 200) {
+          // console.log('获取成功', res.data)
+          const medAllData = []
+          for (let i = 0; i < res.data.length; i++) {
+            for (let j = 0; j < res.data[i].medicines.length; j++) {
+              medAllData.push(res.data[i].medicines[j])
+              // console.log(res.data[i].medicines[j])
+            }
+          }
+          this.medAllData = medAllData
+          // console.log('medAllData', medAllData)
+        } else {
+          this.$message.error('获取失败，' + res.message)
+          // console.log('获取失败')
+        }
       })
     },
-    delMedicine (index) {
-      this.medicineDatas = this.medicineDatas.filter((item, ind) => ind !== index)
+    // 将输入的内容与显示的内容进行匹配
+    filterOption (value, option) {
+      return option.componentOptions.children[0].text.indexOf(value) >= 0
     },
-    test () {
-      console.log('/..', this.medicineDatas)
+    addMed () {
+      const medicineId = { medicineId: this.checkItemid }
+      apiAddMedicineToChronic(this.medicineInfo.id, medicineId).then(res => {
+        if (res.status === 201) {
+          this.$message.info('添加药物成功')
+          this.$parent.getChronic()
+          apiGetOneChronic(this.medicineInfo.id).then(res => {
+            if (res.status === 200) {
+              this.medicineDatas = res.data.medicines
+            } else {
+              this.$message.error('获取失败，' + res.message)
+            }
+          })
+          this.checkItemid = undefined
+        } else if (res.status === 400) {
+          this.$message.error('添加失败，' + res.message)
+        }
+      })
+      // console.log(this.medicineInfo.id, '选择的', this.checkItemid)
+    },
+    delOk (data) {
+      const diseaseId = this.medicineInfo.id
+      const indexId = data.medicine.id
+      apiDelMedicineToChronic(diseaseId, indexId).then(res => {
+        // console.log(res)
+        if (res.status === 200) {
+          apiGetOneChronic(diseaseId).then(res => {
+            if (res.status === 200) {
+              this.medicineDatas = res.data.medicines
+            } else {
+              this.$message.error('获取失败，' + res.message)
+            }
+          })
+          this.$message.info('删除药物成功')
+        } else {
+          this.$message.error('删除药物失败')
+        }
+      })
+      // console.log(this.medicineInfo.id, data.medicine.id)
+    },
+    delCel () {
     }
   },
   created () {
   },
   mounted () {
+    this.getMedinine()
   },
   watch: {
     medicineData (newData, oldData) {
       this.medicineDatas = newData
-      console.log('this.medicineDatas', this.medicineDatas)
+      this.checkItemid = undefined
+      // console.log('this.medicineDatas', this.medicineDatas)
+    },
+    checkItemid (newid, oldid) {
+      // console.log(oldid, newid)
     }
   }
 }
 </script>
 <style scoped>
-.medicine_body{
-  border-style: solid;
-  border-width: 1px;
-  margin: 10px 0px;
-}
-.targetIcon{
-  width: 18px;
-  height: 18px;
-  margin-top: 10px;
-  margin-left: 12px;
-  color: #999;
-}
+
 </style>

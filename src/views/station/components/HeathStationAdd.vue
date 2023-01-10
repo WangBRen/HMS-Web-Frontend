@@ -25,11 +25,17 @@
           style="width: 100%;"
         />
       </a-form-model-item> -->
+      <a-form-model-item label="营业状态" prop="type">
+        <a-radio-group v-model="form.type" button-style="solid">
+          <a-radio-button value="STATION">健康小站</a-radio-button>
+          <a-radio-button value="EXAMINATION">体检中心</a-radio-button>
+        </a-radio-group>
+      </a-form-model-item>
       <a-form-model-item label="营业状态" prop="stationStatus">
-        <a-radio-group v-model="form.stationStatus">
-          <a-radio value="营业中">营业中</a-radio>
-          <a-radio value="休息中">休息中</a-radio>
-          <a-radio value="搬离">暂停</a-radio>
+        <a-radio-group v-model="form.stationStatus" class="stationStatus">
+          <a-radio value="OPEN">营业中</a-radio>
+          <a-radio value="CLOSED">休息中</a-radio>
+          <a-radio value="DISABLED">暂停</a-radio>
         </a-radio-group>
       </a-form-model-item>
       <a-form-model-item label="小站介绍">
@@ -37,8 +43,8 @@
       </a-form-model-item>
       <a-divider v-if="this.stationId">小站人员</a-divider>
       <a-form-model-item label="小站店长" prop="stationmaster" v-if="this.stationId">
-        <a-select v-model="form.stationmaster" placeholder="请选择小站店长">
-          <a-select-option v-for="item in managers" :key="item.index" :value="item.nickname">
+        <a-select v-model="form.stationmaster" placeholder="请选择小站店长" @change="changeManage">
+          <a-select-option v-for="item in managers" :key="item.index" :value="item.id">
             {{ item.nickname }}
           </a-select-option>
         </a-select>
@@ -47,7 +53,7 @@
         <a-checkbox-group v-model="form.doctors">
           <span v-for="item in doctors" :key="item.index">
             <span v-if="item.status === 'active'">
-              <a-checkbox :value="item" name="type" style="width:120px;">
+              <a-checkbox @change="changeDoctor" :value="item.id" style="width:120px;">
                 {{ item.nickname }}
               </a-checkbox>
             </span>
@@ -60,7 +66,7 @@
 
 <script>
 import { getUserList } from '@/api/manage'
-import { addStation, editstation, addManager, addDoctors } from '@/api/station'
+import { addStation, editstation, addManager, addDoctors, deleteDoctor } from '@/api/station'
 
 export default {
   props: {
@@ -94,10 +100,11 @@ export default {
         address: '',
         stationmaster: '',
         phone: '',
-        date1: undefined,
+        type: '',
         doctors: [],
         stationStatus: '',
-        remark: ''
+        remark: '',
+        manageChanged: false // 管理员是否改变
       },
       doctors: [],
       managers: [],
@@ -106,6 +113,7 @@ export default {
         address: [{ required: true, message: '请输入小站地址', trigger: 'blur' }],
         phone: [{ required: true, message: '请输入小站联系电话', trigger: 'blur' }],
         stationmaster: [{ required: true, message: '请选择小站管理员', trigger: 'change' }],
+        type: [{ required: true, message: '请选择小站类型', trigger: 'change' }],
         stationStatus: [{ required: true, message: '请选择营业状态', trigger: 'change' }]
       },
       title: '新增小站'
@@ -119,9 +127,13 @@ export default {
       this.form.name = this.stationInfo.name
       this.form.address = this.stationInfo.address
       this.form.phone = this.stationInfo.phone
-      this.form.doctors = this.stationInfo.doctors
+      this.form.doctors = this.stationInfo.doctors.map(item => {
+        return item.id
+      })
       this.form.stationmaster = this.stationInfo.manager.nickname
       this.form.remark = this.stationInfo.remark
+      this.form.stationStatus = this.stationInfo.status
+      this.form.type = this.stationInfo.type
     }
   },
   methods: {
@@ -134,18 +146,16 @@ export default {
           apiForm.address = form.address
           apiForm.phone = form.phone
           apiForm.remark = form.remark
+          apiForm.status = form.stationStatus
+          apiForm.type = form.type
           // apiForm.manager.nickname = form.stationmaster
-          const manager = { nickname: '' }
-          manager.nickname = form.stationmaster
-          const doctors = form.doctors.map(item => {
-            return { nickname: item }
-          })
-          addManager(this.stationId, manager).then(res => {
-            console.log('manager', res)
-          })
-          addDoctors(this.stationId, doctors).then(res => {
-            console.log('doctors', res)
-          })
+          const manager = { managerId: '' }
+          manager.managerId = form.stationmaster
+          if (this.manageChanged) {
+            addManager(this.stationId, manager).then(res => {
+              console.log('manager', res)
+            })
+          }
           this.postForm(apiForm)
         } else {
           console.log('error submit!!')
@@ -153,9 +163,31 @@ export default {
         }
       })
     },
+    changeManage () {
+      this.manageChanged = true
+    },
+    changeDoctor (e) {
+      const doctors = { doctorIds: [] }
+      // doctors.doctorIds = JSON.parse(JSON.stringify(this.form.doctors))
+      doctors.doctorIds.push(e.target.value)
+      if (e.target.checked) {
+        addDoctors(this.stationId, doctors).then(res => {
+          if (res.status === 200) {
+            this.$message.success('成功添加新成员')
+          }
+        })
+      } else {
+        deleteDoctor(this.stationId, e.target.value).then(res => {
+          if (res.status === 200) {
+            this.$message.warning('已移除该成员')
+          }
+        })
+      }
+    },
     // 提交表单
     async postForm (apiForm) {
       if (this.stationId) {
+        console.log('apiFormapiForm', apiForm)
         const res = await editstation(this.stationId, apiForm)
         if (res.status === 200) {
           this.$message.success('修改成功')
@@ -178,7 +210,7 @@ export default {
       if (res.status === 200) {
         this.doctors = res.data.content
         this.managers = this.doctors.filter(item => {
-          return item.roleName === 'jk'
+          return item.roleName === 'Manager'
         })
       }
     }
@@ -187,7 +219,7 @@ export default {
 </script>
 
 <style>
-.ant-radio-wrapper{
+.stationStatus .ant-radio-wrapper{
   margin: 10px 16px;
 }
 

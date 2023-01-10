@@ -24,7 +24,13 @@
             </span>
             <span slot="action" slot-scope="text, record">
               <a @click="openItemModal('edit', record)">编辑</a>|
-              <a>删除</a>
+              <a-popconfirm
+                title="确定删除此药物吗?"
+                @confirm="delOk(record)"
+                @cancel="delCel"
+              >
+                <a>删除</a>
+              </a-popconfirm>
             </span>
           </a-table>
         </a-tab-pane>
@@ -55,13 +61,14 @@
       :addVisible="addVisible"
       :medicineData="medicineData"
       :mode="mode"
+      :goalName="goalName"
       @closeAddModal="closeAddModal"
     />
   </div>
 </template>
 <script>
 import addMedicine from './components/ChronicMedicineAdd.vue'
-import { getMedicine as apiGetMedicine, editMedicineGoal as apiEditMedicineGoal, addMedicine as apiAddMedicine } from '@/api/medicine'
+import { getMedicine as apiGetMedicine, editMedicineGoal as apiEditMedicineGoal, addMedicine as apiAddMedicine, delMedicineItem as apiDelMedicineItem } from '@/api/medicine'
 import moment from 'moment'
 const columns = [
   {
@@ -110,6 +117,7 @@ export default {
   data () {
     return {
       mode: '',
+      goalName: '',
       addVisible: false,
       medicineData: null,
       checkTabKey: null,
@@ -180,10 +188,11 @@ export default {
       apiGetMedicine().then(res => {
         if (res.status === 200) {
           this.medArr = res.data
-          console.log('获取成功', this.medArr)
+          // console.log('获取成功', this.medArr)
           this.checkTabKey = this.medArr[0].id
         } else {
-          console.log('获取失败')
+          this.$message.error('获取失败' + res.message)
+          // console.log('获取失败')
         }
       })
     },
@@ -198,7 +207,7 @@ export default {
       }
     },
     openMedModal (index) {
-      console.log('弹窗')
+      // console.log('弹窗')
       switch (index) {
         case 'add':
           this.MedData.name = ''
@@ -213,16 +222,19 @@ export default {
       }
     },
     openItemModal (mode, data) {
-      console.log('mode', mode)
-      console.log('data', data)
+      // console.log('mode', mode)
+      // console.log('data', data)
+      // console.log('goalname', this.getProName())
       switch (mode) {
         case 'add':
           this.medicineData = {}
           this.mode = mode
+          this.goalName = this.getProName()
           this.addVisible = true
           break
         case 'edit':
           this.mode = mode
+          this.goalName = this.getProName()
           this.medicineData = JSON.parse(JSON.stringify(data))
           this.addVisible = true
       }
@@ -234,16 +246,16 @@ export default {
       switch (this.MedData.index) {
         case 'edit':
           if (this.MedData.name) {
-            console.log(this.getProName(), '确定', this.MedData.name)
+            // console.log(this.getProName(), '确定', this.MedData.name)
             const apiData = { goal: this.MedData.name }
             apiEditMedicineGoal(this.getProName(), apiData).then(res => {
               if (res.status === 200) {
-                console.log('成功', res)
+                // console.log('成功', res)
                 this.$message.info('编辑治疗目标成功')
                 this.MedVisible = false
                 this.getMedinine()
               } else {
-                this.$message.error('编辑失败', res.message)
+                this.$message.error(res.message)
               }
             })
             break
@@ -253,39 +265,59 @@ export default {
           }
         case 'add' :
           if (this.MedData.name) {
-            console.log(this.getProName(), '确定', this.MedData.name)
+            // console.log(this.getProName(), '确定', this.MedData.name)
             apiAddMedicine(this.MedData.name).then(res => {
               if (res.status === 201) {
-                console.log('成功', res)
+                // console.log('成功', res)
                 this.$message.info('新建治疗目标成功')
                 this.MedVisible = false
                 this.getMedinine()
               } else {
-                this.$message.error('新建失败', res.message)
+                this.$message.error('新建失败' + res.message)
                 // console.log(res)
               }
             })
             break
           } else {
             this.$message.error('治疗目标不能为空')
-            console.log('错误', this.MedData.name)
+            // console.log('错误', this.MedData.name)
             break
           }
       }
     },
     handleAddCancel () {
       this.MedVisible = false
-      console.log('取消')
+      // console.log('取消')
+    },
+    delOk (data) {
+      apiDelMedicineItem(this.getProName(), data.id).then(res => {
+        // console.log(res)
+        if (res.status <= 204) {
+          this.getMedinine()
+          this.$message.info('删除药物成功')
+        } else {
+          this.$message.error('删除失败' + res.message)
+        }
+      })
+      // console.log(this.getProName(), '111', data)
+    },
+    delCel () {
+      // console.log('取消')
     }
   },
   created () {
   },
   mounted () {
     this.getMedinine()
+    // setTimeout(() => {
+    //   if (this.medArr.length !== 0) {
+    //   this.checkTabKey = this.medArr[0].id
+    // }
+    // }, 500)
   },
   watch: {
     checkTabKey (newData, oldData) {
-      console.log(oldData, 'checkTabKey', newData)
+      // console.log(oldData, 'checkTabKey', newData)
     }
   }
 }
