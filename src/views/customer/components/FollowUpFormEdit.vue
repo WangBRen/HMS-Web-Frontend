@@ -126,6 +126,36 @@
       <a-button class="button-addline" type="dashed" @click="handleAddIndex">添加一行新数据</a-button>
     </a-card>
     <!-- 指标选择结束 -->
+    <!-- 药物选择开始 -->
+    <a-card :loading="loading" class="card">
+      <template #title>
+        <span>药物选择</span>
+      </template>
+      <div v-if="payload.diseases.length>0">
+        <!-- <span v-for="item in payload.diseases" :key="item.id">
+          <span v-for="medicine in item.medicines" :key="medicine.medicine.id"><a-tag closable>{{ medicine.medicine.name }}</a-tag></span>
+        </span> -->
+        <span v-if="medicineTags.length > 0">
+          <span v-for="medicineTag in medicineTags" :key="medicineTag"><a-tag :key="medicineTag" :closable="medicineTag.index !== 0" @close="() => handleClose(medicineTag)">{{ medicineTag }}</a-tag></span>
+        </span>
+        <a-tag v-if="addBtn" style="background: #fff; borderStyle: dashed;" @click="showSelect">
+          <a-icon type="plus" /> 添加其他药物
+        </a-tag>
+        <span v-else>
+          <a-select style="width: 120px" @change="changeCategory">
+            <a-select-option v-for="category in categoryData" :key="category.id">
+              {{ category.name }}
+            </a-select-option>
+          </a-select>
+          <a-select v-model="secondMedicine" style="width: 120px">
+            <a-select-option v-for="medicine in medicines" :key="medicine.id" :value="medicine.name">
+              {{ medicine.name }}
+            </a-select-option>
+          </a-select>
+          <a-button @click="handleMedicine">确定</a-button>
+        </span>
+      </div>
+    </a-card>
     <!-- 选择慢病弹框 -->
     <a-modal v-model="modalSelectChronic.visible" title="选择需要进行随访的慢病" @ok="handleChronicDiseaseOK" width="600px">
       <a-row>
@@ -163,6 +193,7 @@ import { getHealthIndex } from '@/api/health'
 import { age } from '@/utils/age'
 import { notification } from 'ant-design-vue'
 import { getChronic } from '@/api/chronic'
+import { getMedicine as apiGetMedicine } from '@/api/medicine'
 const columns = [
   {
     title: '是否必填',
@@ -310,7 +341,12 @@ export default {
       defaultChecked: [],
       defaultProject: [],
       totalIndexOfThisPeople: [],
-      projects: [] // 指标相关项目
+      projects: [], // 指标相关项目
+      addBtn: true,
+      categoryData: [], // 所有药物类别
+      medicines: [], // 当前类别下的药物
+      secondMedicine: '', // 选择药物的第二个下拉框
+      medicineTags: [] // 随访时新增的药物
     }
   },
   filters: {
@@ -340,7 +376,6 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     async loadData () {
-      console.log('this.diseaseId', this.diseaseId)
       if (this.diseaseId !== null) {
         const resp = await apiGetChronicManage(this.customerId)
         if (resp.status === 200) {
@@ -366,19 +401,28 @@ export default {
       } else {
         this.userAge = '/'
       }
-      // console.log('resp', resp)
-      // this.payload.hints = ''
-      // this.payload.diseases = []
-      // this.payload.items = []
-      // if (this.diseaseObj === {}) { return }
-      //   console.log('this.diseaseObj', this.diseaseObj)
-      //   this.modalSelectChronic.diseases.push(this.diseaseObj)
-      //   this.handleChronicDiseaseOK()
+      this.getAllMedicine()
     },
     handleChronicDiseaseOK () {
       // transfer:
       this.payload.diseases = this.totalChronicDiseases.filter(item => {
         return this.defaultChecked.includes(item.id)
+      })
+      this.medicineTags = []
+      this.payload.diseases.forEach(diseases => {
+        if (this.diseaseId) {
+          for (var chronicMedicine of diseases.chronicDisease.medicines) {
+            if (this.medicineTags.indexOf(chronicMedicine.medicine.name) === -1) {
+              this.medicineTags.push(chronicMedicine.medicine.name)
+            }
+          }
+        } else {
+          for (var medicine of diseases.medicines) {
+            if (this.medicineTags.indexOf(medicine.medicine.name) === -1) {
+              this.medicineTags.push(medicine.medicine.name)
+            }
+          }
+        }
       })
       this.modalSelectChronic.visible = false
       // update index table
@@ -481,7 +525,7 @@ export default {
           apiPayload.diseaseIds.push(diseas.id)
         })
       } else {
-        apiPayload = { items: [], hints: null, token: '' }
+        apiPayload = { items: [], hints: null, token: '', projects: [], medicines: [] }
       }
       if (this.payload.items.length !== 0) {
             apiPayload.hints = this.payload.hints
@@ -503,6 +547,8 @@ export default {
                 apiPayload.items.push(item)
               }
             })
+            apiPayload.projects = this.payload.projects
+            apiPayload.token = this.medicineTags
             apiPayload.token = this.myToken
       }
       this.$emit('checkSuccess', apiPayload)
@@ -527,6 +573,45 @@ export default {
     handleOnDisableClicked (record, disabled) {
       // console.log(record, disabled)
       record.disabled = disabled
+    },
+    showSelect () {
+      this.addBtn = false
+      this.secondMedicine = ''
+    },
+    getAllMedicine () {
+      apiGetMedicine().then(res => {
+        if (res.status === 200) {
+          this.categoryData = res.data
+        } else {
+          this.$message.error('获取失败' + res.message)
+        }
+      })
+    },
+    changeCategory (value) {
+      const category = this.categoryData.filter(item => {
+        if (item.id === value) {
+          return true
+        } else return false
+      })
+      this.medicines = category[0].medicines
+      this.secondMedicine = ''
+    },
+    handleMedicine () {
+      if (this.secondMedicine !== '') {
+        this.addBtn = true
+        if (this.secondMedicine && this.medicineTags.indexOf(this.secondMedicine) === -1) {
+          this.medicineTags = [...this.medicineTags, this.secondMedicine]
+        } else {
+          this.$message.warning('药物已存在，请勿重复添加')
+        }
+      } else {
+        this.$message.error('请选择药物')
+      }
+    },
+    // 关闭新增的药物
+    handleClose (removedTag) {
+      const tags = this.medicineTags.filter(tag => tag !== removedTag)
+      this.medicineTags = tags
     }
   }
 }
