@@ -14,7 +14,8 @@ const userApi = {
   // 手机验证码
   UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
   // 修改用户信息
-  UserMsg: '/users/me/initial'
+  UserMsg: '/users/me/initial',
+  getUserInfo: 'users/me' // 获取当前登录用户基础信息
 }
 
 /**
@@ -98,5 +99,11 @@ export function UserMsg (parameter) {
     url: userApi.UserMsg,
     method: 'post',
     data: parameter
+  })
+}
+export function getUserInfo () {
+  return request({
+    url: userApi.getUserInfo,
+    method: 'get'
   })
 }

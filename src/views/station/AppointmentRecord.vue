@@ -12,7 +12,7 @@
         </span>
         <span slot="status" slot-scope="text">
           <a v-if="text.status === 'UNEXECUTED'" @click="changeStatus(text)"><a-icon type="question-circle" /> 未处理</a>
-          <span style="color: #1890FF;" v-if="text.status === 'EXECUTED'"><a-icon type="check-circle" /> 已签到</span>
+          <span style="color:#52c41a;" v-if="text.status === 'EXECUTED'"><a-icon type="check-circle" /> 已签到</span>
           <span v-if="text.status === 'CANCELED'"><a-icon type="stop" /> 已取消</span>
           <a style="color:red" v-if="text.status === 'DELAYED'" @click="changeStatus(text)"><a-icon type="warning" /> 推迟</a>
         </span>
@@ -52,7 +52,8 @@
 <script>
 import moment from 'moment'
 import AppointmentAdd from './components/AppointmentAdd.vue'
-import { getAppointments, putAppointment } from '@/api/station'
+import { getAppointments, putAppointment, getStations } from '@/api/station'
+import { getUserInfo } from '@/api/login'
 const columns = [
   {
     title: '预约用户',
@@ -110,21 +111,34 @@ export default {
       showTime: false,
       appointmentTime: null,
       morningNum: 0,
-      afternoonNum: 0
+      afternoonNum: 0,
+      myId: null
     }
   },
   mounted () {
+    this.getUserInfo()
     this.loadData()
   },
   methods: {
     async loadData () {
-      const res = await getAppointments(this.stationId)
-      if (res.status === 200) {
-        this.dataSource = res.data
+      this.dataSource = []
+      this.morningNum = 0
+      this.afternoonNum = 0
+      const resp = await getStations()
+      if (resp.status === 200) {
+        const stations = resp.data.filter(station => {
+          for (var doctor of station.doctors) {
+            if (doctor.id === this.myId) { return true }
+          }
+        })
+        for (var station of stations) {
+          const res = await getAppointments(station.id)
+          if (res.status === 200) {
+            this.dataSource = [...this.dataSource, ...res.data]
+          }
+        }
         const myDate = moment(new Date()).format('YYYY-MM-DD')
-        this.morningNum = 0
-        this.afternoonNum = 0
-        res.data.forEach(item => {
+        this.dataSource.forEach(item => {
           const hour = moment(item.bookingDate).format('HH')
           const appoint = moment(item.bookingDate).format('YYYY-MM-DD')
           // console.log('123', hour, appoint, myDate)
@@ -134,6 +148,13 @@ export default {
             this.afternoonNum++
           }
         })
+      }
+    },
+    // 进入预约页面时获取当前登录账号的信息
+    async getUserInfo () {
+      const res = await getUserInfo()
+      if (res.status === 200) {
+        this.myId = res.data.id
       }
     },
     addAppointment () {
