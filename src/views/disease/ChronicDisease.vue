@@ -1,7 +1,7 @@
 <template>
   <div :bordered="false">
     <!-- 所有慢病 -->
-    <a-config-provider v-if="(diseaseData.length === 0)">
+    <a-config-provider v-if="(!showLoading && diseaseData.length === 0)">
       <template #renderEmpty>
         <div style="text-align: center">
           <a-icon type="file-protect" style="font-size: 40px;line-height: 60px;" />
@@ -10,6 +10,7 @@
       </template>
       <a-list/>
     </a-config-provider>
+    <div style="display: flex;justify-content: center;margin: 20px;" v-show="showLoading"><a-spin tip="玩命加载中..."/></div>
     <a-tabs default-active-key="1" @change="callback">
       <a-tab-pane v-for="disease in diseaseData" :key="disease.diseaseId" :tab="disease.diseaseName">
         <a-table :columns="columns" :data-source="customers" :customRow="rowClick" style="background:#fff;padding: 0 10px;">
@@ -192,6 +193,7 @@ export default {
       },
       seeData: null,
       seeVisible: false,
+      showLoading: false,
       pagination: {
         total: 0,
         current: 1,
@@ -219,7 +221,9 @@ export default {
         size: 100
       }
       // const res = await apiGetChronic(pages)
+      this.showLoading = true
       const res = await getChronic(pages)
+      this.showLoading = false
       if (res.status === 200) {
         // this.customerData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         // const diseaseData = new Set()
