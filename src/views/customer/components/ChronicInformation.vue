@@ -107,26 +107,20 @@
                 <span>慢病随访记录</span>
                 <template v-if="item.status == 'diagnosed'">
                   <span style="margin-left: 12px;color:#247;font-size: 14px;">
+                    <!-- 【下次复查时间：<span v-if="item.nextCheckAt">{{ item.nextCheckAt | moment }}</span><span v-else>-</span> -->
                     【下次复查时间：<span>{{ dateTime }}</span>
-                    <!-- <a-date-picker
-                      v-else
-                      show-time
-                      :defaultValue="dateTime"
-                      type="date"
-                      @ok="chooseReviewTime"
-                      placeholder="请选择复查时间"
-                    /> -->
                     &nbsp;&nbsp;&nbsp;
-                    <span v-if="(day == 0&&hour==0&&minute==0&&secord==0)" style="color:red;">已超时</span>
-                    <span v-else>剩余{{ day }}天{{ hour }}时{{ minute }}分{{ secord }}秒</span>
+                    {{ timeRemaining }}
+                    <!-- <span v-if="(day == 0&&hour==0&&minute==0&&secord==0)" style="color:red;">已超时</span>
+                    <span v-else>剩余{{ day }}天{{ hour }}时{{ minute }}分{{ secord }}秒</span> -->
                     】
                   </span>
                   <span style="color:#666;font-size: 12px;margin-right: 6px;">
-                    间隔: <span v-if="reviewTime">{{ interval }}</span>
-                    <span v-else><a-input-number v-model="interval" :min="1" @change="onChangeInterval" /></span> 天
+                    间隔: <span v-if="reviewTime">{{ remarkInterval }}</span>
+                    <span v-else><a-input-number v-model="interval" :min="0"/></span> 天
                   </span>
-                  <a v-if="reviewTime" @click="editReviewTime"><a-icon type="form" /></a>
-                  <a-button v-else size="small" type="primary" ghost @click="editReviewTime">保存</a-button>
+                  <a v-if="reviewTime" @click="editReviewTime(remarkInterval)"><a-icon type="form" /></a>
+                  <a-button v-else size="small" type="primary" ghost @click="saveReviewTime(item.id)">保存</a-button>
                   <a-button @click="showFollowUpSheet(item)" type="primary" class="HealthBtn">
                     开始复查
                   </a-button>
@@ -203,7 +197,7 @@
 import { getChronicManage as apiGetChronicManage } from '@/api/customer'
 import FollowUpRecords from './FollowUpRecords.vue'
 import FollowUpFormAdd from './FollowUpFormAdd.vue'
-import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
+import { getFollowRecords as apiFollowUpRecords, setIntervalTime } from '@/api/followUpForm'
 import ChronicInformationChangeStatus from './ChronicInformationChangeStatus.vue'
 import ChronicInformationEcharts from './ChronicInformationEcharts.vue'
 import { notification } from 'ant-design-vue'
@@ -276,21 +270,14 @@ export default {
       disableFollow: true,
       reviewTime: true, // 编辑复查时间
       dateTime: '',
-      day: '0',
-      hour: '0',
-      minute: '0',
-      secord: '0',
-      interval: 30, // 间隔天数
+      timeRemaining: '',
+      remarkInterval: 0,
+      interval: 0, // 间隔天数
       receiveDate: '' // 最近一次随访回收时间
     }
   },
   mounted () {
     this.loadData()
-    this.timer = setInterval(() => {
-      this.nowTime = +new Date()
-      const futureTime = +new Date(this.dateTime)
-      this.getDateTime(futureTime)
-    }, 1000)
   },
   beforeDestroy () {
     clearInterval(this.timer)
@@ -359,7 +346,9 @@ export default {
       this.StatusVisible = false
     },
     cardShow (item) {
+      clearInterval(this.timer)
       this.diseaseId = item.id
+      this.remarkInterval = item.remarkInterval
       if (item.status === 'diagnosed') {
         const pages = {
           page: 1,
@@ -383,16 +372,35 @@ export default {
                   const recordData = (res.data.content || []).filter(item => {
                     return item.status === 'success'
                   })
-                  this.receiveDate = moment(recordData[0].receivedAt).valueOf()
-                  const dateTime = this.receiveDate + 24 * this.interval * 60 * 60 * 1000
-                  this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+                  if (recordData.length > 0) {
+                    this.receiveDate = moment(recordData[0].receivedAt).valueOf() // 最近一次随访回收成功的时间
+                    const dateTime = this.receiveDate + 24 * item.remarkInterval * 60 * 60 * 1000
+                    this.dateTime = moment(dateTime).format('YYYY-MM-DD')
+                    this.timer = setInterval(() => {
+                      this.nowTime = +new Date()
+                      const futureTime = +new Date(dateTime)
+                      this.getDateTime(futureTime)
+                    }, 1000)
+                  } else {
+                    this.dateTime = '--'
+                    this.timeRemaining = ''
+                  }
                 }
               })
             } else {
-              this.receiveDate = moment(recordData[0].receivedAt).valueOf()
-              const dateTime = this.receiveDate + 24 * this.interval * 60 * 60 * 1000
-              // console.log('dateTime', dateTime)
-              this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
+              if (recordData.length > 0) {
+                this.receiveDate = moment(recordData[0].receivedAt).valueOf()
+                const dateTime = this.receiveDate + 24 * item.remarkInterval * 60 * 60 * 1000
+                this.dateTime = moment(dateTime).format('YYYY-MM-DD')
+                this.timer = setInterval(() => {
+                  this.nowTime = +new Date()
+                  const futureTime = +new Date(dateTime)
+                  this.getDateTime(futureTime)
+                }, 1000)
+              } else {
+                this.dateTime = '--'
+                this.timeRemaining = ''
+              }
             }
           } else {
             this.recordData = []
@@ -464,39 +472,38 @@ export default {
       refreshGuidanceTable['d-' + diseaseId] = loadData
     },
     // 编辑复查时间
-    editReviewTime () {
+    editReviewTime (remarkInterval) {
       this.reviewTime = !this.reviewTime
+      this.interval = remarkInterval
     },
-    // chooseReviewTime (e) {
-    //   const dateTime = moment(e._d).format('YYYY-MM-DD HH:mm')
-    //   this.dateTime = dateTime
-    //   // var nowTime = +new Date()
-    //   var futureTime = +new Date(e._d)
-    //   this.getDateTime(futureTime)
-    // },
+    saveReviewTime (diseaseId) {
+      this.reviewTime = !this.reviewTime
+      const payLoad = {}
+      const nextCheckAt = this.receiveDate + 24 * this.interval * 60 * 60 * 1000
+      payLoad.remarkInterval = this.interval
+      payLoad.nextCheckAt = nextCheckAt
+      setIntervalTime(this.custId, diseaseId, payLoad).then(res => {
+        if (res.status === 200) {
+          console.log(res.data)
+          this.dateTime = moment(res.data.nextCheckAt).format('YYYY-MM-DD')
+          this.remarkInterval = res.data.remarkInterval
+          const futureTime = moment(res.data.nextCheckAt).valueOf()
+          this.getDateTime(futureTime)
+        }
+      })
+    },
     getDateTime (futureTime) {
       if (futureTime > this.nowTime) {
         const totalSeconds = (futureTime - this.nowTime) / 1000
-        this.day = parseInt(totalSeconds / 60 / 60 / 24)
-        this.hour = parseInt(totalSeconds / 60 / 60 % 24)
-        this.minute = parseInt(totalSeconds / 60 % 60)
-        this.secord = parseInt(totalSeconds % 60)
+        const day = parseInt(totalSeconds / 60 / 60 / 24)
+        const hour = parseInt(totalSeconds / 60 / 60 % 24)
+        const minute = parseInt(totalSeconds / 60 % 60)
+        const secord = parseInt(totalSeconds % 60)
+        this.timeRemaining = '剩余' + day + '天' + hour + '时' + minute + '分' + secord + '秒'
       } else {
-        this.day = 0
-        this.hour = 0
-        this.minute = 0
-        this.secord = 0
+        this.timeRemaining = '已超时'
+        clearInterval(this.timer)
       }
-    },
-    onChangeInterval (value) {
-      // const dateTime = moment(e._d).format('YYYY-MM-DD HH:mm')
-      // this.dateTime = dateTime
-      // var nowTime = +new Date()
-      const dateTime = this.receiveDate + 24 * value * 60 * 60 * 1000
-      this.dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm')
-      var futureTime = dateTime
-      this.getDateTime(futureTime)
-      this.interval = value
     }
   }
 }
