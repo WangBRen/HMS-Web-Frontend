@@ -236,7 +236,7 @@ export default {
     getHealthIndex().then(res => {
       if (res.status === 200) {
         this.healthIndex = res.data
-        console.log('总指标', this.healthIndex)
+        // console.log('总指标', this.healthIndex)
       }
     })
   },
@@ -379,11 +379,11 @@ export default {
 /deep/.ant-form-item{
   margin-bottom: 0px
 }
-.index-item-title-wrapper {
+// .index-item-title-wrapper {
   // display: flex;
   // height: 34px;
   // align-items: center;
-}
+// }
 .index-title {
   font-size: 16px;
   font-weight: 700;

@@ -5,7 +5,8 @@ const api = {
   role: '/role-permission/roles',
   service: '/service',
   permission: '/role-permission/permissions',
-  orgTree: '/org/tree'
+  orgTree: '/org/tree',
+  changeDisable: (id) => '/users/' + id + '/status'
 }
 
 export default api
@@ -65,5 +66,13 @@ export function saveSub (sub) {
     url: '/sub',
     method: sub.id === 0 ? 'post' : 'put',
     data: sub
+  })
+}
+
+export function changeDisable (id, parameter) {
+  return request({
+    url: api.changeDisable(id),
+    method: 'get',
+    params: parameter
   })
 }
