@@ -47,11 +47,26 @@
         </span>
       </div>
     </a-card>
+    <!-- 检查项目选择开始 -->
+    <a-card :loading="loading" class="card">
+      <template #title>
+        <span>检查项目选择</span>
+        <a-button @click="openObjectModal" type="dashed" style="float: right">
+          <a-icon type="plus" /> 选择检查项目
+        </a-button>
+      </template>
+      <div v-if="payload.projects">
+        <span v-for="item in payload.projects" :key="item.id">
+          <!-- <span v-if="diseaseId"><a-tag color="blue">{{ item.chronicDisease.name }}</a-tag></span> -->
+          <span><a-tag color="orange">{{ item.name }}</a-tag></span>
+        </span>
+      </div>
+    </a-card>
     <!-- 指标选择开始 -->
     <a-card :loading="loading" class="card" :body-style="cardBodyStyle">
       <template #title>
         <span>指标选择</span>
-        <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">检查项目:
+        <span v-if="projects.length > 0" style="margin-left:20px;font-size:14px;color:#888;">必查项目:
           <a-tooltip>
             <template slot="title">
               <span v-for="project in projects" :key="project.id">
@@ -111,14 +126,58 @@
       <a-button class="button-addline" type="dashed" @click="handleAddIndex">添加一行新数据</a-button>
     </a-card>
     <!-- 指标选择结束 -->
+    <!-- 药物选择开始 -->
+    <a-card :loading="loading" class="card">
+      <template #title>
+        <span>药物选择</span>
+      </template>
+      <div v-if="payload.diseases.length>0">
+        <!-- <span v-for="item in payload.diseases" :key="item.id">
+          <span v-for="medicine in item.medicines" :key="medicine.medicine.id"><a-tag closable>{{ medicine.medicine.name }}</a-tag></span>
+        </span> -->
+        <span v-if="medicineTags.length > 0">
+          <span v-for="medicineTag in medicineTags" :key="medicineTag"><a-tag :key="medicineTag" :closable="medicineTag.index !== 0" @close="() => handleClose(medicineTag)">{{ medicineTag }}</a-tag></span>
+        </span>
+        <a-tag v-if="addBtn" style="background: #fff; borderStyle: dashed;" @click="showSelect">
+          <a-icon type="plus" /> 添加其他药物
+        </a-tag>
+        <span v-else>
+          <a-select style="width: 120px" @change="changeCategory">
+            <a-select-option v-for="category in categoryData" :key="category.id">
+              {{ category.name }}
+            </a-select-option>
+          </a-select>
+          <a-select v-model="secondMedicine" style="width: 120px">
+            <a-select-option v-for="medicine in medicines" :key="medicine.id" :value="medicine.name">
+              {{ medicine.name }}
+            </a-select-option>
+          </a-select>
+          <a-button @click="handleMedicine">确定</a-button>
+        </span>
+      </div>
+    </a-card>
     <!-- 选择慢病弹框 -->
     <a-modal v-model="modalSelectChronic.visible" title="选择需要进行随访的慢病" @ok="handleChronicDiseaseOK" width="600px">
       <a-row>
         <a-col :span="24" >
           <a-checkbox-group v-model="defaultChecked">
-            <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="checkbox">
+            <a-checkbox :value="item.id" v-for="item in totalChronicDiseases" :key="item.id" class="chronicCheckbox">
               <span v-if="diseaseId">{{ item.chronicDisease.name }}</span>
               <span v-else>{{ item.name }}</span>
+            </a-checkbox>
+          </a-checkbox-group>
+        </a-col>
+      </a-row>
+    </a-modal>
+    <!-- 选择检查项目弹框 -->
+    <a-modal v-model="modalProject.visible" title="选择需要进行检查的项目" @ok="handleProjectOK" width="800px">
+      <a-row>
+        <a-col :span="24" >
+          <a-checkbox-group v-model="defaultProject">
+            <a-checkbox :value="item.id" v-for="item in modalProject.projects" :key="item.id" class="projectCheckbox">
+              <span>
+                {{ item.name | ellipsis }}
+              </span>
             </a-checkbox>
           </a-checkbox-group>
         </a-col>
@@ -134,6 +193,7 @@ import { getHealthIndex } from '@/api/health'
 import { age } from '@/utils/age'
 import { notification } from 'ant-design-vue'
 import { getChronic } from '@/api/chronic'
+import { getMedicine as apiGetMedicine } from '@/api/medicine'
 const columns = [
   {
     title: '是否必填',
@@ -249,7 +309,8 @@ export default {
         myToken: '',
         hints: '',
         diseases: [],
-        items: []
+        items: [],
+        projects: []
       },
       itemColumns: columns, // read only
       itemTypeOptions: options, // read only
@@ -257,6 +318,10 @@ export default {
       modalSelectChronic: {
         visible: false,
         diseases: [] // used for: save select chronic diseases
+      },
+      modalProject: {
+        visible: false,
+        projects: []
       },
       defineOptions: [
         {
@@ -274,8 +339,14 @@ export default {
       formId: null,
       userAge: null,
       defaultChecked: [],
+      defaultProject: [],
       totalIndexOfThisPeople: [],
-      projects: []
+      projects: [], // 指标相关项目
+      addBtn: true,
+      categoryData: [], // 所有药物类别
+      medicines: [], // 当前类别下的药物
+      secondMedicine: '', // 选择药物的第二个下拉框
+      medicineTags: [] // 随访时新增的药物
     }
   },
   filters: {
@@ -286,6 +357,12 @@ export default {
         case 'options': return '选项'
         case 'upload': return '文件'
       }
+    },
+    ellipsis (value) {
+      if (value.length > 10) {
+        return value.slice(0, 12) + '...'
+      }
+      return value
     }
   },
   mounted () {
@@ -299,7 +376,6 @@ export default {
   methods: {
     // 打开创建随访单弹窗
     async loadData () {
-      console.log('this.diseaseId', this.diseaseId)
       if (this.diseaseId !== null) {
         const resp = await apiGetChronicManage(this.customerId)
         if (resp.status === 200) {
@@ -325,19 +401,28 @@ export default {
       } else {
         this.userAge = '/'
       }
-      // console.log('resp', resp)
-      // this.payload.hints = ''
-      // this.payload.diseases = []
-      // this.payload.items = []
-      // if (this.diseaseObj === {}) { return }
-      //   console.log('this.diseaseObj', this.diseaseObj)
-      //   this.modalSelectChronic.diseases.push(this.diseaseObj)
-      //   this.handleChronicDiseaseOK()
+      this.getAllMedicine()
     },
     handleChronicDiseaseOK () {
       // transfer:
       this.payload.diseases = this.totalChronicDiseases.filter(item => {
         return this.defaultChecked.includes(item.id)
+      })
+      this.medicineTags = []
+      this.payload.diseases.forEach(diseases => {
+        if (this.diseaseId) {
+          for (var chronicMedicine of diseases.chronicDisease.medicines) {
+            if (this.medicineTags.indexOf(chronicMedicine.medicine.name) === -1) {
+              this.medicineTags.push(chronicMedicine.medicine.name)
+            }
+          }
+        } else {
+          for (var medicine of diseases.medicines) {
+            if (this.medicineTags.indexOf(medicine.medicine.name) === -1) {
+              this.medicineTags.push(medicine.medicine.name)
+            }
+          }
+        }
       })
       this.modalSelectChronic.visible = false
       // update index table
@@ -371,6 +456,12 @@ export default {
       this.payload.items = items
       this.getHealthIndex()
     },
+    handleProjectOK () {
+      this.payload.projects = this.modalProject.projects.filter(item => {
+        return this.defaultProject.includes(item.id)
+      })
+      this.modalProject.visible = false
+    },
     // 获取指标项目名
     async getHealthIndex () {
       const res = await getHealthIndex()
@@ -382,6 +473,11 @@ export default {
             }
           }
         })
+          this.defaultProject = this.projects.map(project => {
+            return project.id
+          })
+          this.payload.projects = this.projects
+        this.modalProject.projects = res.data // 总的检查项目
       }
     },
     handleAddIndex () {
@@ -400,6 +496,9 @@ export default {
     },
     openChronicDiseaseModal () {
         this.modalSelectChronic.visible = true
+    },
+    openObjectModal () {
+        this.modalProject.visible = true
     },
     // 创建随访单
     doRequest () {
@@ -426,7 +525,7 @@ export default {
           apiPayload.diseaseIds.push(diseas.id)
         })
       } else {
-        apiPayload = { items: [], hints: null, token: '' }
+        apiPayload = { items: [], hints: null, token: '', projects: [], medicines: [] }
       }
       if (this.payload.items.length !== 0) {
             apiPayload.hints = this.payload.hints
@@ -448,6 +547,8 @@ export default {
                 apiPayload.items.push(item)
               }
             })
+            apiPayload.projects = this.payload.projects
+            apiPayload.token = this.medicineTags
             apiPayload.token = this.myToken
       }
       this.$emit('checkSuccess', apiPayload)
@@ -472,17 +573,61 @@ export default {
     handleOnDisableClicked (record, disabled) {
       // console.log(record, disabled)
       record.disabled = disabled
+    },
+    showSelect () {
+      this.addBtn = false
+      this.secondMedicine = ''
+    },
+    getAllMedicine () {
+      apiGetMedicine().then(res => {
+        if (res.status === 200) {
+          this.categoryData = res.data
+        } else {
+          this.$message.error('获取失败' + res.message)
+        }
+      })
+    },
+    changeCategory (value) {
+      const category = this.categoryData.filter(item => {
+        if (item.id === value) {
+          return true
+        } else return false
+      })
+      this.medicines = category[0].medicines
+      this.secondMedicine = ''
+    },
+    handleMedicine () {
+      if (this.secondMedicine !== '') {
+        this.addBtn = true
+        if (this.secondMedicine && this.medicineTags.indexOf(this.secondMedicine) === -1) {
+          this.medicineTags = [...this.medicineTags, this.secondMedicine]
+        } else {
+          this.$message.warning('药物已存在，请勿重复添加')
+        }
+      } else {
+        this.$message.error('请选择药物')
+      }
+    },
+    // 关闭新增的药物
+    handleClose (removedTag) {
+      const tags = this.medicineTags.filter(tag => tag !== removedTag)
+      this.medicineTags = tags
     }
   }
 }
 </script>
 
 <style>
-.checkbox {
+.chronicCheckbox {
   display: inline-block;
   width: 266px;
   height: 30px;
   margin-left: 8px;
+}
+.projectCheckbox{
+  margin-left: 8px;
+  height: 30px;
+  width: 242px;
 }
 .modal-container {
   /* padding: 0 24px; */

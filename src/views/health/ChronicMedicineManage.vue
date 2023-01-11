@@ -204,7 +204,7 @@ export default {
         if (res.status === 200) {
           this.medArr = res.data
           // console.log('获取成功', this.medArr)
-          // this.checkTabKey = this.medArr[0].id
+          this.checkTabKey = this.medArr[0].id
         } else {
           this.$message.error('获取失败' + res.message)
           // console.log('获取失败')

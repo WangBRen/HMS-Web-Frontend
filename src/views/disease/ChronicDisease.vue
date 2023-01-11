@@ -1,6 +1,16 @@
 <template>
   <div :bordered="false">
     <!-- 所有慢病 -->
+    <a-config-provider v-if="(!showLoading && diseaseData.length === 0)">
+      <template #renderEmpty>
+        <div style="text-align: center">
+          <a-icon type="file-protect" style="font-size: 40px;line-height: 60px;" />
+          <p>暂时还没有发现慢病哦</p>
+        </div>
+      </template>
+      <a-list/>
+    </a-config-provider>
+    <div style="display: flex;justify-content: center;margin: 20px;" v-show="showLoading"><a-spin tip="玩命加载中..."/></div>
     <a-tabs default-active-key="1" @change="callback">
       <a-tab-pane v-for="disease in diseaseData" :key="disease.diseaseId" :tab="disease.diseaseName">
         <a-table :columns="columns" :data-source="customers" :customRow="rowClick" style="background:#fff;padding: 0 10px;">
@@ -114,7 +124,8 @@ const columns = [
     scopedSlots: { customRender: 'state' }
   },
   {
-    title: '复查时间'
+    title: '复查时间',
+    customRender: (text, record, index) => record ? moment(record.diseasesDetail.lastReceivedAt).format('YYYY-MM-DD HH:mm') : ''
   },
   {
     title: '随访倒计时'
@@ -182,6 +193,7 @@ export default {
       },
       seeData: null,
       seeVisible: false,
+      showLoading: false,
       pagination: {
         total: 0,
         current: 1,
@@ -205,11 +217,13 @@ export default {
     // 获取慢病表
     async getChronic () {
       const pages = {
-        page: this.pagination.current,
-        size: 20
+        page: 1,
+        size: 100
       }
       // const res = await apiGetChronic(pages)
+      this.showLoading = true
       const res = await getChronic(pages)
+      this.showLoading = false
       if (res.status === 200) {
         // this.customerData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         // const diseaseData = new Set()

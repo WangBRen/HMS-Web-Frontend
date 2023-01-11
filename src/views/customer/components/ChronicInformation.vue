@@ -41,7 +41,7 @@
           </a-collapse-panel>
         </a-collapse>
         <a-divider >慢病管理</a-divider>
-        <a-config-provider v-if="(tableData.length === 0)">
+        <a-config-provider v-if="(!loading && tableData.length === 0)">
           <template #renderEmpty>
             <div style="text-align: center">
               <a-icon type="file-protect" style="font-size: 40px;line-height: 60px;" />
