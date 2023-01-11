@@ -391,7 +391,7 @@ export default {
               if (recordData.length > 0) {
                 this.receiveDate = moment(recordData[0].receivedAt).valueOf()
                 const dateTime = this.receiveDate + 24 * item.remarkInterval * 60 * 60 * 1000
-                this.dateTime = moment(dateTime).format('YYYY-MM-DD HH')
+                this.dateTime = moment(dateTime).format('YYYY-MM-DD')
                 this.timer = setInterval(() => {
                   this.nowTime = +new Date()
                   const futureTime = +new Date(dateTime)
