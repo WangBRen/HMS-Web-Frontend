@@ -2,28 +2,34 @@
   <a-card :bordered="false">
     <div class="table-page-search-wrapper">
       <a-form layout="inline">
-        <a-row :gutter="48">
-          <a-col :md="8" :sm="24">
-            <a-form-item label="角色ID">
-              <a-input placeholder="请输入"/>
+        <a-row>
+          <a-col :xl="5" :sm="10">
+            <a-form-item label="用户名">
+              <a-input v-model="checkId" placeholder="请输入用户名"/>
             </a-form-item>
           </a-col>
-          <a-col :md="8" :sm="24">
+          <a-col :xl="3" :sm="10">
+            <span class="table-page-search-submitButtons">
+              <a-button @click="searchId" type="primary">查询</a-button>
+            </span>
+          </a-col>
+          <a-col :xl="5" :sm="10">
             <a-form-item label="状态">
-              <a-select placeholder="请选择" default-value="0">
-                <a-select-option value="0">全部</a-select-option>
-                <a-select-option value="1">关闭</a-select-option>
-                <a-select-option value="2">运行中</a-select-option>
+              <a-select placeholder="请选择" v-model="checkState" default-value="all">
+                <a-select-option value="all">全部</a-select-option>
+                <a-select-option value="active">正常</a-select-option>
+                <a-select-option value="disable">禁用</a-select-option>
+                <a-select-option value="registering">未激活</a-select-option>
+                <a-select-option value="inactive">激活中</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
-          <a-col :md="4" :sm="12">
+          <a-col :xl="3" :sm="10">
             <span class="table-page-search-submitButtons">
-              <a-button type="primary">查询</a-button>
-              <a-button style="margin-left: 8px">重置</a-button>
+              <a-button @click="searchStatus" type="primary">查询</a-button>
             </span>
           </a-col>
-          <a-col :md="4" :sm="12">
+          <a-col :xl="8" :sm="10">
             <span class="table-page-search-submitButtons">
               <a-button @click="openCreateModal" type="primary" style="float: right">创建</a-button>
             </span>
@@ -32,7 +38,33 @@
       </a-form>
     </div>
 
-    <s-table
+    <a-table
+      :columns="columns"
+      :data-source="accountData"
+      :pagination="pagination"
+    >
+      <span slot="displayName" slot-scope="text, record">
+        <span v-for="item in roles" :key="item.id">
+          <a-tag v-if="(item.name===record.roleName)">{{ item.displayName }}</a-tag>
+        </span>
+      </span>
+      <span slot="nickname" slot-scope="text">
+        {{ text || '----' }}
+      </span>
+      <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
+      <span slot="action" slot-scope="text, record">
+        <a-popconfirm
+          v-if="record.status !== 'disable'"
+          title="确定禁用此用户吗?"
+          @confirm="statusDisable(record)"
+        >
+          <a >禁用</a>
+        </a-popconfirm>
+        <a v-else>---</a>
+      </span>
+    </a-table>
+
+    <!-- <s-table
       row-key="id"
       size="default"
       :columns="columns"
@@ -64,10 +96,18 @@
           <a-tag v-if="(item.name===record.roleName)">{{ item.displayName }}</a-tag>
         </span>
       </span>
+      <span slot="nickname" slot-scope="text">
+        {{ text || '----' }}
+      </span>
       <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
       <span slot="action" slot-scope="text, record">
         <a @click="handleEdit(record)">编辑</a>
-        <a-divider type="vertical" />
+        <a-popconfirm
+          title="确定禁用此用户吗?"
+          @confirm="statusDisable(record)"
+        >
+          <a>禁用</a>
+        </a-popconfirm>
         <a-dropdown>
           <a class="ant-dropdown-link">
             更多 <a-icon type="down" />
@@ -77,15 +117,17 @@
               <a href="javascript:;">详情</a>
             </a-menu-item>
             <a-menu-item>
-              <a href="javascript:;">禁用</a>
-            </a-menu-item>
-            <a-menu-item>
-              <a href="javascript:;">删除</a>
+              <a-popconfirm
+                title="确定禁用此用户吗?"
+                @confirm="statusDisable(record)"
+              >
+                <a>禁用</a>
+              </a-popconfirm>
             </a-menu-item>
           </a-menu>
         </a-dropdown>
       </span>
-    </s-table>
+    </s-table> -->
 
     <a-modal
       title="操作"
@@ -208,7 +250,8 @@
 <script>
 import pick from 'lodash.pick'
 import { STable } from '@/components'
-import { getUserList, getRoleList, getServiceList } from '@/api/manage'
+import { getUserList, getRoleList, getServiceList, changeDisable } from '@/api/manage'
+// import { getRoleList, getServiceList } from '@/api/manage'
 import { PERMISSION_ENUM } from '@/core/permission/permission'
 
 const STATUS = {
@@ -223,7 +266,8 @@ const columns = [
   },
   {
     title: '用户名',
-    dataIndex: 'nickname'
+    dataIndex: 'nickname',
+    scopedSlots: { customRender: 'nickname' }
   },
   {
     title: '用户角色',
@@ -236,22 +280,29 @@ const columns = [
     customRender: (status) => {
       switch (status) {
         case 'inactive':
-          return '未激活'
+          return '激活中'
         case 'active':
           return '正常'
         case 'disable':
-          return '不可用'
+          return '禁用'
+        case 'registering':
+          return '未激活'
       }
       return status
     }
     // scopedSlots: { customRender: 'status' }
   },
   {
+    title: '手机号',
+    dataIndex: 'telephone'
+  },
+  {
     title: '创建时间',
     dataIndex: 'createdAt',
-    scopedSlots: { customRender: 'createTime' },
-    sorter: true
-  }, {
+    scopedSlots: { customRender: 'createTime' }
+    // sorter: true
+  },
+  {
     title: '操作',
     width: '150px',
     dataIndex: 'action',
@@ -266,6 +317,19 @@ export default {
   },
   data () {
     return {
+      accountData: [],
+      pagination: {
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        // showSizeChanger: true, // 显示可改变每页数量
+        // pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 个账户`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+      },
+      checkState: 'all',
+      checkId: null,
       role: {
         list: [],
         initialValue: -1
@@ -294,21 +358,21 @@ export default {
       // 表头
       columns,
       // 加载数据方法 必须为 Promise 对象
-      loadData: parameter => {
-        return getUserList({ page: parameter.pageNo - 1, size: parameter.pageSize })
-          .then(res => {
-            // console.log('getUserList', res)
-            // 展开全部行
-            // this.expandedRowKeys = res.result.data.map(item => item.id)
-            return {
-              data: res.data.content,
-              pageNo: res.data.number + 1,
-              pageSize: res.data.size,
-              totalCount: res.data.totalElements,
-              totalPage: res.data.totalPages
-            }
-          })
-      },
+      // loadData: parameter => {
+      //   return getUserList({ page: parameter.pageNo - 1, size: parameter.pageSize })
+      //     .then(res => {
+      //       // console.log('getUserList', res)
+      //       // 展开全部行
+      //       // this.expandedRowKeys = res.result.data.map(item => item.id)
+      //       return {
+      //         data: res.data.content,
+      //         pageNo: res.data.number + 1,
+      //         pageSize: res.data.size,
+      //         totalCount: res.data.totalElements,
+      //         totalPage: res.data.totalPages
+      //       }
+      //     })
+      // },
 
       expandedRowKeys: [],
       selectedRowKeys: [],
@@ -323,6 +387,9 @@ export default {
       const permission = PERMISSION_ENUM[key]
       return permission && permission.label
     }
+  },
+  mounted () {
+    this.getAccount()
   },
   created () {
     getServiceList().then(res => {
@@ -410,6 +477,69 @@ export default {
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
+    },
+    searchId () {
+      console.log('搜索Id', this.checkId)
+      this.pagination.current = 1
+      this.getAccount()
+    },
+    searchStatus () {
+      console.log('搜索状态', this.checkState)
+      this.pagination.current = 1
+      this.getAccount()
+      // const state = this.checkState
+      // api(state).then(res => {
+      //   if (res.status === 200) {
+      //     this.accountData
+      //   }
+      // })
+    },
+    statusDisable (data) {
+      const id = data.id
+      const apiData = {
+        status: 'disable'
+      }
+      changeDisable(id, apiData).then(res => {
+        console.log('res', res)
+        if (res.status === 200) {
+          console.log('成功')
+          this.$message.info('禁用成功')
+          this.getAccount()
+        } else {
+          this.$message.error('禁用失败,' + res.message)
+        }
+      })
+      console.log(apiData, 'data', id)
+    },
+    getAccount () {
+      const pages = {
+        page: this.pagination.current - 1,
+        size: this.pagination.pageSize
+      }
+      const test = {
+        name: this.checkId,
+        id: this.checkState
+      }
+      // if (this.checkState !== 'all') {
+      //   pages.status = this.checkState
+      // }
+      console.log('pages', test)
+      getUserList(pages).then(res => {
+        if (res.status === 200) {
+          console.log(res.data)
+          this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+          this.pagination.total = res.data.totalElements
+        }
+      })
+    },
+    onSizeChange (current, pageSize) {
+      this.pagination.current = 1
+      this.pagination.pageSize = pageSize
+      this.getAccount()
+    },
+    onPageChange (page, pageSize) {
+      this.pagination.current = page
+      this.getAccount()
     }
   },
   watch: {

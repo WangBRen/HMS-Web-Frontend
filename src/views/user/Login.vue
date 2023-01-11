@@ -70,7 +70,7 @@
       </a-tabs>
 
       <a-form-item>
-        <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">{{ $t('user.login.remember-me') }}</a-checkbox>
+        <!-- <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">{{ $t('user.login.remember-me') }}</a-checkbox> -->
         <a href="/forget-password" style="float: right;" target="_blank">忘记密码</a>
       </a-form-item>
 
@@ -101,7 +101,7 @@
     </a-form>
     <!-- 修改个人信息弹窗 -->
     <!-- <a-button @click="openmodal">点击</a-button> -->
-    <a-modal v-model="visible" title="首次登陆请修改用户信息" @ok="handleOk" @cancel="handleOff" destroyOnClose >
+    <a-modal v-model="visible" title="首次登录请修改用户信息" @ok="handleOk" @cancel="handleOff" destroyOnClose >
       <a-form-model ref="ruleForm" :model="formdata" :rules="info_rules" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-form-model-item label="证件类型" prop="idType">
           <a-select v-model="formdata.idType" placeholder="请选择证件类型">
@@ -501,7 +501,7 @@ export default {
         // 延迟 1 秒显示欢迎信息
         setTimeout(() => {
           this.$notification.success({
-            message: '账号首次登陆，请修改信息后登陆',
+            message: '账号首次登录，请修改信息后登陆',
             description: '请及时修改密码及个人信息'
           })
           setTimeout(() => {

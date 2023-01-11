@@ -6,7 +6,7 @@
       :title="'编辑药物【'+medicineInfo.name+'】'"
       @ok="medicineHandleOk"
       @cancel="medicineHandleCancel"
-      :width="1300"
+      width="70%"
       :maskClosable="false"
       :ok-button-props="{ style: {display: 'none'} }"
     >

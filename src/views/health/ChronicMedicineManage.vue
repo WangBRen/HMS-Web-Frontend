@@ -23,7 +23,10 @@
               {{ record.createdAt | getMoment }}
             </span>
             <span slot="action" slot-scope="text, record">
-              <a @click="openItemModal('edit', record)">编辑</a>|
+              <a @click="openItemModal('edit', record)">编辑</a>
+              <span>
+                |
+              </span>
               <a-popconfirm
                 title="确定删除此药物吗?"
                 @confirm="delOk(record)"
@@ -184,7 +187,19 @@ export default {
     }
   },
   methods: {
-    getMedinine () {
+    getMedicine () {
+      apiGetMedicine().then(res => {
+        if (res.status === 200) {
+          this.medArr = res.data
+          // console.log('获取成功', this.medArr)
+          this.checkTabKey = this.medArr[0].id
+        } else {
+          this.$message.error('获取失败' + res.message)
+          // console.log('获取失败')
+        }
+      })
+    },
+    updateMedicine () {
       apiGetMedicine().then(res => {
         if (res.status === 200) {
           this.medArr = res.data
@@ -253,7 +268,7 @@ export default {
                 // console.log('成功', res)
                 this.$message.info('编辑治疗目标成功')
                 this.MedVisible = false
-                this.getMedinine()
+                this.updateMedicine()
               } else {
                 this.$message.error(res.message)
               }
@@ -271,7 +286,7 @@ export default {
                 // console.log('成功', res)
                 this.$message.info('新建治疗目标成功')
                 this.MedVisible = false
-                this.getMedinine()
+                this.updateMedicine()
               } else {
                 this.$message.error('新建失败' + res.message)
                 // console.log(res)
@@ -293,7 +308,7 @@ export default {
       apiDelMedicineItem(this.getProName(), data.id).then(res => {
         // console.log(res)
         if (res.status <= 204) {
-          this.getMedinine()
+          this.updateMedicine()
           this.$message.info('删除药物成功')
         } else {
           this.$message.error('删除失败' + res.message)
@@ -308,12 +323,12 @@ export default {
   created () {
   },
   mounted () {
-    this.getMedinine()
-    // setTimeout(() => {
-    //   if (this.medArr.length !== 0) {
-    //   this.checkTabKey = this.medArr[0].id
-    // }
-    // }, 500)
+    this.getMedicine()
+      // console.log('this.medArr', this.medArr)
+      // if (this.medArr.length !== 0) {
+      //   this.checkTabKey = this.medArr[0].id
+      //   console.log('medArr', this.medArr)
+      // }
   },
   watch: {
     checkTabKey (newData, oldData) {
