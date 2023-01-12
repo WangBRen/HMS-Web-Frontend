@@ -13,7 +13,7 @@
         <a-button @click="closeSeeModal">取消</a-button>
       </template> -->
       <a-row :gutter="20">
-        <a-col :span="4" class="modalLeft">
+        <a-col :span="3" class="modalLeft">
           <div class="modal-left-panel">
             <div class="left-title-wrapper" v-for="item in formData.testData" :key="item.id">
               <a @click="onSc(item.indexProjectName)">{{ item.indexProjectName }}</a>
@@ -25,16 +25,16 @@
               <a @click="onSc('用户症状信息')" key="用户症状信息">用户症状信息</a>
             </div>
             <!-- 回到顶部 -->
-            <div class="left-title-wrapper">
+            <!-- <div class="left-title-wrapper">
               <a-icon :style="{fontSize: '25px'}" @click="onSc(formData.testData[0].indexProjectName)" type="up-square" theme="filled" />
-            </div>
+            </div> -->
             <!-- 清空 -->
             <!-- <div class="left-title-wrapper">
               <a-icon @click="clearData()" :style="{fontSize: '25px'}" type="delete" theme="filled" />
             </div> -->
           </div>
         </a-col>
-        <a-col :span="19" :offset="1" class="modal-right-panel">
+        <a-col :span="20" :offset="1" class="modal-right-panel">
           <a-form-model>
             <div v-for="item in formData.testData" :key="item.id">
               <!-- 指标项目 -->
@@ -119,11 +119,23 @@
                 </a-row>
                 <div style="font-size:16px;font-weight:600;color:#888;padding:10px;">异常指标小结：</div>
                 <a-row v-for="items in item.items" :key="items.id" style="background:#F4F8FA;">
-                  <div v-if="(items.max!==null && items.value > items.max) || (items.min!==null && items.value < items.min)">
+                  <div v-if="items.type === 'Report'">
+                    <a-col :span="5" style="color:#00A3DB;padding: 10px;">
+                      【{{ items.name }}】
+                    </a-col>
+                    <a-col :span="19" style="padding: 5px 0 0 0;">
+                      <div v-for="i in items.result" :key="i.id">
+                        <div v-if="i.name ===items.endResult" style="padding:5px 10px;">
+                          {{ i.remark }}
+                        </div>
+                      </div>
+                    </a-col>
+                  </div>
+                  <div v-else-if="(items.max!==null && items.value > items.max) || (items.min!==null && items.value < items.min)">
                     <a-col :span="5" style="color:#00A3DB;padding: 10px;">
                       {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
                     </a-col>
-                    <a-col :span="19">
+                    <a-col :span="19" style="padding: 5px 0 0 0;">
                       <div v-for="i in items.result" :key="i.id">
                         <div v-if="i.name ===items.endResult" style="padding:5px 10px;">
                           {{ i.remark }}
@@ -315,13 +327,16 @@ export default {
   border-radius: 6px;
   border: 1px #eee solid;
   text-align: left;
-  width: 186px;
-  padding: 24px 18px;
+  width: 160px;
+  padding: 12px;
 }
 .left-title-wrapper{
   font-size: 14px;
-  padding-bottom: 12px;
+  padding: 6px 0;
   // padding: 0 12px 12px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .left-title-wrapper>a {
   color: #333;
@@ -341,7 +356,8 @@ export default {
   // padding: 24px 12px;
 }
 .project-header {
-  background: linear-gradient(to bottom right, #00a0e9, #00abb9);
+  // background: linear-gradient(to bottom right, #00a0e9, #00abb9);
+  background: linear-gradient(to bottom right, #118bfd, #5bbdff);
   padding: 0 14px;
   color: white;
   border-radius: 2px;

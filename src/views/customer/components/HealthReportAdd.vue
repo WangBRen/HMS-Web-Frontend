@@ -75,33 +75,47 @@
                           </a-col>
                           <a-col :span="2"></a-col>
                           <a-col :span="12" style=" line-height: 20px;">
-                            <a :id="'str'+item.id" style="line-height: 20px;" @click="showInput(item.id)">展开</a>
-                            <div :id="item.id" style="display: none;">
-                              <div style="padding-top:12px; display: flex;line-height: 20px;">
-                                <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
-                                <div style="color: #00a0e9">
-                                  <span style="pointer-events:none;display:block;" v-for="(ranges,index) in item.result" :key="index">
-                                    <!-- 显示参考结果的条件，如性别、年龄 -->
-                                    <a-tag v-for="condition in ranges.conditionFilters" :key="condition.conditionId">
-                                      <span v-for="conditionItem in item.conditions" :key="conditionItem.id">
-                                        <template v-if="(conditionItem.id === condition.conditionId)">
-                                          <span v-for="i in conditionItem.options" :key="i.id">
-                                            <span v-if="(i.id === condition.optionId)">{{ i.name }}</span>
+                            <a-row>
+                              <a-col :span="4">
+                              </a-col>
+                              <a-col :span="14" style="color:#999;margin-bottom:10px;">
+                                参考范围：【<span>{{ item.min }}-{{ item.max }}</span>】
+                              </a-col>
+                              <a-col :span="2">
+                                <a :id="'str'+item.id" style="line-height: 20px;" @click="showInput(item.id)">展开</a>
+                              </a-col>
+                            </a-row>
+                            <a-row>
+                              <a-col :span="4"></a-col>
+                              <a-col :span="20">
+                                <div :id="item.id" style="display: none;">
+                                  <div style="padding-top:12px; display: flex;line-height: 20px;">
+                                    <div class="exTitle" style="margin-right: 4px;">参考结果:</div>
+                                    <div style="color: #00a0e9">
+                                      <span style="pointer-events:none;display:block;" v-for="(ranges,index) in item.result" :key="index">
+                                        <!-- 显示参考结果的条件，如性别、年龄 -->
+                                        <a-tag v-for="condition in ranges.conditionFilters" :key="condition.conditionId">
+                                          <span v-for="conditionItem in item.conditions" :key="conditionItem.id">
+                                            <template v-if="(conditionItem.id === condition.conditionId)">
+                                              <span v-for="i in conditionItem.options" :key="i.id">
+                                                <span v-if="(i.id === condition.optionId)">{{ i.name }}</span>
+                                              </span>
+                                            </template>
                                           </span>
-                                        </template>
+                                        </a-tag>
+                                        <!-- {{ ranges }} -->
+                                        {{ ranges | getRange }}
+                                        <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
                                       </span>
-                                    </a-tag>
-                                    <!-- {{ ranges }} -->
-                                    {{ ranges | getRange }}
-                                    <span style="margin-left: 6px; color: #999"> ({{ ranges.unit }}) </span>
-                                  </span>
+                                    </div>
+                                  </div>
+                                  <div><a class="exTitle">检查方式:</a>{{ item.testMethod }}</div>
+                                  <div><a class="exTitle">建议频率:</a>{{ item.testRateValue + '次/' + item.testRateUnit }}</div>
+                                  <div><a class="exTitle">检测环境:</a>{{ item.testEnvironment }}</div>
+                                  <div><span class="exTitle">备注:</span>{{ item.remark || '无' }}</div>
                                 </div>
-                              </div>
-                              <div><a class="exTitle">检查方式:</a>{{ item.testMethod }}</div>
-                              <div><a class="exTitle">建议频率:</a>{{ item.testRateValue + '次/' + item.testRateUnit }}</div>
-                              <div><a class="exTitle">检测环境:</a>{{ item.testEnvironment }}</div>
-                              <div><span class="exTitle">备注:</span>{{ item.remark || '无' }}</div>
-                            </div>
+                              </a-col>
+                            </a-row>
                           </a-col>
                         </a-row>
                       </a-col>
@@ -663,7 +677,8 @@ export default {
   display: inline-block;
 }
 .project-header {
-  background: linear-gradient(to bottom right, #00a0e9, #00abb9);
+  /* background: linear-gradient(to bottom right, #00a0e9, #00abb9); */
+  background: linear-gradient(to bottom right, #118bfd, #5bbdff);
   padding: 0 14px;
   color: white;
   border-radius: 2px;
