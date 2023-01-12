@@ -75,9 +75,8 @@ const columns = [
   {
     title: '预约时间',
     dataIndex: 'bookingDate',
-    customRender: (text, record) => {
-      return record ? moment(record.bookingDate).format('YYYY-MM-DD HH:mm:ss') : ''
-    }
+    customRender: (text, record) => { return record ? moment(record.bookingDate).format('YYYY-MM-DD HH:mm:ss') : '' },
+    sorter: (a, b) => Date.parse(a.bookingDate.toString()) - Date.parse(b.bookingDate.toString())
   },
   {
     title: '状态',

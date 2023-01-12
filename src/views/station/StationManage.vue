@@ -7,6 +7,8 @@
       <a-table :columns="columns" :data-source="dataSource">
         <span slot="operation" slot-scope="text, record">
           <a @click="editStation(record)"><a-icon type="edit" /> 编辑</a>
+          <a-divider type="vertical" />
+          <a @click="editEquipment(record)">设备</a>
           <!-- <a>删除</a> -->
         </span>
         <span slot="doctors" slot-scope="text">
@@ -32,16 +34,23 @@
       :stationInfo="stationInfo"
       @successAddStation="closeAddStationModel"
     />
+    <StationEquipment
+      v-if="equipmentVisible"
+      :visible="equipmentVisible"
+      :stationId="stationId"
+      @closeModel="closeModel"
+    />
   </div>
 </template>
 
 <script>
 import HealthStationAdd from './components/HeathStationAdd.vue'
+import StationEquipment from './components/StationEquipment.vue'
 import { getStations, getStationInfo } from '@/api/station'
 const columns = [
   {
     title: '小站名称',
-    width: 130,
+    width: 100,
     dataIndex: 'name'
   },
   {
@@ -75,14 +84,15 @@ const columns = [
   },
   {
     title: '操作',
-    width: 80,
+    width: 140,
     align: 'center',
     scopedSlots: { customRender: 'operation' }
   }
 ]
 export default {
   components: {
-    HealthStationAdd
+    HealthStationAdd,
+    StationEquipment
   },
   data () {
     return {
@@ -91,7 +101,8 @@ export default {
       columns,
       stationVisible: false,
       stationId: null,
-      stationInfo: {}
+      stationInfo: {},
+      equipmentVisible: false
     }
   },
   mounted () {
@@ -119,6 +130,13 @@ export default {
         this.stationVisible = true
       })
       // editstation(record.id)
+    },
+    editEquipment (record) {
+      this.equipmentVisible = true
+      this.stationId = record.id
+    },
+    closeModel () {
+      this.equipmentVisible = false
     }
   }
 }
