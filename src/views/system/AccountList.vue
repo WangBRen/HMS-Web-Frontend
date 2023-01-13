@@ -393,7 +393,7 @@ export default {
   },
   created () {
     getServiceList().then(res => {
-      console.log('getServiceList.call()', res)
+      // console.log('getServiceList.call()', res)
     })
 
     getRoleList().then(res => {
@@ -402,7 +402,7 @@ export default {
       if (this.role.list.length > 0) {
         this.role.initialValue = this.role.list[0].id
       }
-      console.log('getRoleList.call()', res.data)
+      // console.log('getRoleList.call()', res.data)
     })
   },
   methods: {
@@ -430,7 +430,7 @@ export default {
     // 原方法：
     handleEdit (record) {
       this.visible = true
-      console.log('record', record)
+      // console.log('record', record)
 
       const checkboxGroup = {}
       this.permissions = record.permissions.map(permission => {
@@ -450,8 +450,8 @@ export default {
       })
 
       this.$nextTick(() => {
-        console.log('permissions', this.permissions)
-        console.log('checkboxGroup', checkboxGroup)
+        // console.log('permissions', this.permissions)
+        // console.log('checkboxGroup', checkboxGroup)
 
         this.form.setFieldsValue(pick(record, ['id', 'status', 'describe', 'name']))
         this.form.setFieldsValue(checkboxGroup)
@@ -468,7 +468,7 @@ export default {
       this.selectedRows = selectedRows
     },
     handleExpand (expanded, record) {
-      console.log('expanded', expanded, record)
+      // console.log('expanded', expanded, record)
       if (expanded) {
         this.expandedRowKeys.push(record.id)
       } else {
@@ -479,12 +479,12 @@ export default {
       this.advanced = !this.advanced
     },
     searchId () {
-      console.log('搜索Id', this.checkId)
+      // console.log('搜索Id', this.checkId)
       this.pagination.current = 1
       this.getAccount()
     },
     searchStatus () {
-      console.log('搜索状态', this.checkState)
+      // console.log('搜索状态', this.checkState)
       this.pagination.current = 1
       this.getAccount()
       // const state = this.checkState
@@ -500,33 +500,29 @@ export default {
         status: 'disable'
       }
       changeDisable(id, apiData).then(res => {
-        console.log('res', res)
+        // console.log('res', res)
         if (res.status === 200) {
-          console.log('成功')
+          // console.log('成功')
           this.$message.info('禁用成功')
           this.getAccount()
         } else {
           this.$message.error('禁用失败,' + res.message)
         }
       })
-      console.log(apiData, 'data', id)
+      // console.log(apiData, 'data', id)
     },
     getAccount () {
       const pages = {
-        page: this.pagination.current - 1,
+        page: this.pagination.current,
         size: this.pagination.pageSize
       }
-      const test = {
-        name: this.checkId,
-        id: this.checkState
+      if (this.checkState !== 'all') {
+        pages.status = this.checkState
       }
-      // if (this.checkState !== 'all') {
-      //   pages.status = this.checkState
-      // }
-      console.log('pages', test)
+      // console.log('pages', test)
       getUserList(pages).then(res => {
         if (res.status === 200) {
-          console.log(res.data)
+          // console.log(res.data)
           this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
           this.pagination.total = res.data.totalElements
         }

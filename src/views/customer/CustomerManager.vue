@@ -40,11 +40,10 @@
         <!-- <span slot="action" slot-scope="text, grecord">
           <a @click="handleEdit(grecord)">添加用户</a>
         </span> -->
-        <span slot="avatar" slot-scope="text, grecord">
+        <!-- <span slot="avatar" slot-scope="text, grecord">
           <a-avatar size="large" icon="user" :src="grecord.avatar"/>
-        </span>
+        </span> -->
         <a-table
-          bordered
           :rowKey="(record,index)=>{return index}"
           class="child-table"
           slot="expandedRowRender"
@@ -52,7 +51,12 @@
           :columns="innerColumns"
           :data-source="inner.members"
           :pagination="false"
+          :customRow="rowClick"
         >
+          <span slot="baseInfoName" slot-scope="text, record">
+            <a v-if="record.member.nickname" @click.stop="seeUser(record)">{{ record.member.nickname || '---' }}</a>
+            <a v-else @click.stop="seeUser(record)">---</a>
+          </span>
           <span slot="healthStatus" slot-scope="text, record">
             <!-- {{ record.member.healthStatus }} -->
             <a-tag v-for="tag in record.member.healthStatus" :key="tag">
@@ -69,12 +73,12 @@
             <a-avatar :src="record.member.avatar" icon="user"/>
           </span>
           <span slot="operation" slot-scope="text, record">
-            <a @click="seeUser(record)">个人信息</a>
+            <!-- <a @click="seeUser(record)">个人信息</a>
+            <a-divider type="vertical" /> -->
+            <a @click.stop="handleHealthData(record)">健康信息</a>
             <a-divider type="vertical" />
-            <a @click="handleHealthData(record)">健康信息</a>
-            <a-divider type="vertical" />
-            <a @click="chronicInfo(record)">慢病管理</a>
-            <a-divider type="vertical" />
+            <!-- <a @click="chronicInfo(record)">慢病管理</a>
+            <a-divider type="vertical" /> -->
             <a-dropdown>
               <a-menu slot="overlay">
                 <a-menu-item>
@@ -90,7 +94,7 @@
                   </a-popconfirm>
                 </a-menu-item>
               </a-menu>
-              <a>
+              <a @click.stop="e => e.preventDefault()">
                 更多
                 <a-icon type="down" />
               </a>
@@ -145,19 +149,28 @@ import SeeUserMsg from './components/SeeUserMsg.vue'
 
 const columns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
-  { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
-  { title: '家庭名称',
+  // { title: '头像', dataIndex: 'avatar', key: 'avatar', scopedSlots: { customRender: 'avatar' }, align: 'center' },
+  {
+    title: '家庭名称',
     dataIndex: 'name',
     key: 'name',
     align: 'center',
+    customRender: (record) => {
+      return record || '---'
+    },
     sorter: (a, b) => {
       if (a.name === null || b.name === null) {
         return a.manager.nickname.localeCompare(b.manager.nickname)
       } else a.name.localeCompare(b.name)
     }
   },
-  { title: '管理员', dataIndex: 'manager.baseInfo.name', key: 'manager.baseInfo.name', align: 'center' },
-  { title: '创建者', dataIndex: 'createdBy.nickname', key: 'createdBy.nickname', align: 'center' },
+  { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  {
+    title: '创建者',
+    dataIndex: 'createdBy.nickname',
+    key: 'createdBy.nickname',
+    align: 'center'
+  },
   { title: '成员数', dataIndex: 'members.length', key: 'members.length', align: 'center', width: 100, sorter: (a, b) => a.members.length - b.members.length },
   {
     title: '创建时间',
@@ -173,7 +186,7 @@ const columns = [
 const innerColumns = [
   // { title: '序号', customRender: (text, record, index) => `${index + 1}`, align: 'center' },
   { title: '头像', dataIndex: 'member.avatar', key: 'member.avatar', scopedSlots: { customRender: 'cavatar' }, align: 'center' },
-  { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', align: 'center' },
+  { title: '名字', dataIndex: 'member.baseInfo.name', key: 'member.baseInfo.name', scopedSlots: { customRender: 'baseInfoName' }, align: 'center' },
   { title: '手机号', dataIndex: 'member.telephone', key: 'member.telephone', align: 'center' },
   { title: '健康状态', dataIndex: 'member.healthStatus', key: 'member.healthStatus', scopedSlots: { customRender: 'healthStatus' }, align: 'center' },
   { title: '慢病等级', dataIndex: 'member.level', key: 'member.level', scopedSlots: { customRender: 'healthlevel' }, align: 'center' },
@@ -185,7 +198,7 @@ const innerColumns = [
     customRender: (text, record, index) => {
       return record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
     },
-    width: '110px'
+    width: '160px'
   },
   {
     title: '操作',
@@ -291,6 +304,16 @@ export default {
       this.$refs.healthDataManagmentRef.setCustomerId(record.member.id, record)
       this.$refs.healthDataManagmentRef.findCustomerHealthReports()
     },
+    rowClick (record) {
+      return {
+        on: {
+          click: () => {
+            // console.log('点击', record)
+            this.chronicInfo(record)
+          }
+        }
+      }
+    },
     // 点击新的慢病
     chronicInfo (record) {
       this.chronicList.custId = record.member.id
@@ -375,6 +398,7 @@ export default {
 .table-page-search-wrapper{
   margin:  0 auto;
 }
+
 .search{
   text-align: center;
 }
@@ -385,11 +409,18 @@ export default {
   background-color: #b9e1f8;
 }
 .table-content tr.ant-table-expanded-row {
-  background: #E9E9E9 !important;
+  background: #fbfbfb !important;
+}
+
+.child-table .ant-table-thead > tr >th{
+  background-color: #fbfbfb;
+}
+.child-table .ant-table-tbody > td{
+  background-color: #fbfbfb;
 }
 
 .child-table {
-  background: white;
+  background: #fbfbfb;
 }
 .child-table th {
   line-height: 24px;

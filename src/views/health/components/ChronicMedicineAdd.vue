@@ -52,7 +52,7 @@
           <a-row>
             <a-col :span="24" :pull="3">
               <a-form-model-item label="不良反应">
-                <a-textarea v-model="medicineData.sideEffect" :auto-size="{ minRows: 3, maxRows: 20 }" :maxLength="1000"></a-textarea>
+                <a-textarea v-model="medicineData.sideEffect" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000"></a-textarea>
                 <span v-if="medicineData.sideEffect" style="position: relative;float: right;">{{ medicineData.sideEffect.length }}/1000</span>
                 <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
