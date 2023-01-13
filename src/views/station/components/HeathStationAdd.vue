@@ -206,7 +206,7 @@ export default {
     },
     // 获取所有健康师账号
     async getUser () {
-      const res = await getUserList({ page: 0, size: 100 })
+      const res = await getUserList({ page: 1, size: 100 })
       if (res.status === 200) {
         this.doctors = res.data.content
         this.managers = this.doctors.filter(item => {
