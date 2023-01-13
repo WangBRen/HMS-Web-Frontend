@@ -19,8 +19,10 @@
       </a-form-model-item> -->
       <a-form-model-item label="预约日期">
         <a-date-picker
+          :disabled-date="disabledDate"
+          format="YYYY-MM-DD HH:mm"
           v-model="form.date1"
-          show-time
+          :show-time="{ format: 'YYYY-MM-DD HH mm' }"
           type="date"
           placeholder="请选择预约日期"
           style="width: 100%;"
@@ -49,6 +51,7 @@
 <script>
 import { getStations, addAppointment, putAppointment } from '@/api/station'
 import { getChronic } from '@/api/customer'
+import moment from 'moment'
 
 export default {
   props: {
@@ -164,6 +167,10 @@ export default {
     },
     changeName (e) {
       this.customerId = e
+    },
+    disabledDate (current) {
+      // Can not select days before today
+      return current && current < moment().subtract(1, 'day')
     }
   }
 }

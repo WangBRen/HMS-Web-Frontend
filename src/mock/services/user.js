@@ -773,16 +773,6 @@ const userNav = options => {
       redirect: '/account/center',
       component: 'RouteView'
     },
-    {
-      name: 'center',
-      parentId: 10028,
-      id: 10029,
-      meta: {
-        title: '个人中心',
-        show: true
-      },
-      component: 'AccountCenter'
-    },
     // 特殊三级菜单
     {
       name: 'settings',
@@ -818,39 +808,6 @@ const userNav = options => {
         show: false
       },
       component: 'SecuritySettings'
-    },
-    {
-      name: 'CustomSettings',
-      path: '/account/settings/custom',
-      parentId: 10030,
-      id: 10033,
-      meta: {
-        title: '个性化设置',
-        show: false
-      },
-      component: 'CustomSettings'
-    },
-    {
-      name: 'BindingSettings',
-      path: '/account/settings/binding',
-      parentId: 10030,
-      id: 10034,
-      meta: {
-        title: '账户绑定',
-        show: false
-      },
-      component: 'BindingSettings'
-    },
-    {
-      name: 'NotificationSettings',
-      path: '/account/settings/notification',
-      parentId: 10030,
-      id: 10034,
-      meta: {
-        title: '新消息通知',
-        show: false
-      },
-      component: 'NotificationSettings'
     }
   ]
   const json = builder(nav)

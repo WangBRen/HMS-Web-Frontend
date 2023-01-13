@@ -1,7 +1,7 @@
 <template>
   <div :bordered="false">
     <!-- 所有慢病 -->
-    <a-config-provider v-if="(diseaseData.length === 0)">
+    <a-config-provider v-if="(!showLoading && diseaseData.length === 0)">
       <template #renderEmpty>
         <div style="text-align: center">
           <a-icon type="file-protect" style="font-size: 40px;line-height: 60px;" />
@@ -10,6 +10,7 @@
       </template>
       <a-list/>
     </a-config-provider>
+    <div style="display: flex;justify-content: center;margin: 20px;" v-show="showLoading"><a-spin tip="玩命加载中..."/></div>
     <a-tabs default-active-key="1" @change="callback">
       <a-tab-pane v-for="disease in diseaseData" :key="disease.diseaseId" :tab="disease.diseaseName">
         <a-table :columns="columns" :data-source="customers" :customRow="rowClick" style="background:#fff;padding: 0 10px;">
@@ -29,6 +30,22 @@
           </span>
           <span slot="sexAge" slot-scope="text, scope">
             {{ scope.baseInfo.gender }} {{ getAge(scope.baseInfo.birthDate) }}
+          </span>
+          <span slot="nextCheckAt" slot-scope="text, scope">
+            <span v-for="item in scope.diseasesDetail" :key="item.index">
+              <span v-if="item.chronicDisease.id === diseaseId && item.status==='diagnosed'">{{ getNextCheckAt(item.nextCheckAt) }}</span>
+            </span>
+          </span>
+          <span slot="remarkInterval" slot-scope="text, scope">
+            <span v-for="item in scope.diseasesDetail" :key="item.index">
+              <span v-if="item.chronicDisease.id === diseaseId && item.status==='diagnosed'">{{ item.remarkInterval || 0 }}天</span>
+            </span>
+          </span>
+          <span slot="countDown" slot-scope="text, scope">
+            <span v-for="item in scope.diseasesDetail" :key="item.index">
+              <span v-if="item.chronicDisease.id === diseaseId && item.status==='diagnosed'">{{ getCountDown(item.nextCheckAt) }}</span>
+              <span v-else-if="item.chronicDisease.id === diseaseId">-</span>
+            </span>
           </span>
           <span slot="operation" slot-scope="text, scope">
             <a @click.stop="handleHealthData(scope)">健康信息</a>
@@ -124,10 +141,18 @@ const columns = [
   },
   {
     title: '复查时间',
-    customRender: (text, record, index) => record ? moment(record.diseasesDetail.lastReceivedAt).format('YYYY-MM-DD HH:mm') : ''
+    scopedSlots: { customRender: 'nextCheckAt' }
+    // customRender: (text, record) => record ? moment(record.diseasesDetail.nextCheckAt).format('YYYY-MM-DD HH:mm') : ''
   },
   {
-    title: '随访倒计时'
+    title: '复查间隔',
+    align: 'center',
+    scopedSlots: { customRender: 'remarkInterval' }
+  },
+  {
+    title: '随访倒计时',
+    align: 'center',
+    scopedSlots: { customRender: 'countDown' }
   },
   {
     title: '操作',
@@ -190,8 +215,10 @@ export default {
         visible: false,
         diseaseId: -1
       },
+      diseaseId: null,
       seeData: null,
       seeVisible: false,
+      showLoading: false,
       pagination: {
         total: 0,
         current: 1,
@@ -219,7 +246,9 @@ export default {
         size: 100
       }
       // const res = await apiGetChronic(pages)
+      this.showLoading = true
       const res = await getChronic(pages)
+      this.showLoading = false
       if (res.status === 200) {
         // this.customerData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
         // const diseaseData = new Set()
@@ -360,6 +389,28 @@ export default {
           }
         }
       }
+    },
+    getNextCheckAt (checkTime) {
+      if (checkTime) {
+        return moment(checkTime).calendar()
+      } else {
+        return '-'
+      }
+    },
+    getCountDown (checkTime) {
+      // return moment().endOf('checkTime').calendar()
+      // this.timer = setInterval(() => {
+        const nowTime = +new Date()
+      // }, 1000)
+      // console.log(this.nowTime)
+        const futureTime = moment(checkTime).valueOf()
+        if (futureTime > nowTime) {
+          const totalSeconds = (futureTime - nowTime) / 1000
+          const day = parseInt(totalSeconds / 60 / 60 / 24)
+          return '剩余' + day + '天'
+        } else {
+          return '已超时'
+        }
     }
   }
 }

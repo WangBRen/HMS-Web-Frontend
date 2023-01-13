@@ -1,35 +1,36 @@
 <template>
   <div>
-    <a-row>
-      <a-col>
-        <a-button type="primary" @click="openModal('create')">新建</a-button>
-      </a-col>
-    </a-row>
+    <a-card>
+      <a-row>
+        <a-col>
+          <a-button type="primary" @click="openModal('create')">新建角色</a-button>
+        </a-col>
+      </a-row>
 
-    <a-table :columns="columns" :data-source="data" :row-key="record => record.id" style="background-color:white">
-      <!-- <a slot="displayName" slot-scope="displayName">{{ displayName }}</a> -->
-      <span slot="permissions" slot-scope="permissions" >
-        <span
-          v-for="tag in permissions"
-          :key="tag.permission"
-        >
-          <a-tag v-if="tag.canCreate || tag.canEdit || tag.canView || tag.canDelete">
-            <a-tooltip>
-              <template slot="title">
-                {{ tag.describe }}
-              </template>
-              {{ tag.name }}
-            </a-tooltip>
-          </a-tag>
+      <a-table :columns="columns" :data-source="data" :row-key="record => record.id" style="background-color:white">
+        <!-- <a slot="displayName" slot-scope="displayName">{{ displayName }}</a> -->
+        <span slot="permissions" slot-scope="permissions" >
+          <span
+            v-for="tag in permissions"
+            :key="tag.permission"
+          >
+            <a-tag v-if="tag.canCreate || tag.canEdit || tag.canView || tag.canDelete">
+              <a-tooltip>
+                <template slot="title">
+                  {{ tag.describe }}
+                </template>
+                {{ tag.name }}
+              </a-tooltip>
+            </a-tag>
+          </span>
         </span>
-      </span>
-      <span slot="action" slot-scope="text, record">
-        <a @click="openModal('edit', record)">编辑</a>
-        <a-divider type="vertical" />
-        <a @click="openDeleteModal(record)">删除</a>
-      </span>
-    </a-table>
-
+        <span slot="action" slot-scope="text, record">
+          <a @click="openModal('edit', record)">编辑</a>
+          <a-divider type="vertical" />
+          <a @click="openDeleteModal(record)">删除</a>
+        </span>
+      </a-table>
+    </a-card>
     <a-modal
       destroyOnClose
       :title="current.mode === 'create' ? '新增角色' : '编辑角色权限'"

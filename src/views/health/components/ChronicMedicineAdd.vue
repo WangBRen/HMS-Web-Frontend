@@ -31,7 +31,7 @@
                     <a-input addonAfter="次" v-model="medicineData.frequency"></a-input>
                   </a-col>
                   <a-col :span="1">
-                    <span style="width: 5%; text-align: center; line-height: 2">/</span>
+                    <span style="width: 5%; text-align: center; line-height: 2; margin-left: 3px" >/</span>
                   </a-col>
                   <a-col :span="4">
                     <a-select style="padding-top: 5px;" v-model="medicineData.unit">
@@ -50,23 +50,39 @@
             </a-col>
           </a-row>
           <a-row>
-            <a-col :span="12">
+            <a-col :span="24" :pull="3">
               <a-form-model-item label="不良反应">
-                <a-textarea v-model="medicineData.sideEffect" :auto-size="{ minRows: 3, maxRows: 5 }"></a-textarea>
-              </a-form-model-item>
-            </a-col>
-            <a-col :span="12">
-              <a-form-model-item label="禁忌">
-                <a-textarea v-model="medicineData.taboo" :auto-size="{ minRows: 3, maxRows: 5 }"></a-textarea>
+                <a-textarea v-model="medicineData.sideEffect" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000"></a-textarea>
+                <span v-if="medicineData.sideEffect" style="position: relative;float: right;">{{ medicineData.sideEffect.length }}/1000</span>
+                <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
             </a-col>
           </a-row>
           <a-row>
-            <a-col :span="12">
-              <a-form-model-item label="注意事项">
-                <a-textarea v-model="medicineData.attention" :auto-size="{ minRows: 3, maxRows: 5 }"></a-textarea>
+            <a-col :span="24" :pull="3">
+              <a-form-model-item label="禁忌">
+                <a-textarea v-model="medicineData.taboo" :auto-size="{ minRows: 3, maxRows: 20 }" :maxLength="1000"></a-textarea>
+                <span v-if="medicineData.taboo" style="position: relative;float: right;">{{ medicineData.taboo.length || 0 }}/1000</span>
+                <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
             </a-col>
+          </a-row>
+          <a-row>
+            <a-col :span="24" :pull="3">
+              <a-form-model-item label="注意事项">
+                <a-textarea v-model="medicineData.attention" :auto-size="{ minRows: 3, maxRows: 20 }" :maxLength="1000"></a-textarea>
+                <span v-if="medicineData.attention" style="position: relative;float: right;">{{ medicineData.attention.length }}/1000</span>
+                <span v-else style="position: relative;float: right;">0/1000</span>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
+          <a-row>
+            <!-- <a-col :span="24" :pull="3">
+              <a-form-model-item label="备注">
+                <a-textarea v-model="medicineData.attention" :auto-size="{ minRows: 3, maxRows: 20 }"></a-textarea>
+                <span style="position: relative;float: right;">{{ medicineData.attention.length }}/1000</span>
+              </a-form-model-item>
+            </a-col> -->
           </a-row>
         </a-form-model>
       </div>
@@ -174,7 +190,7 @@ export default {
               if (res.status === 200) {
                 // console.log('成功', res)
                 this.$emit('closeAddModal')
-                this.$parent.getMedinine()
+                this.$parent.getMedicine()
               } else {
                 this.$message.error('失败，' + res.message)
               }

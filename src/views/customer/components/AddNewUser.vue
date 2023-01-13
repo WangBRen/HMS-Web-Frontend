@@ -54,7 +54,8 @@ const columns = [
     title: '姓名',
     dataIndex: 'baseInfo.name',
     key: 'baseInfo.name',
-    align: 'center'
+    align: 'center',
+    customRender: (text, record) => record.baseInfo ? record.baseInfo.name : record.nickname
   },
   {
     title: '性别',
@@ -66,7 +67,8 @@ const columns = [
     title: '手机号码',
     dataIndex: 'baseInfo.phoneNumber',
     key: 'baseInfo.phoneNumber',
-    align: 'center'
+    align: 'center',
+    customRender: (text, record) => record.baseInfo ? record.baseInfo.phoneNumber : record.telephone
   }
 ]
 

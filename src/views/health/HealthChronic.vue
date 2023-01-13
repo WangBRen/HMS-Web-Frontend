@@ -10,7 +10,20 @@
     <a-table class="chronicTable" :columns="columns" :data-source="tableData" :rowKey="record=>record.id" :pagination="pagination">
       <span slot="items" slot-scope="text, record">
         <!-- <a>{{ record.items }}</a> -->
-        <a-tag v-for="(item,index) in record.items" :key="index">{{ item.indexItem.name }}</a-tag>
+        <a-popover>
+          <template slot="content">
+            <div style="max-width:600px;">
+              <a-tag v-for="(item,index) in record.items" :key="index">
+                {{ item.indexItem.name }}
+              </a-tag>
+            </div>
+          </template>
+          <span class="chronicItem">
+            <a-tag v-for="(item,index) in record.items" :key="index">
+              {{ item.indexItem.name }}
+            </a-tag>
+          </span>
+        </a-popover>
       </span>
       <span slot="action" slot-scope="text, record">
         <a @click="openSpeechModal(record)">话术</a>
@@ -202,13 +215,14 @@ export default {
             title: '指标',
             dataIndex: 'items',
             key: 'items',
+            width: '20%',
             scopedSlots: { customRender: 'items' }
           },
           {
             title: '操作',
             key: 'action',
             scopedSlots: { customRender: 'action' },
-            width: 250,
+            width: 230,
             align: 'center'
           }
         ],
@@ -544,5 +558,11 @@ export default {
   color: rgb(228, 152, 11);
   font-size: 17px;
   letter-spacing: 0.1em;
+}
+.chronicItem{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
 }
 </style>

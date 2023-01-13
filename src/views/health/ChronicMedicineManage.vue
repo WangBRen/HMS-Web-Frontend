@@ -19,11 +19,22 @@
             <span slot="dosage" slot-scope="text, record">
               {{ record.frequency }}次/{{ record.unit }}，每次{{ text }}
             </span>
+            <span slot="sideEffect" slot-scope="text">
+              <a-tooltip :overlayStyle="{maxWidth:'720px'}">
+                <template slot="title">
+                  <span>{{ text }}</span>
+                </template>
+                <span class="sideEffect">{{ text }}</span>
+              </a-tooltip>
+            </span>
             <span slot="createdAt" slot-scope="text, record">
               {{ record.createdAt | getMoment }}
             </span>
             <span slot="action" slot-scope="text, record">
-              <a @click="openItemModal('edit', record)">编辑</a>|
+              <a @click="openItemModal('edit', record)">编辑</a>
+              <span>
+                |
+              </span>
               <a-popconfirm
                 title="确定删除此药物吗?"
                 @confirm="delOk(record)"
@@ -77,26 +88,32 @@ const columns = [
   },
   {
     title: '药物名',
-    dataIndex: 'name'
+    dataIndex: 'name',
+    align: 'center'
   },
   {
     title: '使用剂量',
     dataIndex: 'dosage',
+    align: 'center',
     scopedSlots: { customRender: 'dosage' }
   },
   {
     title: '不良反应',
-    dataIndex: 'sideEffect'
+    dataIndex: 'sideEffect',
+    align: 'center',
+    scopedSlots: { customRender: 'sideEffect' }
   },
   {
     title: '创建时间',
     dataIndex: 'createdAt',
+    align: 'center',
     scopedSlots: { customRender: 'createdAt' }
 
   },
   {
     title: '操作',
     key: 'action',
+    align: 'center',
     scopedSlots: { customRender: 'action' }
   }
 ]
@@ -127,64 +144,23 @@ export default {
         index: null
       },
       columns,
-      testData: [
-        {
-          id: '1',
-          goal: '治疗目标1',
-          item: [
-            {
-              id: '11',
-              name: '药物名11',
-              type: '药物类别1',
-              usage: '用法1',
-              dosage: '100mg',
-              frequency: '1',
-              unit: '日',
-              sideEffect: '不良反应1',
-              taboo: '禁忌1',
-              attention: '注意事项1',
-              createdAt: '-----'
-            },
-            {
-              id: '12',
-              name: '药物名12',
-              type: '药物类别1',
-              usage: '用法1',
-              dosage: '1吨',
-              frequency: '3',
-              unit: 'kg',
-              sideEffect: '不良反应1',
-              taboo: '禁忌1',
-              attention: '注意事项1',
-              createdAt: '-----'
-            }
-          ]
-        },
-        {
-          id: '2',
-          goal: '治疗目标2',
-          item: [
-            {
-              id: '21',
-              name: '药物名21',
-              type: '药物类别2',
-              usage: '用法2',
-              dosage: '剂量2',
-              frequency: '频率2',
-              unit: '单位2',
-              sideEffect: '不良反应2',
-              taboo: '禁忌2',
-              attention: '注意事项2',
-              createdAt: '创建时间2'
-            }
-          ]
-        }
-      ],
       medArr: []
     }
   },
   methods: {
-    getMedinine () {
+    getMedicine () {
+      apiGetMedicine().then(res => {
+        if (res.status === 200) {
+          this.medArr = res.data
+          // console.log('获取成功', this.medArr)
+          this.checkTabKey = this.medArr[0].id
+        } else {
+          this.$message.error('获取失败' + res.message)
+          // console.log('获取失败')
+        }
+      })
+    },
+    updateMedicine () {
       apiGetMedicine().then(res => {
         if (res.status === 200) {
           this.medArr = res.data
@@ -199,7 +175,6 @@ export default {
     getProName () {
       // return this.checkTabKey
       const project = (this.medArr || []).find(tab => tab.id === this.checkTabKey)
-      // console.log(this.checkTabKey, 'project', this.testData)
       if (project) {
         return project.name
       } else {
@@ -253,7 +228,7 @@ export default {
                 // console.log('成功', res)
                 this.$message.info('编辑治疗目标成功')
                 this.MedVisible = false
-                this.getMedinine()
+                this.updateMedicine()
               } else {
                 this.$message.error(res.message)
               }
@@ -271,7 +246,7 @@ export default {
                 // console.log('成功', res)
                 this.$message.info('新建治疗目标成功')
                 this.MedVisible = false
-                this.getMedinine()
+                this.updateMedicine()
               } else {
                 this.$message.error('新建失败' + res.message)
                 // console.log(res)
@@ -293,7 +268,7 @@ export default {
       apiDelMedicineItem(this.getProName(), data.id).then(res => {
         // console.log(res)
         if (res.status <= 204) {
-          this.getMedinine()
+          this.updateMedicine()
           this.$message.info('删除药物成功')
         } else {
           this.$message.error('删除失败' + res.message)
@@ -308,12 +283,12 @@ export default {
   created () {
   },
   mounted () {
-    this.getMedinine()
-    // setTimeout(() => {
-    //   if (this.medArr.length !== 0) {
-    //   this.checkTabKey = this.medArr[0].id
-    // }
-    // }, 500)
+    this.getMedicine()
+      // console.log('this.medArr', this.medArr)
+      // if (this.medArr.length !== 0) {
+      //   this.checkTabKey = this.medArr[0].id
+      //   console.log('medArr', this.medArr)
+      // }
   },
   watch: {
     checkTabKey (newData, oldData) {
@@ -323,5 +298,10 @@ export default {
 }
 </script>
 <style scoped>
-
+.sideEffect{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
 </style>

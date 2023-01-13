@@ -11,7 +11,8 @@ const customerApi = {
     abandonFollowForm: (customerId, formId) => { return `/customers/${customerId}/followup-forms/${formId}/destroy` }, // 废弃随访单
     createFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}/create`, // 创建随访单
     showFollowForm: (customerId, formId) => `/customers/${customerId}/followup-forms/${formId}`,
-    allFollowForm: (customerId, diseaseId) => `customers/${customerId}/${diseaseId}/followup-forms/all` // 某一慢病下所有的随访单
+    allFollowForm: (customerId, diseaseId) => `customers/${customerId}/${diseaseId}/followup-forms/all`, // 某一慢病下所有的随访单
+    setIntervalTime: (customerId, diseaseId) => `customers/${customerId}/chronic-diseases/${diseaseId}/set-time`
   }
 
 // 随访记录
@@ -95,5 +96,12 @@ export function allFollowForm (customerId, diseaseId) {
   return request({
     url: customerApi.allFollowForm(customerId, diseaseId),
     method: 'get'
+  })
+}
+export function setIntervalTime (customerId, diseaseId, parameter) {
+  return request({
+    url: customerApi.setIntervalTime(customerId, diseaseId),
+    method: 'post',
+    data: parameter
   })
 }
