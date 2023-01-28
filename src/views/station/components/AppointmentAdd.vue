@@ -98,19 +98,24 @@ export default {
         stationType: [{ required: true, message: '请选择预约项目', trigger: 'change' }]
       },
       title: '新增预约',
-      stationId: 4,
-      customerId: null
+      stationId: null,
+      customerId: null,
+      status: 'UNEXECUTED'
     }
   },
   mounted () {
     this.loadData()
     if (this.bookingId) {
+      console.log('this.appointmentInfo', this.appointmentInfo)
       this.title = '编辑预约信息'
       this.form.name = this.appointmentInfo.customer.nickname
       this.form.address = this.appointmentInfo.healthStation.name
       this.form.date1 = this.appointmentInfo.bookingDate
       this.form.stationType = this.appointmentInfo.type
       this.form.remark = this.appointmentInfo.remark
+      this.customerId = this.appointmentInfo.customer.id
+      this.stationId = this.appointmentInfo.healthStation.id
+      this.status = this.appointmentInfo.status
     }
   },
   methods: {
@@ -136,9 +141,13 @@ export default {
           payload.bookingTime = this.form.date1
           payload.remark = this.form.remark
           payload.type = this.form.stationType
-          payload.status = 'UNEXECUTED'
+          payload.status = this.status
           if (this.bookingId) {
             putAppointment(this.stationId, this.bookingId, payload).then(res => {
+              if (res.status === 200) {
+                this.$message.success('更新成功')
+                this.$emit('successAppointment')
+              }
             })
           } else {
             addAppointment(this.stationId, payload).then(res => {
@@ -155,12 +164,13 @@ export default {
       })
     },
     handleCancel () {
-      this.$emit('successAppointment')
+      this.$emit('closeAppointment')
     },
     changeProject (e) {
       this.filterStations = this.stations.filter(item => {
         if (item.type === e.target.value) { return true }
       })
+      this.form.address = ''
     },
     changeStation (e) {
       this.stationId = e

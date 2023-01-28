@@ -6,7 +6,7 @@
       :title="'编辑药物【'+medicineInfo.name+'】'"
       @ok="medicineHandleOk"
       @cancel="medicineHandleCancel"
-      width="70%"
+      width="80%"
       :maskClosable="false"
       :ok-button-props="{ style: {display: 'none'} }"
     >
@@ -32,7 +32,7 @@
               {{ record.medicine.frequency }}次/{{ record.medicine.unit }}，每次{{ text }}
             </span>
             <span slot="createdAt" slot-scope="text, record">
-              {{ record.createdAt | getMoment }}
+              {{ record.medicine.createdAt | getMoment }}
             </span>
             <span slot="action" slot-scope="text, record">
               <a-popconfirm
@@ -69,7 +69,8 @@ const columns = [
   },
   {
     title: '不良反应',
-    dataIndex: 'medicine.sideEffect'
+    dataIndex: 'medicine.sideEffect',
+    ellipsis: true
   },
   {
     title: '创建时间',
@@ -80,6 +81,7 @@ const columns = [
   {
     title: '操作',
     key: 'action',
+    width: 70,
     scopedSlots: { customRender: 'action' }
   }
 ]

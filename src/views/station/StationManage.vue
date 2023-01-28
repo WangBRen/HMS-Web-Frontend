@@ -4,7 +4,7 @@
       <a-button type="primary" @click="addStation" style="margin-bottom:10px;">
         新增小站
       </a-button>
-      <a-table :columns="columns" :data-source="dataSource">
+      <a-table :columns="columns" rowKey="id" :data-source="dataSource" :loading="isLoading">
         <span slot="operation" slot-scope="text, record">
           <a @click="editStation(record)"><a-icon type="edit" /> 编辑</a>
           <a-divider type="vertical" />
@@ -102,7 +102,8 @@ export default {
       stationVisible: false,
       stationId: null,
       stationInfo: {},
-      equipmentVisible: false
+      equipmentVisible: false,
+      isLoading: true
     }
   },
   mounted () {
@@ -113,6 +114,7 @@ export default {
       const res = await getStations()
       if (res.status === 200) {
         this.dataSource = res.data
+        this.isLoading = false
       }
     },
     addStation () {
