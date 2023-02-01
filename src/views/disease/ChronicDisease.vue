@@ -412,6 +412,9 @@ export default {
           return '已超时'
         }
     }
+  },
+  created () {
+    this.$setPageDataLoader(this.loadDate)
   }
 }
 </script>

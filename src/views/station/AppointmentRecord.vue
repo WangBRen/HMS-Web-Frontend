@@ -216,6 +216,9 @@ export default {
         // })
       }
     }
+  },
+  created () {
+    this.$setPageDataLoader(this.loadData)
   }
 }
 </script>

@@ -138,6 +138,9 @@ export default {
     closeModel () {
       this.equipmentVisible = false
     }
+  },
+  created () {
+    this.$setPageDataLoader(this.loadData)
   }
 }
 </script>

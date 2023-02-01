@@ -165,7 +165,7 @@ export default {
         if (res.status === 200) {
           this.medArr = res.data
           // console.log('获取成功', this.medArr)
-          this.checkTabKey = this.medArr[0].id
+          // this.checkTabKey = this.medArr[0].id
         } else {
           this.$message.error('获取失败' + res.message)
           // console.log('获取失败')
@@ -230,7 +230,7 @@ export default {
                 this.MedVisible = false
                 this.updateMedicine()
               } else {
-                this.$message.error(res.message)
+                this.$message.error('编辑失败' + res.message)
               }
             })
             break
@@ -281,6 +281,7 @@ export default {
     }
   },
   created () {
+    this.$setPageDataLoader(this.getMedicine)
   },
   mounted () {
     this.getMedicine()
