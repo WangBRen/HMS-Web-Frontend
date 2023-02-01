@@ -163,6 +163,9 @@ export default {
     // 获取表格初始数据
     this.loadPage()
   },
+  created () {
+    this.$setPageDataLoader(this.loadPage)
+  },
   methods: {
     fillValues (role, permissionList) { // {}
       const defaultObject = function (permission, name, describe) {

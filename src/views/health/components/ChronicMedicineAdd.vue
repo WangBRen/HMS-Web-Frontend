@@ -14,12 +14,12 @@
           <a-row>
             <a-col :span="12">
               <a-form-model-item label="药物名" prop="name">
-                <a-input v-model="medicineData.name"></a-input>
+                <a-input v-model="medicineData.name" placeholder="输入药物名"></a-input>
               </a-form-model-item>
             </a-col>
             <a-col :span="12">
               <a-form-model-item label="药物类别" prop="type">
-                <a-input v-model="medicineData.type"></a-input>
+                <a-input v-model="medicineData.type" placeholder="输入药物类别"></a-input>
               </a-form-model-item>
             </a-col>
           </a-row>
@@ -52,7 +52,7 @@
           <a-row>
             <a-col :span="24" :pull="3">
               <a-form-model-item label="不良反应">
-                <a-textarea v-model="medicineData.sideEffect" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000"></a-textarea>
+                <a-textarea v-model="medicineData.sideEffect" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000" placeholder="输入不良反应"></a-textarea>
                 <span v-if="medicineData.sideEffect" style="position: relative;float: right;">{{ medicineData.sideEffect.length }}/1000</span>
                 <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
@@ -61,7 +61,7 @@
           <a-row>
             <a-col :span="24" :pull="3">
               <a-form-model-item label="禁忌">
-                <a-textarea v-model="medicineData.taboo" :auto-size="{ minRows: 3, maxRows: 20 }" :maxLength="1000"></a-textarea>
+                <a-textarea v-model="medicineData.taboo" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000" placeholder="输入禁忌"></a-textarea>
                 <span v-if="medicineData.taboo" style="position: relative;float: right;">{{ medicineData.taboo.length || 0 }}/1000</span>
                 <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
@@ -70,19 +70,20 @@
           <a-row>
             <a-col :span="24" :pull="3">
               <a-form-model-item label="注意事项">
-                <a-textarea v-model="medicineData.attention" :auto-size="{ minRows: 3, maxRows: 20 }" :maxLength="1000"></a-textarea>
+                <a-textarea v-model="medicineData.attention" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000" placeholder="输入注意事项"></a-textarea>
                 <span v-if="medicineData.attention" style="position: relative;float: right;">{{ medicineData.attention.length }}/1000</span>
                 <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
             </a-col>
           </a-row>
           <a-row>
-            <!-- <a-col :span="24" :pull="3">
+            <a-col :span="24" :pull="3">
               <a-form-model-item label="备注">
-                <a-textarea v-model="medicineData.attention" :auto-size="{ minRows: 3, maxRows: 20 }"></a-textarea>
-                <span style="position: relative;float: right;">{{ medicineData.attention.length }}/1000</span>
+                <a-textarea v-model="medicineData.remark" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000" placeholder="输入备注"></a-textarea>
+                <span v-if="medicineData.remark" style="position: relative;float: right;">{{ medicineData.remark.length }}/1000</span>
+                <span v-else style="position: relative;float: right;">0/1000</span>
               </a-form-model-item>
-            </a-col> -->
+            </a-col>
           </a-row>
         </a-form-model>
       </div>
@@ -141,9 +142,6 @@ export default {
   },
   methods: {
     handleOk () {
-      // console.log('mode', this.mode)
-      // console.log('goalname', this.goalName)
-      // console.log('确定', this.medicineData.id)
       if (this.mode === 'add') {
         this.$refs.ruleForm.validate(valid => {
           if (valid) {
@@ -156,13 +154,15 @@ export default {
               frequency: this.medicineData.frequency || '',
               sideEffect: this.medicineData.sideEffect || '',
               taboo: this.medicineData.taboo || '',
-              attention: this.medicineData.attention || ''
+              attention: this.medicineData.attention || '',
+              remark: this.medicineData.remark || ''
             }
             apiAddMedicineItem(this.goalName, apiData).then(res => {
               if (res.status === 201) {
                 // console.log('成功', res)
+                this.$message.info('添加药物成功')
                 this.$emit('closeAddModal')
-                this.$parent.getMedinine()
+                this.$parent.updateMedicine()
               } else {
                 this.$message.error('失败，' + res.message)
               }
@@ -184,13 +184,15 @@ export default {
               frequency: this.medicineData.frequency || '',
               sideEffect: this.medicineData.sideEffect || '',
               taboo: this.medicineData.taboo || '',
-              attention: this.medicineData.attention || ''
+              attention: this.medicineData.attention || '',
+              remark: this.medicineData.remark || ''
             }
             apiEditMedicineItem(this.goalName, this.medicineData.id, apiData).then(res => {
               if (res.status === 200) {
                 // console.log('成功', res)
+                this.$message.info('编辑药物成功')
                 this.$emit('closeAddModal')
-                this.$parent.getMedicine()
+                this.$parent.updateMedicine()
               } else {
                 this.$message.error('失败，' + res.message)
               }
