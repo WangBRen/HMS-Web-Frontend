@@ -20,11 +20,13 @@ import './core/lazy_use' // use lazy load components
 import './permission' // permission control
 import './utils/filter' // global filter
 import './global.less' // global style
+import Print from 'vue-print-nb'
 // 表单组件注册
 import { FormModel, collapse, slider } from 'ant-design-vue'
 Vue.use(FormModel)
 Vue.use(collapse)
 Vue.use(slider)
+Vue.use(Print)
 
 Vue.config.productionTip = false
 
