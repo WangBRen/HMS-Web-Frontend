@@ -101,7 +101,14 @@
     </a-form>
     <!-- 修改个人信息弹窗 -->
     <!-- <a-button @click="openmodal">点击</a-button> -->
-    <a-modal v-model="visible" title="首次登录请修改用户信息" @ok="handleOk" @cancel="handleOff" destroyOnClose >
+    <a-modal
+      v-model="visible"
+      title="首次登录请修改用户信息"
+      @ok="handleOk"
+      @cancel="handleOff"
+      destroyOnClose
+      :maskClosable="false"
+    >
       <a-form-model ref="ruleForm" :model="formdata" :rules="info_rules" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-form-model-item label="证件类型" prop="idType">
           <a-select v-model="formdata.idType" placeholder="请选择证件类型">

@@ -289,6 +289,7 @@
 </template>
 <script>
 import { getHealthIndex, addHealthReport } from '@/api/health'
+// import { getHealthIndex } from '@/api/health'
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
 import Symptom from '@/components/DiaMsg/UserSymptom.vue'
 // import symptom from '@/components/DiaMsg/symptom.json'
@@ -369,7 +370,7 @@ export default {
                             x.testAt = val.testAt
                             val.indexArr.forEach(function (val2) {
                                 if (val.testAt != null) {
-                                    if (val2.value != null) {
+                                    if (val2.value != null && val2.value !== '') {
                                         const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
                                         x.items.push(y)
                                     }
