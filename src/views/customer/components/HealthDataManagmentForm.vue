@@ -85,12 +85,12 @@
       <div id="printArea">
         <div>
           <a-row class="msg_top">
-            <a-col class="msg_title" :span="5" :push="1">
+            <a-col class="msg_title" :span="6" :push="1">
               <span >健康信息记录</span>
             </a-col>
-            <a-col :span="4" :push="14">
+            <a-col :span="4" :push="13">
               <span>
-                <img class="msg_picture" src="http://hms-web.oss-cn-shenzhen.aliyuncs.com/image/wx/logo.png">
+                <img class="msg_picture" src="@/assets/printLogo.png">
               </span>
             </a-col>
           </a-row>
@@ -179,7 +179,9 @@
           </div>
           <div class="diagnosis_msg" v-if="diagnosisData.length">
             <a-row>
-              <!-- <a-col class="table_title" :span="2">诊断信息</a-col> -->
+              <span style="font-size: 16px;font-weight: 1000">诊断信息</span>
+            </a-row>
+            <a-row>
               <a-col :span="24">
                 <a-table
                   :columns="diaColumns"
@@ -196,10 +198,10 @@
             </a-row>
           </div>
           <div class="symptom_msg" v-if="symptomData.length">
+            <a-row>
+              <span style="font-size: 16px;font-weight: 1000">症状信息</span>
+            </a-row>
             <a-row >
-              <!-- <a-col class="table_title" :span="2">
-                <div>症状信息</div>
-              </a-col> -->
               <a-col :span="24">
                 <a-table
                   :columns="symColumns"
@@ -216,7 +218,7 @@
             </a-row>
           </div>
           <div class="index_msg" v-for="(item, index) in indexEndData" :key="index">
-            <a-row>
+            <a-row v-if="indexEndData.length">
               <span style="font-size: 16px;font-weight: 1000">指标信息</span>
             </a-row>
             <a-row>
@@ -245,8 +247,10 @@
                   </span>
                 </a-table>
                 <a-row>
-                  <a-col :span="4" style="text-align: center;">异常指标小结：</a-col>
-                  <a-col :span="20">
+                  <a-col v-if="item.mark > 0" style="text-align: left;font-size: 14px;">
+                    <b>异常指标小结：</b>
+                  </a-col>
+                  <a-col style="font-size: 12px;">
                     <div v-for="indexItem in item.indexGroup" :key="indexItem.index">
                       <div v-if="indexItem.abnormalGroup !== null">
                         <b>{{ indexItem.indexName }}</b> : {{ indexItem.abnormalGroup }}
@@ -259,7 +263,11 @@
           </div>
         </div>
       </div>
-      <button v-print="print">打印</button>
+      <template slot="footer">
+        <a-button type="primary" v-print="print">打印</a-button>
+        <a-button @click="printCancel">取消</a-button>
+        <!-- <button v-print="print">打印</button> -->
+      </template>
     </a-modal>
     <HealthReportSee ref="seeReport" />
     <HealthReportAdd ref="addReport" @successCreatReport="RefreshReport"/>
@@ -455,12 +463,12 @@ export default {
         previewTitle: '预览的标题', // 打印预览的标题
         previewPrintBtnLabel: '预览结束，开始打印', // 打印预览的标题下方的按钮文本，点击可进入打印
         zIndex: 20002, // 预览窗口的z-index，默认是20002，最好比默认值更高
-        previewBeforeOpenCallback () { console.log('正在加载预览窗口！'); console.log(this) }, // 预览窗口打开之前的callback
-        previewOpenCallback () { console.log('已经加载完预览窗口，预览打开了！') }, // 预览窗口打开时的callback
-        beforeOpenCallback () { console.log('开始打印之前！') }, // 开始打印之前的callback
-        openCallback () { console.log('执行打印了！') }, // 调用打印时的callback
-        closeCallback () { console.log('关闭了打印工具！') }, // 关闭打印的callback(无法区分确认or取消)
-        clickMounted () { console.log('点击v-print绑定的按钮了！') },
+        // previewBeforeOpenCallback () { console.log('正在加载预览窗口！'); console.log(this) }, // 预览窗口打开之前的callback
+        // previewOpenCallback () { console.log('已经加载完预览窗口，预览打开了！') }, // 预览窗口打开时的callback
+        // beforeOpenCallback () { console.log('开始打印之前！') }, // 开始打印之前的callback
+        // openCallback () { console.log('执行打印了！') }, // 调用打印时的callback
+        // closeCallback () { console.log('关闭了打印工具！') }, // 关闭打印的callback(无法区分确认or取消)
+        // clickMounted () { console.log('点击v-print绑定的按钮了！') },
         // url: 'http://localhost:8080/', // 打印指定的URL，确保同源策略相同
         // asyncUrl (reslove) {
         //   setTimeout(() => {
@@ -590,9 +598,9 @@ export default {
       const newmonth = date.month > 9 ? date.month : '0' + date.month
       const day = date.date > 9 ? date.date : '0' + date.date
       this.printdata.nowDate = date.year + '.' + newmonth + '.' + day
-      console.log('打印-个人信息', this.printdata)
+      // console.log('打印-个人信息', this.printdata)
       const testData = this.selectReport
-      console.log('表单信息testData', testData)
+      // console.log('表单信息testData', testData)
       const midData = testData.map((item) => {
         const hhh = {}
         if (item.projects.length) {
@@ -622,7 +630,7 @@ export default {
         }
         return hhh
       })
-      console.log('midData', midData)
+      // console.log('midData', midData)
       // 处理症状
       let symData = midData.map((item) => {
         if (item.symTime !== null) {
@@ -681,29 +689,33 @@ export default {
       // console.log('disData', disData)
       this.indexEndData = []
       // 处理指标
-      const indexData = midData.map((item) => {
+      midData.map((item) => {
         if (item.index) {
           getHealthCustomerReport(this.printdata.customer.id, item.index.id).then((res) => {
             if (res.status === 200) {
-              console.log('指标数据', res.data.projects)
+              // console.log('指标数据', res.data.projects)
               const projects = res.data.projects
               for (let i = 0; i < projects.length; i++) {
                 const aaa = {
                   createdAt: projects[i].createdAt,
                   indexRecorder: item.index.indexRecorder,
                   indexProjectName: projects[i].indexProjectName,
-                  indexGroup: []
+                  indexGroup: [],
+                  mark: 0
                 }
                 for (let j = 0; j < projects[i].items.length; j++) {
                   const output = {
                     indexName: projects[i].items[j].healthIndexItem.name,
                     indexResult: projects[i].items[j].result || '---',
-                    abnormalGroup: ''
+                    abnormalGroup: null
                   }
                   // 判断值
                   if (projects[i].items[j].healthIndexItem.type === 'Report') {
                     output.indexValue = JSON.parse(projects[i].items[j].value)[0].fileName || '---'
                   } else {
+                    // if (projects[i].items[j].value !== '' && projects[i].items[j].value !== null) {
+                    //   output.indexValue = projects[i].items[j].value + (projects[i].items[j].healthIndexItem.unit || '') || '---'
+                    // }
                     output.indexValue = projects[i].items[j].value + (projects[i].items[j].healthIndexItem.unit || '') || '---'
                   }
                   // 判断范围
@@ -716,30 +728,28 @@ export default {
                   // if (projects[i].items[j].healthIndexItem.type === 'Report' || projects[i].items[j].healthIndexItem.type === 'Text' || projects[i].items[j].healthIndexItem.type === 'Integer') {
                   if (projects[i].items[j].result !== null) {
                     for (let k = 0; k < projects[i].items[j].healthIndexItem.result.length; k++) {
-                      if (projects[i].items[j].result === projects[i].items[j].healthIndexItem.result[k].name) {
+                      if ((projects[i].items[j].result === projects[i].items[j].healthIndexItem.result[k].name) && projects[i].items[j].healthIndexItem.result[k].remark !== null && projects[i].items[j].healthIndexItem.result[k].remark !== '') {
                         // console.log(projects[i].items[j].result, projects[i].items[j].healthIndexItem.result[k].remark)
                         output.abnormalGroup = projects[i].items[j].healthIndexItem.result[k].remark
                       }
                     }
                   } else {
-                    output.abnormalGroup = ''
+                    output.abnormalGroup = null
+                  }
+                  if (output.abnormalGroup !== null) {
+                    aaa.mark++
                   }
                   aaa.indexGroup.push(output)
                 }
                 this.indexEndData.push(aaa)
               }
-              // const haha = {
-              //   indexRecorder: item.index.indexRecorder,
-              // }
             } else {
               this.$message.error(res.message || '查看报告单出错')
             }
           })
-          return item.index
         }
       }).filter(item2 => item2 !== undefined)
-      console.log('indexEndData', this.indexEndData)
-      console.log('indexData', indexData)
+      // console.log('indexEndData', this.indexEndData)
     },
     printCancel () {
       this.printeVisible = false
@@ -748,11 +758,7 @@ export default {
     RefreshReport () {
       this.findCustomerHealthReports()
     },
-    // onSelectChange (selectedRowKeys, selectedRows) {
-    //   console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-    //   this.selectReport = selectedRows
-    //   console.log('selectReport', this.selectReport)
-    // },
+    // 单选触发
     onSelect (record, selected, selectedRows, nativeEvent) {
       if (selected) {
         this.selectReport.push(record)
@@ -762,8 +768,9 @@ export default {
         })
         this.selectReport.splice(delIndex, 1)
       }
-      console.log('selectReport', this.selectReport)
+      // console.log('selectReport', this.selectReport)
     },
+    // 多选触发
     onSelectAll (selected, selectedRows, changeRows) {
       if (selected) {
         this.selectReport = this.selectReport.concat(changeRows)
@@ -786,7 +793,7 @@ export default {
         })
         this.selectReport = selectReport
       }
-      console.log('selectReport', this.selectReport)
+      // console.log('selectReport', this.selectReport)
     }
   },
   computed: {
@@ -808,19 +815,21 @@ export default {
 </script>
 <style lang="less" scoped>
 .msg_title{
-  font-size: 20px;
-  margin-top: 2%;
+  font-size: 26px;
   /* margin-left: 3%; */
-  color:white
+  color:white;
+  align-self:center;
 }
 .msg_top{
   /* padding-top: 15px; */
   /* border-style:solid; */
   border-width: 1px;
-  background-color: #299B96
+  // background-color: #299B96
+  background-color: #31ADA9;
+  display: flex;
 }
 .msg_picture{
-  width: 200px;
+  width: 160px;
   object-fit: contain;
   float: right;
 }
@@ -844,7 +853,7 @@ export default {
 }
 .diagnosis_msg{
   margin-top: 1%;
-  background-color: #DAEEF3;
+  // background-color: #DAEEF3;
   /deep/ .ant-table-body{
     background-color: white;
     font-size: 1px;
@@ -854,7 +863,7 @@ export default {
 }
 .symptom_msg{
   margin-top: 1%;
-  background-color: #DAEEF3;
+  // background-color: #DAEEF3;
   /deep/ .ant-table-body{
     background-color: white;
     font-size: 1px;
