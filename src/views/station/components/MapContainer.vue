@@ -30,6 +30,14 @@ window._AMapSecurityConfig = {
   securityJsCode: 'eb96e52013d6520646ac369924abbfd3'
 }
 export default {
+  props: {
+    formData: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    }
+  },
   data () {
     return {
       // 地图实例
@@ -165,6 +173,11 @@ export default {
   },
   mounted () {
     this.initMap()
+    this.form.lng = this.formData.longitude
+    this.form.lat = this.formData.latitude
+    setTimeout(() => {
+      this.setMapMarker()
+    }, 1000)
   }
 }
 </script>

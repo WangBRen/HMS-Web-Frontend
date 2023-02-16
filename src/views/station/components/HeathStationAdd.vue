@@ -13,7 +13,7 @@
       <a-form-model-item label="小站位置" prop="address">
         <!-- 地图容器 -->
         <div class="mapBox">
-          <MapContainer @selectAddress="getAddress"/>
+          <MapContainer @selectAddress="getAddress" :formData="form"/>
         </div>
       </a-form-model-item>
       <a-form-model-item label="小站地址" prop="address">
@@ -139,6 +139,8 @@ export default {
       console.log('this.stationInfo', this.stationInfo)
       this.form.name = this.stationInfo.name
       this.form.address = this.stationInfo.address
+      this.form.latitude = this.stationInfo.latitude
+      this.form.longitude = this.stationInfo.longitude
       this.form.phone = this.stationInfo.phone
       this.form.doctors = this.stationInfo.doctors.map(item => {
         return item.id
@@ -164,6 +166,8 @@ export default {
           const apiForm = {}
           apiForm.name = form.name
           apiForm.address = form.address
+          apiForm.longitude = form.longitude
+          apiForm.latitude = form.latitude
           apiForm.phone = form.phone
           apiForm.remark = form.remark
           apiForm.status = form.stationStatus
