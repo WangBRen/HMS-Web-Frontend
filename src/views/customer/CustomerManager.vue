@@ -54,8 +54,9 @@
           :customRow="rowClick"
         >
           <span slot="baseInfoName" slot-scope="text, record">
-            <a v-if="record.member.nickname" @click.stop="seeUser(record)">{{ record.member.nickname || '---' }}</a>
-            <a v-else @click.stop="seeUser(record)">---</a>
+            <a @click.stop="seeUser(record)">{{ record.member.baseInfo.name || record.member.nickname }}</a>
+            <!-- <a v-if="record.member.nickname" @click.stop="seeUser(record)">{{ record.member.baseInfo.name || record.member.nickname }}</a>
+            <a v-else @click.stop="seeUser(record)">---</a> -->
           </span>
           <span slot="healthStatus" slot-scope="text, record">
             <!-- {{ record.member.healthStatus }} -->

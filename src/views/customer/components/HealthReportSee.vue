@@ -133,7 +133,7 @@
                   </div>
                   <div v-else>
                     <div v-for="i in items.result" :key="i.id">
-                      <div v-if="i.name ===items.endResult && i.remark !== ''" style="padding:5px 10px;">
+                      <div v-if="i.name ===items.endResult && i.remark !== '' && i.remark !== null" style="padding:5px 10px;">
                         <a-col :span="5" style="color:#00A3DB;padding: 10px;">
                           {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
                         </a-col>
