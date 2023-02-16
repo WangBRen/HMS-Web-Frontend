@@ -548,7 +548,7 @@ export default {
               }
             })
             apiPayload.projects = this.payload.projects
-            apiPayload.token = this.medicineTags
+            apiPayload.medicines = this.medicineTags
             apiPayload.token = this.myToken
       }
       this.$emit('checkSuccess', apiPayload)
