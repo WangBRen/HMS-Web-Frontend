@@ -25,7 +25,8 @@ const assetsCDN = {
     vue: 'Vue',
     'vue-router': 'VueRouter',
     vuex: 'Vuex',
-    axios: 'axios'
+    axios: 'axios',
+    AMap: 'AMap'
   },
   css: [],
   // https://unpkg.com/browse/vue@2.6.10/
@@ -50,10 +51,10 @@ const vueConfig = {
         GIT_HASH: JSON.stringify(getGitHash()),
         BUILD_DATE: buildDate
       })
-    ]
+    ],
     // en_US: `if prod, add externals`
     // zh_CN: `这里是用来控制编译忽略外部依赖的，与 config.plugin('html') 配合可以编译时引入外部CDN文件依赖`
-    // externals: isProd ? assetsCDN.externals : {}
+    externals: isProd ? assetsCDN.externals : { AMap: 'AMap' }
   },
 
   chainWebpack: config => {

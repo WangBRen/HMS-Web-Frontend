@@ -5,16 +5,16 @@
         新增预约
       </a-button>
       <span style="margin-left:20px;">今日预约统计：上午 <span style="font-size:20px;">{{ morningNum }}</span> 人，下午 <span style="font-size:20px;">{{ afternoonNum }}</span> 人</span>
-      <a-table :columns="columns" :data-source="dataSource">
+      <a-table :columns="columns" :data-source="dataSource" :loading="isLoading" :pagination="pagination">
         <span slot="type" slot-scope="text">
           <a-tag v-if="text === 'EXAMINATION'" color="green">体检预约</a-tag>
           <a-tag v-if="text === 'STATION'" color="blue">小站预约</a-tag>
         </span>
-        <span slot="status" slot-scope="text">
-          <a v-if="text.status === 'UNEXECUTED'" @click="changeStatus(text)"><a-icon type="question-circle" /> 未处理</a>
-          <span style="color:#52c41a;" v-if="text.status === 'EXECUTED'"><a-icon type="check-circle" /> 已签到</span>
-          <span v-if="text.status === 'CANCELED'"><a-icon type="stop" /> 已取消</span>
-          <a style="color:red" v-if="text.status === 'DELAYED'" @click="changeStatus(text)"><a-icon type="warning" /> 推迟</a>
+        <span slot="status" slot-scope="text, record">
+          <a v-if="record.status === 'UNEXECUTED'" @click="changeStatus(record)"><a-icon type="question-circle" /> 未处理</a>
+          <span style="color:#52c41a;" v-if="record.status === 'EXECUTED'"><a-icon type="check-circle" /> 已签到</span>
+          <span v-if="record.status === 'CANCELED'"><a-icon type="stop" /> 已取消</span>
+          <a style="color:red" v-if="record.status === 'DELAYED'" @click="changeStatus(record)"><a-icon type="warning" /> 推迟</a>
         </span>
         <span slot="operation" slot-scope="text, record">
           <a @click="editAppointment(record)"><a-icon type="edit" /> 编辑</a>
@@ -45,6 +45,7 @@
       :bookingId="bookingId"
       :appointmentInfo="appointmentInfo"
       @successAppointment="successAppointment"
+      @closeAppointment="closeAppointment"
     />
   </div>
 </template>
@@ -80,7 +81,15 @@ const columns = [
   },
   {
     title: '状态',
-    scopedSlots: { customRender: 'status' }
+    dataIndex: 'status',
+    key: 'status',
+    scopedSlots: { customRender: 'status' },
+    filters: [{ text: '未处理', value: 'UNEXECUTED' },
+              { text: '已签到', value: 'EXECUTED' },
+              { text: '已取消', value: 'CANCELED' },
+              { text: '推迟', value: 'DELAYED' }],
+    // onFilter: (value, record) => record.status.includes(value)
+    onFilter: (value, record) => record.status === value
   },
   {
     title: '备注',
@@ -111,7 +120,18 @@ export default {
       appointmentTime: null,
       morningNum: 0,
       afternoonNum: 0,
-      myId: null
+      myId: null,
+      isLoading: true,
+      pagination: {
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 个预约`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+      }
     }
   },
   mounted () {
@@ -136,6 +156,7 @@ export default {
             this.dataSource = [...this.dataSource, ...res.data]
           }
         }
+        this.isLoading = false
         const myDate = moment(new Date()).format('YYYY-MM-DD')
         this.dataSource.forEach(item => {
           const hour = moment(item.bookingDate).format('HH')
@@ -148,6 +169,13 @@ export default {
           }
         })
       }
+    },
+    onPageChange (page, pageSize) {
+      this.pagination.current = page
+    },
+    onSizeChange (current, pageSize) {
+        this.pagination.current = 1
+        this.pagination.pageSize = pageSize
     },
     // 进入预约页面时获取当前登录账号的信息
     async getUserInfo () {
@@ -163,6 +191,9 @@ export default {
     successAppointment () {
       this.AppointmentVisible = false
       this.loadData()
+    },
+    closeAppointment () {
+      this.AppointmentVisible = false
     },
     editAppointment (record) {
       this.AppointmentVisible = true
@@ -216,6 +247,9 @@ export default {
         // })
       }
     }
+  },
+  created () {
+    this.$setPageDataLoader(this.loadData)
   }
 }
 </script>

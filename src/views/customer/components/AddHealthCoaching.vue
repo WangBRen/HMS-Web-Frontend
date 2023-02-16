@@ -228,7 +228,9 @@ export default {
       )
     },
      async handleOk () {
-      if (this.templateData === '') {
+      console.log(this.lifeTemplate, this.sportTemplate, this.dietTemplate)
+      const templateData = '【生活指导】' + this.lifeTemplate + '\n【运动指导】' + this.sportTemplate + '\n【饮食指导】' + this.dietTemplate
+      if (templateData === '') {
         message.warning('指导内容为空，请先填写')
         return
       }
@@ -241,7 +243,8 @@ export default {
         apiPayload.diseaseIds.push(this.chronicId)
       }
       apiPayload.token = this.payload.myToken
-      apiPayload.sendText = this.templateData
+      apiPayload.sendText = templateData
+      console.log('apiPayload', apiPayload)
       const res = await addNewGuidance(this.customerId, apiPayload)
         if (res.status === 201) {
         this.guidanceId = res.data.id

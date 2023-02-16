@@ -16,6 +16,7 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
     "@ant-design-vue/pro-layout": "^1.0.11",
     "@antv/data-set": "^0.10.2",
     "ant-design-vue": "^1.7.8",
@@ -36,6 +37,7 @@
     "vue-clipboard2": "^0.2.1",
     "vue-cropper": "0.4.9",
     "vue-i18n": "^8.27.1",
+    "vue-print-nb": "^1.7.5",
     "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.5.3",
     "vue-svg-component-runtime": "^1.0.1",
