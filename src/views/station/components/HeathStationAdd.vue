@@ -8,13 +8,19 @@
   >
     <a-form-model :model="form" :label-col="labelCol" :wrapper-col="wrapperCol" ref="ruleForm" :rules="rules">
       <a-form-model-item label="小站名称" prop="name">
-        <a-input v-model="form.name" />
+        <a-input v-model="form.name" placeholder="请输入小站名称"/>
+      </a-form-model-item>
+      <a-form-model-item label="小站位置" prop="address">
+        <!-- 地图容器 -->
+        <div class="mapBox">
+          <MapContainer @selectAddress="getAddress" :formData="form"/>
+        </div>
       </a-form-model-item>
       <a-form-model-item label="小站地址" prop="address">
-        <a-input v-model="form.address" />
+        <a-input v-model="form.address" placeholder="选择小站位置自动生成地址"/>
       </a-form-model-item>
       <a-form-model-item label="小站电话" prop="phone">
-        <a-input v-model="form.phone" />
+        <a-input v-model="form.phone" placeholder="请输入小站电话" />
       </a-form-model-item>
       <!-- <a-form-model-item label="小站成立日期">
         <a-date-picker
@@ -39,7 +45,7 @@
         </a-radio-group>
       </a-form-model-item>
       <a-form-model-item label="小站介绍">
-        <a-input v-model="form.remark" type="textarea" />
+        <a-input v-model="form.remark" type="textarea" placeholder="请输入小站介绍" />
       </a-form-model-item>
       <a-divider v-if="this.stationId">小站人员</a-divider>
       <a-form-model-item label="小站店长" prop="stationmaster" v-if="this.stationId">
@@ -66,6 +72,7 @@
 
 <script>
 import { getUserList } from '@/api/manage'
+import MapContainer from './MapContainer.vue'
 import { addStation, editstation, addManager, addDoctors, deleteDoctor } from '@/api/station'
 
 export default {
@@ -91,6 +98,9 @@ export default {
       }
     }
   },
+  components: {
+    MapContainer
+  },
   data () {
     return {
       labelCol: { span: 6 },
@@ -98,6 +108,9 @@ export default {
       form: {
         name: '',
         address: '',
+        latitude: '',
+        longitude: '',
+        adcode: '', // 地区区号
         stationmaster: '',
         phone: '',
         type: '',
@@ -126,6 +139,8 @@ export default {
       console.log('this.stationInfo', this.stationInfo)
       this.form.name = this.stationInfo.name
       this.form.address = this.stationInfo.address
+      this.form.latitude = this.stationInfo.latitude
+      this.form.longitude = this.stationInfo.longitude
       this.form.phone = this.stationInfo.phone
       this.form.doctors = this.stationInfo.doctors.map(item => {
         return item.id
@@ -137,6 +152,13 @@ export default {
     }
   },
   methods: {
+    getAddress (data) {
+      this.form.address = data.address
+      this.form.latitude = data.lat
+      this.form.longitude = data.lng
+      this.form.adcode = data.adcode
+      console.log('data', this.form)
+    },
     handleOk () {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
@@ -144,6 +166,8 @@ export default {
           const apiForm = {}
           apiForm.name = form.name
           apiForm.address = form.address
+          apiForm.longitude = form.longitude
+          apiForm.latitude = form.latitude
           apiForm.phone = form.phone
           apiForm.remark = form.remark
           apiForm.status = form.stationStatus
@@ -221,6 +245,12 @@ export default {
 <style>
 .stationStatus .ant-radio-wrapper{
   margin: 10px 16px;
+}
+.mapBox{
+  border: 1px solid #ddd;
+  width: 100%;
+  height: 280px;
+  background: #eee;
 }
 
 </style>
