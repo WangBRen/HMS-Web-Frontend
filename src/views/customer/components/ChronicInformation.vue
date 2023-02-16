@@ -488,7 +488,11 @@ export default {
           this.dateTime = moment(res.data.nextCheckAt).format('YYYY-MM-DD')
           this.remarkInterval = res.data.remarkInterval
           const futureTime = moment(res.data.nextCheckAt).valueOf()
-          this.getDateTime(futureTime)
+          this.timer = setInterval(() => {
+            this.nowTime = +new Date()
+            this.getDateTime(futureTime)
+          }, 1000)
+          // this.getDateTime(futureTime)
         }
       })
     },
