@@ -121,7 +121,7 @@
                 <a-row v-for="items in item.items" :key="items.id" style="background:#F4F8FA;">
                   <div v-if="items.type === 'Report'">
                     <a-col :span="5" style="color:#00A3DB;padding: 10px;">
-                      【{{ items.name }}】
+                      {{ items.name }}【{{ items.endResult }}】
                     </a-col>
                     <a-col :span="19" style="padding: 5px 0 0 0;">
                       <div v-for="i in items.result" :key="i.id">
@@ -131,17 +131,17 @@
                       </div>
                     </a-col>
                   </div>
-                  <div v-else-if="(items.max!==null && items.value > items.max) || (items.min!==null && items.value < items.min)">
-                    <a-col :span="5" style="color:#00A3DB;padding: 10px;">
-                      {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
-                    </a-col>
-                    <a-col :span="19" style="padding: 5px 0 0 0;">
-                      <div v-for="i in items.result" :key="i.id">
-                        <div v-if="i.name ===items.endResult" style="padding:5px 10px;">
+                  <div v-else>
+                    <div v-for="i in items.result" :key="i.id">
+                      <div v-if="i.name ===items.endResult && i.remark !== ''" style="padding:5px 10px;">
+                        <a-col :span="5" style="color:#00A3DB;padding: 10px;">
+                          {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
+                        </a-col>
+                        <a-col :span="19" style="padding: 5px 0 0 0;">
                           {{ i.remark }}
-                        </div>
+                        </a-col>
                       </div>
-                    </a-col>
+                    </div>
                   </div>
                 </a-row>
               </div>
