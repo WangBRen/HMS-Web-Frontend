@@ -44,14 +44,19 @@
       <span slot="action" slot-scope="text, scope">
         <span v-if="scope.status!=='success'">
           <a @click="retransmission(text, scope)">重发</a> |
-          <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>
+          <a @click="ViewFollowUpTable(text, scope)">查看随访表</a> |
+          <a-icon @click="printFollow(scope)" type="printer" />
         </span>
         <span v-else-if="scope.level===null">
           <span v-if="scope.destroy" @click="ViewFollowUpTable(text, scope)">已废弃</span>
           <a v-else-if="diseaseId>0 || scope.diseases.length === 1" @click="startLevel(text, scope)">分级</a>
-          <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
+          <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a> |
+          <a-icon @click="printFollow(scope)" type="printer" />
         </span>
-        <a v-else @click="ViewFollowUpTable(text, scope)">查看随访表</a>
+        <span v-else>
+          <a @click="ViewFollowUpTable(text, scope)">查看随访表</a>|
+          <a-icon @click="printFollow(scope)" type="printer" />
+        </span>
       </span>
     </a-table>
     <!-- <a-button v-if="createButtonVisible" class="follow-start-button" type="primary" @click="showFollowUpSheet">开始复查</a-button> -->
@@ -70,6 +75,12 @@
       :customerId="customerId"
       :formId="formId"
       @onclose="closeFollowSend"/>
+    <PrintFollowUp
+      v-if="printVisible"
+      :visible="printVisible"
+      :printData="printData"
+      @closePrint="closePrint"
+    />
   </div>
 </template>
 <script>
@@ -77,11 +88,13 @@ import moment from 'moment'
 import { getFollowRecords as apiFollowUpRecords } from '@/api/followUpForm'
 import SeeFollowUpSheet from './SeeFollowUpSheet.vue'
 import FollowUpFormSend from './FollowUpFormSend.vue'
+import PrintFollowUp from './PrintFollowUp.vue'
 export default {
   name: 'FollowUpRecords',
   components: {
     SeeFollowUpSheet,
-    FollowUpFormSend
+    FollowUpFormSend,
+    PrintFollowUp
   },
   props: {
     diseaseId: {
@@ -186,7 +199,9 @@ export default {
         diseaseId: -1
       },
       sendModelVisible: false,
-      formId: null
+      formId: null,
+      printVisible: false,
+      printData: null
     }
   },
   // filters: {
@@ -343,6 +358,14 @@ export default {
       this.onSearch()
       this.$emit('successRefresh')
       // this.$reload()
+    },
+    printFollow (data) {
+      // console.log('data', data)
+      this.printVisible = true
+      this.printData = data
+    },
+    closePrint () {
+      this.printVisible = false
     }
   }
 }
