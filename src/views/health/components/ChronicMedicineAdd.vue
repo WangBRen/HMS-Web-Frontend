@@ -85,6 +85,15 @@
               </a-form-model-item>
             </a-col>
           </a-row>
+          <a-row>
+            <a-col :span="24" :pull="3">
+              <a-form-model-item label="漏服用法">
+                <a-textarea v-model="medicineData.missUse" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="500" placeholder="输入漏服用法"></a-textarea>
+                <span v-if="medicineData.missUse" style="position: relative;float: right;">{{ medicineData.missUse.length }}/500</span>
+                <span v-else style="position: relative;float: right;">0/500</span>
+              </a-form-model-item>
+            </a-col>
+          </a-row>
         </a-form-model>
       </div>
     </a-modal>
@@ -155,7 +164,8 @@ export default {
               sideEffect: this.medicineData.sideEffect || '',
               taboo: this.medicineData.taboo || '',
               attention: this.medicineData.attention || '',
-              remark: this.medicineData.remark || ''
+              remark: this.medicineData.remark || '',
+              missUse: this.medicineData.missUse || ''
             }
             apiAddMedicineItem(this.goalName, apiData).then(res => {
               if (res.status === 201) {
@@ -185,7 +195,8 @@ export default {
               sideEffect: this.medicineData.sideEffect || '',
               taboo: this.medicineData.taboo || '',
               attention: this.medicineData.attention || '',
-              remark: this.medicineData.remark || ''
+              remark: this.medicineData.remark || '',
+              missUse: this.medicineData.missUse || ''
             }
             apiEditMedicineItem(this.goalName, this.medicineData.id, apiData).then(res => {
               if (res.status === 200) {
