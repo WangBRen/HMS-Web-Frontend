@@ -59,8 +59,11 @@
           @confirm="statusDisable(record)"
         >
           <a >禁用</a>
+          |
         </a-popconfirm>
         <a v-else>---</a>
+
+        <a @click="openDuty(record)">家庭分配</a>
       </span>
     </a-table>
 
@@ -99,12 +102,20 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <AssignDuty
+      v-if="dutyVisible"
+      :dutyVisible="dutyVisible"
+      :accountCheckData="accountCheckData"
+      @closeDuty="closeDuty"
+    />
   </a-card>
 </template>
 
 <script>
 import { getUserList, getRoleList, changeDisable } from '@/api/manage'
 // import { getRoleList } from '@/api/manage'
+import AssignDuty from './AssignDuty.vue'
 
 const columns = [
   {
@@ -159,6 +170,9 @@ const columns = [
 
 export default {
   name: 'AccountList',
+  components: {
+    AssignDuty
+  },
   data () {
     return {
       accountData: [],
@@ -195,7 +209,9 @@ export default {
       columns,
       expandedRowKeys: [],
       selectedRowKeys: [],
-      selectedRows: []
+      selectedRows: [],
+      dutyVisible: false,
+      accountCheckData: {}
     }
   },
   filters: {
@@ -286,12 +302,20 @@ export default {
     },
     onSizeChange (current, pageSize) {
       this.pagination.current = 1
-      this.pagination.pageSize = pageSize
+      this.pagination.pageSizej = pageSize
       this.getAccount()
     },
     onPageChange (page, pageSize) {
       this.pagination.current = page
       this.getAccount()
+    },
+    openDuty (record) {
+      this.dutyVisible = true
+      this.accountCheckData = record
+      // console.log('责任分配', record)
+    },
+    closeDuty () {
+      this.dutyVisible = false
     }
   },
   watch: {

@@ -27,6 +27,7 @@ export function searchCustomerUnderGroup (values, pages) {
         method: 'get',
         params: {
             word: values || '',
+            createdBy: pages.createdBy || '',
             page: pages.page || 1,
             size: pages.size || 10
         }
