@@ -77,6 +77,7 @@
         </span> -->
       </a-table>
     </a-modal>
+
     <a-modal
       :visible="printeVisible"
       @cancel="printCancel"
@@ -154,7 +155,7 @@
                 <a-row>
                   <a-col :span="8" class="msg_label">健康师</a-col>
                   <a-col :span="14">
-                    <a-input size="small" v-model="printdata.createdBy.nickname">
+                    <a-input size="small" v-model="printdata.printName">
                     </a-input>
                   </a-col>
                 </a-row>
@@ -169,9 +170,9 @@
               </a-col>
               <a-col :span="7">
                 <a-row>
-                  <a-col :span="8" class="msg_label">起止日期</a-col>
+                  <a-col :span="8" class="msg_label">开始日期</a-col>
                   <a-col :span="14">
-                    <a-input size="small"></a-input>
+                    <a-input size="small" v-model="printdata.startDate"></a-input>
                   </a-col>
                 </a-row>
               </a-col>
@@ -217,10 +218,10 @@
               </a-col>
             </a-row>
           </div>
+          <a-row v-if="indexEndData.length">
+            <span style="font-size: 16px;font-weight: 1000">指标信息</span>
+          </a-row>
           <div class="index_msg" v-for="(item, index) in indexEndData" :key="index">
-            <a-row v-if="indexEndData.length">
-              <span style="font-size: 16px;font-weight: 1000">指标信息</span>
-            </a-row>
             <a-row>
               <a-col :span="12">
                 健康项目：{{ item.indexProjectName }}
@@ -278,6 +279,7 @@ import moment from 'moment'
 import HealthReportSee from './HealthReportSee.vue'
 import HealthReportAdd from './HealthReportAdd.vue'
 import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from '@/api/health'
+import { getUserInfo } from '@/api/login'
 // import { calcAge } from '@/utils/age'
 // import { getIndexColumns as apiGetIndexColumns } from '@/api/healthIndexes'
 
@@ -480,6 +482,7 @@ export default {
       },
       printdata: {
         nowDate: '',
+        startDate: '',
         createdBy: {
           nickname: ''
         },
@@ -750,6 +753,31 @@ export default {
         }
       }).filter(item2 => item2 !== undefined)
       // console.log('indexEndData', this.indexEndData)
+      // 计算开始时间
+      const startTime = testData.map(item => {
+        return item.createdAt
+      })
+      const startDate = new Date(startTime.reduce((a, b) => a > b ? b : a))
+      const date1 = {
+          year: startDate.getFullYear(),
+          month: startDate.getMonth() + 1,
+          date: startDate.getDate(),
+          hour: startDate.getHours(),
+          min: startDate.getMinutes()
+      }
+      const newmonth1 = date1.month > 9 ? date1.month : '0' + date1.month
+      const day1 = date1.date > 9 ? date1.date : '0' + date1.date
+      const min1 = date1.min > 9 ? date1.min : '0' + date1.min
+      this.printdata.startDate = date1.year + '.' + newmonth1 + '.' + day1 + '-' + date1.hour + ':' + min1
+      // console.log('startDate', this.printdata.startDate)
+      // 获取登陆账号，定义打印健康师
+      getUserInfo().then(res => {
+        if (res.status === 200) {
+          // console.log('loginname', res.data)
+          this.printdata.printName = res.data.nickname
+        }
+      })
+      // console.log('this.printdata', this.printdata)
     },
     printCancel () {
       this.printeVisible = false
