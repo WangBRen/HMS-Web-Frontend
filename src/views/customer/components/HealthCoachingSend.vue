@@ -30,6 +30,9 @@
           </span> -->
           <a-button @click="handleOnSendMessageClick" style="font-size: 14px;" type="primary" :disabled="disableClickButton">发送到短信</a-button>
         </div>
+        <div style="margin: 20px auto;display: flex;align-items: center;">
+          <a-button @click="sendApp" style="font-size: 14px;" type="primary">发送到小程序</a-button>
+        </div>
       </div>
       <!-- <div>
         <a-button @click="sendWechat" style="font-size: 14px;border-radius: 8px;color: white;background-color: rgba(2, 189, 110, 1);"><a-icon type="wechat" />发送到小程序</a-button>
@@ -102,6 +105,9 @@ export default {
       } else {
         this.disableClickButton = false
       }
+    },
+    sendApp () {
+      console.log('发送到小程序', this.customerId, this.guidanceId)
     }
   },
   created () {
