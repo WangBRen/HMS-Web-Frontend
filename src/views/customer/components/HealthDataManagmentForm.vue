@@ -483,6 +483,7 @@ export default {
       printdata: {
         nowDate: '',
         startDate: '',
+        printName: '',
         createdBy: {
           nickname: ''
         },
@@ -590,6 +591,14 @@ export default {
     },
     printerOpen (data) {
       this.printeVisible = true
+      // 获取登陆账号，定义打印健康师
+      getUserInfo().then(res => {
+        if (res.status === 200) {
+          console.log('loginname', res.data.nickname)
+          this.printdata.printName = res.data.nickname
+          this.$forceUpdate() // 强刷，没这行代码，打印用户症状和用户诊断时不显示打印健康师
+        }
+      })
       this.printdata = JSON.parse(JSON.stringify(data))
       this.printdata.customer.baseInfo.birthDate = this.filterAge(this.printdata.customer.baseInfo.birthDate)
       const nowDate = new Date()
@@ -634,6 +643,7 @@ export default {
         return hhh
       })
       // console.log('midData', midData)
+
       // 处理症状
       let symData = midData.map((item) => {
         if (item.symTime !== null) {
@@ -645,7 +655,6 @@ export default {
           return stmData
         }
       }).filter(item2 => item2 !== undefined)
-      // console.log('symData', symData)
       symData = symData.map((item) => {
         let splData = ''
         for (let i = 0; i < item.sym.length; i++) {
@@ -663,7 +672,8 @@ export default {
         return endStm
       })
       this.symptomData = symData
-      // console.log('symData.end', symData)
+      // console.log('symData', symData)
+
       // 处理诊断
       const disData = midData.map((item) => {
         if (item.dis) {
@@ -753,30 +763,24 @@ export default {
         }
       }).filter(item2 => item2 !== undefined)
       // console.log('indexEndData', this.indexEndData)
+
       // 计算开始时间
       const startTime = testData.map(item => {
         return item.createdAt
       })
       const startDate = new Date(startTime.reduce((a, b) => a > b ? b : a))
       const date1 = {
-          year: startDate.getFullYear(),
-          month: startDate.getMonth() + 1,
-          date: startDate.getDate(),
-          hour: startDate.getHours(),
-          min: startDate.getMinutes()
+        year: startDate.getFullYear(),
+        month: startDate.getMonth() + 1,
+        date: startDate.getDate(),
+        hour: startDate.getHours(),
+        min: startDate.getMinutes()
       }
       const newmonth1 = date1.month > 9 ? date1.month : '0' + date1.month
       const day1 = date1.date > 9 ? date1.date : '0' + date1.date
       const min1 = date1.min > 9 ? date1.min : '0' + date1.min
       this.printdata.startDate = date1.year + '.' + newmonth1 + '.' + day1 + '-' + date1.hour + ':' + min1
       // console.log('startDate', this.printdata.startDate)
-      // 获取登陆账号，定义打印健康师
-      getUserInfo().then(res => {
-        if (res.status === 200) {
-          // console.log('loginname', res.data)
-          this.printdata.printName = res.data.nickname
-        }
-      })
       // console.log('this.printdata', this.printdata)
     },
     printCancel () {

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <a-card>
+    <div v-if="!medArr.length">
+      <div style="display: flex;justify-content: center;margin: 20px;"><a-spin tip="玩命加载中..."/></div>
+    </div>
+    <a-card v-if="medArr.length">
       <div style="padding-bottom: 8px">
         <a-button @click="openMedModal('add')" type="primary" style="margin-right: 12px">新建治疗目标</a-button>
         <a-button @click="openMedModal('edit')" type="primary">编辑{{ getProName() }}治疗目标名称</a-button>
@@ -15,6 +18,7 @@
             :columns="columns"
             :data-source="tab.medicines"
             :pagination="false"
+            :loading="medLoading"
           >
             <span slot="dosage" slot-scope="text, record">
               {{ record.frequency }}次/{{ record.unit }}，每次{{ text }}
@@ -144,16 +148,18 @@ export default {
         index: null
       },
       columns,
-      medArr: []
+      medArr: [],
+      medLoading: true
     }
   },
   methods: {
     getMedicine () {
       apiGetMedicine().then(res => {
         if (res.status === 200) {
+          this.medLoading = false
           this.medArr = res.data
-          // console.log('获取成功', this.medArr)
           this.checkTabKey = this.medArr[0].id
+          // console.log('获取成功', this.medArr)
         } else {
           this.$message.error('获取失败' + res.message)
           // console.log('获取失败')
@@ -285,11 +291,12 @@ export default {
   },
   mounted () {
     this.getMedicine()
-      // console.log('this.medArr', this.medArr)
-      // if (this.medArr.length !== 0) {
-      //   this.checkTabKey = this.medArr[0].id
-      //   console.log('medArr', this.medArr)
-      // }
+
+    // console.log('this.medArr', this.medArr)
+    // if (this.medArr.length !== 0) {
+    //   this.checkTabKey = this.medArr[0].id
+    //   console.log('medArr', this.medArr)
+    // }
   },
   watch: {
     checkTabKey (newData, oldData) {
