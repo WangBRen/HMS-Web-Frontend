@@ -38,7 +38,8 @@ const errorHandler = (error) => {
         })
       }
     }
-  } else if (error.message.includes('timeout')) {
+  }
+  if (error.message.includes('timeout')) {
     // 处理超时
     console.log('error.message', error.message)
     // Message({

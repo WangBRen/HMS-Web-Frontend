@@ -270,7 +270,7 @@ export default {
     },
     onMessageSendSuccess () {
       this.sendVisible = false
-      this.message.success('健康指导发送成功')
+      this.$message.success('健康指导发送成功')
     }
   }
 }

@@ -41,7 +41,8 @@
   </div>
 </template>
 <script>
-import { guidanceSendingInfo, ApiSendGuidance } from '@/api/guidance'
+import { guidanceSendingInfo, ApiSendGuidance, ApiSendGuidanceWechat } from '@/api/guidance'
+
 import { notification } from 'ant-design-vue'
 export default {
   props: {
@@ -88,7 +89,8 @@ export default {
       const apiPhone = this.phone
       const res = await ApiSendGuidance(this.customerId, this.guidanceId, { telephone: apiPhone })
       if (res.status === 200) {
-        this.$emit('onMessageSendSuccess', res.data)
+        this.$message.success('发送成功')
+        this.$emit('onMessageSendSuccess')
         // console.log('发送到短信了', res)
       } else if (res.status === 400) {
         this.$message.error(res.message)
@@ -107,7 +109,17 @@ export default {
       }
     },
     sendApp () {
-      console.log('发送到小程序', this.customerId, this.guidanceId)
+      // console.log('发送到小程序', this.customerId, this.guidanceId)
+      ApiSendGuidanceWechat(this.customerId, this.guidanceId, { telephone: '' }).then(res => {
+        if (res.status === 200) {
+          // console.log('发送成功', res)
+          this.$message.success('发送成功')
+          this.$emit('onMessageSendSuccess')
+        } else {
+          console.log('发送失败')
+          this.$message.error(res.message)
+        }
+      })
     }
   },
   created () {
