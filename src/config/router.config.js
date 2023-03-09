@@ -193,6 +193,66 @@ export const asyncRouterMap = [
             }
           }
         ]
+      },
+      {
+        path: '/afterSale',
+        component: RouteView,
+        redirect: '/afterSale/saleInstall',
+        name: 'afterSale',
+        meta: { title: 'menu.afterSale', icon: 'schedule', keepAlive: true // permission: ['after_sales']
+        },
+        children: [
+          {
+            path: '/afterSale/saleRepair',
+            name: 'saleRepair',
+            component: () => import('@/views/afterSale/saleRepair'),
+            meta: {
+              title: 'menu.afterSale.repair',
+              keepAlive: true
+              // permission: ['health_index']
+            }
+          },
+          {
+            path: '/afterSale/saleInstall',
+            name: 'manage',
+            component: () => import('@/views/afterSale/saleInstall'),
+            meta: {
+              title: 'menu.afterSale.install',
+              keepAlive: true
+              // permission: ['health_index']
+            }
+          }
+        ]
+      },
+      {
+        path: '/afterSaleData',
+        component: RouteView,
+        redirect: '/afterSaleData/salePartManage',
+        name: 'afterSalesManage',
+        meta: { title: 'menu.afterSaleData', icon: 'schedule', keepAlive: true // permission: ['after_sales']
+        },
+        children: [
+          {
+            path: '/afterSaleData/salePartManage',
+            name: 'part',
+            component: () => import('@/views/afterSaleData/salePartManage'),
+            meta: {
+              title: 'menu.afterSaleData.part',
+              keepAlive: true
+              // permission: ['health_index']
+            }
+          },
+          {
+            path: '/afterSaleData/saleQuestionManage',
+            name: 'question',
+            component: () => import('@/views/afterSaleData/saleQuestionManage'),
+            meta: {
+              title: 'menu.afterSaleData.question',
+              keepAlive: true
+              // permission: ['health_index']
+            }
+          }
+        ]
       }
     ]
   },

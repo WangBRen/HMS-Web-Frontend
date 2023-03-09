@@ -46,5 +46,11 @@ export default {
     'menu.station': '健康小站',
     'menu.station.manage': '小站管理',
     'menu.station.appointment': '健康预约',
-    'menu.health.medicine': '药物管理'
+    'menu.health.medicine': '药物管理',
+    'menu.afterSale': '售后管理',
+    'menu.afterSale.install': '安装管理',
+    'menu.afterSale.repair': '维修管理',
+    'menu.afterSaleData': '售后资料管理',
+    'menu.afterSaleData.question': '问题管理',
+    'menu.afterSaleData.part': '配件管理'
 }

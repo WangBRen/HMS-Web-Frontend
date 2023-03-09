@@ -310,7 +310,7 @@ export default {
     },
     onSizeChange (current, pageSize) {
       this.pagination.current = 1
-      this.pagination.pageSizej = pageSize
+      this.pagination.pageSize = pageSize
       this.getAccount()
     },
     onPageChange (page, pageSize) {
