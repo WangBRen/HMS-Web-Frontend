@@ -1,82 +1,93 @@
 <template>
   <div>
     <a-card>
-      <div>
-        <a-row>
-          <a-col :span="6">
-            <a-input placeholder="请输入用户名"/>
-          </a-col>
-          <a-col :span="6">
-            <a-button type="primary">查询</a-button>
-          </a-col>
-          <a-col :span="4">
-            <a-button type="primary">新建</a-button>
-          </a-col>
-          <a-col :span="4" style="line-height:32px;">
-            <a-checkbox>
-              我的用户
-            </a-checkbox>
-          </a-col>
-        </a-row>
-      </div>
-      <div>
-        <a-table
-          row-key="id"
-          :columns="formColumns"
-          :data-source="salesDate"
-          :pagination="pagination"
-        >
-          <span slot="action" slot-scope="text,record">
-            <a @click="openActionModal(record)">操作</a>
-          </span>
-        </a-table>
-      </div>
+      <a-tabs>
+        <a-tab-pane key="1" tab="待安装">
+          <a-button type="primary" @click="openAddInstall">新增安装工单</a-button>
+          <a-table
+            :columns="waitInstallColumns"
+            :rowKey="(record, index) => index"
+            :data-source="waitInstallData"
+            :pagination="false"
+          >
+            <span slot="status" slot-scope="text">
+              {{ text | filterStatus }}
+            </span>
+            <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
+            <span slot="action" slot-scope="text,record">
+              <a @click="openInstallModal(record)">评估</a>
+            </span>
+          </a-table>
+        </a-tab-pane>
+        <a-tab-pane key="2" tab="待评估"></a-tab-pane>
+        <a-tab-pane key="3" tab="待评估"></a-tab-pane>
+      </a-tabs>
     </a-card>
     <saleInstallModal
       :installVisible="installVisible"
-      :checkData="checkData"
-      :current="checkData.statusId"
-      @clostActionModal="clostActionModal"
+      @closeInstallModal="closeInstallModal"
+    />
+    <saleInstallAdd
+      :installAddVisible="installAddVisible"
+      @closeAddInstall="closeAddInstall"
     />
   </div>
 </template>
 <script>
+import { getAfterSale as apiGetAfterSale } from '@/api/afterSale'
+import saleInstallAdd from './saleInstallAdd.vue'
 import saleInstallModal from './saleInstallModal.vue'
 export default {
   components: {
-    saleInstallModal
+    saleInstallModal,
+    saleInstallAdd
+  },
+  filters: {
+    filterStatus (value) {
+      switch (value) {
+        case 'WAIT_EVALUATE':
+          return '待评估'
+        case 'EVALUATED':
+          return '已评估'
+        case 'PAID':
+          return '已支付'
+        case 'WAIT_VISIT':
+          return '待上门'
+        case 'SOLVED':
+          return '已解决'
+      }
+    }
   },
   data () {
     return {
-      formColumns: [
+      installVisible: false,
+      installAddVisible: false,
+      allData: [],
+      waitInstallData: [],
+      waitInstallColumns: [
         {
           title: '客户名',
-          dataIndex: 'name',
-          key: 'name',
+          dataIndex: 'customerInfo.customerName',
+          key: 'customerInfo.customerName',
           align: 'center'
         },
         {
           title: '联系方式',
-          dataIndex: 'telephone',
-          key: 'telephone',
-          align: 'center'
-        },
-        {
-          title: '订单号',
-          dataIndex: 'orderNumber',
-          key: 'orderNumber',
-          align: 'center'
-        },
-        {
-          title: '记录客服',
-          dataIndex: 'customerService',
-          key: 'customerService',
+          dataIndex: 'customerInfo.customerPhone',
+          key: 'customerInfo.customerPhone',
           align: 'center'
         },
         {
           title: '状态',
           dataIndex: 'status',
           key: 'status',
+          scopedSlots: { customRender: 'status' },
+          align: 'center'
+        },
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          scopedSlots: { customRender: 'createTime' },
           align: 'center'
         },
         {
@@ -86,81 +97,45 @@ export default {
           scopedSlots: { customRender: 'action' },
           align: 'center'
         }
-      ],
-      salesDate: [
-        {
-          id: '1',
-          name: '测试',
-          telephone: '123456',
-          orderNumber: '10010',
-          customerService: '张三',
-          status: '待评估',
-          statusId: 0
-        },
-        {
-          id: '2',
-          name: '测试',
-          telephone: '123456789',
-          orderNumber: '10011',
-          customerService: '李四',
-          status: '已评估',
-          statusId: 1
-        },
-        {
-          id: '3',
-          name: '测试',
-          telephone: '147258369',
-          orderNumber: '10012',
-          customerService: '王五',
-          status: '待上门',
-          statusId: 2
-        },
-        {
-          id: '4',
-          name: '测试',
-          telephone: '147258369',
-          orderNumber: '10012',
-          customerService: '赵六',
-          status: '已解决',
-          statusId: 3
-        }
-      ],
-      pagination: {
-        total: 0,
-        current: 1,
-        pageSize: 10, // 默认每页显示数量
-        // showSizeChanger: true, // 显示可改变每页数量
-        // pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-        showTotal: total => `共 ${total} 个账户`, // 显示总数
-        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
-        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-      },
-      installVisible: false,
-      checkData: {}
+      ]
     }
   },
   methods: {
-    onSizeChange (current, pageSize) {
-      this.pagination.current = 1
-      this.pagination.pageSize = pageSize
-      // this.getAccount()
-    },
-    onPageChange (page, pageSize) {
-      this.pagination.current = page
-      // this.getAccount()
-    },
-    openActionModal (data) {
-      this.installVisible = true
-      this.checkData = data
+    openInstallModal (data) {
       console.log(data)
+      this.installVisible = true
     },
-    clostActionModal () {
+    closeInstallModal () {
       this.installVisible = false
+    },
+    openAddInstall () {
+      this.installAddVisible = true
+      console.log('新建')
+    },
+    closeAddInstall () {
+      this.installAddVisible = false
+    },
+    getAfterSaleData () {
+      apiGetAfterSale().then(res => {
+        if (res.status === 200) {
+          this.allData = res.data.filter(item => {
+            return item.type === 'INSTALL'
+          })
+          this.waitInstallData = this.allData.filter(item => {
+            if (item.status === 'WAIT_EVALUATE') {
+              return item
+            }
+          })
+          console.log('allData', this.allData)
+          console.log('waitInstallData', this.waitInstallData)
+        }
+      })
     }
   },
   created () {
   },
   mounted () {
+    this.getAfterSaleData()
   }
 }
 </script>

@@ -284,6 +284,12 @@ export default {
         }
         this.loadList = newArr
         // console.log('删除成功', this.loadList)
+        // 新
+        // const testArr = item.fileList.map(item => {
+        //   return item.response.data
+        // })
+        // this.loadList = testArr
+        // 新
       }
     },
     delEdit (item) {
