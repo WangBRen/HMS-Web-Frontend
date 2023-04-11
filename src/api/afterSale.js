@@ -4,9 +4,12 @@ const api = {
   addAfterSale: 'after-sale/REPAIR',
   addInstallAfterSale: 'after-sale/INSTALL',
   getAfterSale: 'after-sale',
+  getSaleRepair: (id) => { return `after-sale/${id}` },
   addProcess: id => { return 'after-sale/' + id + '/process' },
   updateStatus: id => { return 'after-sale/' + id },
-  updateProcess: (id, processId) => { return 'after-sale/' + id + '/process/' + processId }
+  updateProcess: (id, processId) => { return 'after-sale/' + id + '/process/' + processId },
+  saleRefund: 'pay/refund',
+  processPay: (processId) => { return `after-sale/${processId}/pay` }
 }
 
 // 新建维修工单
@@ -59,5 +62,28 @@ export function updateProcess (id, processId, parameter) {
     url: api.updateProcess(id, processId),
     method: 'put',
     data: parameter
+  })
+}
+// 退款
+export function saleRefund (parameter) {
+  return request({
+    url: api.saleRefund,
+    method: 'post',
+    data: parameter
+  })
+}
+export function processPay (processId, parameter) {
+  return request({
+    url: api.processPay(processId),
+    method: 'post',
+    data: parameter
+  })
+}
+
+// 获取单个维修工单
+export function getSaleRepair (id) {
+  return request({
+    url: api.getSaleRepair(id),
+    method: 'get'
   })
 }
