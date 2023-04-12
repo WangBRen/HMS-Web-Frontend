@@ -3,7 +3,7 @@
     <a-card>
       <a-tabs>
         <a-tab-pane v-for="tab in questData" :key="tab.id" :tab="tab.name">
-          <!-- <a-table
+          <a-table
             :scroll="{ y: 600 }"
             :columns="columns"
             :data-source="tab.quest"
@@ -13,7 +13,7 @@
             <span slot="action" slot-scope="text, record">
               <a @click="actionModal(record)">操作</a>
             </span>
-          </a-table> -->
+          </a-table>
         </a-tab-pane>
       </a-tabs>
     </a-card>
