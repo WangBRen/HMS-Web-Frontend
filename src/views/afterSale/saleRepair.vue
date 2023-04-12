@@ -10,6 +10,7 @@
               :rowKey="(record, index) => index"
               :data-source="estimateData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
@@ -26,6 +27,7 @@
               :rowKey="(record, index) => index"
               :data-source="estimateOkData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
@@ -42,6 +44,7 @@
               :rowKey="(record, index) => index"
               :data-source="payData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
@@ -58,6 +61,7 @@
               :rowKey="(record, index) => index"
               :data-source="comeData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
@@ -85,6 +89,7 @@
               :rowKey="(record, index) => index"
               :data-source="solveData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
@@ -255,6 +260,12 @@ export default {
           key: 'customerService',
           align: 'center'
         },
+        // {
+        //   title: '记录内勤',
+        //   dataIndex: 'managerName',
+        //   key: 'managerName',
+        //   align: 'center'
+        // },
         {
           title: '状态',
           dataIndex: 'status',
@@ -297,6 +308,12 @@ export default {
           align: 'center'
         },
         {
+          title: '记录内勤',
+          dataIndex: 'managerName',
+          key: 'managerName',
+          align: 'center'
+        },
+        {
           title: '状态',
           dataIndex: 'status',
           key: 'status',
@@ -335,6 +352,12 @@ export default {
           title: '记录客服',
           dataIndex: 'customerService',
           key: 'customerService',
+          align: 'center'
+        },
+        {
+          title: '记录内勤',
+          dataIndex: 'managerName',
+          key: 'managerName',
           align: 'center'
         },
         {
