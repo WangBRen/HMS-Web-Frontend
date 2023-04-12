@@ -33,6 +33,90 @@
             </a-descriptions-item>
           </a-descriptions>
         </div>
+        <!-- 共用数据 -->
+        <div v-if="current !==2 ">
+          <div class="big_title">历史评估：</div>
+          <div style="" v-for="(item4,index4) in repairData.processes" :key="item4.id">
+            <div style="font-size: 20px;color: rgba(0, 0, 0, 0.85);">第{{ index4+1 }}次评估：</div>
+            <!-- 问题汇总 -->
+            <a-descriptions style="padding: 0 10px;" :column="6" bordered size="small" >
+              <a-descriptions-item label="问题汇总" :span="6">
+                <div v-for="(item5,index5) in item4.problems" :key="index5">
+                  <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
+                </div>
+              </a-descriptions-item>
+              <a-descriptions-item label="问题解释" :span="6">
+                {{ item4.problemExplain }}
+              </a-descriptions-item>
+              <a-descriptions-item label="技术支持" :span="6">
+                {{ item4.technicalSupport }}
+              </a-descriptions-item>
+              <a-descriptions-item label="是否保修期" :span="1.5">
+                {{ item4.isOverWarranty | filterBoolean }}
+              </a-descriptions-item>
+              <a-descriptions-item label="是否寄件" :span="1.5">
+                {{ item4.needPieceSend | filterBoolean }}
+              </a-descriptions-item>
+              <a-descriptions-item label="是否上门" :span="1.5">
+                {{ item4.needVisit | filterBoolean }}
+              </a-descriptions-item>
+              <a-descriptions-item label="是否支付" :span="1.5">
+                {{ item4.payResult | filterBoolean }}
+              </a-descriptions-item>
+              <a-descriptions-item label="快递费" :span="1.5">
+                {{ item4.expressCost }}
+              </a-descriptions-item>
+              <a-descriptions-item label="师傅报价" :span="1.5">
+                {{ item4.afterSaleVisit.technicalPrice }}
+              </a-descriptions-item>
+              <a-descriptions-item label="总价" :span="1.5">
+                {{ item4.totalCost }}
+              </a-descriptions-item>
+              <a-descriptions-item label="客户实际支付" :span="1.5">
+                {{ item4.customerPay }}
+              </a-descriptions-item>
+            </a-descriptions>
+            <!-- 寄件汇总 -->
+            <div style="padding: 0 10px;" v-if="item4.needPieceSend">
+              <div style="font-size: 20px;">寄件汇总：</div>
+              <div style="padding: 0 20px;" v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
+                <div>寄件名：{{ item6.pieceName }}  数量：{{ item6.pieceNum }}</div>
+                <div>寄件报价：{{ item6.piecePrice }} 元</div>
+              </div>
+            </div>
+            <!-- 上门信息 -->
+            <div style="padding: 0 10px;" v-if="item4.needVisit && item4.afterSaleVisit.technicalName">
+              <!-- <div style="padding: 0 10px;" v-if="item4.needVisit"> -->
+              <div style="font-size: 20px;">上门信息：</div>
+              <a-descriptions bordered size="small">
+                <a-descriptions-item label="师傅平台">
+                  {{ item4.afterSaleVisit.technicalPlatform }}
+                </a-descriptions-item>
+                <a-descriptions-item label="师傅单号">
+                  {{ item4.afterSaleVisit.technicalServiceNo }}
+                </a-descriptions-item>
+                <a-descriptions-item label="师傅成本">
+                  {{ item4.afterSaleVisit.technicalCost }} 元
+                </a-descriptions-item>
+                <a-descriptions-item label="师傅名称">
+                  {{ item4.afterSaleVisit.technicalName }}
+                </a-descriptions-item>
+                <a-descriptions-item label="师傅手机号">
+                  {{ item4.afterSaleVisit.technicalPhone }}
+                </a-descriptions-item>
+                <a-descriptions-item label="上门时间">
+                  {{ item4.afterSaleVisit.visitTime | getTime }}
+                </a-descriptions-item>
+                <a-descriptions-item label="技术人员">
+                  {{ item4.afterSaleVisit.technician }}
+                </a-descriptions-item>
+                <a-descriptions-item label="技术电话">
+                  {{ item4.afterSaleVisit.technicianPhone }}
+                </a-descriptions-item>
+              </a-descriptions>
+            </div>
+          </div>
+        </div>
         <!-- 待评估 -->
         <div class="form_estimate" v-if="current === 0">
           <div class="form_estimateData" >
@@ -176,39 +260,12 @@
         <!-- 已评估 -->
         <div class="form_estimateOk" v-if="current===1">
           <!-- 问题汇总 -->
-          <div>
-            <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">问题汇总：</div>
-            <div v-for="(item, index) in repairData.processes" :key="index" style="margin: 10px;">
-              <div>第{{ index+1 }}次评估</div>
-              <div style="margin: 10px" v-for="(quest, index2) in item.problems" :key="index2">
-                <div>问题判断：{{ quest.problemJudge.firstPro }} -> {{ quest.problemJudge.secondPro }}</div>
-                <div>问题定位：{{ quest.definitionMethod }}</div>
-                <div>解决方案：{{ quest.solution }}</div>
-              </div>
-              <div style="margin: 10px 0;">
-                问题解释：{{ item.problemExplain }}
-              </div>
-              <div style="margin: 10px 0;">
-                技术支持：{{ item.technicalSupport }}
-              </div>
-            </div>
+          <div style="text-align: center;margin-top: 20px;">
+            <div style="font-size: 24px;">等待客户支付</div>
+            <a-popconfirm title="确定再评估？" @confirm="changeEdit">
+              <a-button type="primary">再评估</a-button>
+            </a-popconfirm>
           </div>
-          <!-- 配件汇总 -->
-          <div>
-            <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">配件汇总：</div>
-            <div v-for="(item, index) in repairData.processes" :key="index" style="margin: 10px;">
-              <div>第{{ index+1 }}次评估</div>
-              <div style="margin: 10px" v-for="(parts,index2) in item.afterSaleExpresses" :key="index2">
-                <div>配件名称：{{ parts.pieceName }}</div>
-                <div>配件报价：{{ parts.piecePrice }}</div>
-                <div>配件数量：{{ parts.pieceNum }}</div>
-              </div>
-              <div style="margin: 10px">快递费用：{{ item.expressCost }}</div>
-            </div>
-          </div>
-          <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">是否保修期：{{ repairData.processes[repairData.processes.length-1].isOverWarranty | filterBoolean }}</div>
-          <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">客户应付 {{ repairData.processes[repairData.processes.length-1].customerPay }} 元</div>
-          <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">等待客户支付</div>
         </div>
         <!-- 已支付 -->
         <div class="form_pay" v-if="current===2">
@@ -336,81 +393,7 @@
         </div>
         <!-- 待上门 -->
         <div class="form_come" v-if="current>2">
-          <div>
-            <!-- 问题汇总 -->
-            <div >
-              <div v-for="(item1, index1) in repairData.processes" :key="item1.id">
-                <div class="big_title">第{{ index1+1 }}次评估：</div>
-                <div style="font-size: 20px;">问题汇总：</div>
-                <div style="padding: 0 20px;" v-for="(item2, index2) in item1.problems" :key="index2">
-                  问题{{ index2 + 1 }}：
-                  {{ item2.problemJudge.firstPro }} ->
-                  {{ item2.problemJudge.secondPro }}
-                  <div>
-                    问题定位：{{ item2.definitionMethod }}
-                  </div>
-                  <div>
-                    解决方案：{{ item2.solution }}
-                  </div>
-                </div>
-                <div>
-                  问题解释：{{ item1.problemExplain }}
-                </div>
-                <div>
-                  技术支持：{{ item1.technicalSupport }}
-                </div>
-                <div style="font-size: 20px;">是否保修期：{{ item1.isOverWarranty | filterBoolean }}</div>
-                <div style="font-size: 20px;">是否寄件：{{ item1.needPieceSend | filterBoolean }}</div>
-                <div style="font-size: 20px;">是否上门：{{ item1.needVisit | filterBoolean }}</div>
-                <!-- 寄件汇总 -->
-                <div style="font-size: 20px;">寄件汇总：</div>
-                <div style="padding: 0 20px;" v-for="(item3, index3) in item1.afterSaleExpresses" :key="index3+'Expresses'">
-                  <div>寄件名：{{ item3.pieceName }}  数量：{{ item3.pieceNum }}</div>
-                  <div>寄件报价：{{ item3.piecePrice }} 元</div>
-                </div>
-                <!-- 上门信息 -->
-                <div>
-                  <div style="font-size: 20px;">上门信息：</div>
-                  <a-descriptions bordered size="small">
-                    <a-descriptions-item label="师傅平台">
-                      {{ item1.afterSaleVisit.technicalPlatform }}
-                    </a-descriptions-item>
-                    <a-descriptions-item label="师傅单号">
-                      {{ item1.afterSaleVisit.technicalServiceNo }}
-                    </a-descriptions-item>
-                    <a-descriptions-item label="师傅成本">
-                      {{ item1.afterSaleVisit.technicalCost }} 元
-                    </a-descriptions-item>
-                    <a-descriptions-item label="师傅名称">
-                      {{ item1.afterSaleVisit.technicalName }}
-                    </a-descriptions-item>
-                    <a-descriptions-item label="师傅手机号">
-                      {{ item1.afterSaleVisit.technicalPhone }}
-                    </a-descriptions-item>
-                    <a-descriptions-item label="上门时间">
-                      {{ item1.afterSaleVisit.visitTime | getTime }}
-                    </a-descriptions-item>
-                    <a-descriptions-item label="技术人员">
-                      {{ item1.afterSaleVisit.technician }}
-                    </a-descriptions-item>
-                    <a-descriptions-item label="技术电话">
-                      {{ item1.afterSaleVisit.technicianPhone }}
-                    </a-descriptions-item>
-                  </a-descriptions>
-                </div>
-                <!-- 支付信息 -->
-                <div style="font-size: 20px;">
-                  <div>
-                    总价：{{ item1.totalCost }} 元
-                  </div>
-                  <div>
-                    客户实际支付：{{ item1.customerPay }} 元
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="margin-top: 20px;" v-if="current===3">
+          <div style="margin-top: 20px;text-align: center;" v-if="current===3">
             <a-popconfirm title="确定售后问题解决？" @confirm="repairSucceeded">
               <a-button style="margin-right:20px;" type="primary">问题解决</a-button>
             </a-popconfirm>
@@ -421,7 +404,9 @@
         </div>
         <!-- 已解决 -->
         <div class="form_solve" v-if="current>3">
-          已解决
+          <div style="font-size: 24px;text-align: center;">
+            已解决
+          </div>
         </div>
       </div>
     </a-modal>
@@ -923,8 +908,6 @@ export default {
     onSubmit () {
       const id = this.repairData.id
       const processId = this.repairData.processes[this.repairData.processes.length - 1].id
-      // console.log('id', id)
-      // console.log('processId', processId)
       this.$refs.payForm.validate(valid => {
         if (valid) {
           const apiData = {
@@ -973,6 +956,23 @@ export default {
     resetForm () {
       // console.log('重置已支付表单', this.payForm)
       this.$refs.payForm.resetFields()
+    },
+    changeEdit () {
+      const id = this.repairData.id
+      const changeStatus = {
+        status: 'WAIT_EVALUATE'
+      }
+      apiUpdateStatus(id, changeStatus).then(res => {
+        if (res.status === 200) {
+          this.$message.success('状态改变成功')
+          // console.log('状态改变成功')
+          this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+      console.log('编辑')
     }
   },
   created () {
@@ -1068,7 +1068,7 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style lang="less" scoped>
 .form{
   margin: 20px;
 }
@@ -1087,4 +1087,12 @@ export default {
   font-size: 24px;
   color: rgba(0, 0, 0, 0.85);
 }
+.ant-descriptions-title {
+  margin-bottom: 0px !important
+}
+// .test {
+//   /deep/ .ant-descriptions-title {
+//   margin-bottom: 0px !important
+// }
+// }
 </style>

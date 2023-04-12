@@ -199,7 +199,7 @@ export const asyncRouterMap = [
         component: RouteView,
         redirect: '/afterSale/saleInstall',
         name: 'afterSale',
-        meta: { title: 'menu.afterSale', icon: 'schedule', keepAlive: true // permission: ['after_sales']
+        meta: { title: 'menu.afterSale', icon: 'schedule', keepAlive: true, permission: ['after_sales_manage']
         },
         children: [
           {
@@ -208,8 +208,8 @@ export const asyncRouterMap = [
             component: () => import('@/views/afterSale/saleRepair'),
             meta: {
               title: 'menu.afterSale.repair',
-              keepAlive: true
-              // permission: ['health_index']
+              keepAlive: true,
+              permission: ['after_sales_repair']
             }
           },
           {
@@ -218,8 +218,8 @@ export const asyncRouterMap = [
             component: () => import('@/views/afterSale/saleInstall'),
             meta: {
               title: 'menu.afterSale.install',
-              keepAlive: true
-              // permission: ['health_index']
+              keepAlive: true,
+              permission: ['after_sales_install']
             }
           }
         ]
@@ -229,7 +229,7 @@ export const asyncRouterMap = [
         component: RouteView,
         redirect: '/afterSaleData/salePartManage',
         name: 'afterSalesManage',
-        meta: { title: 'menu.afterSaleData', icon: 'schedule', keepAlive: true // permission: ['after_sales']
+        meta: { title: 'menu.afterSaleData', icon: 'schedule', keepAlive: true, permission: ['after_sales_information']
         },
         children: [
           {
@@ -238,8 +238,8 @@ export const asyncRouterMap = [
             component: () => import('@/views/afterSaleData/salePartManage'),
             meta: {
               title: 'menu.afterSaleData.part',
-              keepAlive: true
-              // permission: ['health_index']
+              keepAlive: true,
+              permission: ['after_sales_part']
             }
           },
           {
@@ -248,8 +248,8 @@ export const asyncRouterMap = [
             component: () => import('@/views/afterSaleData/saleQuestionManage'),
             meta: {
               title: 'menu.afterSaleData.question',
-              keepAlive: true
-              // permission: ['health_index']
+              keepAlive: true,
+              permission: ['after_sales_guide']
             }
           }
         ]
