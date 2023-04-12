@@ -3,7 +3,6 @@
     <a-modal
       :width="1000"
       :visible="drawbackVisible"
-      v-if="drawbackVisible"
       @cancel="handleCancel"
       :maskClosable="false"
       :footer="null"
@@ -11,29 +10,54 @@
       <div style="padding: 20px;">
         <!-- {{ drawbackData.processes[0].afterSaleExpresses }} -->
         <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding-bottom:50px;">
-          <div>
+          <div class="title">第{{ index1+1 }}次评估：</div>
+          <div class="itemBox">
             <a-descriptions
-              :title="`第${ index1+1 }次评估：`"
               bordered
               size="small"
-              :column="{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }"
+              :column="3"
             >
-              <a-descriptions-item label="支付单号">{{ item1.pays[0].outTradeNo }}</a-descriptions-item>
-              <a-descriptions-item label="支付时间">{{ item1.pays[0].payTime | moment }}</a-descriptions-item>
-              <a-descriptions-item label="退款状态">{{ item1.pays[0].actualAmount===0?'不支持退款':'' }}</a-descriptions-item>
+              <a-descriptions-item label="支付单号"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.outTradeNo }}</span></span></a-descriptions-item>
+              <a-descriptions-item label="支付时间"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.payTime | moment }}</span></span></a-descriptions-item>
+              <a-descriptions-item label="当前状态">
+                <a-badge color="#f50" text="不支持退款" v-if="item1.pays[0].actualAmount===0 && item1.pays.length==1"/>
+                <a-badge color="#bbb" text="无退款记录" v-else-if="item1.pays.length<=1"/>
+                <a-badge color="#2db7f5" :text="`已退款`" v-else-if="item1.pays.length>1"/>
+              </a-descriptions-item>
               <a-descriptions-item label="是否在保修期内">{{ item1.isOverWarranty?'是':'否' }}</a-descriptions-item>
-              <a-descriptions-item label="订单总金额">￥{{ item1.pays[0].totalAmount }}</a-descriptions-item>
-              <a-descriptions-item label="实际支付金额">￥{{ item1.pays[0].actualAmount }}</a-descriptions-item>
-              <!-- <a-descriptions-item label="实际支付金额">￥{{ item1.pays[0].actualAmount }}</a-descriptions-item> -->
-              <a-descriptions-item label="退款配件及数量" :span="2">
+              <a-descriptions-item label="订单总金额">￥<span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.totalAmount }}</span></span></a-descriptions-item>
+              <a-descriptions-item label="实际支付金额">￥<span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.actualAmount }}</span></span></a-descriptions-item>
+              <a-descriptions-item label="退款历史记录" :span="3" v-if="item1.pays.length>1">
+                <a-row style="font-weight:600;line-height:2">
+                  <a-col :span="6">退款单号</a-col>
+                  <a-col :span="4">退款金额</a-col>
+                  <a-col :span="6">退款时间</a-col>
+                  <a-col :span="8">备注</a-col>
+                </a-row>
+                <a-row v-for="(pay, index) in item1.pays" :key="index" class="rowActive">
+                  <span v-if="pay.outRefundNo">
+                    <a-col :span="6">{{ pay.outRefundNo }}</a-col>
+                    <a-col :span="4">￥{{ pay.refundAmount /100 }}</a-col>
+                    <a-col :span="6">{{ pay.refundTime | moment }}</a-col>
+                    <a-col :span="8">{{ pay.refundReason }}</a-col>
+                  </span>
+                </a-row>
+              </a-descriptions-item>
+              <a-descriptions-item label="选择退款配件及数量" :span="2">
                 <div v-for="(item2, index2) in item1.afterSaleExpresses" :key="index2">
-                  {{ item2.pieceName }}：
-                  <a-input-number :min="1" :max="item2.pieceNum" @change="value => accessoriesChange(item1.id,item2,value)"/>
+                  <a-row>
+                    <a-col :span="6">{{ item2.pieceName }}：</a-col>
+                    <a-col :span="6"><a-input-number :min="0" :max="item2.pieceNum" @change="value => accessoriesChange(item1.id,item2,value)"/></a-col>
+                  </a-row>
+                </div>
+                <div v-for="total in totalRefund" :key="total.id">
+                  <span v-if="total.id===item1.id">
+                    本次预计退款：￥{{ total.totalNum }}
+                  </span>
                 </div>
               </a-descriptions-item>
               <a-descriptions-item label="退款操作"><a-button :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button></a-descriptions-item>
             </a-descriptions>
-            <!-- <div style="font-size: 24px;">第{{ index1+1 }}次评估：</div> -->
           </div>
         </div>
       </div>
@@ -41,7 +65,7 @@
   </div>
 </template>
 <script>
-import { saleRefund, processPay } from '@/api/afterSale'
+import { saleRefund, processPay, getSaleRepair } from '@/api/afterSale'
 import md5 from '../../utils/md5'
 export default {
   props: {
@@ -49,16 +73,16 @@ export default {
       type: Boolean,
       default: false
     },
-    drawbackData: {
-      type: Object,
-      default: () => {
-        return {}
-      }
+    saleId: {
+      type: Number,
+      default: 0
     }
   },
   data () {
     return {
-      accessories: []
+      accessories: [], // 退款配件数据
+      drawbackData: [], // 当前订单数据
+      totalRefund: []
     }
   },
   methods: {
@@ -83,7 +107,22 @@ export default {
       const myYear = myDate.getFullYear()
       const myMonth = myDate.getMonth() + 1 < 10 ? '0' + (myDate.getMonth() + 1) : myDate.getMonth() + 1
       const myToday = myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate()
-      const outRefundNo = 'TK' + myYear + myMonth + myToday + this.drawbackData.id
+      const myHour = myDate.getHours()
+      const outRefundNo = 'TK' + myYear + myMonth + myToday + myHour + this.drawbackData.id + item1.id
+      var refundReason = ''
+      this.accessories.map(item => {
+        if (item.processId === item1.id) {
+          item.parts.map(part => {
+            refundReason = refundReason + part.accessoryName + '(' + part.num + '件)；'
+          })
+        }
+      })
+      var outTradeNo = ''
+      item1.pays.map(item => {
+        if (item.submitType === 'PAY') {
+          outTradeNo = item.outTradeNo
+        }
+      })
       const payLoad = {
         appid: 'wx60c0211b98af5b12', // 新杜马小程序
         // appid: 'wxc849c3cfa10ea1d2', // 健康小程序
@@ -91,33 +130,33 @@ export default {
         nonceStr: this.nonceStr(), // 32位随机字符串
         sign: this.sign(), // 签名
         signType: 'MD5',
-        outTradeNo: item1.pays[0].outTradeNo, // 订单号
+        outTradeNo: outTradeNo, // 订单号
         outRefundNo: outRefundNo,
         notifyUrl: 'https://dev.hms.yootane.com/afterSale/saleRepair', // 微信支付结果通知的回调地址
-        totalFee: 2, // 订单金额  item1.pays[0].actualAmount
-        refundFee: 2,
-        refundDesc: '寄件退款' // 退款描述
+        totalFee: 3, // 订单金额  item1.pays[0].actualAmount
+        refundFee: 1,
+        refundDesc: refundReason // 退款描述
       }
-      this.refund(payLoad, item1.id)
+      this.refund(payLoad, item1.id, refundReason)
     },
-    async refund (payLoad, processId) {
+    async refund (payLoad, processId, refundReason) {
       const res = await saleRefund(payLoad)
-      console.log('退款成功', res)
-      // if (res.status === 200) {
-        // this.$message.success('退款成功')
+      if (res.resultCode === 'SUCCESS') {
+        console.log('退款成功', res)
+        this.$message.success('退款成功')
         const requestBody = {
           submitType: 'REFUND',
           outRefundNo: res.outRefundNo,
-          refundReason: null,
-          refundStatus: 'SUCCESS',
+          refundReason: refundReason,
+          refundAmount: res.refundFee,
+          refundStatus: res.resultCode,
           refundTime: new Date()
         }
         const resp = await processPay(processId, requestBody)
         if (resp.status === 200) {
-          this.$message.success('退款成功')
+          this.getSaleDate()
         }
-        console.log('保存退款信息', processId, resp)
-      // }
+      }
     },
     accessoriesChange (proId, item1, value) {
       const a = this.accessories.map(item => {
@@ -139,35 +178,51 @@ export default {
               return item
             }
           }
+        } else {
+          return { ...item }
         }
       })
+      this.totalRefund = a.map(item => {
+        var totalNum = 0
+        item.parts.map(part => {
+          totalNum = totalNum + part.piecePrice * part.num
+        })
+        return { id: item.processId, totalNum: totalNum }
+      })
       console.log('选择的寄件', a)
+    },
+    async getSaleDate () {
+      const res = await getSaleRepair(this.saleId)
+      if (res.status === 200) {
+        console.log('单个数据详情', res)
+        this.drawbackData = res.data
+      }
+      this.accessories = this.drawbackData.processes.map(item => {
+        return { processId: item.id, parts: [] }
+      })
     }
   },
   created () {
   },
   mounted () {
-  },
-  watch: {
-    // 总配件
-    drawbackData (newData, oldData) {
-      console.log('初始化', newData)
-    },
-    // 添加的配件
-    drawbackArr (newData, oldData) {
-    },
-    drawbackVisible (newData) {
-      console.log(newData)
-      if (newData) {
-        this.accessories = this.drawbackData.processes.map(item => {
-          return { processId: item.id, parts: [] }
-        })
-        console.log('this.accessories', this.accessories)
-      }
-    }
+    this.getSaleDate()
   }
 }
 </script>
-<style lang="scss" scoped>
-
+<style scoped>
+.title{
+  font-size: 16px;
+  color: #000000d9;
+  font-weight: bold;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.itemBox:hover{
+  border: 1px solid #40a9ffa1;
+  box-shadow: 1px 1px 10px #55c7db81,
+  -1px -1px 6px #7ee7faa4;
+}
+.rowActive:hover{
+  background: #7ee7fa3d;
+}
 </style>

@@ -110,7 +110,8 @@
       @closeAddRepair="closeAddRepair"
     />
     <saleRepairDrawback
-      :drawbackData="repairData"
+      v-if="drawbackVisible"
+      :saleId="saleId"
       :drawbackVisible="drawbackVisible"
       @closeDrawback="closeDrawback"
     />
@@ -360,7 +361,8 @@ export default {
       solveData: [],
       // 传给子组件的数据
       repairData: {},
-      current: 0
+      current: 0,
+      saleId: null
     }
   },
   methods: {
@@ -438,8 +440,9 @@ export default {
     },
     openDrawbackModal (data) {
       // console.log(data, '打开退款')
+      this.saleId = data.id
       this.drawbackVisible = true
-      this.repairData = data
+      // console.log('打开退款获取id', this.saleId)
     },
     onSearch (value) {
       console.log('搜索', value)
