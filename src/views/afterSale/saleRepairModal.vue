@@ -745,8 +745,25 @@ export default {
           partAdd.pieceNum = this.checkE
         }
       })
-      this.partArr.push(partAdd)
+      if (this.partArr.length !== 0) {
+        for (let i = 0; i < this.partArr.length; i++) {
+          if (partAdd.pieceName === this.partArr[i].pieceName) {
+            // console.log(partAdd.pieceName, '相同', this.partArr[i].pieceName)
+            // console.log('1添加的', partAdd)
+            // console.log('2原本的', this.partArr)
+            this.partArr[i].pieceNum += partAdd.pieceNum
+            break
+          } else if (i === this.partArr.length - 1) {
+            // console.log('最后', partAdd)
+            this.partArr.push(partAdd)
+            break
+          }
+        }
+      } else {
+        this.partArr.push(partAdd)
+      }
       // console.log('partAdd', partAdd)
+      // console.log('this.partArr', this.partArr)
       this.checkC = null
       this.checkD = null
       this.checkE = null
@@ -986,26 +1003,28 @@ export default {
     })
   },
   watch: {
-    partArr (newData, oldData) {
-      // console.log('配件动')
-      this.totalCost = 0
-      this.mailingCost = 0
-      this.partArr.map(item => {
-        this.totalCost += item.piecePrice * item.pieceNum
-      }) // 配件
-      this.totalCost += this.checkG // 师傅
-      this.totalCost += this.mailingCost // 快递
-      if (this.guaranteeIndex) {
-        this.priceSum = 0
-      } else {
-        this.priceSum = 0
+    partArr: {
+      handler (newData, oldData) {
+        this.totalCost = 0
         this.mailingCost = 0
-        this.mailingCostIndex = false
         this.partArr.map(item => {
-          this.priceSum += item.piecePrice * item.pieceNum
+          this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
-        this.priceSum += this.checkG // 师傅
-      }
+        this.totalCost += this.checkG // 师傅
+        this.totalCost += this.mailingCost // 快递
+        if (this.guaranteeIndex) {
+          this.priceSum = 0
+        } else {
+          this.priceSum = 0
+          this.mailingCost = 0
+          this.mailingCostIndex = false
+          this.partArr.map(item => {
+            this.priceSum += item.piecePrice * item.pieceNum
+          }) // 配件
+          this.priceSum += this.checkG // 师傅
+        }
+      },
+      deep: true
     },
     // 监听是否保质
     guaranteeIndex () {
