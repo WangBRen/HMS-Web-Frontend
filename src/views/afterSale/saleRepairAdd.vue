@@ -376,6 +376,11 @@ export default {
           apiData.problemCategory = this.infoForm.problemCategoryArr[0] + '/' + this.infoForm.problemCategoryArr[1]
           apiData.problemExplain = this.infoForm.problemExplain
           apiData.afterSaleType = 'WEB'
+          const upload = []
+          for (let i = 0; i < apiData.uploadImage.length; i++) {
+            upload.push(apiData.uploadImage[i].url)
+          }
+          apiData.uploadImage = upload
           delete apiData.problemCategoryArr
         //   console.log('提交表单', apiData)
           apiAddAfterSale(apiData).then(res => {
