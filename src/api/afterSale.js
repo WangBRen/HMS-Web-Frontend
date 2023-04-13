@@ -9,7 +9,9 @@ const api = {
   updateStatus: id => { return 'after-sale/' + id },
   updateProcess: (id, processId) => { return 'after-sale/' + id + '/process/' + processId },
   saleRefund: 'pay/refund',
-  processPay: (processId) => { return `after-sale/${processId}/pay` }
+  processPay: (processId) => { return `after-sale/${processId}/pay` },
+  addNewPart: 'after-sale/part',
+  editPart: (id) => { return `after-sale/part/${id}` }
 }
 
 // 新建维修工单
@@ -85,5 +87,36 @@ export function getSaleRepair (id) {
   return request({
     url: api.getSaleRepair(id),
     method: 'get'
+  })
+}
+
+// 新增配件
+export function addNewPart (parameter) {
+  return request({
+    url: api.addNewPart,
+    method: 'post',
+    data: parameter
+  })
+}
+
+export function getParts () {
+  return request({
+    url: api.addNewPart,
+    method: 'get'
+  })
+}
+// 编辑配件
+export function editPart (id, parameter) {
+  return request({
+    url: api.editPart(id),
+    method: 'put',
+    data: parameter
+  })
+}
+// 删除配件
+export function deletePart (id) {
+  return request({
+    url: api.editPart(id),
+    method: 'delete'
   })
 }

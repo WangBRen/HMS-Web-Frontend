@@ -4,92 +4,109 @@
       <div>
         <a-row>
           <a-col :span="4">
-            <a-button type="primary">新建</a-button>
+            <a-button type="primary" @click="handAddNewPart">新建配件</a-button>
           </a-col>
         </a-row>
       </div>
-      <div>
-        <!-- <a-table
-          :columns="formColumns"
-          :data-source="salesDate"
-          :pagination="pagination"
-          row-key="id"
-        >
-          <span slot="action" slot-scope="text,record">
-            <a>{{ record.status }}</a>
-          </span>
-        </a-table> -->
-      </div>
+      <a-tabs default-active-key="1" @change="callback">
+        <a-tab-pane v-for="category in categorys" :key="category" :tab="`${category}`">
+          <!-- 表格数据 -->
+          <a-table :columns="columns" :data-source="filterDataSource" :rowKey="(record, index) => { return index }">
+            <span slot="operation" slot-scope="scope">
+              <a @click="editPart(scope)">编辑</a>
+              <a-divider type="vertical" />
+              <a-popconfirm
+                :title="`确定删除【${scope.name}】吗`"
+                ok-text="确定"
+                cancel-text="取消"
+                @confirm="deletePart(scope.id)"
+              >
+                <a >删除</a>
+              </a-popconfirm>
+            </span>
+          </a-table>
+        </a-tab-pane>
+      </a-tabs>
     </a-card>
+    <addNewPart
+      v-if="partModelVisible"
+      :partModelVisible="partModelVisible"
+      @closePartModel="closePartModel"
+      @successAddNewPart="successAddNewPart"
+      :partData="partData"
+      :mode="mode"
+      :categorys="categorys"
+    />
   </div>
 </template>
 <script>
+import addNewPart from './addNewPart.vue'
+import { getParts, deletePart } from '@/api/afterSale'
 export default {
-  name: 'APP',
+  components: {
+    addNewPart
+  },
   data () {
     return {
-      formColumns: [
+      categorys: [],
+      columns: [
         {
-          title: '客户名',
-          dataIndex: 'name',
+          title: '编码',
+          key: 'serialNumber',
+          dataIndex: 'serialNumber'
+        },
+        {
+          title: '配件名',
           key: 'name',
+          dataIndex: 'name'
+        },
+        {
+          title: '成本价(元)',
+          key: 'cost',
+          dataIndex: 'cost'
+        },
+        {
+          title: '报价(元)',
+          key: 'price',
+          dataIndex: 'price'
+        },
+        {
+          title: '库存',
+          key: 'stock',
+          dataIndex: 'stock'
+        },
+        {
+          title: '单位',
+          key: 'unit',
+          dataIndex: 'unit'
+        },
+        {
+          title: '所属型号',
+          key: 'belongProduct',
+          dataIndex: 'belongProduct',
           align: 'center'
         },
         {
-          title: '联系方式',
-          dataIndex: 'telephone',
-          key: 'telephone',
-          align: 'center'
+          title: '规格/用途',
+          key: 'specification',
+          dataIndex: 'specification'
         },
         {
-          title: '订单号',
-          dataIndex: 'orderNumber',
-          key: 'orderNumber',
-          align: 'center'
-        },
-        {
-          title: '记录客服',
-          dataIndex: 'customerService',
-          key: 'customerService',
-          align: 'center'
-        },
-        {
-          title: '状态',
-          dataIndex: 'staturs',
-          key: 'staturs',
-          align: 'center'
+          title: '备注',
+          key: 'remark',
+          dataIndex: 'remark'
         },
         {
           title: '操作',
-          // width: '150px',
-          dataIndex: 'action',
-          scopedSlots: { customRender: 'action' },
+          scopedSlots: { customRender: 'operation' },
           align: 'center'
         }
       ],
-      salesDate: [
-        {
-          name: '测试',
-          telephone: '123456',
-          orderNumber: '10010',
-          customerService: '张三',
-          staturs: '待评估'
-        },
-        {
-          name: '测试',
-          telephone: '123456789',
-          orderNumber: '10011',
-          customerService: '李四',
-          staturs: '已评估'
-        },
-        {
-          name: '测试',
-          telephone: '147258369',
-          orderNumber: '10012',
-          customerService: '王五',
-          staturs: '待上门'
-        }
-      ],
+      dataSource: [],
+      filterDataSource: [],
+      partData: null, // 单个配件信息
+      partModelVisible: false,
+      mode: '',
       pagination: {
         total: 0,
         current: 1,
@@ -111,11 +128,57 @@ export default {
     onPageChange (page, pageSize) {
       this.pagination.current = page
       this.getAccount()
+    },
+    handAddNewPart () {
+      this.mode = 'creat'
+      this.partModelVisible = true
+    },
+    closePartModel () {
+      this.partModelVisible = false
+      this.getpartList()
+    },
+    async getpartList () {
+      const res = await getParts()
+      if (res.status === 200) {
+        this.dataSource = res.data.content
+        const set = this.dataSource.map(item => {
+          return item.belongPart
+        })
+        this.categorys = [...new Set(set)]
+      }
+    },
+    successAddNewPart () {
+      this.partModelVisible = false
+      this.getpartList()
+    },
+    editPart (partData) {
+      this.mode = 'edit'
+      this.partModelVisible = true
+      this.partData = partData
+    },
+    async deletePart (id) {
+      const res = await deletePart(id)
+      this.$message.success('删除成功')
+      this.getpartList()
+      console.log('删除配件', id, res)
+    },
+    callback (e) {
+      console.log(e)
+      this.filterDataSource = this.dataSource.filter(item => {
+        console.log(item)
+        return item.belongPart === e
+      })
     }
   },
   created () {
   },
   mounted () {
+    this.getpartList()
+    setTimeout(() => {
+      this.filterDataSource = this.dataSource.filter(item => {
+        return item.belongPart === this.categorys[0]
+      })
+    }, 500)
   }
 }
 </script>
