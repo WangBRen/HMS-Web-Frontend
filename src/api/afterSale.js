@@ -16,7 +16,7 @@ const api = {
   addGuide: 'after-sale/guide',
   editGuide: id => { return 'after-sale/guide/' + id },
   delGuide: id => { return 'after-sale/guide/' + id },
-  delGuideLevel: id => { return 'after-sale/guideLevel/' + id }
+  delGuideLevel: id => { return 'after-sale/guideLevel/' + id },
   addNewPart: 'after-sale/part',
   editPart: (id) => { return `after-sale/part/${id}` }
 }
@@ -96,7 +96,6 @@ export function getSaleRepair (id) {
     method: 'get'
   })
 }
-
 
 // 获取指导
 export function getGuide () {
