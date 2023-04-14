@@ -13,7 +13,7 @@
           <a-popconfirm title="确定删除？" @confirm="delSecond()">
             <a-button style="margin-right: 10px;">删除【{{ getSecondName() }}】</a-button>
           </a-popconfirm>
-          <a-button type="primary" @click="editQusetion('', 'add')">新建问题详情描述</a-button>
+          <a-button style="float: right;" type="primary" @click="editQusetion('', 'add')">新建问题详情描述</a-button>
           <a-tabs style="padding: 10px;" v-model="secondTabKey">
             <a-tab-pane v-for="secondTab in tab.children" :key="secondTab.id" :tab="secondTab.name">
               <a-table
