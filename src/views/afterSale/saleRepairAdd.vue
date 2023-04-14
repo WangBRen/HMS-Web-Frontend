@@ -69,7 +69,12 @@
           <a-col :span="12">
             <a-form-model-item label="问题分类" prop="problemCategoryArr">
               <!-- <a-select></a-select> -->
-              <a-cascader v-model="infoForm.problemCategoryArr" :options="question" placeholder="选择问题分类" />
+              <a-cascader
+                :field-names="{ label: 'name', value: 'name',children: 'children' }"
+                v-model="infoForm.problemCategoryArr"
+                :options="question"
+                placeholder="选择问题分类"
+              />
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -139,7 +144,7 @@
   </div>
 </template>
 <script>
-import { addAfterSale as apiAddAfterSale } from '@/api/afterSale'
+import { addAfterSale as apiAddAfterSale, getGuide as apiGetGuide } from '@/api/afterSale'
 
 export default {
   props: {
@@ -169,8 +174,8 @@ export default {
       },
       question: [
         {
-          value: '漏水',
-          label: '漏水',
+          value: '漏水???',
+          label: '漏水??',
           children: [
             {
               value: '破洞',
@@ -368,7 +373,7 @@ export default {
     //   const apiData = JSON.parse(JSON.stringify(this.infoForm))
     //   apiData.problemCategory = this.infoForm.problemCategoryArr[0]
     //   apiData.problemExplain = this.infoForm.problemCategoryArr[1]
-    //   console.log('提交表单', this.infoForm)
+      // console.log('提交表单', this.infoForm)
       this.$refs.infoForm.validate(valid => {
         if (valid) {
         //   console.log('校验ok')
@@ -421,6 +426,13 @@ export default {
   created () {
   },
   mounted () {
+    apiGetGuide().then(res => {
+      if (res.status === 200) {
+        // console.log('question', this.question)
+        this.question = res.data
+        // console.log('res', res.data)
+      }
+    })
   },
   watch: {
     'infoForm.receiveAddress' (newData, oldData) {

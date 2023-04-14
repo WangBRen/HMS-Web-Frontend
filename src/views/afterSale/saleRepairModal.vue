@@ -135,13 +135,33 @@
             <!-- 问题选择 -->
             <div class="form_estimateData_checkquestion">
               <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);"><span style="color: #f5222d;">*</span>问题判断：</div>
-              <a-select @change="checkQuestion" style="width: 120px" v-model="checkA">
+              <!-- <a-select @change="checkFirst" style="width: 120px" v-model="checkA">
                 <a-select-option v-for="item in question" :key="item.firstPro">
                   {{ item.firstPro }}
                 </a-select-option>
               </a-select>
-              <a-select :disabled="!secondArr.length" @change="checkMethod" v-model="checkB" style="width: 120px">
+              <a-select :disabled="!secondArr.length" @change="checkSecond" v-model="checkB" style="width: 120px">
                 <a-select-option v-for="item in secondArr" :key="item.name">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select> -->
+              <!-- <a-select :disabled="!thirdArr.length" @change="checkSecond" v-model="checkH" style="width: 120px">
+                <a-select-option v-for="item in thirdArr" :key="item.name">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select> -->
+              <a-select @change="checkFirst" style="width: 200px" v-model="checkA">
+                <a-select-option v-for="item in question" :key="item.name">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
+              <a-select :disabled="!secondArr.length" @change="checkSecond" v-model="checkB" style="width: 200px">
+                <a-select-option v-for="item in secondArr" :key="item.name">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
+              <a-select :disabled="!thirdArr.length" @change="checkThird" v-model="checkH" style="width: 200px">
+                <a-select-option v-for="item in thirdArr" :key="item.name">
                   {{ item.name }}
                 </a-select-option>
               </a-select>
@@ -156,7 +176,7 @@
               <span style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">问题汇总：</span>
               <a-row style="margin: 10px;" v-for="item in gatherArr" :key="item.index">
                 <a-col>
-                  <span>问题：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }}</span>
+                  <span>问题：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }} ->{{ item.problemJudge.thirdPro }}</span>
                   <span @click="delGather(item)">
                     <a-icon type="close-circle" />
                   </span>
@@ -427,7 +447,7 @@
 </template>
 
 <script>
-import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess } from '@/api/afterSale'
+import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess, getGuide as apiGetGuide } from '@/api/afterSale'
 import { getUserInfo as apiGetUserInfo } from '@/api/login'
 import moment from 'moment'
 
@@ -535,6 +555,7 @@ export default {
         }
       ],
       secondArr: [], // 二级问题
+      thirdArr: [], // 三级问题
       revealMethod: '', // 解决方案展示
       definitionMethod: '', // 问题定位
       extraForm: {
@@ -548,6 +569,7 @@ export default {
       checkE: null,
       checkF: null,
       checkG: null,
+      checkH: null,
       totalCost: 0, // 成本
       priceSum: 0, // 最终总价,客户支付
       mailingCost: 0, // 邮递费用
@@ -653,6 +675,7 @@ export default {
       this.checkG = null
       this.revealMethod = null
       this.secondArr = []
+      this.thirdArr = []
       this.gatherArr = []
       this.partArr = []
       this.mailingCost = 0
@@ -666,34 +689,49 @@ export default {
       }
       this.$emit('closeRepairModal')
     },
-    checkQuestion (data) {
-      // console.log('选择的', data)
+    checkFirst (data) {
+      console.log('选择的', data)
       this.checkB = null
+      this.checkH = null
       this.revealMethod = null
       this.definitionMethod = null
       this.question.filter((item) => {
-        if (item.firstPro === data) {
-          this.secondArr = item.secondQuestion
+        if (item.name === data) {
+          this.secondArr = item.children
         }
       })
       // console.log('solution', this.secondArr)
     },
-    checkMethod (data) {
+    checkSecond (data) {
+      this.checkH = null
       this.checkB = data
-      // console.log('二级问题', this.secondArr)
+      console.log('选择的', data)
+      console.log('二级问题', this.secondArr)
       this.secondArr.filter((item) => {
         if (item.name === data) {
-          this.revealMethod = item.solution
-          this.definitionMethod = item.definitionMethod
+          this.thirdArr = item.guides
+          // this.revealMethod = item.solution
+          // this.definitionMethod = item.definitionMethod
         }
       })
       // console.log('选择解决方法', this.checkB)
+    },
+    checkThird (data) {
+      console.log(data)
+      this.checkH = data
+      this.thirdArr.filter((item) => {
+        if (item.name === data) {
+          this.revealMethod = item.solution
+          this.definitionMethod = item.locationWay
+        }
+      })
     },
     addQuestion () {
       const gatherAdd = {
         problemJudge: {
           firstPro: this.checkA,
-          secondPro: this.checkB
+          secondPro: this.checkB,
+          thirdPro: this.checkH
         },
         solution: this.revealMethod,
         definitionMethod: this.definitionMethod
@@ -701,9 +739,11 @@ export default {
       this.gatherArr.push(gatherAdd)
       this.checkA = null
       this.checkB = null
+      this.checkH = null
       this.revealMethod = null
       this.definitionMethod = null
       this.secondArr = []
+      this.thirdArr = []
       // console.log(this.gatherArr)
     },
     checkFirstPart (data) {
@@ -808,7 +848,7 @@ export default {
           technicalPrice: this.checkG
         }
       }
-      // console.log('apiData', apiData, 'id', id)
+      console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
         if (valid && this.gatherArr.length !== 0) {
           // console.log('校验ok')
@@ -1017,6 +1057,13 @@ export default {
     })
     this.partData = this.part.filter(data => {
       return data.partTo !== '师傅上门报价'
+    })
+    apiGetGuide().then(res => {
+      if (res.status === 200) {
+        console.log('question', this.question)
+        this.question = res.data
+        console.log('res', res.data)
+      }
     })
   },
   watch: {
