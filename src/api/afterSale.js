@@ -17,6 +17,8 @@ const api = {
   editGuide: id => { return 'after-sale/guide/' + id },
   delGuide: id => { return 'after-sale/guide/' + id },
   delGuideLevel: id => { return 'after-sale/guideLevel/' + id }
+  addNewPart: 'after-sale/part',
+  editPart: (id) => { return `after-sale/part/${id}` }
 }
 
 // 新建维修工单
@@ -95,6 +97,7 @@ export function getSaleRepair (id) {
   })
 }
 
+
 // 获取指导
 export function getGuide () {
   return request({
@@ -107,6 +110,14 @@ export function getGuide () {
 export function addGuideLevel (parameter) {
   return request({
     url: api.addGuideLevel,
+    method: 'post',
+    data: parameter
+  })
+}
+// 新增配件
+export function addNewPart (parameter) {
+  return request({
+    url: api.addNewPart,
     method: 'post',
     data: parameter
   })
@@ -138,6 +149,21 @@ export function editGuide (id, parameter) {
     data: parameter
   })
 }
+export function getParts (obj) {
+  return request({
+    url: api.addNewPart,
+    method: 'get',
+    params: obj
+  })
+}
+// 编辑配件
+export function editPart (id, parameter) {
+  return request({
+    url: api.editPart(id),
+    method: 'put',
+    data: parameter
+  })
+}
 
 // 删除指导信息
 export function delGuide (id) {
@@ -151,6 +177,14 @@ export function delGuide (id) {
 export function delGuideLevel (id) {
   return request({
     url: api.delGuideLevel(id),
+    method: 'delete'
+  })
+}
+
+// 删除配件
+export function deletePart (id) {
+  return request({
+    url: api.editPart(id),
     method: 'delete'
   })
 }
