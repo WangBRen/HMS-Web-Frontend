@@ -3,7 +3,25 @@
     <a-card>
       <div>
         <a-row>
-          <a-col :span="4">
+          <a-col :span="10">
+            <a-input-group class="topSearch">
+              <a-select style="width: 100px" default-value="name" @change="handleChangeKey">
+                <a-select-option value="serialNumber">
+                  编码
+                </a-select-option>
+                <a-select-option value="name">
+                  配件名
+                </a-select-option>
+                <a-select-option value="belongProduct">
+                  所属型号
+                </a-select-option>
+              </a-select>
+              <a-input-search v-model="keyWord" enter-button @search="onSearch" style="width: 42%" placeholder="请输入关键字" />
+              <a-button style="margin-left: 10px" type="primary" @click="reset">重置</a-button>
+            </a-input-group>
+          </a-col>
+          <a-col :span="12"></a-col>
+          <a-col :span="2">
             <a-button type="primary" @click="handAddNewPart">新建配件</a-button>
           </a-col>
         </a-row>
@@ -107,7 +125,9 @@ export default {
       filterDataSource: [],
       partData: null, // 单个配件信息
       partModelVisible: false,
-      mode: ''
+      mode: '',
+      selectKey: 'name',
+      keyWord: ''
     }
   },
   methods: {
@@ -128,23 +148,34 @@ export default {
       this.partModelVisible = false
       this.getpartList()
     },
-    async getpartList () {
-      const pages = { page: 0, size: 1 }
-      const res = await getParts(pages)
+    getpartList (keyObj) {
+      const obj = { page: 0, size: 1 }
+      if (keyObj) {
+        const newObj = Object.assign(obj, keyObj)
+        this.getParts(newObj)
+      } else {
+        this.getParts(obj)
+      }
+    },
+    async getParts (obj) {
+      const res = await getParts(obj)
       if (res.status === 200) {
-        console.log('部分数据', res)
-        pages.size = res.data.totalElements
-        const resp = await getParts(pages)
-        if (resp.status === 200) {
-          console.log('所有数据', resp, pages)
-          this.dataSource = resp.data.content
-          const set = this.dataSource.map(item => {
-            return item.belongPart
-          })
-          this.categorys = [...new Set(set)]
-          this.filterDataSource = this.dataSource.filter(item => {
-            return item.belongPart === this.category
-          })
+        if (res.data.totalElements === 0) {
+          this.filterDataSource = []
+        } else {
+          obj.size = res.data.totalElements
+          console.log('obj', obj)
+          const resp = await getParts(obj)
+          if (resp.status === 200) {
+            this.dataSource = resp.data.content
+            const set = this.dataSource.map(item => {
+              return item.belongPart
+            })
+            this.categorys = [...new Set(set)]
+            this.filterDataSource = this.dataSource.filter(item => {
+              return item.belongPart === this.category
+            })
+          }
         }
       }
     },
@@ -169,6 +200,25 @@ export default {
       this.filterDataSource = this.dataSource.filter(item => {
         return item.belongPart === e
       })
+    },
+    onSearch () {
+      console.log('this.selectKey', this.selectKey)
+      if (this.selectKey === 'name') {
+        const obj = { name: this.keyWord || '' }
+        this.getpartList(obj)
+      } else if (this.selectKey === 'belongProduct') {
+        const obj = { belongProduct: this.keyWord || '' }
+        this.getpartList(obj)
+      } else if (this.selectKey === 'serialNumber') {
+        const obj = { serialNumber: this.keyWord || '' }
+        this.getpartList(obj)
+      }
+    },
+    handleChangeKey (e) {
+      this.selectKey = e
+    },
+    reset () {
+      this.getParts({ page: 0, size: 10 })
     }
   },
   created () {
@@ -185,6 +235,9 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-
+<style scoped>
+.topSearch{
+  display: flex;
+  align-items: center;
+}
 </style>

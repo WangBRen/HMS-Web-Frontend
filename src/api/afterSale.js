@@ -99,14 +99,11 @@ export function addNewPart (parameter) {
   })
 }
 
-export function getParts (pages) {
+export function getParts (obj) {
   return request({
     url: api.addNewPart,
     method: 'get',
-    params: {
-      page: pages.page || 0,
-      size: pages.size || 10
-    }
+    params: obj
   })
 }
 // 编辑配件

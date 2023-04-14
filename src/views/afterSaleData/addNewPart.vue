@@ -30,7 +30,17 @@
           <a-input placeholder="请输入单位" v-model="form.unit" />
         </a-form-model-item>
         <a-form-model-item label="所属型号" prop="belongProduct">
-          <a-input placeholder="请输入所属型号" v-model="form.belongProduct" />
+          <!-- <a-input placeholder="请输入所属型号" v-model="form.belongProduct" /> -->
+          <a-select
+            mode="multiple"
+            placeholder="请选择所属型号"
+            v-model="form.belongProduct"
+            @change="handleChange"
+          >
+            <a-select-option v-for="i in product" :key="i">
+              {{ i }}
+            </a-select-option>
+          </a-select>
         </a-form-model-item>
         <a-form-model-item label="规格/用途" >
           <a-input placeholder="请输入规格/用途" v-model="form.specification" />
@@ -70,6 +80,7 @@ export default {
   },
   data () {
     return {
+      product: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5'],
       labelCol: { span: 5 },
       wrapperCol: { span: 17 },
       form: {
@@ -80,7 +91,7 @@ export default {
         stock: 0,
         unit: '',
         remark: '',
-        belongProduct: '',
+        belongProduct: [],
         elseBelongPart: '',
         specification: '',
         serialNumber: ''
@@ -90,7 +101,7 @@ export default {
         name: [{ required: true, message: '请输入配件名', trigger: 'blur' }],
         belongPart: [{ required: true, message: '请选择配件类别', trigger: 'change' }],
         elseBelongPart: [{ required: true, message: '请输入要添加的类名', trigger: 'blur' }],
-        belongProduct: [{ required: true, message: '请输入所属型号', trigger: 'blur' }],
+        belongProduct: [{ required: true, message: '请输入所属型号', trigger: 'change' }],
         price: [{ required: true, message: '请输入报价', trigger: 'blur' }]
       }
     }
@@ -148,6 +159,9 @@ export default {
           this.$emit('successAddNewPart')
         }
       }
+    },
+    handleChange () {
+      console.log('111')
     }
   }
 }
