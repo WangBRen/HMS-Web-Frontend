@@ -31,6 +31,18 @@
             <a-descriptions-item label="问题描述">
               {{ repairData.customerInfo.problemExplain }}
             </a-descriptions-item>
+            <a-descriptions-item label="收货地址">
+              {{ repairData.customerInfo.receiveAddress }}
+            </a-descriptions-item>
+            <a-descriptions-item label="上门地址">
+              {{ repairData.customerInfo.isSameAddress?'与上门地址一致':repairData.customerInfo.serviceAddress }}
+            </a-descriptions-item>
+            <a-descriptions-item label="图片/视频">
+              {{ repairData.customerInfo.uploadImage }}
+            </a-descriptions-item>
+            <a-descriptions-item label="上门地址">
+              {{ repairData.customerInfo.serviceAddress }}
+            </a-descriptions-item>
           </a-descriptions>
         </div>
         <!-- 共用数据 -->
@@ -248,6 +260,7 @@
               </div>
             </div>
             <div>总价：{{ totalCost }}</div>
+            <div>优惠折扣：<a-input-number :min="1" :max="10" v-model="discount" @change="onChangeDiscount"></a-input-number> 折</div>
             <div>客户实际支付：{{ priceSum }}</div>
             <!-- 评估按钮 -->
             <div>
@@ -602,6 +615,7 @@ export default {
           ]
         }
       ],
+      discount: '', // 折扣
       partData: [], // 去除师傅组的配件库
       technicalData: [], // 师傅组
       technicalSecondData: [], // 二级师傅组
@@ -990,6 +1004,9 @@ export default {
         }
       })
       console.log('编辑')
+    },
+    onChangeDiscount () {
+      this.priceSum = this.priceSum * this.discount * 0.1
     }
   },
   created () {
