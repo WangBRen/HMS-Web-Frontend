@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      title="新增配件"
+      :title="`${this.mode==='creat'?'新增配件':'编辑配件'}`"
       :visible="partModelVisible"
       @cancel="handleCancel"
       @ok="handleOk"
@@ -12,22 +12,25 @@
             <a-select-option v-for="item in categorys" :key="item" :value="item">{{ item }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="新增类别" v-if="form.belongPart==='添加其他类'">
-          <a-input placeholder="请输入要添加的类名" v-model="elseBelongPart"/>
+        <a-form-model-item label="新增类别" v-if="form.belongPart==='添加其他类'" prop="elseBelongPart">
+          <a-input placeholder="请输入要添加的类名" v-model="form.elseBelongPart"/>
         </a-form-model-item>
         <a-form-model-item label="配件名" prop="name"><a-input placeholder="请输入配件名" v-model="form.name"/></a-form-model-item>
         <a-form-model-item label="编码"><a-input placeholder="请输入配件编码" v-model="form.serialNumber"/></a-form-model-item>
         <a-form-model-item label="成本" >
-          <a-input-number min="0" placeholder="请输入成本" v-model="form.cost" />
+          <a-input-number :min="0" placeholder="请输入成本" v-model="form.cost" />
         </a-form-model-item>
-        <a-form-model-item label="报价" >
-          <a-input-number min="0" placeholder="请输入报价" v-model="form.price"/>
+        <a-form-model-item label="报价" prop="price">
+          <a-input-number :min="0" placeholder="请输入报价" v-model="form.price"/>
         </a-form-model-item>
         <a-form-model-item label="库存">
-          <a-input-number placeholder="请输入库存" v-model="form.stock" />
+          <a-input-number :min="0" placeholder="请输入库存" v-model="form.stock" />
         </a-form-model-item>
-        <a-form-model-item label="所属型号" >
-          <a-input placeholder="请选择所属型号" v-model="form.belongProduct" />
+        <a-form-model-item label="单位">
+          <a-input placeholder="请输入单位" v-model="form.unit" />
+        </a-form-model-item>
+        <a-form-model-item label="所属型号" prop="belongProduct">
+          <a-input placeholder="请输入所属型号" v-model="form.belongProduct" />
         </a-form-model-item>
         <a-form-model-item label="规格/用途" >
           <a-input placeholder="请输入规格/用途" v-model="form.specification" />
@@ -69,22 +72,26 @@ export default {
     return {
       labelCol: { span: 5 },
       wrapperCol: { span: 17 },
-      elseBelongPart: '',
       form: {
         belongPart: undefined, // 配件类别
         name: '',
-        price: 0,
+        price: null,
         cost: 0,
         stock: 0,
+        unit: '',
         remark: '',
         belongProduct: '',
+        elseBelongPart: '',
         specification: '',
         serialNumber: ''
       },
       partId: null,
       rules: {
         name: [{ required: true, message: '请输入配件名', trigger: 'blur' }],
-        belongPart: [{ required: true, message: '请选择配件类别', trigger: 'change' }]
+        belongPart: [{ required: true, message: '请选择配件类别', trigger: 'change' }],
+        elseBelongPart: [{ required: true, message: '请输入要添加的类名', trigger: 'blur' }],
+        belongProduct: [{ required: true, message: '请输入所属型号', trigger: 'blur' }],
+        price: [{ required: true, message: '请输入报价', trigger: 'blur' }]
       }
     }
   },
@@ -123,10 +130,11 @@ export default {
         serialNumber: this.form.serialNumber
       }
       if (this.form.belongPart === '添加其他类') {
-        payLoad.belongPart = this.elseBelongPart
+        payLoad.belongPart = this.form.elseBelongPart
       } else {
         payLoad.belongPart = this.form.belongPart
       }
+      console.log('payLoad', payLoad)
       if (this.mode === 'creat') {
         const res = await addNewPart(payLoad)
         if (res.status === 201) {

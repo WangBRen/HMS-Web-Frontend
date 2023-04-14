@@ -8,10 +8,10 @@
           </a-col>
         </a-row>
       </div>
-      <a-tabs default-active-key="1" @change="callback">
-        <a-tab-pane v-for="category in categorys" :key="category" :tab="`${category}`">
+      <a-tabs default-active-key="1" @change="callback" >
+        <a-tab-pane v-for="item in categorys" :key="item" :tab="`${item}`">
           <!-- 表格数据 -->
-          <a-table :columns="columns" :data-source="filterDataSource" :rowKey="(record, index) => { return index }">
+          <a-table :columns="columns" :data-source="filterDataSource" :rowKey="(record, index) => { return index }" :pagination="false" size="small">
             <span slot="operation" slot-scope="scope">
               <a @click="editPart(scope)">编辑</a>
               <a-divider type="vertical" />
@@ -48,6 +48,7 @@ export default {
   },
   data () {
     return {
+      category: '', // 当前选中类别
       categorys: [],
       columns: [
         {
@@ -106,17 +107,7 @@ export default {
       filterDataSource: [],
       partData: null, // 单个配件信息
       partModelVisible: false,
-      mode: '',
-      pagination: {
-        total: 0,
-        current: 1,
-        pageSize: 10, // 默认每页显示数量
-        // showSizeChanger: true, // 显示可改变每页数量
-        // pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
-        showTotal: total => `共 ${total} 个账户`, // 显示总数
-        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
-        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-      }
+      mode: ''
     }
   },
   methods: {
@@ -138,17 +129,28 @@ export default {
       this.getpartList()
     },
     async getpartList () {
-      const res = await getParts()
+      const pages = { page: 0, size: 1 }
+      const res = await getParts(pages)
       if (res.status === 200) {
-        this.dataSource = res.data.content
-        const set = this.dataSource.map(item => {
-          return item.belongPart
-        })
-        this.categorys = [...new Set(set)]
+        console.log('部分数据', res)
+        pages.size = res.data.totalElements
+        const resp = await getParts(pages)
+        if (resp.status === 200) {
+          console.log('所有数据', resp, pages)
+          this.dataSource = resp.data.content
+          const set = this.dataSource.map(item => {
+            return item.belongPart
+          })
+          this.categorys = [...new Set(set)]
+          this.filterDataSource = this.dataSource.filter(item => {
+            return item.belongPart === this.category
+          })
+        }
       }
     },
     successAddNewPart () {
       this.partModelVisible = false
+      console.log('创建成功')
       this.getpartList()
     },
     editPart (partData) {
@@ -163,22 +165,23 @@ export default {
       console.log('删除配件', id, res)
     },
     callback (e) {
-      console.log(e)
+      this.category = e
       this.filterDataSource = this.dataSource.filter(item => {
-        console.log(item)
         return item.belongPart === e
       })
     }
   },
   created () {
+    this.$setPageDataLoader(this.getpartList)
   },
   mounted () {
     this.getpartList()
     setTimeout(() => {
+      this.category = this.categorys[0]
       this.filterDataSource = this.dataSource.filter(item => {
-        return item.belongPart === this.categorys[0]
+        return item.belongPart === this.category
       })
-    }, 500)
+    }, 1000)
   }
 }
 </script>
