@@ -31,6 +31,7 @@
           <a-col :span="12">
             <a-form-model-item label="购买日期" prop="purchaseDate">
               <a-date-picker
+                :disabled-date="disabledDate"
                 v-model="infoForm.purchaseDate"
                 placeholder="请选择购买日期"
                 style="width: 100%;"
@@ -145,6 +146,7 @@
 </template>
 <script>
 import { addAfterSale as apiAddAfterSale, getGuide as apiGetGuide } from '@/api/afterSale'
+import moment from 'moment'
 
 export default {
   props: {
@@ -360,6 +362,7 @@ export default {
   methods: {
     handleCancel () {
       this.$refs.infoForm.resetFields()
+      this.infoForm.uploadImage = []
       this.$emit('closeAddRepair')
     },
     onChangeAddress (e) {
@@ -370,10 +373,18 @@ export default {
       }
     },
     onSubmit () {
-    //   const apiData = JSON.parse(JSON.stringify(this.infoForm))
-    //   apiData.problemCategory = this.infoForm.problemCategoryArr[0]
-    //   apiData.problemExplain = this.infoForm.problemCategoryArr[1]
-      // console.log('提交表单', this.infoForm)
+      // const apiData = JSON.parse(JSON.stringify(this.infoForm))
+      // apiData.problemCategory = this.infoForm.problemCategoryArr[0] + '/' + this.infoForm.problemCategoryArr[1]
+      // apiData.problemExplain = this.infoForm.problemExplain
+      // apiData.afterSaleType = 'WEB'
+      // const upload = []
+      // // console.log('apiData.uploadImage', apiData.uploadImage)
+      // for (let i = 0; i < apiData.uploadImage.length; i++) {
+      //   upload.push(apiData.uploadImage[i])
+      // }
+      // apiData.uploadImage = upload
+      // delete apiData.problemCategoryArr
+      // console.log('提交表单', apiData)
       this.$refs.infoForm.validate(valid => {
         if (valid) {
         //   console.log('校验ok')
@@ -383,7 +394,7 @@ export default {
           apiData.afterSaleType = 'WEB'
           const upload = []
           for (let i = 0; i < apiData.uploadImage.length; i++) {
-            upload.push(apiData.uploadImage[i].url)
+            upload.push(apiData.uploadImage[i])
           }
           apiData.uploadImage = upload
           delete apiData.problemCategoryArr
@@ -421,6 +432,9 @@ export default {
         this.infoForm.uploadImage = testArr
         // console.log(testArr)
       }
+    },
+    disabledDate (current) {
+      return current && current > moment().endOf('day')
     }
   },
   created () {
