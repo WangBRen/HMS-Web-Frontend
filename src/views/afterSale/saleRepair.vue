@@ -189,7 +189,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -229,7 +234,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -277,7 +287,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -324,7 +339,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -371,7 +391,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
