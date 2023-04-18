@@ -16,6 +16,7 @@
               bordered
               size="small"
               :column="3"
+              v-if="item1.pays.length>0"
             >
               <a-descriptions-item label="支付单号"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.outTradeNo }}</span></span></a-descriptions-item>
               <a-descriptions-item label="支付时间"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.payTime | moment }}</span></span></a-descriptions-item>
@@ -44,15 +45,24 @@
                 </a-row>
               </a-descriptions-item>
               <a-descriptions-item label="选择退款配件及数量" :span="2">
+                <a-row style="font-weight:600;line-height:2">
+                  <a-col :span="8">已发配件</a-col>
+                  <a-col :span="4">单价</a-col>
+                  <a-col :span="6">已发数量</a-col>
+                  <a-col :span="6">选择退款数量</a-col>
+                </a-row>
                 <div v-for="(item2, index2) in item1.afterSaleExpresses" :key="index2">
                   <a-row>
-                    <a-col :span="6">{{ item2.pieceName }}：</a-col>
+                    <a-col :span="8">{{ item2.pieceName }}</a-col>
+                    <a-col :span="4">{{ item2.piecePrice }}</a-col>
+                    <a-col :span="6">{{ item2.pieceNum }}</a-col>
                     <a-col :span="6"><a-input-number :min="0" :max="item2.pieceNum" @change="value => accessoriesChange(item1.id,item2,value)"/></a-col>
                   </a-row>
                 </div>
                 <div v-for="total in totalRefund" :key="total.id">
-                  <span v-if="total.id===item1.id">
-                    本次预计退款：￥{{ total.totalNum }}
+                  <span v-if="total.id===item1.id" style="color:red;padding-top: 20px;">
+                    <span v-if="item1.discount">折扣：{{ item1.discount }}折 <span style="margin-left:100px;">本次预计退款：￥{{ total.totalNum * item1.discount / 10 }}</span></span>
+                    <span v-else>本次预计退款：￥{{ total.totalNum }}</span>
                   </span>
                 </div>
               </a-descriptions-item>
@@ -109,6 +119,9 @@ export default {
       const myToday = myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate()
       const myHour = myDate.getHours()
       const outRefundNo = 'TK' + myYear + myMonth + myToday + myHour + this.drawbackData.id + item1.id
+      const refundFee = this.totalRefund.filter(item => {
+        return item.id === item1.id
+      })
       var refundReason = ''
       this.accessories.map(item => {
         if (item.processId === item1.id) {
@@ -123,6 +136,7 @@ export default {
           outTradeNo = item.outTradeNo
         }
       })
+      console.log('refundFee', refundFee[0].totalNum)
       const payLoad = {
         appid: 'wx60c0211b98af5b12', // 新杜马小程序
         // appid: 'wxc849c3cfa10ea1d2', // 健康小程序
@@ -133,10 +147,11 @@ export default {
         outTradeNo: outTradeNo, // 订单号
         outRefundNo: outRefundNo,
         notifyUrl: 'https://dev.hms.yootane.com/afterSale/saleRepair', // 微信支付结果通知的回调地址
-        totalFee: 3, // 订单金额  item1.pays[0].actualAmount
-        refundFee: 1,
+        totalFee: item1.pays[0].actualAmount * 100, // 订单金额  item1.pays[0].actualAmount
+        refundFee: refundFee[0].totalNum * 100,
         refundDesc: refundReason // 退款描述
       }
+      console.log('退款payLoad', payLoad)
       this.refund(payLoad, item1.id, refundReason)
     },
     async refund (payLoad, processId, refundReason) {

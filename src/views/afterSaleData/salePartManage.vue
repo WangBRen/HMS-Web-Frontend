@@ -229,6 +229,7 @@ export default {
     setTimeout(() => {
       this.category = this.categorys[0]
       this.filterDataSource = this.dataSource.filter(item => {
+        console.log('获取配件数据', this.dataSource, item.belongPart, this.category)
         return item.belongPart === this.category
       })
     }, 1000)
