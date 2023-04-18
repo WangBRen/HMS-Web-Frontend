@@ -224,7 +224,7 @@
                   {{ item }}
                 </a-select-option>
               </a-select>
-              <a-select @change="checkSecondTechnical" v-if="visitIndex" style="width: 150px" v-model="checkG">
+              <a-select @change="checkSecondTechnical" :disabled="!checkF" v-if="visitIndex" style="width: 150px" v-model="checkG">
                 <a-select-option v-for="item in technicalSecondData" :key="item.piecePrice">
                   {{ item.pieceName }}/{{ item.piecePrice }}
                 </a-select-option>
@@ -649,6 +649,7 @@ export default {
       this.checkG = null
       this.revealMethod = null
       this.discountData = null
+      this.guaranteeIndex = false
       this.secondArr = []
       this.thirdArr = []
       this.gatherArr = []
