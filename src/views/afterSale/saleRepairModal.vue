@@ -219,16 +219,19 @@
               <a-checkbox @change="onVisit">
                 师傅上门
               </a-checkbox>
-              <a-select @change="checkFirstTechnical" v-if="visitIndex" style="width: 150px" v-model="checkF">
-                <a-select-option v-for="item in technicalData" :key="item">
-                  {{ item }}
-                </a-select-option>
-              </a-select>
-              <a-select @change="checkSecondTechnical" :disabled="!checkF" v-if="visitIndex" style="width: 150px" v-model="checkG">
-                <a-select-option v-for="item in technicalSecondData" :key="item.piecePrice">
-                  {{ item.pieceName }}/{{ item.piecePrice }}
-                </a-select-option>
-              </a-select>
+              <span v-if="visitIndex">
+                <span style="color: #f5222d;">* </span>
+                <a-select @change="checkFirstTechnical" style="width: 150px" v-model="checkF">
+                  <a-select-option v-for="item in technicalData" :key="item">
+                    {{ item }}
+                  </a-select-option>
+                </a-select>
+                <a-select @change="checkSecondTechnical" :disabled="!checkF" style="width: 150px" v-model="checkG">
+                  <a-select-option v-for="item in technicalSecondData" :key="item.piecePrice">
+                    {{ item.pieceName }}/{{ item.piecePrice }}
+                  </a-select-option>
+                </a-select>
+              </span>
             </div>
             <!-- 配件信息 -->
             <div style="line-height: 40px;">
@@ -238,6 +241,7 @@
             </div>
             <div v-if="deliveryIndex">
               <div>
+                <span style="color: #f5222d;">* </span>
                 <span>配件选择：</span>
                 <a-select @change="checkFirstPart" style="width: 200px" v-model="checkC">
                   <a-select-option v-for="item in partData" :key="item">
@@ -304,7 +308,7 @@
         </div>
         <!-- 已支付 -->
         <div class="form_pay" v-if="current===2">
-          <div class="form_pay_title">标题</div>
+          <div class="form_pay_title">填单</div>
           <a-form-model
             ref="payForm"
             style="padding: 10px;"
@@ -315,34 +319,6 @@
           >
             <!-- 寄件信息 -->
             <div v-if="repairData.processes[repairData.processes.length-1].needPieceSend">
-              <a-row>
-                <a-col :span="3">
-                  <span class="userLabel">客户名：</span>
-                </a-col>
-                <a-col :span="4">
-                  {{ repairData.customerInfo.customerName }}
-                </a-col>
-                <a-col :span="4">
-                  <span class="userLabel">收货地址：</span>
-                </a-col>
-                <a-col :span="8">
-                  <span>{{ repairData.customerInfo.receiveAddress }}</span>
-                </a-col>
-              </a-row>
-              <a-row>
-                <a-col :span="3">
-                  <span class="userLabel">联系方式：</span>
-                </a-col>
-                <a-col :span="4">
-                  <span>{{ repairData.customerInfo.customerPhone }}</span>
-                </a-col>
-                <a-col :span="4">
-                  <span class="userLabel">上门地址：</span>
-                </a-col>
-                <a-col :span="12">
-                  <span>{{ repairData.customerInfo.serviceAddress }}</span>
-                </a-col>
-              </a-row>
               <a-row>
                 <a-col :span="12">
                   <a-form-model-item label="寄件单号" prop="pieceDeliveryNo">
@@ -561,51 +537,6 @@ export default {
               pieceName: '零配件一',
               piecePrice: 10,
               pieceCost: 8
-            },
-            {
-              pieceName: '零配件二',
-              piecePrice: 15,
-              pieceCost: 10
-            },
-            {
-              pieceName: '零配件三',
-              piecePrice: 20,
-              pieceCost: 15
-            }
-          ]
-        },
-        {
-          partTo: '第二类',
-          partStore: [
-            {
-              pieceName: '配件一',
-              piecePrice: 10,
-              pieceCost: 6
-            },
-            {
-              pieceName: '配件二',
-              piecePrice: 15,
-              pieceCost: 11
-            }
-          ]
-        },
-        {
-          partTo: '师傅上门报价',
-          partStore: [
-            {
-              pieceName: '珠三角',
-              piecePrice: 100,
-              pieceCost: 100
-            },
-            {
-              pieceName: '江浙沪',
-              piecePrice: 150,
-              pieceCost: 150
-            },
-            {
-              pieceName: '京津冀',
-              piecePrice: 200,
-              pieceCost: 200
             }
           ]
         }
@@ -866,14 +797,28 @@ export default {
       }
       console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
+        // 判断折扣理由
         let validIndex = true
         if (this.discount) {
           if (!this.discountData) {
             validIndex = false
           }
         }
-        // console.log(validIndex)
-        if (valid && this.gatherArr.length !== 0 && validIndex) {
+        // 判断上门
+        let isVisit = true
+        if (this.visitIndex) {
+          if (!this.checkG) {
+            isVisit = false
+          }
+        }
+        // 判断寄件
+        let isDelivery = true
+        if (this.deliveryIndex) {
+          if (this.partArr.length === 0) {
+            isDelivery = false
+          }
+        }
+        if (valid && this.gatherArr.length !== 0 && validIndex && isVisit && isDelivery) {
           // console.log('校验ok')
            // 评估
           apiAddProcess(id, apiData).then(res => {
@@ -1113,6 +1058,7 @@ export default {
       handler (newData, oldData) {
         this.totalCost = 0
         this.mailingCost = 0
+        this.mailingCostIndex = false
         this.partArr.map(item => {
           this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
@@ -1122,15 +1068,12 @@ export default {
           this.priceSum = 0
         } else {
           this.priceSum = 0
-          this.mailingCost = 0
-          this.mailingCostIndex = false
           this.partArr.map(item => {
             this.priceSum += item.piecePrice * item.pieceNum
           }) // 配件
           this.priceSum += this.checkG // 师傅
         }
         if (this.discount) {
-          // console.log('??')
           this.priceSum = this.priceSum * this.discount * 0.1
         }
       },
@@ -1190,8 +1133,11 @@ export default {
         this.totalCost += item.piecePrice * item.pieceNum
       }) // 配件
       if (this.discount) {
-        console.log('??')
+        // console.log('??')
         this.priceSum = this.priceSum * this.discount * 0.1
+      }
+      if (this.guaranteeIndex) {
+        this.priceSum = 0
       }
     },
     // 动态规则
