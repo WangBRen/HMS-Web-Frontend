@@ -136,7 +136,6 @@ export default {
           outTradeNo = item.outTradeNo
         }
       })
-      console.log('refundFee', refundFee[0].totalNum)
       const payLoad = {
         appid: 'wx60c0211b98af5b12', // 新杜马小程序
         // appid: 'wxc849c3cfa10ea1d2', // 健康小程序
