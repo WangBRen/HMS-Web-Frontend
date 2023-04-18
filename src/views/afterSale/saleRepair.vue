@@ -10,10 +10,12 @@
               :rowKey="(record, index) => index"
               :data-source="estimateData"
               :pagination="false"
-              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
@@ -27,10 +29,12 @@
               :rowKey="(record, index) => index"
               :data-source="estimateOkData"
               :pagination="false"
-              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
@@ -44,10 +48,12 @@
               :rowKey="(record, index) => index"
               :data-source="payData"
               :pagination="false"
-              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
@@ -61,10 +67,12 @@
               :rowKey="(record, index) => index"
               :data-source="comeData"
               :pagination="false"
-              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
@@ -89,10 +97,12 @@
               :rowKey="(record, index) => index"
               :data-source="solveData"
               :pagination="false"
-              :scroll="{ y: 600 }"
             >
               <span slot="status" slot-scope="text">
                 {{ text | filterStatus }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
@@ -186,6 +196,11 @@ export default {
           align: 'center'
         },
         {
+          title: '评估次数',
+          scopedSlots: { customRender: 'processes' },
+          align: 'center'
+        },
+        {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
@@ -228,6 +243,11 @@ export default {
           dataIndex: 'status',
           key: 'status',
           scopedSlots: { customRender: 'status' },
+          align: 'center'
+        },
+        {
+          title: '评估次数',
+          scopedSlots: { customRender: 'processes' },
           align: 'center'
         },
         {
@@ -284,6 +304,11 @@ export default {
           align: 'center'
         },
         {
+          title: '评估次数',
+          scopedSlots: { customRender: 'processes' },
+          align: 'center'
+        },
+        {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
@@ -336,6 +361,11 @@ export default {
           align: 'center'
         },
         {
+          title: '评估次数',
+          scopedSlots: { customRender: 'processes' },
+          align: 'center'
+        },
+        {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
@@ -385,6 +415,11 @@ export default {
           dataIndex: 'status',
           key: 'status',
           scopedSlots: { customRender: 'status' },
+          align: 'center'
+        },
+        {
+          title: '评估次数',
+          scopedSlots: { customRender: 'processes' },
           align: 'center'
         },
         {
@@ -458,6 +493,11 @@ export default {
           this.salesData = res.data.filter(item => {
             return item.type !== 'INSTALL'
           })
+          this.salesData = this.salesData.sort((a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          })
           this.estimateData = this.salesData.filter(item => {
             if (item.status === 'WAIT_EVALUATE') {
               return item
@@ -482,6 +522,11 @@ export default {
             if (item.status === 'SOLVED') {
               return item
             }
+          })
+          this.solveData = this.solveData.sort((a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t2 - t1
           })
         }
       })
