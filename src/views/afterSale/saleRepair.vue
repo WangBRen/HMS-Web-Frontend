@@ -34,7 +34,7 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">评估</a>
+                <a @click="openRepairModal(record)">查看</a>
               </span>
             </a-table>
           </a-tab-pane>
@@ -51,7 +51,7 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">评估</a>
+                <a @click="openRepairModal(record)">填单</a>
               </span>
             </a-table>
           </a-tab-pane>
@@ -68,7 +68,7 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">评估</a>
+                <a @click="openRepairModal(record)">维修反馈</a>
               </span>
             </a-table>
           </a-tab-pane>
@@ -96,7 +96,7 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">评估</a> |
+                <a @click="openRepairModal(record)">查看</a> |
                 <a @click="openDrawbackModal(record)">退款</a>
               </span>
             </a-table>
@@ -189,7 +189,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -229,7 +234,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -277,7 +287,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -324,7 +339,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
@@ -371,7 +391,12 @@ export default {
           title: '创建时间',
           dataIndex: 'createdAt',
           scopedSlots: { customRender: 'createTime' },
-          align: 'center'
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
         },
         {
           title: '操作',
