@@ -25,27 +25,36 @@
             <a-descriptions-item label="购买日期">
               {{ repairData.customerInfo.purchaseDate | getDay }}
             </a-descriptions-item>
-            <a-descriptions-item label="问题分类">
+            <a-descriptions-item label="品牌">
+              {{ repairData.customerInfo.brand }}
+            </a-descriptions-item>
+            <a-descriptions-item label="型号">
+              {{ repairData.customerInfo.productModel }}
+            </a-descriptions-item>
+            <a-descriptions-item label="编号">
+              {{ repairData.customerInfo.productNo || '---' }}
+            </a-descriptions-item>
+            <a-descriptions-item label="问题分类" :span="3">
               {{ repairData.customerInfo.problemCategory }}
             </a-descriptions-item>
-            <a-descriptions-item label="问题描述">
-              {{ repairData.customerInfo.problemExplain }}
+            <a-descriptions-item label="问题描述" :span="3">
+              {{ repairData.customerInfo.problemExplain || '---' }}
             </a-descriptions-item>
             <a-descriptions-item label="收货地址">
               {{ repairData.customerInfo.receiveAddress }}
             </a-descriptions-item>
             <a-descriptions-item label="上门地址">
-              {{ repairData.customerInfo.isSameAddress?'与上门地址一致':repairData.customerInfo.serviceAddress }}
+              {{ repairData.customerInfo.isSameAddress? repairData.customerInfo.receiveAddress:repairData.customerInfo.serviceAddress }}
             </a-descriptions-item>
             <a-descriptions-item label="图片/视频">
-              <div v-for="file in repairData.customerInfo.uploadImage" :key="file.fileName">
-                <a :href="file.url" target="_blank">{{ file.fileName }}</a>
+              <div v-for="(file,index) in repairData.customerInfo.uploadImage" :key="index">
+                <a :href="file.url" target="_blank">资料{{ index+1 }}</a>
               </div>
               <!-- {{ repairData.customerInfo.uploadImage }} -->
             </a-descriptions-item>
-            <a-descriptions-item label="上门地址">
+            <!-- <a-descriptions-item label="上门地址">
               {{ repairData.customerInfo.serviceAddress }}
-            </a-descriptions-item>
+            </a-descriptions-item> -->
           </a-descriptions>
         </div>
         <!-- 共用数据 -->
@@ -244,7 +253,7 @@
                 <a-input-number :disabled="!checkD" v-model="checkE" id="inputNumber" :min="1"/>
                 <a-button style="line-height: 30px;" :disabled="!checkE" @click="addPart">添加</a-button>
               </div>
-              <div style="margin: 10px;">
+              <div>
                 <span>配件信息汇总</span>
                 <a-row style="margin: 10px;" v-for="item in partArr" :key="item.index">
                   <a-col>
@@ -601,7 +610,7 @@ export default {
           ]
         }
       ],
-      discount: '', // 折扣
+      discount: null, // 折扣
       discountData: '', // 折扣理由
       partData: [], // 去除师傅组的配件库
       technicalData: [], // 师傅组
@@ -645,6 +654,7 @@ export default {
       this.gatherArr = []
       this.partArr = []
       this.mailingCost = 0
+      this.discount = null
       this.visitIndex = false
       this.deliveryIndex = false
       this.extraForm.problemePxplain = null
