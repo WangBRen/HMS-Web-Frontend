@@ -470,7 +470,11 @@ export default {
           this.current = 4
           break
       }
+      const testData = data.processes.sort((a, b) => {
+        return a.id - b.id
+      })
       this.repairData = data
+      this.repairData.processes = testData
       console.log('评估', this.repairData)
     },
     closeRepairModal () {

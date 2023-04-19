@@ -15,7 +15,7 @@
         <!-- 客户信息 -->
         <div v-if="current>-1">
           <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">客户信息</div>
-          <a-descriptions bordered>
+          <a-descriptions bordered size="small">
             <a-descriptions-item label="客户名">
               {{ repairData.customerInfo.customerName }}
             </a-descriptions-item>
@@ -50,63 +50,71 @@
               <div v-for="(file,index) in repairData.customerInfo.uploadImage" :key="index">
                 <a :href="file.url" target="_blank">资料{{ index+1 }}</a>
               </div>
-              <!-- {{ repairData.customerInfo.uploadImage }} -->
             </a-descriptions-item>
-            <!-- <a-descriptions-item label="上门地址">
-              {{ repairData.customerInfo.serviceAddress }}
-            </a-descriptions-item> -->
           </a-descriptions>
         </div>
         <!-- 共用数据 -->
-        <div v-if="current !==2 ">
-          <div class="big_title">历史评估：</div>
+        <div>
+          <div class="big_title">历史评估</div>
           <div style="" v-for="(item4,index4) in repairData.processes" :key="item4.id">
             <div style="font-size: 20px;color: rgba(0, 0, 0, 0.85);">第{{ index4+1 }}次评估：</div>
             <!-- 问题汇总 -->
-            <a-descriptions style="padding: 0 10px;" :column="6" bordered size="small" >
-              <a-descriptions-item label="问题汇总" :span="6">
+            <a-descriptions style="padding: 0 10px;" :column="8" bordered size="small">
+              <a-descriptions-item label="问题汇总" :span="8">
                 <div v-for="(item5,index5) in item4.problems" :key="index5">
                   <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
                 </div>
               </a-descriptions-item>
-              <a-descriptions-item label="问题解释" :span="6">
+              <a-descriptions-item label="问题解释" :span="8">
                 {{ item4.problemExplain }}
               </a-descriptions-item>
-              <a-descriptions-item label="技术支持" :span="6">
+              <a-descriptions-item label="技术支持" :span="8">
                 {{ item4.technicalSupport }}
               </a-descriptions-item>
-              <a-descriptions-item label="是否保修期" :span="1.5">
+              <a-descriptions-item label="是否保修期" :span="2">
                 {{ item4.isOverWarranty | filterBoolean }}
               </a-descriptions-item>
-              <a-descriptions-item label="是否寄件" :span="1.5">
+              <a-descriptions-item label="是否寄件" :span="2">
                 {{ item4.needPieceSend | filterBoolean }}
               </a-descriptions-item>
-              <a-descriptions-item label="是否上门" :span="1.5">
+              <a-descriptions-item label="是否上门" :span="2">
                 {{ item4.needVisit | filterBoolean }}
               </a-descriptions-item>
-              <a-descriptions-item label="是否支付" :span="1.5">
+              <a-descriptions-item label="是否支付" :span="2">
                 {{ item4.payResult | filterBoolean }}
               </a-descriptions-item>
-              <a-descriptions-item label="快递费" :span="1.5">
+              <a-descriptions-item label="快递费" :span="2">
                 {{ item4.expressCost }}
               </a-descriptions-item>
-              <a-descriptions-item label="师傅报价" :span="1.5">
+              <a-descriptions-item label="师傅报价" :span="2">
                 {{ item4.afterSaleVisit.technicalPrice }}
               </a-descriptions-item>
-              <a-descriptions-item label="总价" :span="1.5">
+              <a-descriptions-item label="配件费用" :span="2">
+                {{ countPart(item4.afterSaleExpresses) }}
+              </a-descriptions-item>
+              <a-descriptions-item label="总价" :span="2">
                 {{ item4.totalCost }}
               </a-descriptions-item>
-              <a-descriptions-item label="客户实际支付" :span="1.5">
+              <a-descriptions-item label="客户实际支付" :span="4">
                 {{ item4.customerPay }}
+              </a-descriptions-item>
+              <a-descriptions-item v-if="item4.pays.length" label="支付时间" :span="4">
+                {{ item4.pays[0].payTime | getTime }}
               </a-descriptions-item>
             </a-descriptions>
             <!-- 寄件汇总 -->
-            <div style="padding: 0 10px;" v-if="item4.needPieceSend">
+            <div v-if="item4.needPieceSend" style="padding: 0 10px;">
               <div style="font-size: 20px;">寄件汇总：</div>
-              <div style="padding: 0 20px;" v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
-                <div>寄件名：{{ item6.pieceName }}  数量：{{ item6.pieceNum }}</div>
-                <div>寄件报价：{{ item6.piecePrice }} 元</div>
-              </div>
+              <a-descriptions bordered size="small">
+                <a-descriptions-item label="寄件汇总" :span="3">
+                  <div v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
+                    <div>寄件名：{{ item6.pieceName }}&nbsp;&nbsp;数量：{{ item6.pieceNum }}&nbsp;&nbsp;寄件报价：{{ item6.piecePrice }} 元</div>
+                  </div>
+                </a-descriptions-item>
+                <a-descriptions-item v-if="item4.pieceDeliveryNo" label="寄件单号">
+                  {{ item4.pieceDeliveryNo }}
+                </a-descriptions-item>
+              </a-descriptions>
             </div>
             <!-- 上门信息 -->
             <div style="padding: 0 10px;" v-if="item4.needVisit && item4.afterSaleVisit.technicalName">
@@ -210,17 +218,20 @@
             <!-- 选项 -->
             <!-- 是否在保修期 -->
             <div style="line-height: 40px;">
-              <a-checkbox @change="onGuarantee">
-                是否在保修期
-              </a-checkbox>
+              <span style="color: #f5222d;">* </span>保修期：
+              <a-radio-group @change="onGuarantee" name="radioGroup">
+                <a-radio :value="1">是</a-radio>
+                <a-radio :value="0">否</a-radio>
+              </a-radio-group>
             </div>
             <!-- 是否师傅上门 -->
             <div style="line-height: 40px;">
-              <a-checkbox @change="onVisit">
-                师傅上门
-              </a-checkbox>
+              <span style="color: #f5222d;">* </span>师傅上门：
+              <a-radio-group @change="onVisit" name="radioGroup">
+                <a-radio :value="1">是</a-radio>
+                <a-radio :value="0">否</a-radio>
+              </a-radio-group>
               <span v-if="visitIndex">
-                <span style="color: #f5222d;">* </span>
                 <a-select @change="checkFirstTechnical" style="width: 150px" v-model="checkF">
                   <a-select-option v-for="item in technicalData" :key="item">
                     {{ item }}
@@ -233,12 +244,15 @@
                 </a-select>
               </span>
             </div>
-            <!-- 配件信息 -->
+            <!-- 是否配件寄送 -->
             <div style="line-height: 40px;">
-              <a-checkbox @change="onDelivery">
-                配件寄送
-              </a-checkbox>
+              <span style="color: #f5222d;">* </span>配件寄送：
+              <a-radio-group @change="onDelivery" name="radioGroup">
+                <a-radio :value="1">是</a-radio>
+                <a-radio :value="0">否</a-radio>
+              </a-radio-group>
             </div>
+            <!-- 配件选择 -->
             <div v-if="deliveryIndex">
               <div>
                 <span style="color: #f5222d;">* </span>
@@ -257,38 +271,53 @@
                 <a-input-number :disabled="!checkD" v-model="checkE" id="inputNumber" :min="1"/>
                 <a-button style="line-height: 30px;" :disabled="!checkE" @click="addPart">添加</a-button>
               </div>
-              <div>
-                <span>配件信息汇总</span>
-                <a-row style="margin: 10px;" v-for="item in partArr" :key="item.index">
-                  <a-col>
-                    <span>配件名称：{{ item.pieceName }}&nbsp;</span>
+            </div>
+            <!-- 评估信息汇总 -->
+            <div>
+              <a-descriptions style="margin-top: 10px;" bordered size="small">
+                <a-descriptions-item v-if="partArr.length" label="配件信息汇总" :span="3">
+                  <div v-for="item in partArr" :key="item.index">
+                    <span>配件名称：{{ item.pieceName }}&nbsp;</span>&nbsp;
+                    <span>单个配件报价：{{ item.piecePrice }}元</span>&nbsp;
+                    <span>数量：{{ item.pieceNum }}</span>&nbsp;
+                    <span>配件库存：{{ item.pieceStock }}</span>&nbsp;
                     <span>
                       <a-icon @click="delPart(item)" type="close-circle" />
                     </span>
-                  </a-col>
-                  <a-col>单个配件报价：{{ item.piecePrice }}元</a-col>
-                  <a-col>数量：{{ item.pieceNum }}</a-col>
-                  <a-col>配件库存：{{ item.pieceStock }}</a-col>
-                  <!-- <a-col>配件库存：充足</a-col> -->
-                </a-row>
-                <a-row v-if="partArr.length">
-                  <a-col v-if="!mailingCostIndex" :span="4">
-                    快递费：<a-input-number v-model="mailingCost"></a-input-number>
-                  </a-col>
-                  <a-col v-if="!mailingCostIndex" :span="4">
-                    <a-button @click="okMailing">确认</a-button>
-                  </a-col>
-                  <a-col v-if="mailingCostIndex">
-                    快递费：{{ mailingCost }}
-                  </a-col>
-                </a-row>
-              </div>
+                  </div>
+                </a-descriptions-item>
+                <a-descriptions-item v-if="partArr.length" label="配件价格" :span="3">
+                  {{ countPart(partArr) }}
+                </a-descriptions-item>
+                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="3">
+                  <span v-if="!mailingCostIndex">
+                    <a-input-number :min="0" v-model="mailingCost"></a-input-number>
+                    <a-button style="line-height: 29px;" @click="okMailing">确认</a-button>
+                  </span>
+                  <span v-if="mailingCostIndex">
+                    {{ mailingCost }}
+                  </span>
+                  <span></span>
+                </a-descriptions-item>
+                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="3">
+                  {{ checkG }}
+                </a-descriptions-item>
+                <a-descriptions-item label="总价" :span="3">
+                  {{ totalCost }}
+                </a-descriptions-item>
+                <a-descriptions-item label="优惠折扣" :span="3">
+                  <div>
+                    输入折扣：<a-input-number style="width: 60px;" :min="1" :max="10" v-model="discount" @change="onChangeDiscount"></a-input-number> 折 (需要则填写)
+                  </div>
+                  <div v-show="discount">
+                    折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input>
+                  </div>
+                </a-descriptions-item>
+                <a-descriptions-item label="客户实际支付" :span="3">
+                  {{ parseInt(priceSum * 100) / 100 }}
+                </a-descriptions-item>
+              </a-descriptions>
             </div>
-            <div>总价：{{ totalCost }}</div>
-            <div> &nbsp;&nbsp;优惠折扣：<a-input-number style="margin-left: 2px;" :min="1" :max="10" v-model="discount" @change="onChangeDiscount"></a-input-number> 折 (需要则填写)</div>
-            <div v-show="discount"><span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input></div>
-            <div>客户实际支付：{{ parseInt(priceSum * 100) / 100 }}</div>
-            <!-- 评估按钮 -->
             <div>
               <a-popconfirm title="确定评估？" @confirm="checkOk">
                 <a-button style="text-align: center;" type="primary">评估</a-button>
@@ -524,9 +553,9 @@ export default {
       mailingCost: 0, // 邮递费用
       mailingCostIndex: false,
       gatherArr: [], // 问题汇总
-      guaranteeIndex: false, // 是否保修
-      visitIndex: false,
-      deliveryIndex: false,
+      guaranteeIndex: null, // 是否保修
+      visitIndex: null,
+      deliveryIndex: null,
       partArr: [], // 配件汇总
       // 配件库
       part: [
@@ -580,15 +609,15 @@ export default {
       this.checkG = null
       this.revealMethod = null
       this.discountData = null
-      this.guaranteeIndex = false
+      this.guaranteeIndex = null
       this.secondArr = []
       this.thirdArr = []
       this.gatherArr = []
       this.partArr = []
       this.mailingCost = 0
       this.discount = null
-      this.visitIndex = false
-      this.deliveryIndex = false
+      this.visitIndex = null
+      this.deliveryIndex = null
       this.extraForm.problemePxplain = null
       this.extraForm.technicalSupport = null
       if (this.current === 2) {
@@ -797,28 +826,49 @@ export default {
       }
       console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
+        // 判断保质期
+        // guaranteeIndex
+        let isGuarantee = true
+        if (this.guaranteeIndex === null) {
+          isGuarantee = false
+          this.$message.error('请选择保质期')
+        }
+        // 判断上门
+        let isVisit = true
+        if (this.visitIndex === null) {
+          isVisit = false
+          this.$message.error('请选择是否上门')
+        } else {
+          console.log(this.checkG)
+          if (this.visitIndex === true) {
+            if (!this.checkG) {
+              isVisit = false
+              this.$message.error('请选择上门信息')
+            }
+          }
+        }
+        // 判断寄件
+        let isDelivery = true
+        if (this.deliveryIndex === null) {
+          isDelivery = false
+          this.$message.error('请选择是否需要寄送配件')
+        } else {
+          if (this.deliveryIndex === true) {
+            if (this.partArr.length === 0) {
+              isDelivery = false
+              this.$message.error('请选择配件')
+            }
+          }
+        }
         // 判断折扣理由
         let validIndex = true
         if (this.discount) {
           if (!this.discountData) {
             validIndex = false
+            this.$message.error('请输入折扣理由')
           }
         }
-        // 判断上门
-        let isVisit = true
-        if (this.visitIndex) {
-          if (!this.checkG) {
-            isVisit = false
-          }
-        }
-        // 判断寄件
-        let isDelivery = true
-        if (this.deliveryIndex) {
-          if (this.partArr.length === 0) {
-            isDelivery = false
-          }
-        }
-        if (valid && this.gatherArr.length !== 0 && validIndex && isVisit && isDelivery) {
+        if (valid && this.gatherArr.length !== 0 && validIndex && isVisit && isDelivery && isGuarantee) {
           // console.log('校验ok')
            // 评估
           apiAddProcess(id, apiData).then(res => {
@@ -859,21 +909,37 @@ export default {
       })
     },
     // 是否保质
-    onGuarantee () {
-      this.guaranteeIndex = !this.guaranteeIndex
+    onGuarantee (e) {
+      // this.guaranteeIndex = !this.guaranteeIndex
+      if (e.target.value) {
+        this.guaranteeIndex = true
+      } else {
+        this.guaranteeIndex = false
+      }
     },
     // 是否上门
-    onVisit () {
-      this.visitIndex = !this.visitIndex
+    onVisit (e) {
+      // this.visitIndex = !this.visitIndex
+      if (e.target.value) {
+        this.visitIndex = true
+      } else {
+        this.visitIndex = false
+      }
+      // console.log(e.target.value, this.visitIndex)
     },
-    onDelivery () {
+    onDelivery (e) {
       this.checkC = null
       this.checkD = null
       this.checkE = null
-      this.deliveryIndex = !this.deliveryIndex
+      // this.deliveryIndex = !this.deliveryIndex
       this.partArr = []
       this.mailingCostIndex = false
       this.mailingCost = 0
+      if (e.target.value) {
+        this.deliveryIndex = true
+      } else {
+        this.deliveryIndex = false
+      }
     },
     okMailing () {
       // console.log(this.priceSum, '邮递费用', this.mailingCost)
@@ -1004,10 +1070,17 @@ export default {
           this.$message.error(res.message)
         }
       })
-      console.log('编辑')
+      // console.log('编辑')
     },
     onChangeDiscount () {
       // this.priceSum = this.priceSum * this.discount * 0.1
+    },
+    countPart (data) {
+      let price = 0
+      for (let i = 0; i < data.length; i++) {
+        price += data[i].piecePrice * data[i].pieceNum
+      }
+      return price
     }
   },
   created () {
