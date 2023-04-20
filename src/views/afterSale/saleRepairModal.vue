@@ -59,17 +59,20 @@
           <div style="" v-for="(item4,index4) in repairData.processes" :key="item4.id">
             <div style="font-size: 20px;color: rgba(0, 0, 0, 0.85);">第{{ index4+1 }}次评估：</div>
             <!-- 问题汇总 -->
-            <a-descriptions style="padding: 0 10px;" :column="8" bordered size="small">
-              <a-descriptions-item label="问题汇总" :span="8">
+            <a-descriptions style="padding: 0 10px;" :column="10" bordered size="small">
+              <a-descriptions-item label="问题汇总" :span="10">
                 <div v-for="(item5,index5) in item4.problems" :key="index5">
                   <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
                 </div>
               </a-descriptions-item>
-              <a-descriptions-item label="问题解释" :span="8">
+              <a-descriptions-item label="问题解释" :span="10">
                 {{ item4.problemExplain }}
               </a-descriptions-item>
-              <a-descriptions-item label="技术支持" :span="8">
+              <a-descriptions-item label="技术支持" :span="10">
                 {{ item4.technicalSupport }}
+              </a-descriptions-item>
+              <a-descriptions-item label="是否月结单" :span="2">
+                {{ item4.monthlyStatement | filterBoolean }}
               </a-descriptions-item>
               <a-descriptions-item label="是否保修期" :span="2">
                 {{ item4.isOverWarranty | filterBoolean }}
@@ -92,10 +95,13 @@
               <a-descriptions-item label="配件费用" :span="2">
                 {{ countPart(item4.afterSaleExpresses) }}
               </a-descriptions-item>
+              <a-descriptions-item label="折扣" :span="2">
+                {{ item4.discount }}折
+              </a-descriptions-item>
               <a-descriptions-item label="总价" :span="2">
                 {{ item4.totalCost }}
               </a-descriptions-item>
-              <a-descriptions-item label="客户实际支付" :span="4">
+              <a-descriptions-item label="客户实际支付" :span="10">
                 {{ item4.customerPay }}
               </a-descriptions-item>
               <a-descriptions-item v-if="item4.pays.length" label="支付时间" :span="4">
@@ -111,8 +117,11 @@
                     <div>寄件名：{{ item6.pieceName }}&nbsp;&nbsp;数量：{{ item6.pieceNum }}&nbsp;&nbsp;寄件报价：{{ item6.piecePrice }} 元</div>
                   </div>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="item4.pieceDeliveryNo" label="寄件单号">
+                <a-descriptions-item v-if="item4.pieceDeliveryNo" label="寄件单号" :span="1">
                   {{ item4.pieceDeliveryNo }}
+                </a-descriptions-item>
+                <a-descriptions-item v-if="item4.pieceDeliveryNo" label="快递品牌" :span="1">
+                  {{ item4.expressBrand }}
                 </a-descriptions-item>
               </a-descriptions>
             </div>
@@ -140,10 +149,16 @@
                   {{ item4.afterSaleVisit.visitTime | getTime }}
                 </a-descriptions-item>
                 <a-descriptions-item label="技术人员">
-                  {{ item4.afterSaleVisit.technician }}
+                  <span v-for="technician in item4.afterSaleVisit.technicianList" :key="technician">
+                    {{ technician }}
+                  </span>
+                  <!-- {{ item4.afterSaleVisit.technician }} -->
                 </a-descriptions-item>
                 <a-descriptions-item label="技术电话">
-                  {{ item4.afterSaleVisit.technicianPhone }}
+                  <span v-for="technicianPhone in item4.afterSaleVisit.technicianPhoneList" :key="technicianPhone">
+                    {{ technicianPhone }}
+                  </span>
+                  <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
                 </a-descriptions-item>
               </a-descriptions>
             </div>
@@ -216,6 +231,14 @@
               </a-form-model>
             </div>
             <!-- 选项 -->
+            <!-- 是否月结单 -->
+            <div>
+              <span style="color: #f5222d;">* </span>月结单：
+              <a-radio-group @change="onStatement" name="radioGroup">
+                <a-radio :value="1">是</a-radio>
+                <a-radio :value="0">否</a-radio>
+              </a-radio-group>
+            </div>
             <!-- 是否在保修期 -->
             <div style="line-height: 40px;">
               <span style="color: #f5222d;">* </span>保修期：
@@ -354,6 +377,11 @@
                     <a-input placeholder="请输入寄件单号" v-model="payForm.pieceDeliveryNo"></a-input>
                   </a-form-model-item>
                 </a-col>
+                <a-col :span="12">
+                  <a-form-model-item label="快递品牌" prop="expressBrand">
+                    <a-input placeholder="请输入快递品牌" v-model="payForm.expressBrand"></a-input>
+                  </a-form-model-item>
+                </a-col>
               </a-row>
             </div>
             <!-- 上门信息 -->
@@ -405,13 +433,25 @@
               </a-row>
               <a-row>
                 <a-col :span="12">
-                  <a-form-model-item label="技术人员" prop="technician">
-                    <a-input placeholder="请输入技术人员" v-model="payForm.technician"></a-input>
+                  <a-form-model-item label="技术人员" prop="technicianList">
+                    <!-- <a-input placeholder="请输入技术人员" v-model="payForm.technicianList"></a-input> -->
+                    <a-select mode="multiple" placeholder="请输入技术人员" @change="checkTechnology" v-model="payForm.technicianList">
+                      <a-select-option v-for="technology in technologyArr" :key="technology.nickname">
+                        {{ technology.nickname }}
+                      </a-select-option>
+                    </a-select>
                   </a-form-model-item>
                 </a-col>
-                <a-col :span="12">
+                <!-- <a-col :span="12">
                   <a-form-model-item label="技术电话" prop="technicianPhone">
                     <a-input placeholder="请输入技术电话" v-model="payForm.technicianPhone"></a-input>
+                  </a-form-model-item>
+                </a-col> -->
+                <a-col v-if="payForm.technicianPhoneList.length" :span="12">
+                  <a-form-model-item label="技术电话" prop="technicianPhoneList">
+                    <span v-for="item in payForm.technicianPhoneList" :key="item">
+                      {{ item }}&nbsp;
+                    </span>
                   </a-form-model-item>
                 </a-col>
               </a-row>
@@ -456,6 +496,7 @@
 <script>
 import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess, getGuide as apiGetGuide, getParts as apiGetParts } from '@/api/afterSale'
 import { getUserInfo as apiGetUserInfo } from '@/api/login'
+import { getUserList as apiGetUserList } from '@/api/manage'
 import moment from 'moment'
 
 export default {
@@ -554,6 +595,7 @@ export default {
       mailingCostIndex: false,
       gatherArr: [], // 问题汇总
       guaranteeIndex: null, // 是否保修
+      statementIndex: null, // 是否月结
       visitIndex: null,
       deliveryIndex: null,
       partArr: [], // 配件汇总
@@ -585,16 +627,19 @@ export default {
       // 支付校验规则
       payRules: {},
       payForm: {
-          pieceDeliveryNo: null, // 寄件单号
-          technicalPlatform: null, // 师傅平台
-          technicalServiceNo: null, // 师傅单号
-          technicalName: null, // 师傅名字
-          technicalCost: null, // 师傅成本
-          technicalPhone: null, // 师傅手机号
-          visitTime: null, // 上门时间
-          technician: null, // 技术人员
-          technicianPhone: null// 技术人员电话
-      }
+        pieceDeliveryNo: null, // 寄件单号
+        expressBrand: null, // 快递品牌
+        technicalPlatform: null, // 师傅平台
+        technicalServiceNo: null, // 师傅单号
+        technicalName: null, // 师傅名字
+        technicalCost: null, // 师傅成本
+        technicalPhone: null, // 师傅手机号
+        visitTime: null, // 上门时间
+        technicianList: undefined, // 技术人员
+        technicianPhone: null, // 技术人员电话
+        technicianPhoneList: [] // 技术人员电话组
+      },
+      technologyArr: []
     }
   },
   methods: {
@@ -610,6 +655,7 @@ export default {
       this.revealMethod = null
       this.discountData = null
       this.guaranteeIndex = null
+      this.statementIndex = null
       this.secondArr = []
       this.thirdArr = []
       this.gatherArr = []
@@ -621,8 +667,9 @@ export default {
       this.extraForm.problemePxplain = null
       this.extraForm.technicalSupport = null
       if (this.current === 2) {
-        // console.log('???')
         this.$refs.payForm.resetFields()
+        this.payForm.technicianList = undefined
+        this.payForm.technicianPhoneList = []
       }
       this.$emit('closeRepairModal')
     },
@@ -809,6 +856,7 @@ export default {
         problems: this.gatherArr, // 问题汇总
         problemExplain: this.extraForm.problemePxplain, // 问题解释
         technicalSupport: this.extraForm.technicalSupport, // 技术支持
+        monthlyStatement: this.statementIndex, // 月结单
         isOverWarranty: this.guaranteeIndex, // 是否保修期
         needVisit: this.visitIndex, // 是否上门
         needPieceSend: this.deliveryIndex, // 是否寄件
@@ -826,6 +874,12 @@ export default {
       }
       console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
+        // 判断月结单
+        let isStatement = true
+        if (this.statementIndex === null) {
+          isStatement = false
+          this.$message.error('请选择月结单')
+        }
         // 判断保质期
         // guaranteeIndex
         let isGuarantee = true
@@ -868,7 +922,7 @@ export default {
             this.$message.error('请输入折扣理由')
           }
         }
-        if (valid && this.gatherArr.length !== 0 && validIndex && isVisit && isDelivery && isGuarantee) {
+        if (valid && this.gatherArr.length !== 0 && validIndex && isVisit && isDelivery && isGuarantee && isStatement) {
           // console.log('校验ok')
            // 评估
           apiAddProcess(id, apiData).then(res => {
@@ -882,6 +936,9 @@ export default {
                   const changeStatus = {
                     status: 'EVALUATED',
                     customerService: res.data.nickname
+                  }
+                  if (this.statementIndex === true) {
+                    changeStatus.status = 'PAID'
                   }
                   // 改变状态
                   apiUpdateStatus(id, changeStatus).then(res => {
@@ -908,6 +965,14 @@ export default {
         }
       })
     },
+    // 是否月结
+    onStatement (e) {
+      if (e.target.value) {
+        this.statementIndex = true
+      } else {
+        this.statementIndex = false
+      }
+    },
     // 是否保质
     onGuarantee (e) {
       // this.guaranteeIndex = !this.guaranteeIndex
@@ -925,7 +990,6 @@ export default {
       } else {
         this.visitIndex = false
       }
-      // console.log(e.target.value, this.visitIndex)
     },
     onDelivery (e) {
       this.checkC = null
@@ -1006,13 +1070,16 @@ export default {
     onSubmit () {
       const id = this.repairData.id
       const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      console.log(this.payForm)
       this.$refs.payForm.validate(valid => {
         if (valid) {
           const apiData = {
             pieceDeliveryNo: this.payForm.pieceDeliveryNo,
+            expressBrand: this.payForm.expressBrand,
             afterSaleVisit: this.payForm
           }
           delete apiData.afterSaleVisit.pieceDeliveryNo
+          delete apiData.afterSaleVisit.expressBrand
           apiUpdateProcess(id, processId, apiData).then(res => {
             if (res.status === 200) {
               // 获取登陆账户 - 内勤
@@ -1054,6 +1121,9 @@ export default {
     resetForm () {
       // console.log('重置已支付表单', this.payForm)
       this.$refs.payForm.resetFields()
+      this.payForm.technicianList = undefined
+      this.payForm.technicianPhoneList = []
+      // console.log('重置后', this.payForm)
     },
     changeEdit () {
       const id = this.repairData.id
@@ -1081,6 +1151,24 @@ export default {
         price += data[i].piecePrice * data[i].pieceNum
       }
       return price
+    },
+    // 将输入的内容与显示的内容进行匹配
+    filterOption (value, option) {
+      return option.componentOptions.children[0].text.indexOf(value) >= 0
+    },
+    checkTechnology (e) {
+      // console.log(e)
+      // console.log('this.technologyArr', this.technologyArr)
+      const testData = []
+      for (let i = 0; i < e.length; i++) {
+        for (let j = 0; j < this.technologyArr.length; j++) {
+          if (e[i] === this.technologyArr[j].nickname) {
+            testData.push(this.technologyArr[j].telephone)
+          }
+        }
+      }
+      this.payForm.technicianPhoneList = testData
+      // console.log(this.payForm.technicianPhoneList)
     }
   },
   created () {
@@ -1122,6 +1210,25 @@ export default {
         // console.log('question', this.question)
         this.question = res.data
         // console.log('res', res.data)
+      }
+    })
+    const userPages = { page: 1, size: 1 }
+    apiGetUserList(userPages).then(res => {
+      if (res.status === 200) {
+        userPages.size = res.data.totalElements
+        apiGetUserList(userPages).then(res => {
+          if (res.status === 200) {
+            // console.log('所有信息', res.data.content)
+            this.technologyArr = res.data.content.filter(item => {
+              return item.roleName === 'After_salesDirector'
+            })
+            // console.log('userData', this.technologyArr)
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+      } else {
+        this.$message.error(res.message)
       }
     })
   },
@@ -1219,6 +1326,7 @@ export default {
       this.payRules = {}
       if (this.current === 2 && newData.processes[newData.processes.length - 1].needPieceSend) {
         this.payRules.pieceDeliveryNo = [{ required: true, message: '请输入寄件单号', trigger: 'blur' }]
+        this.payRules.expressBrand = [{ required: true, message: '请输入快递品牌', trigger: 'blur' }]
       }
       if (this.current === 2 && newData.processes[newData.processes.length - 1].needVisit) {
         this.payRules.technicalPlatform = [{ required: true, message: '请输入平台', trigger: 'blur' }]
@@ -1230,12 +1338,12 @@ export default {
           { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
         ]
         this.payRules.technicalCost = [{ required: true, message: '请输入师傅成本', trigger: 'blur' }]
-        this.payRules.technician = [{ required: true, message: '请输入师傅成本', trigger: 'blur' }]
-        this.payRules.technicianPhone = [
-          { required: true, message: '请输入师傅电话', trigger: 'blur' },
-          { len: 11, message: '请输入正确的电话号码' },
-          { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
-        ]
+        this.payRules.technicianList = [{ required: true, message: '请输入师傅成本', trigger: 'blur' }]
+        // this.payRules.technicianPhone = [
+        //   { required: true, message: '请输入技术电话', trigger: 'blur' },
+        //   { len: 11, message: '请输入正确的电话号码' },
+        //   { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
+        // ]
       }
     }
   }
