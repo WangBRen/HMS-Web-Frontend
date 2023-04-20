@@ -182,32 +182,6 @@ export default {
             {
               value: '破洞',
               label: '修补漏洞'
-            },
-            {
-              value: '制水器故障',
-              label: '维修制水器'
-            },
-            {
-              value: '破壁',
-              label: '修补内外壁'
-            }
-          ]
-        },
-        {
-          value: '问题二',
-          label: '问题二',
-          children: [
-            {
-              value: '防护',
-              label: '修补防护'
-            },
-            {
-              value: '净水',
-              label: '维修净水器'
-            },
-            {
-              value: '引流',
-              label: '修补引流'
             }
           ]
         }
@@ -238,6 +212,9 @@ export default {
         ],
         serviceAddress: [
           { required: true, message: '请输入上门地址', trigger: 'blur' }
+        ],
+        productNo: [
+          { required: true, message: '请输入产品编号', trigger: 'blur' }
         ]
       },
       // 品牌库

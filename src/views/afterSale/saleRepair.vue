@@ -11,9 +11,6 @@
               :data-source="estimateData"
               :pagination="false"
             >
-              <span slot="status" slot-scope="text">
-                {{ text | filterStatus }}
-              </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
               </span>
@@ -30,9 +27,6 @@
               :data-source="estimateOkData"
               :pagination="false"
             >
-              <span slot="status" slot-scope="text">
-                {{ text | filterStatus }}
-              </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
               </span>
@@ -43,14 +37,24 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="3" tab="已支付">
+            <!-- <div>
+              <a-row>
+                <a-col :span="6">
+                  <a-select >
+                    <a-select-option value="true">是</a-select-option>
+                    <a-select-option value="false">否</a-select-option>
+                  </a-select>
+                </a-col>
+              </a-row>
+            </div> -->
             <a-table
               :columns="payColumns"
               :rowKey="(record, index) => index"
               :data-source="payData"
               :pagination="false"
             >
-              <span slot="status" slot-scope="text">
-                {{ text | filterStatus }}
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.processes[record.processes.length-1].monthlyStatement | filterBoolean }}
               </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -68,8 +72,8 @@
               :data-source="comeData"
               :pagination="false"
             >
-              <span slot="status" slot-scope="text">
-                {{ text | filterStatus }}
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.processes[record.processes.length-1].monthlyStatement | filterBoolean }}
               </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -81,7 +85,7 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="5" tab="已解决">
-            <div style="">
+            <div>
               <a-row>
                 <a-col :span="6">
                   <a-input-search
@@ -98,8 +102,8 @@
               :data-source="solveData"
               :pagination="false"
             >
-              <span slot="status" slot-scope="text">
-                {{ text | filterStatus }}
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.processes[record.processes.length-1].monthlyStatement | filterBoolean }}
               </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -157,6 +161,13 @@ export default {
         case 'SOLVED':
           return '已解决'
       }
+    },
+    filterBoolean (value) {
+      if (value) {
+        return '是'
+      } else {
+        return '否'
+      }
     }
   },
   data () {
@@ -182,17 +193,22 @@ export default {
           key: 'customerInfo.customerPhone',
           align: 'center'
         },
-        // {
-        //   title: '记录客服',
-        //   dataIndex: 'customerService',
-        //   key: 'customerService',
-        //   align: 'center'
-        // },
         {
-          title: '状态',
-          dataIndex: 'status',
-          key: 'status',
-          scopedSlots: { customRender: 'status' },
+          title: '品牌',
+          dataIndex: 'customerInfo.brand',
+          key: 'customerInfo.brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'customerInfo.productModel',
+          key: 'customerInfo.productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'customerInfo.productNo',
+          key: 'customerInfo.productNo',
           align: 'center'
         },
         {
@@ -233,16 +249,27 @@ export default {
           align: 'center'
         },
         {
-          title: '记录客服',
-          dataIndex: 'customerService',
-          key: 'customerService',
+          title: '品牌',
+          dataIndex: 'customerInfo.brand',
+          key: 'customerInfo.brand',
           align: 'center'
         },
         {
-          title: '状态',
-          dataIndex: 'status',
-          key: 'status',
-          scopedSlots: { customRender: 'status' },
+          title: '产品型号',
+          dataIndex: 'customerInfo.productModel',
+          key: 'customerInfo.productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'customerInfo.productNo',
+          key: 'customerInfo.productNo',
+          align: 'center'
+        },
+        {
+          title: '记录客服',
+          dataIndex: 'customerService',
+          key: 'customerService',
           align: 'center'
         },
         {
@@ -285,22 +312,32 @@ export default {
           align: 'center'
         },
         {
+          title: '品牌',
+          dataIndex: 'customerInfo.brand',
+          key: 'customerInfo.brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'customerInfo.productModel',
+          key: 'customerInfo.productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'customerInfo.productNo',
+          key: 'customerInfo.productNo',
+          align: 'center'
+        },
+        {
+          title: '是否月结单',
+          scopedSlots: { customRender: 'monthlyStatement' },
+          align: 'center'
+        },
+        {
           title: '记录客服',
           dataIndex: 'customerService',
           key: 'customerService',
-          align: 'center'
-        },
-        // {
-        //   title: '记录内勤',
-        //   dataIndex: 'managerName',
-        //   key: 'managerName',
-        //   align: 'center'
-        // },
-        {
-          title: '状态',
-          dataIndex: 'status',
-          key: 'status',
-          scopedSlots: { customRender: 'status' },
           align: 'center'
         },
         {
@@ -342,6 +379,24 @@ export default {
           align: 'center'
         },
         {
+          title: '品牌',
+          dataIndex: 'customerInfo.brand',
+          key: 'customerInfo.brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'customerInfo.productModel',
+          key: 'customerInfo.productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'customerInfo.productNo',
+          key: 'customerInfo.productNo',
+          align: 'center'
+        },
+        {
           title: '记录客服',
           dataIndex: 'customerService',
           key: 'customerService',
@@ -354,10 +409,8 @@ export default {
           align: 'center'
         },
         {
-          title: '状态',
-          dataIndex: 'status',
-          key: 'status',
-          scopedSlots: { customRender: 'status' },
+          title: '是否月结单',
+          scopedSlots: { customRender: 'monthlyStatement' },
           align: 'center'
         },
         {
@@ -399,6 +452,24 @@ export default {
           align: 'center'
         },
         {
+          title: '品牌',
+          dataIndex: 'customerInfo.brand',
+          key: 'customerInfo.brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'customerInfo.productModel',
+          key: 'customerInfo.productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'customerInfo.productNo',
+          key: 'customerInfo.productNo',
+          align: 'center'
+        },
+        {
           title: '记录客服',
           dataIndex: 'customerService',
           key: 'customerService',
@@ -411,10 +482,8 @@ export default {
           align: 'center'
         },
         {
-          title: '状态',
-          dataIndex: 'status',
-          key: 'status',
-          scopedSlots: { customRender: 'status' },
+          title: '是否月结单',
+          scopedSlots: { customRender: 'monthlyStatement' },
           align: 'center'
         },
         {
@@ -435,7 +504,7 @@ export default {
         },
         {
           title: '操作',
-          // width: '150px',
+          width: '150px',
           dataIndex: 'action',
           scopedSlots: { customRender: 'action' },
           align: 'center'
@@ -542,7 +611,7 @@ export default {
       // console.log('打开退款获取id', this.saleId)
     },
     onSearch (value) {
-      console.log('搜索', value)
+      console.log('搜索', value, 'SOLVED')
     }
   },
   created () {
