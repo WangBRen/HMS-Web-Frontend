@@ -9,6 +9,15 @@
     >
       <div style="padding: 20px;">
         <!-- {{ drawbackData.processes[0].afterSaleExpresses }} -->
+        <a-row class="returnNo">
+          <a-col>退件快递单号：</a-col>
+          <a-col :span="6"><a-input placeholder="请输入用户退件的快递单号" v-model="returnNo"/></a-col>
+          <a-col><a-button type="primary" @click="handReturnNo">添加</a-button></a-col>
+        </a-row>
+        <a-row class="returnNo">
+          <a-col>退件快递单号：</a-col>
+          <a-col>{{ this.drawbackData.returnsNumber }}</a-col>
+        </a-row>
         <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding-bottom:50px;">
           <div class="title">第{{ index1+1 }}次评估：</div>
           <div class="itemBox">
@@ -30,17 +39,17 @@
               <a-descriptions-item label="实际支付金额">￥<span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.actualAmount }}</span></span></a-descriptions-item>
               <a-descriptions-item label="退款历史记录" :span="3" v-if="item1.pays.length>1">
                 <a-row style="font-weight:600;line-height:2">
-                  <a-col :span="6">退款单号</a-col>
+                  <a-col :span="7">退款单号</a-col>
                   <a-col :span="4">退款金额</a-col>
                   <a-col :span="6">退款时间</a-col>
-                  <a-col :span="8">备注</a-col>
+                  <a-col :span="7">备注</a-col>
                 </a-row>
                 <a-row v-for="(pay, index) in item1.pays" :key="index" class="rowActive">
                   <span v-if="pay.outRefundNo">
-                    <a-col :span="6">{{ pay.outRefundNo }}</a-col>
+                    <a-col :span="7">{{ pay.outRefundNo }}</a-col>
                     <a-col :span="4">￥{{ pay.refundAmount /100 }}</a-col>
                     <a-col :span="6">{{ pay.refundTime | moment }}</a-col>
-                    <a-col :span="8">{{ pay.refundReason }}</a-col>
+                    <a-col :span="7">{{ pay.refundReason }}</a-col>
                   </span>
                 </a-row>
               </a-descriptions-item>
@@ -75,7 +84,7 @@
   </div>
 </template>
 <script>
-import { saleRefund, processPay, getSaleRepair } from '@/api/afterSale'
+import { saleRefund, processPay, getSaleRepair, updateStatus } from '@/api/afterSale'
 import md5 from '../../utils/md5'
 export default {
   props: {
@@ -92,7 +101,8 @@ export default {
     return {
       accessories: [], // 退款配件数据
       drawbackData: [], // 当前订单数据
-      totalRefund: []
+      totalRefund: [],
+      returnNo: ''
     }
   },
   methods: {
@@ -113,12 +123,12 @@ export default {
       return md5(stringSignTemp)
     },
     handRefund (item1) {
-      const myDate = new Date()
-      const myYear = myDate.getFullYear()
-      const myMonth = myDate.getMonth() + 1 < 10 ? '0' + (myDate.getMonth() + 1) : myDate.getMonth() + 1
-      const myToday = myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate()
-      const myHour = myDate.getHours()
-      const outRefundNo = 'TK' + myYear + myMonth + myToday + myHour + this.drawbackData.id + item1.id
+      const myDate = Date.parse(new Date())
+      // const myYear = myDate.getFullYear()
+      // const myMonth = myDate.getMonth() + 1 < 10 ? '0' + (myDate.getMonth() + 1) : myDate.getMonth() + 1
+      // const myToday = myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate()
+      // const myHour = myDate.getHours()
+      const outRefundNo = 'TK' + myDate + this.drawbackData.id + item1.id
       const refundFee = this.totalRefund.filter(item => {
         return item.id === item1.id
       })
@@ -147,10 +157,9 @@ export default {
         outRefundNo: outRefundNo,
         notifyUrl: 'https://dev.hms.yootane.com/afterSale/saleRepair', // 微信支付结果通知的回调地址
         totalFee: item1.pays[0].actualAmount * 100, // 订单金额  item1.pays[0].actualAmount
-        refundFee: refundFee[0].totalNum * 100,
+        refundFee: refundFee[0].totalNum * item1.discount / 10 * 100,
         refundDesc: refundReason // 退款描述
       }
-      console.log('退款payLoad', payLoad)
       this.refund(payLoad, item1.id, refundReason)
     },
     async refund (payLoad, processId, refundReason) {
@@ -214,6 +223,18 @@ export default {
       this.accessories = this.drawbackData.processes.map(item => {
         return { processId: item.id, parts: [] }
       })
+    },
+    async handReturnNo () {
+      if (this.returnNo) {
+        const data = { returnsNumber: this.returnNo }
+        const res = await updateStatus(this.drawbackData.id, data)
+        console.log(res)
+        if (res.status === 200) {
+          this.$message.success('添加成功')
+        }
+      } else {
+        this.$message.warning('请填写退件单号')
+      }
     }
   },
   created () {
@@ -238,5 +259,11 @@ export default {
 }
 .rowActive:hover{
   background: #7ee7fa3d;
+}
+.returnNo{
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-weight: bold;
 }
 </style>
