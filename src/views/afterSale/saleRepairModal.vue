@@ -14,7 +14,7 @@
         </a-steps>
         <!-- 客户信息 -->
         <div v-if="current>-1">
-          <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">客户信息</div>
+          <div class="big_title">客户信息</div>
           <a-descriptions bordered size="small">
             <a-descriptions-item label="客户名">
               {{ repairData.customerInfo.customerName }}
@@ -55,112 +55,116 @@
         </div>
         <!-- 共用数据 -->
         <div>
-          <div class="big_title">历史评估</div>
-          <div style="" v-for="(item4,index4) in repairData.processes" :key="item4.id">
-            <div style="font-size: 20px;color: rgba(0, 0, 0, 0.85);">第{{ index4+1 }}次评估：</div>
-            <!-- 问题汇总 -->
-            <a-descriptions style="padding: 0 10px;" :column="10" bordered size="small">
-              <a-descriptions-item label="问题汇总" :span="10">
-                <div v-for="(item5,index5) in item4.problems" :key="index5">
-                  <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
-                </div>
-              </a-descriptions-item>
-              <a-descriptions-item label="问题解释" :span="10">
-                {{ item4.problemExplain }}
-              </a-descriptions-item>
-              <a-descriptions-item label="技术支持" :span="10">
-                {{ item4.technicalSupport }}
-              </a-descriptions-item>
-              <a-descriptions-item label="是否月结单" :span="2">
-                {{ item4.monthlyStatement | filterBoolean }}
-              </a-descriptions-item>
-              <a-descriptions-item label="是否保修期" :span="2">
-                {{ item4.isOverWarranty | filterBoolean }}
-              </a-descriptions-item>
-              <a-descriptions-item label="是否寄件" :span="2">
-                {{ item4.needPieceSend | filterBoolean }}
-              </a-descriptions-item>
-              <a-descriptions-item label="是否上门" :span="2">
-                {{ item4.needVisit | filterBoolean }}
-              </a-descriptions-item>
-              <a-descriptions-item label="是否支付" :span="2">
-                {{ item4.payResult | filterBoolean }}
-              </a-descriptions-item>
-              <a-descriptions-item label="快递费" :span="2">
-                {{ item4.expressCost }}
-              </a-descriptions-item>
-              <a-descriptions-item label="师傅报价" :span="2">
-                {{ item4.afterSaleVisit.technicalPrice }}
-              </a-descriptions-item>
-              <a-descriptions-item label="配件费用" :span="2">
-                {{ countPart(item4.afterSaleExpresses) }}
-              </a-descriptions-item>
-              <a-descriptions-item label="折扣" :span="2">
-                {{ item4.discount }}折
-              </a-descriptions-item>
-              <a-descriptions-item label="总价" :span="2">
-                {{ item4.totalCost }}
-              </a-descriptions-item>
-              <a-descriptions-item label="客户实际支付" :span="10">
-                {{ item4.customerPay }}
-              </a-descriptions-item>
-              <a-descriptions-item v-if="item4.pays.length" label="支付时间" :span="4">
-                {{ item4.pays[0].payTime | getTime }}
-              </a-descriptions-item>
-            </a-descriptions>
-            <!-- 寄件汇总 -->
-            <div v-if="item4.needPieceSend" style="padding: 0 10px;">
-              <div style="font-size: 20px;">寄件汇总：</div>
-              <a-descriptions bordered size="small">
-                <a-descriptions-item label="寄件汇总" :span="3">
-                  <div v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
-                    <div>寄件名：{{ item6.pieceName }}&nbsp;&nbsp;数量：{{ item6.pieceNum }}&nbsp;&nbsp;寄件报价：{{ item6.piecePrice }} 元</div>
+          <div class="big_title" v-if="repairData.processes.length<2">历史评估</div>
+          <div v-for="(item4,index4) in repairData.processes" :key="item4.id">
+            <div class="big_title" v-if="repairData.processes.length>1">第{{ index4+1 }}次评估：</div>
+            <div class="processList">
+              <!-- 问题汇总 -->
+              <a-descriptions :column="10" bordered size="small" >
+                <a-descriptions-item label="问题汇总" :span="10">
+                  <div v-for="(item5,index5) in item4.problems" :key="index5">
+                    <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
                   </div>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="item4.pieceDeliveryNo" label="寄件单号" :span="1">
-                  {{ item4.pieceDeliveryNo }}
+                <a-descriptions-item label="问题解释" :span="10">
+                  {{ item4.problemExplain }}
                 </a-descriptions-item>
-                <a-descriptions-item v-if="item4.pieceDeliveryNo" label="快递品牌" :span="1">
-                  {{ item4.expressBrand }}
+                <a-descriptions-item label="技术支持" :span="10">
+                  {{ item4.technicalSupport }}
+                </a-descriptions-item>
+                <a-descriptions-item label="是否月结单" :span="2">
+                  {{ item4.monthlyStatement | filterBoolean }}
+                </a-descriptions-item>
+                <a-descriptions-item label="是否保修期" :span="2">
+                  {{ item4.isOverWarranty | filterBoolean }}
+                </a-descriptions-item>
+                <a-descriptions-item label="是否寄件" :span="2">
+                  {{ item4.needPieceSend | filterBoolean }}
+                </a-descriptions-item>
+                <a-descriptions-item label="是否上门" :span="2">
+                  {{ item4.needVisit | filterBoolean }}
+                </a-descriptions-item>
+                <a-descriptions-item label="支付状态" :span="2">
+                  <a-badge color="#2db7f5" :text="`已支付`" v-if="item4.payResult"/>
+                  <a-badge color="#bbb" text="未支付" v-else/>
+                  <!-- {{ item4.payResult?'已支付':'未支付' }} -->
+                </a-descriptions-item>
+                <a-descriptions-item label="快递费" :span="2">
+                  {{ item4.expressCost }}
+                </a-descriptions-item>
+                <a-descriptions-item label="师傅报价" :span="2">
+                  {{ item4.afterSaleVisit.technicalPrice }}
+                </a-descriptions-item>
+                <a-descriptions-item label="配件费用" :span="2">
+                  {{ countPart(item4.afterSaleExpresses) }}
+                </a-descriptions-item>
+                <a-descriptions-item label="折扣" :span="2">
+                  {{ item4.discount?item4.discount+'折':'无' }}
+                </a-descriptions-item>
+                <a-descriptions-item label="总价" :span="2">
+                  {{ item4.totalCost }}
+                </a-descriptions-item>
+                <a-descriptions-item v-if="item4.pays.length" label="支付时间" :span="4">
+                  {{ item4.pays[0].payTime | getTime }}
+                </a-descriptions-item>
+                <a-descriptions-item label="客户实际支付">
+                  <a-statistic :precision="2" :value="item4.monthlyStatement?'￥0':'￥'+item4.customerPay" />
                 </a-descriptions-item>
               </a-descriptions>
-            </div>
-            <!-- 上门信息 -->
-            <div style="padding: 0 10px;" v-if="item4.needVisit && item4.afterSaleVisit.technicalName">
-              <!-- <div style="padding: 0 10px;" v-if="item4.needVisit"> -->
-              <div style="font-size: 20px;">上门信息：</div>
-              <a-descriptions bordered size="small">
-                <a-descriptions-item label="师傅平台">
-                  {{ item4.afterSaleVisit.technicalPlatform }}
-                </a-descriptions-item>
-                <a-descriptions-item label="师傅单号">
-                  {{ item4.afterSaleVisit.technicalServiceNo }}
-                </a-descriptions-item>
-                <a-descriptions-item label="师傅成本">
-                  {{ item4.afterSaleVisit.technicalCost }} 元
-                </a-descriptions-item>
-                <a-descriptions-item label="师傅名称">
-                  {{ item4.afterSaleVisit.technicalName }}
-                </a-descriptions-item>
-                <a-descriptions-item label="师傅手机号">
-                  {{ item4.afterSaleVisit.technicalPhone }}
-                </a-descriptions-item>
-                <a-descriptions-item label="上门时间">
-                  {{ item4.afterSaleVisit.visitTime | getTime }}
-                </a-descriptions-item>
-                <a-descriptions-item label="技术人员">
-                  <span v-for="technician in item4.afterSaleVisit.technicianList" :key="technician">
-                    {{ technician }}
-                  </span>
-                  <!-- {{ item4.afterSaleVisit.technician }} -->
-                </a-descriptions-item>
-                <a-descriptions-item label="技术电话">
-                  <span v-for="technicianPhone in item4.afterSaleVisit.technicianPhoneList" :key="technicianPhone">
-                    {{ technicianPhone }}
-                  </span>
-                  <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
-                </a-descriptions-item>
-              </a-descriptions>
+              <!-- 寄件汇总 -->
+              <div v-if="item4.needPieceSend">
+                <div style="font-size: 17px;">寄件汇总：</div>
+                <a-descriptions bordered size="small">
+                  <a-descriptions-item label="寄件汇总" :span="3">
+                    <div v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
+                      <div>寄件名：{{ item6.pieceName }}&nbsp;&nbsp;数量：{{ item6.pieceNum }}&nbsp;&nbsp;寄件报价：{{ item6.piecePrice }} 元</div>
+                    </div>
+                  </a-descriptions-item>
+                  <a-descriptions-item v-if="item4.pieceDeliveryNo" label="寄件单号" :span="1">
+                    {{ item4.pieceDeliveryNo }}
+                  </a-descriptions-item>
+                  <a-descriptions-item v-if="item4.expressBrand" label="快递品牌" :span="1">
+                    {{ item4.expressBrand }}
+                  </a-descriptions-item>
+                </a-descriptions>
+              </div>
+              <!-- 上门信息 -->
+              <div v-if="item4.needVisit && item4.afterSaleVisit.technicalName">
+                <!-- <div style="padding: 0 10px;" v-if="item4.needVisit"> -->
+                <div style="font-size: 17px;">上门信息：</div>
+                <a-descriptions bordered size="small">
+                  <a-descriptions-item label="师傅平台">
+                    {{ item4.afterSaleVisit.technicalPlatform }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅单号">
+                    {{ item4.afterSaleVisit.technicalServiceNo }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅成本">
+                    {{ item4.afterSaleVisit.technicalCost }} 元
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅名称">
+                    {{ item4.afterSaleVisit.technicalName }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅手机号">
+                    {{ item4.afterSaleVisit.technicalPhone }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="上门时间">
+                    {{ item4.afterSaleVisit.visitTime | getTime }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术人员">
+                    <span v-for="technician in item4.afterSaleVisit.technicianList" :key="technician">
+                      {{ technician }}
+                    </span>
+                    <!-- {{ item4.afterSaleVisit.technician }} -->
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术电话">
+                    <span v-for="technicianPhone in item4.afterSaleVisit.technicianPhoneList" :key="technicianPhone">
+                      {{ technicianPhone }}
+                    </span>
+                    <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
+                  </a-descriptions-item>
+                </a-descriptions>
+              </div>
             </div>
           </div>
         </div>
@@ -1365,11 +1369,19 @@ export default {
   float: right;
 }
 .big_title {
-  font-size: 24px;
+  font-size: 18px;
+  line-height: 40px;
+  margin-top: 12px;
+  font-weight: bold;
   color: rgba(0, 0, 0, 0.85);
 }
 .ant-descriptions-title {
   margin-bottom: 0px !important
+}
+.processList:hover{
+  border: 1px solid #40a9ffa1;
+  box-shadow: 1px 1px 10px #55c7db81,
+  -1px -1px 6px #7ee7faa4;
 }
 // .test {
 //   /deep/ .ant-descriptions-title {
