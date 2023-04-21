@@ -16,7 +16,6 @@
             <a-select-option value="true">是</a-select-option>
             <a-select-option value="false">否</a-select-option>
           </a-select>
-          <!-- <a-button @click="searchmonthly" type="primary">查询</a-button> -->
         </a-col>
         <a-col :span="3">
         </a-col>
@@ -64,7 +63,7 @@
               :pagination="false"
             >
               <span slot="monthlyStatement" slot-scope="record">
-                {{ record.processes[record.processes.length-1].monthlyStatement | filterBoolean }}
+                {{ record.monthlyStatement | filterBoolean }}
               </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -83,7 +82,7 @@
               :pagination="false"
             >
               <span slot="monthlyStatement" slot-scope="record">
-                {{ record.processes[record.processes.length-1].monthlyStatement | filterBoolean }}
+                {{ record.monthlyStatement | filterBoolean }}
               </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -102,7 +101,7 @@
               :pagination="false"
             >
               <span slot="monthlyStatement" slot-scope="record">
-                {{ record.processes[record.processes.length-1].monthlyStatement | filterBoolean }}
+                {{ record.monthlyStatement | filterBoolean }}
               </span>
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -139,7 +138,7 @@
 import saleRepairModal from './saleRepairModal.vue'
 import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
-import { getAfterSale as apiGetAfterSale } from '@/api/afterSale'
+import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale } from '@/api/afterSale'
 export default {
   components: {
     saleRepairAdd,
@@ -612,10 +611,46 @@ export default {
       // console.log('打开退款获取id', this.saleId)
     },
     onSearch (value) {
-      console.log('售后类型', 'REPAIR', '搜索', value, '状态', this.changeStatus, '是否月结单', this.checkMonthly)
-    },
-    searchmonthly () {
-      console.log('月结单', this.checkMonthly)
+      // console.log('售后类型', 'REPAIR', '搜索', value, '状态', this.changeStatus, '是否月结单', this.checkMonthly)
+      const apiData = {
+        word: value,
+        type: 'REPAIR',
+        status: this.changeStatus
+      }
+      if (this.checkMonthly === 'true') {
+        apiData.monthlyStatement = true
+        // console.log(apiData)
+      } else if (this.checkMonthly === 'false') {
+        apiData.monthlyStatement = false
+      }
+      apiSearchAfterSale(apiData).then(res => {
+        if (res.status === 200) {
+          console.log(res.data)
+          switch (this.changeStatus) {
+            case 'WAIT_EVALUATE':
+              this.estimateData = res.data
+              break
+            case 'EVALUATED':
+              this.estimateOkData = res.data
+              break
+            case 'PAID':
+              this.payData = res.data
+              break
+            case 'WAIT_VISIT':
+              this.comeData = res.data
+              break
+            case 'SOLVED':
+              this.solveData = res.data.sort((a, b) => {
+                const t1 = new Date(a.createdAt).getTime()
+                const t2 = new Date(b.createdAt).getTime()
+                return t2 - t1
+              })
+              break
+          }
+        } else {
+          this.$message.error('搜索失败' + res.message)
+        }
+      })
     },
     checkTab (key) {
       // console.log(key)
@@ -624,19 +659,18 @@ export default {
           this.changeStatus = 'WAIT_EVALUATE'
           break
         case '2':
-        this.changeStatus = 'EVALUATED'
+          this.changeStatus = 'EVALUATED'
           break
         case '3':
-        this.changeStatus = 'PAID'
+          this.changeStatus = 'PAID'
           break
         case '4':
-        this.changeStatus = 'WAIT_VISIT'
+          this.changeStatus = 'WAIT_VISIT'
           break
         case '5':
-        this.changeStatus = 'SOLVED'
+          this.changeStatus = 'SOLVED'
           break
       }
-      console.log(this.changeStatus)
     }
   },
   created () {
