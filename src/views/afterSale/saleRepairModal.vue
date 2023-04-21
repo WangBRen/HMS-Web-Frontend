@@ -191,12 +191,12 @@
                   {{ item.name }}
                 </a-select-option>
               </a-select>
-              <a-select :disabled="!thirdArr.length" @change="checkThird" v-model="checkH" style="width: 200px">
+              <!-- <a-select :disabled="!thirdArr.length" @change="checkThird" v-model="checkH" style="width: 200px">
                 <a-select-option v-for="item in thirdArr" :key="item.name">
                   {{ item.name }}
                 </a-select-option>
-              </a-select>
-              <a-button style="line-height: 30px;" :disabled="!checkH" @click="addQuestion">添加</a-button>
+              </a-select> -->
+              <a-button style="line-height: 30px;" :disabled="!checkB" @click="addQuestion">添加</a-button>
               <div style="padding: 0 10px;">
                 <div v-show="revealMethod" style="font-size: 20px;color: rgba(0, 0, 0, 0.85);">解决方案：</div>
                 <div style="margin-left: 10px;">{{ revealMethod }}</div>
@@ -207,7 +207,8 @@
               <span style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">问题汇总：</span>
               <a-row style="margin: 10px;" v-for="item in gatherArr" :key="item.index">
                 <a-col>
-                  <span>问题详情：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }} ->{{ item.problemJudge.thirdPro }}</span>
+                  <span>问题详情：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }}</span>
+                  <!-- <span>问题详情：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }} ->{{ item.problemJudge.thirdPro }}</span> -->
                   <span @click="delGather(item)">
                     <a-icon type="close-circle" />
                   </span>
@@ -589,7 +590,7 @@ export default {
         // }
       ],
       secondArr: [], // 二级问题
-      thirdArr: [], // 三级问题
+      // thirdArr: [], // 三级问题
       revealMethod: '', // 解决方案展示
       definitionMethod: '', // 问题定位
       extraForm: {
@@ -603,7 +604,7 @@ export default {
       checkE: null,
       checkF: null,
       checkG: null,
-      checkH: null,
+      // checkH: null,
       checkId: null,
       totalCost: 0, // 成本
       priceSum: 0, // 最终总价,客户支付
@@ -673,7 +674,7 @@ export default {
       this.guaranteeIndex = null
       this.statementIndex = null
       this.secondArr = []
-      this.thirdArr = []
+      // this.thirdArr = []
       this.gatherArr = []
       this.partArr = []
       this.mailingCost = 0
@@ -693,27 +694,30 @@ export default {
     checkFirst (data) {
       // console.log('选择的', data)
       this.checkB = null
-      this.checkH = null
+      // this.checkH = null
       this.revealMethod = null
       this.definitionMethod = null
       this.secondArr = []
-      this.thirdArr = []
+      // this.thirdArr = []
       this.question.filter((item) => {
         if (item.name === data) {
-          this.secondArr = item.children
+          this.secondArr = item.guides
         }
       })
       // console.log('solution', this.secondArr)
     },
     // 选择二级问题
     checkSecond (data) {
-      this.checkH = null
+      // this.checkH = null
       this.checkB = data
-      // console.log('选择的', data)
+      console.log('选择的', data)
       // console.log('二级问题', this.secondArr)
       this.secondArr.filter((item) => {
         if (item.name === data) {
-          this.thirdArr = item.guides
+          this.revealMethod = item.solution
+          this.definitionMethod = item.locationWay
+          this.checkId = item.id
+          // this.thirdArr = item.guides
           // this.revealMethod = item.solution
           // this.definitionMethod = item.definitionMethod
         }
@@ -721,24 +725,24 @@ export default {
       // console.log('选择解决方法', this.checkB)
     },
     // 选择三级问题
-    checkThird (data) {
-      console.log(data)
-      this.checkH = data
-      this.thirdArr.filter((item) => {
-        if (item.name === data) {
-          this.revealMethod = item.solution
-          this.definitionMethod = item.locationWay
-          this.checkId = item.id
-        }
-      })
-    },
+    // checkThird (data) {
+    //   console.log(data)
+    //   this.checkH = data
+    //   this.thirdArr.filter((item) => {
+    //     if (item.name === data) {
+    //       this.revealMethod = item.solution
+    //       this.definitionMethod = item.locationWay
+    //       this.checkId = item.id
+    //     }
+    //   })
+    // },
     // 添加问题
     addQuestion () {
       const gatherAdd = {
         problemJudge: {
           firstPro: this.checkA,
           secondPro: this.checkB,
-          thirdPro: this.checkH,
+          // thirdPro: this.checkH,
           checkId: this.checkId
         },
         solution: this.revealMethod,
@@ -747,12 +751,12 @@ export default {
       this.gatherArr.push(gatherAdd)
       this.checkA = null
       this.checkB = null
-      this.checkH = null
+      // this.checkH = null
       this.checkId = null
       this.revealMethod = null
       this.definitionMethod = null
       this.secondArr = []
-      this.thirdArr = []
+      // this.thirdArr = []
       // console.log(this.gatherArr)
       // console.log('checkId', this.checkId)
     },
