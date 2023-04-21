@@ -116,9 +116,16 @@
                 <div style="font-size: 17px;">寄件汇总：</div>
                 <a-descriptions bordered size="small">
                   <a-descriptions-item label="寄件汇总" :span="3">
-                    <div v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
-                      <div>寄件名：{{ item6.pieceName }}&nbsp;&nbsp;数量：{{ item6.pieceNum }}&nbsp;&nbsp;寄件报价：{{ item6.piecePrice }} 元</div>
-                    </div>
+                    <a-row>
+                      <a-col :span="10">配件名称</a-col>
+                      <a-col :span="5">配件单价</a-col>
+                      <a-col :span="4">数量</a-col>
+                    </a-row>
+                    <a-row v-for="(item6, index6) in item4.afterSaleExpresses" :key="index6+'Expresses'">
+                      <a-col :span="10" style="color:#40a9ff;">{{ item6.pieceName }}</a-col>
+                      <a-col :span="5">{{ item6.piecePrice }}元</a-col>
+                      <a-col :span="4">{{ item6.pieceNum }}</a-col>
+                    </a-row>
                   </a-descriptions-item>
                   <a-descriptions-item v-if="item4.pieceDeliveryNo" label="寄件单号" :span="1">
                     {{ item4.pieceDeliveryNo }}
@@ -303,45 +310,50 @@
             <div>
               <a-descriptions style="margin-top: 10px;" bordered size="small">
                 <a-descriptions-item v-if="partArr.length" label="配件信息汇总" :span="3">
-                  <div v-for="item in partArr" :key="item.index">
-                    <span>配件名称：{{ item.pieceName }}&nbsp;</span>&nbsp;
-                    <span>单个配件报价：{{ item.piecePrice }}元</span>&nbsp;
-                    <span>数量：{{ item.pieceNum }}</span>&nbsp;
-                    <span>配件库存：{{ item.pieceStock }}</span>&nbsp;
+                  <a-row>
+                    <a-col :span="8">配件名称</a-col>
+                    <a-col :span="5">配件单价</a-col>
+                    <a-col :span="4">数量</a-col>
+                    <a-col :span="4">配件库存</a-col>
+                  </a-row>
+                  <a-row v-for="item in partArr" :key="item.index">
+                    <a-col :span="8" style="font-weight:bold;">{{ item.pieceName }}</a-col>
+                    <a-col :span="5">{{ item.piecePrice }}元</a-col>
+                    <a-col :span="4">{{ item.pieceNum }}</a-col>
+                    <a-col :span="4">{{ item.pieceStock }}</a-col>
                     <span>
                       <a-icon @click="delPart(item)" type="close-circle" />
                     </span>
-                  </div>
+                  </a-row>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="partArr.length" label="配件价格" :span="3">
-                  {{ countPart(partArr) }}
-                </a-descriptions-item>
-                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="3">
+                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="2">
                   <span v-if="!mailingCostIndex">
                     <a-input-number :min="0" v-model="mailingCost"></a-input-number>
                     <a-button style="line-height: 29px;" @click="okMailing">确认</a-button>
                   </span>
                   <span v-if="mailingCostIndex">
-                    {{ mailingCost }}
+                    ￥{{ mailingCost }}
                   </span>
-                  <span></span>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="3">
-                  {{ checkG }}
+                <a-descriptions-item v-if="partArr.length" label="配件总价" :span="1">
+                  ￥{{ countPart(partArr) }}
                 </a-descriptions-item>
-                <a-descriptions-item label="总价" :span="3">
-                  {{ totalCost }}
+                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="2">
+                  ￥{{ checkG }}
                 </a-descriptions-item>
-                <a-descriptions-item label="优惠折扣" :span="3">
+                <a-descriptions-item label="订单总价" :span="1">
+                  ￥{{ totalCost }}
+                </a-descriptions-item>
+                <a-descriptions-item label="优惠折扣" :span="2">
                   <div>
                     输入折扣：<a-input-number style="width: 60px;" :min="1" :max="10" v-model="discount" @change="onChangeDiscount"></a-input-number> 折 (需要则填写)
                   </div>
                   <div v-show="discount">
-                    折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input>
+                    <span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input>
                   </div>
                 </a-descriptions-item>
-                <a-descriptions-item label="客户实际支付" :span="3">
-                  {{ parseInt(priceSum * 100) / 100 }}
+                <a-descriptions-item label="客户实际应付" :span="1">
+                  <a-statistic :precision="2" :value="parseInt(priceSum * 100) / 100" />
                 </a-descriptions-item>
               </a-descriptions>
             </div>

@@ -20,12 +20,11 @@
         </a-row>
         <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding-bottom:50px;">
           <div class="title">第{{ index1+1 }}次评估：</div>
-          <div class="itemBox">
+          <div class="itemBox" v-if="item1.pays.length>0">
             <a-descriptions
               bordered
               size="small"
               :column="3"
-              v-if="item1.pays.length>0"
             >
               <a-descriptions-item label="支付单号"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.outTradeNo }}</span></span></a-descriptions-item>
               <a-descriptions-item label="支付时间"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.payTime | moment }}</span></span></a-descriptions-item>
@@ -78,6 +77,7 @@
               <a-descriptions-item label="退款操作"><a-button :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button></a-descriptions-item>
             </a-descriptions>
           </div>
+          <div v-else>无付款记录</div>
         </div>
       </div>
     </a-modal>
