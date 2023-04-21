@@ -1,8 +1,28 @@
 <template>
   <div>
     <a-card>
+      <a-row>
+        <a-col :span="6">
+          <a-input-search
+            placeholder="请输入关键字"
+            enter-button="查询"
+            @search="onSearch"
+          />
+        </a-col>
+        <a-col :span="6">
+          <span>&nbsp;月结单：</span>
+          <a-select v-model="checkMonthly" default-value="all" style="width: 100px;">
+            <a-select-option value="all">全部</a-select-option>
+            <a-select-option value="true">是</a-select-option>
+            <a-select-option value="false">否</a-select-option>
+          </a-select>
+          <!-- <a-button @click="searchmonthly" type="primary">查询</a-button> -->
+        </a-col>
+        <a-col :span="3">
+        </a-col>
+      </a-row>
       <div>
-        <a-tabs>
+        <a-tabs default-active-key="1" @change="checkTab">
           <a-tab-pane key="1" tab="待评估">
             <a-button type="primary" @click="openAddRepair">新增维修工单</a-button>
             <a-table
@@ -37,16 +57,6 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="3" tab="已支付">
-            <!-- <div>
-              <a-row>
-                <a-col :span="6">
-                  <a-select >
-                    <a-select-option value="true">是</a-select-option>
-                    <a-select-option value="false">否</a-select-option>
-                  </a-select>
-                </a-col>
-              </a-row>
-            </div> -->
             <a-table
               :columns="payColumns"
               :rowKey="(record, index) => index"
@@ -85,17 +95,6 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="5" tab="已解决">
-            <div>
-              <a-row>
-                <a-col :span="6">
-                  <a-input-search
-                    placeholder="请输入关键字"
-                    enter-button="查询"
-                    @search="onSearch"
-                  />
-                </a-col>
-              </a-row>
-            </div>
             <a-table
               :columns="solveColumns"
               :rowKey="(record, index) => index"
@@ -514,7 +513,9 @@ export default {
       // 传给子组件的数据
       repairData: {},
       current: 0,
-      saleId: null
+      saleId: null,
+      checkMonthly: 'all',
+      changeStatus: 'WAIT_EVALUATE'
     }
   },
   methods: {
@@ -611,7 +612,31 @@ export default {
       // console.log('打开退款获取id', this.saleId)
     },
     onSearch (value) {
-      console.log('搜索', value, 'SOLVED')
+      console.log('售后类型', 'REPAIR', '搜索', value, '状态', this.changeStatus, '是否月结单', this.checkMonthly)
+    },
+    searchmonthly () {
+      console.log('月结单', this.checkMonthly)
+    },
+    checkTab (key) {
+      // console.log(key)
+      switch (key) {
+        case '1':
+          this.changeStatus = 'WAIT_EVALUATE'
+          break
+        case '2':
+        this.changeStatus = 'EVALUATED'
+          break
+        case '3':
+        this.changeStatus = 'PAID'
+          break
+        case '4':
+        this.changeStatus = 'WAIT_VISIT'
+          break
+        case '5':
+        this.changeStatus = 'SOLVED'
+          break
+      }
+      console.log(this.changeStatus)
     }
   },
   created () {
