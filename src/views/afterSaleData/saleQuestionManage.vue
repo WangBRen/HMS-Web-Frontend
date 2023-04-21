@@ -19,8 +19,9 @@
           <a-table
             :columns="columns"
             :data-source="tab.guides"
-            :pagination="pagination"
+            :pagination="false"
             row-key="id"
+            size="small"
           >
             <span slot="locationWay" slot-scope="text">
               <a-tooltip :overlayStyle="{maxWidth:'300px'}">
