@@ -566,6 +566,7 @@ export default {
           this.salesData = res.data.filter(item => {
             return item.type !== 'INSTALL'
           })
+          // 总排序
           this.salesData = this.salesData.sort((a, b) => {
             const t1 = new Date(a.createdAt).getTime()
             const t2 = new Date(b.createdAt).getTime()
@@ -596,6 +597,7 @@ export default {
               return item
             }
           })
+          // 已解决倒序
           this.solveData = this.solveData.sort((a, b) => {
             const t1 = new Date(a.createdAt).getTime()
             const t2 = new Date(b.createdAt).getTime()

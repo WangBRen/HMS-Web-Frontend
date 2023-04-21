@@ -71,7 +71,7 @@
             <a-form-model-item label="问题分类" prop="problemCategoryArr">
               <!-- <a-select></a-select> -->
               <a-cascader
-                :field-names="{ label: 'name', value: 'name',children: 'children' }"
+                :field-names="{ label: 'name', value: 'name',children: 'guides' }"
                 v-model="infoForm.problemCategoryArr"
                 :options="question"
                 placeholder="选择问题分类"
