@@ -73,7 +73,7 @@
                   {{ item4.technicalSupport }}
                 </a-descriptions-item>
                 <a-descriptions-item label="是否月结单" :span="2">
-                  {{ item4.monthlyStatement | filterBoolean }}
+                  {{ repairData.monthlyStatement | filterBoolean }}
                 </a-descriptions-item>
                 <a-descriptions-item label="是否保修期" :span="2">
                   {{ item4.isOverWarranty | filterBoolean }}
@@ -872,7 +872,7 @@ export default {
         problems: this.gatherArr, // 问题汇总
         problemExplain: this.extraForm.problemePxplain, // 问题解释
         technicalSupport: this.extraForm.technicalSupport, // 技术支持
-        monthlyStatement: this.statementIndex, // 月结单
+        // monthlyStatement: this.statementIndex, // 月结单
         isOverWarranty: this.guaranteeIndex, // 是否保修期
         needVisit: this.visitIndex, // 是否上门
         needPieceSend: this.deliveryIndex, // 是否寄件
@@ -955,6 +955,11 @@ export default {
                   }
                   if (this.statementIndex === true) {
                     changeStatus.status = 'PAID'
+                  }
+                  if (this.statementIndex) {
+                    changeStatus.monthlyStatement = true // 月结单
+                  } else {
+                    changeStatus.monthlyStatement = false // 月结单
                   }
                   // 改变状态
                   apiUpdateStatus(id, changeStatus).then(res => {
