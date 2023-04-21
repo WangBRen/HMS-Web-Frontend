@@ -1,44 +1,44 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'first')">新建异常现象</a-button>
+      <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'first')">新建问题标题</a-button>
       <a-button style="margin-right: 10px;" @click="openModal('edit', 'first')">编辑【{{ getFirstName() }}】名称</a-button>
+      <a-button style="float: right;" type="primary" @click="editQusetion('', 'add')">【{{ getFirstName() }}】新建问题</a-button>
       <a-popconfirm title="确定删除？" @confirm="delFirst()">
         <a-button>删除【{{ getFirstName() }}】</a-button>
       </a-popconfirm>
       <a-tabs v-model="firstTabKey">
         <a-tab-pane v-for="tab in questData" :key="tab.id" :tab="tab.name">
-          <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'second')">新建异常现象二级</a-button>
+          <!-- <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'second')">新建异常现象二级</a-button>
           <a-button style="margin-right: 10px;" @click="openModal('edit', 'second')">编辑【{{ getSecondName() }}】名称</a-button>
           <a-popconfirm title="确定删除？" @confirm="delSecond()">
             <a-button style="margin-right: 10px;">删除【{{ getSecondName() }}】</a-button>
-          </a-popconfirm>
-          <a-button style="float: right;" type="primary" @click="editQusetion('', 'add')">新建问题详情描述</a-button>
-          <a-tabs style="padding: 10px;" v-model="secondTabKey">
-            <a-tab-pane v-for="secondTab in tab.children" :key="secondTab.id" :tab="secondTab.name">
-              <a-table
-                :columns="columns"
-                :data-source="secondTab.guides"
-                :pagination="pagination"
-                row-key="id"
-              >
-                <span slot="locationWay" slot-scope="text">
-                  <a-tooltip :overlayStyle="{maxWidth:'300px'}">
-                    <template slot="title">
-                      <span>{{ text }}</span>
-                    </template>
-                    <span class="locationWay">{{ text }}</span>
-                  </a-tooltip>
-                </span>
-                <span slot="action" slot-scope="text, record">
-                  <a @click="editQusetion(record, 'edit')">编辑</a> |
-                  <a-popconfirm title="确定删除？" @confirm="delQuestion(record)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </a-tab-pane>
-          </a-tabs>
+          </a-popconfirm> -->
+          <!-- <a-tabs style="padding: 10px;" v-model="secondTabKey"> -->
+          <!-- <a-tab-pane v-for="secondTab in tab.children" :key="secondTab.id" :tab="secondTab.name"> -->
+          <a-table
+            :columns="columns"
+            :data-source="tab.guides"
+            :pagination="pagination"
+            row-key="id"
+          >
+            <span slot="locationWay" slot-scope="text">
+              <a-tooltip :overlayStyle="{maxWidth:'300px'}">
+                <template slot="title">
+                  <span>{{ text }}</span>
+                </template>
+                <span class="locationWay">{{ text }}</span>
+              </a-tooltip>
+            </span>
+            <span slot="action" slot-scope="text, record">
+              <a @click="editQusetion(record, 'edit')">编辑</a> |
+              <a-popconfirm title="确定删除？" @confirm="delQuestion(record)">
+                <a>删除</a>
+              </a-popconfirm>
+            </span>
+          </a-table>
+          <!-- </a-tab-pane> -->
+          <!-- </a-tabs> -->
         </a-tab-pane>
       </a-tabs>
     </a-card>
@@ -160,22 +160,23 @@ export default {
       ],
       columns: [
         {
-          title: '问题详细描述',
+          title: '问题详细',
           dataIndex: 'name',
           align: 'center',
-          width: 150
+          width: '200px'
         },
         {
           title: '定位方法',
           dataIndex: 'locationWay',
           align: 'center',
           scopedSlots: { customRender: 'locationWay' },
-          width: 300
+          width: '25%'
         },
         {
           title: '解决方法',
           dataIndex: 'solution',
-          align: 'center'
+          align: 'center',
+          width: '25%'
         },
         {
           title: '描述',
@@ -190,7 +191,8 @@ export default {
         {
           title: '操作',
           align: 'center',
-          scopedSlots: { customRender: 'action' }
+          scopedSlots: { customRender: 'action' },
+          width: '100px'
         }
       ],
       firstTabKey: null,
@@ -248,7 +250,7 @@ export default {
           this.mode = 'add'
           this.editData = {
             type_id: this.firstTabKey,
-            segment_id: this.secondTabKey,
+            segment_id: null,
             name: '',
             locationWay: '',
             solution: '',
@@ -360,7 +362,7 @@ export default {
     getGuide () {
       apiGetGuide().then(res => {
         if (res.status === 200) {
-          // console.log(res.data)
+          console.log(res.data)
           this.questData = res.data
           if (this.questData.length !== 0) {
             this.firstTabKey = this.questData[0].id

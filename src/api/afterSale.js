@@ -139,7 +139,13 @@ export function addGuide (parameter) {
     data: parameter
   })
 }
-
+// 获取两级指导信息
+export function getGuideList () {
+  return request({
+    url: api.addGuide,
+    method: 'get'
+  })
+}
 // 更改指导信息
 export function editGuide (id, parameter) {
   return request({
