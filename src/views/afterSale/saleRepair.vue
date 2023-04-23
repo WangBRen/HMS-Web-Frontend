@@ -17,9 +17,9 @@
             <a-select-option value="false">否</a-select-option>
           </a-select>
         </a-col>
-        <a-col :span="3">
+        <a-col :span="9">
         </a-col>
-        <!-- <a-button type="primary" @click="exportData">导出全部数据</a-button> -->
+        <a-button type="primary" @click="exportAllData">导出信息单</a-button>
       </a-row>
       <div>
         <a-tabs default-active-key="1" @change="checkTab">
@@ -100,7 +100,7 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="5" tab="已解决">
-            <!-- <a-button type="primary" @click="exportData">导出月结单</a-button> -->
+            <a-button type="primary" @click="exportData">导出对账单</a-button>
             <a-table
               :columns="solveColumns"
               :rowKey="(record, index) => index"
@@ -125,6 +125,34 @@
     </a-card>
     <a-modal :visible="visible" title="导入数据" @ok="saveImport" @cancel="close" :width="1200">
       <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index"/>
+    </a-modal>
+    <a-modal
+      title="导出全部数据"
+      :visible="exportVisible"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-row>
+        <a-col :span="4" :offset="2">筛选品牌：
+          <a-select placeholder="请选择产品品牌" v-model="filterBrand" style="width: 120px" @change="handleChangeBrand">
+            <a-select-option v-for="(item) in brandArrs" :key="item.name">
+              {{ item.name }}
+            </a-select-option>
+          </a-select>
+        </a-col>
+        <a-col :span="4" :offset="8">筛选型号：
+          <a-select placeholder="请选择产品型号" v-model="selectModel" style="width: 120px" @change="handleChangeModel">
+            <a-select-option v-for="(item) in modelArr" :key="item">
+              {{ item }}
+            </a-select-option>
+          </a-select>
+        </a-col>
+      </a-row>
+      <a-row style="margin-top:16px;">
+        <a-col :offset="2">
+          <a-icon type="container" theme="twoTone" /> 预计导出 <span style="color:red;font-size:20px;">{{ this.exportfilterData.length }}</span> 条数据
+        </a-col>
+      </a-row>
     </a-modal>
     <saleRepairModal
       :repairVisible="repairVisible"
@@ -151,6 +179,7 @@ import saleRepairModal from './saleRepairModal.vue'
 import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
 import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale } from '@/api/afterSale'
+import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
 export default {
   components: {
     saleRepairAdd,
@@ -186,9 +215,11 @@ export default {
       repairAddVisible: false,
       drawbackVisible: false,
       visible: false,
+      exportVisible: false,
       // 总数据
       salesData: [
       ],
+      exportfilterData: [],
       estimateData: [
       ],
       importColumns: [
@@ -579,13 +610,129 @@ export default {
       saleId: null,
       checkMonthly: 'all',
       changeStatus: 'WAIT_EVALUATE',
-      importDataList: [] // 导入的数据
+      importDataList: [], // 导入的数据
+      brandArrs: [
+        {
+          name: '杜马',
+          modelArr: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'T1', 'T5']
+        },
+        {
+          name: '德希顿',
+          modelArr: ['A4', 'A5', 'A6', '202', 'U5-03', 'U6-03', 'U7', 'K4', 'K5', 'K6', '1012', '2023']
+        },
+        {
+          name: '攸太',
+          modelArr: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5']
+        },
+        {
+          name: '摩琥',
+          modelArr: ['A4', 'A5', 'A6', '202', 'K4', 'K5']
+        },
+        {
+          name: '北控',
+          modelArr: ['A4', 'A5', 'A6']
+        },
+        {
+          name: '法仕德',
+          modelArr: ['A4', 'A5', 'A6', 'U1', 'U2', 'U6-03', 'K4']
+        },
+        {
+          name: '徳斯图',
+          modelArr: ['A4', 'A5', 'A6', 'K5']
+        },
+        {
+          name: '舒艾莎',
+          modelArr: ['A4', 'A5', 'A6', 'U1', 'U2', 'U6-03']
+        },
+        {
+          name: '北极熊',
+          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7']
+        },
+        {
+          name: '芙林',
+          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7']
+        },
+        {
+          name: '麦特拉赫',
+          modelArr: ['U1', 'U2', 'U3', 'U7']
+        },
+        {
+          name: '嘉饰缇娜',
+          modelArr: ['U1', 'U2', 'U3']
+        },
+        {
+          name: '有质',
+          modelArr: ['U1', 'U2', 'U3', 'K5']
+        },
+        {
+          name: '一米',
+          modelArr: ['U1', 'U2', 'U3', 'U6-03', 'K4', 'K5']
+        },
+        {
+          name: '德爽康',
+          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03']
+        },
+        {
+          name: '哈雅',
+          modelArr: ['U1', 'U2', 'U6-03', 'U7', 'K4']
+        },
+        {
+          name: '史密斯',
+          modelArr: ['U1', 'U2', 'U6-03', 'U7']
+        },
+        {
+          name: '犀鸟',
+          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7', 'K4', 'K5']
+        },
+        {
+          name: '摩柏',
+          modelArr: ['U1', 'U2', 'K4', 'K5']
+        },
+        {
+          name: '梵云优尚',
+          modelArr: ['U2', 'U3', 'K5']
+        },
+        {
+          name: '事达',
+          modelArr: ['U2', 'U3', 'U5-03', 'U6-03', 'K5']
+        },
+        {
+          name: '亨本',
+          modelArr: ['U2', 'K4']
+        },
+        {
+          name: '法兰多',
+          modelArr: ['U3', 'U5-03']
+        },
+        {
+          name: '德朗斯汀',
+          modelArr: ['U6-03', 'K4', 'K5']
+        },
+        {
+          name: '博蒙',
+          modelArr: ['K4', 'K5']
+        },
+        {
+          name: '德斯图',
+          modelArr: ['K4']
+        },
+        {
+          name: '蒙娜丽莎',
+          modelArr: ['K4', 'K5']
+        },
+        {
+          name: '卡恩诺',
+          modelArr: ['K4', 'K5']
+        }
+      ],
+      filterBrand: '',
+      selectModel: '',
+      modelArr: [],
+      allModel: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5']
     }
   },
   methods: {
     saveImport () {
-      console.log(this.importDataList, '导入数组是')
-      // 请求后台接口把导入数组传递过去即可
       this.visible = false
       this.importDataList.map(item => {
         this.addSaleForm(item)
@@ -631,29 +778,147 @@ export default {
     close () {
       this.visible = false
     },
+    handleChangeBrand (value) {
+      this.filterBrand = value
+      this.selectModel = ''
+      this.exportfilterData = this.salesData.filter(item => {
+        return item.customerInfo.brand === value
+      })
+      this.brandArrs.filter(item => {
+        if (item.name === this.filterBrand) {
+          this.modelArr = item.modelArr
+        }
+      })
+    },
+    handleChangeModel (value) {
+      this.selectModel = value
+      if (this.filterBrand !== '') {
+        this.exportfilterData = this.salesData.filter(item => {
+          return item.customerInfo.productModel === value && item.customerInfo.brand === this.filterBrand
+        })
+      } else {
+        this.exportfilterData = this.salesData.filter(item => {
+          return item.customerInfo.productModel === value
+        })
+      }
+    },
     exportData () {
-      // if (this.selectedList.length === 0) {
-      //   message.warning('请选择你要导出的订单')
-      //   return
-      // }
-      // Modal.confirm({
-      //   title: `确认导出${this.selectedList.length}条数据吗?`,
-      //   icon: createVNode(ExclamationCircleOutlined),
-      //   onOk () {
-      //     const { export_json_to_excel } = require('../excel/Export2Excel') // 注意下路径
-      //      // excel的表头
-      //     const tHeader = ["", ""]
-      //     // 字段和table表格中对应
-      //     const fitlerVal = ["title", "author","publish_time"]
-
-      //     const res = data.selectedList.map((v) => fitlerVal.map((j) => v[j]))
-
-      //     export_json_to_excel(tHeader, res, "导出的数据是----")
-      //     this.selectedList = []; //置空
-      //   },
-      //   onCancel() {},
-      //   class: "test",
-      // })
+      if (this.solveData.length === 0) {
+        this.$message.warning('导出数据不能为空')
+        return
+      }
+      const that = this
+      this.$confirm({
+        title: `确认导出 ${that.solveData.length} 条数据吗?`,
+        content: `是否月结单：${that.checkMonthly === 'true' ? '是' : (that.checkMonthly === 'false' ? '否' : '全部订单')}`,
+        onOk () {
+          console.log('需要导出的数据', that.solveData)
+          const tHeader = ['报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号', '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '应付金额', '实付金额']
+          const fitlerVal = [
+            'createdAt',
+            'customerName',
+            'customerPhone',
+            'serviceAddress',
+            'purchaseDate',
+            'brand',
+            'productModel',
+            'productNo',
+            'problemCategory',
+            'problems',
+            'needVisit',
+            'needPieceSend',
+            'monthlyStatement',
+            'isOverWarranty',
+            'totalCost',
+            'customerPay'
+          ]
+          that.filterExcelData(tHeader, fitlerVal, that.solveData, 'account')
+        },
+        onCancel () {}
+      })
+    },
+    filterExcelData (tHeader, fitlerVal, filterExportData, mode) {
+      const res = filterExportData.map((v) => fitlerVal.map((j) => {
+        if (j === 'createdAt' || j === 'purchaseDate') {
+          return moment(v[j]).format('YYYY-MM-DD HH:mm')
+        } else if (j === 'monthlyStatement') {
+          return v[j] ? '是' : '否'
+        } else if (j === 'totalCost' || j === 'customerPay') {
+          var totalCost = 0
+          v.processes.map(item => {
+            totalCost = item[j] + totalCost
+          })
+          return totalCost
+        } else if (j === 'needPieceSend' || j === 'needVisit') {
+          const sendList = v.processes.filter(item => {
+            return item[j]
+          })
+          if (sendList.length > 0) {
+            return '是'
+          } else { return '否' }
+        } else if (j === 'problems') {
+          var problemList = ''
+          v.processes.map(item => {
+            item.problems.map(pro => {
+              problemList = pro.problemJudge.firstPro + '/' + pro.problemJudge.secondPro
+            })
+          })
+          return problemList
+        } else if (j === 'status') {
+          if (v[j] === 'WAIT_EVALUATE') {
+            return '待评估'
+          } else if (v[j] === 'EVALUATED' || v[j] === 'WAIT_PAY') {
+            return '待支付'
+          } else if (v[j] === 'PAID') {
+            return '待派工'
+          } else if (v[j] === 'WAIT_VISIT') {
+            return '待上门'
+          } else if (v[j] === 'SOLVED') { return '已解决' }
+        } else {
+          return v.customerInfo[j]
+        }
+      }))
+      if (mode === 'all') {
+        exportExcel(tHeader, res, this.filterBrand + '信息单')
+      } else if (mode === 'account') {
+        exportExcel(tHeader, res, '对账单')
+      }
+    },
+    exportAllData () {
+      this.filterBrand = ''
+      this.selectModel = ''
+      this.exportfilterData = this.salesData
+      this.modelArr = this.allModel
+      this.exportVisible = true
+    },
+    handleOk () {
+      if (this.exportfilterData.length === 0) {
+        this.$message.warning('导出数据不能为空')
+        return
+      }
+      // 导出筛选好的数据
+      const tHeader = ['报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号', '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态']
+      const fitlerVal = [
+      'createdAt',
+        'customerName',
+        'customerPhone',
+        'serviceAddress',
+        'purchaseDate',
+        'brand',
+        'productModel',
+        'productNo',
+        'problemCategory',
+        'problems',
+        'needVisit',
+        'needPieceSend',
+        'monthlyStatement',
+        'isOverWarranty',
+        'status'
+      ]
+      this.filterExcelData(tHeader, fitlerVal, this.exportfilterData, 'all')
+    },
+    handleCancel () {
+      this.exportVisible = false
     },
     openRepairModal (data) {
       // console.log(data)
