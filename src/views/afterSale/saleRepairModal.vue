@@ -51,6 +51,9 @@
                 <a :href="file.url" target="_blank">资料{{ index+1 }}</a>
               </div>
             </a-descriptions-item>
+            <a-descriptions-item v-if="repairData.monthlyStatement !== null" label="月结单">
+              <span style="font-size: 20px;font-weight: bold">{{ repairData.monthlyStatement | filterBoolean }}</span>
+            </a-descriptions-item>
           </a-descriptions>
         </div>
         <!-- 共用数据 -->
@@ -244,12 +247,13 @@
             </div>
             <!-- 选项 -->
             <!-- 是否月结单 -->
-            <div>
+            <div v-if="transferData===null">
               <span style="color: #f5222d;">* </span>月结单：
-              <a-radio-group @change="onStatement" name="radioGroup">
-                <a-radio :value="1">是</a-radio>
-                <a-radio :value="0">否</a-radio>
+              <a-radio-group @change="onStatement" v-model="statementIndex" name="radioGroup">
+                <a-radio :value="true">是</a-radio>
+                <a-radio :value="false">否</a-radio>
               </a-radio-group>
+              <span style="color: red;">（慎重选择）</span>
             </div>
             <!-- 是否在保修期 -->
             <div style="line-height: 40px;">
@@ -531,6 +535,10 @@ export default {
     current: {
       type: Number,
       default: 0
+    },
+    transferData: {
+      type: Boolean,
+      default: null
     }
   },
   filters: {
@@ -672,7 +680,7 @@ export default {
       this.revealMethod = null
       this.discountData = null
       this.guaranteeIndex = null
-      this.statementIndex = null
+      // this.statementIndex = null
       this.secondArr = []
       // this.thirdArr = []
       this.gatherArr = []
@@ -710,7 +718,7 @@ export default {
     checkSecond (data) {
       // this.checkH = null
       this.checkB = data
-      console.log('选择的', data)
+      // console.log('选择的', data)
       // console.log('二级问题', this.secondArr)
       this.secondArr.filter((item) => {
         if (item.name === data) {
@@ -876,7 +884,6 @@ export default {
         problems: this.gatherArr, // 问题汇总
         problemExplain: this.extraForm.problemePxplain, // 问题解释
         technicalSupport: this.extraForm.technicalSupport, // 技术支持
-        // monthlyStatement: this.statementIndex, // 月结单
         isOverWarranty: this.guaranteeIndex, // 是否保修期
         needVisit: this.visitIndex, // 是否上门
         needPieceSend: this.deliveryIndex, // 是否寄件
@@ -892,6 +899,7 @@ export default {
           technicalPrice: this.checkG
         }
       }
+      // console.log('this.statementIndex', this.statementIndex)
       console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
         // 判断月结单
@@ -1370,6 +1378,7 @@ export default {
         //   { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
         // ]
       }
+      this.statementIndex = this.transferData
     }
   }
 }

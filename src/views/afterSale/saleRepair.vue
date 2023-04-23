@@ -131,6 +131,7 @@
       :repairData="repairData"
       @closeRepairModal="closeRepairModal"
       :current="current"
+      :transferData="transferData"
     />
     <saleRepairAdd
       :repairAddVisible="repairAddVisible"
@@ -175,7 +176,7 @@ export default {
     filterBoolean (value) {
       if (value) {
         return '是'
-      } else {
+      } else if (value === false) {
         return '否'
       }
     }
@@ -579,7 +580,8 @@ export default {
       saleId: null,
       checkMonthly: 'all',
       changeStatus: 'WAIT_EVALUATE',
-      importDataList: [] // 导入的数据
+      importDataList: [], // 导入的数据
+      transferData: null // 月结单
     }
   },
   methods: {
@@ -681,6 +683,7 @@ export default {
       })
       this.repairData = data
       this.repairData.processes = testData
+      this.transferData = this.repairData.monthlyStatement
       console.log('评估', this.repairData)
     },
     closeRepairModal () {
