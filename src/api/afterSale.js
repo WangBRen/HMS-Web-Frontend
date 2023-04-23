@@ -19,7 +19,8 @@ const api = {
   delGuideLevel: id => { return 'after-sale/guideLevel/' + id },
   addNewPart: 'after-sale/part',
   editPart: (id) => { return `after-sale/part/${id}` },
-  searchAfterSale: 'after-sale/search'
+  searchAfterSale: 'after-sale/search',
+  delAfterSale: (id) => 'after-sale/' + id + '/delete'
 }
 
 // 新建维修工单
@@ -201,5 +202,12 @@ export function searchAfterSale (parameter) {
     url: api.searchAfterSale,
     method: 'get',
     params: parameter
+  })
+}
+
+export function delAfterSale (id) {
+  return request({
+    url: api.delAfterSale(id),
+    method: 'delete'
   })
 }

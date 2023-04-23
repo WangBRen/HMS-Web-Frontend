@@ -900,7 +900,7 @@ export default {
         }
       }
       // console.log('this.statementIndex', this.statementIndex)
-      console.log('apiData', apiData)
+      // console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
         // 判断月结单
         let isStatement = true
