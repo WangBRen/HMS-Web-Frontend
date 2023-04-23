@@ -91,7 +91,7 @@
           </a-col>
         </a-row>
         <a-row>
-          <a-col style="font-size: 24px;" :span="12">
+          <a-col :span="12">
             <a-form-model-item label="是否月结单" prop="monthlyStatement">
               <div>
                 <a-radio-group name="radioGroup" v-model="infoForm.monthlyStatement">
