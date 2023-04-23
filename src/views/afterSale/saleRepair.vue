@@ -19,11 +19,17 @@
         </a-col>
         <a-col :span="3">
         </a-col>
+        <!-- <a-button type="primary" @click="exportData">导出全部数据</a-button> -->
       </a-row>
       <div>
         <a-tabs default-active-key="1" @change="checkTab">
           <a-tab-pane key="1" tab="待评估">
-            <a-button type="primary" @click="openAddRepair">新增维修工单</a-button>
+            <a-space>
+              <a-button type="primary" @click="openAddRepair">新增维修工单</a-button>
+              <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false">
+                <a-button> <a-icon type="upload" />导入excel</a-button>
+              </a-upload>
+            </a-space>
             <a-table
               :columns="estimateColumns"
               :rowKey="(record, index) => index"
@@ -94,6 +100,7 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="5" tab="已解决">
+            <!-- <a-button type="primary" @click="exportData">导出月结单</a-button> -->
             <a-table
               :columns="solveColumns"
               :rowKey="(record, index) => index"
@@ -116,6 +123,9 @@
         </a-tabs>
       </div>
     </a-card>
+    <a-modal :visible="visible" title="导入数据" @ok="saveImport" @cancel="close" :width="1200">
+      <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index"/>
+    </a-modal>
     <saleRepairModal
       :repairVisible="repairVisible"
       :repairData="repairData"
@@ -135,10 +145,12 @@
   </div>
 </template>
 <script>
+import xlsx from 'xlsx'
+import moment from 'moment'
 import saleRepairModal from './saleRepairModal.vue'
 import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
-import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale } from '@/api/afterSale'
+import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale } from '@/api/afterSale'
 export default {
   components: {
     saleRepairAdd,
@@ -173,10 +185,62 @@ export default {
       repairVisible: false,
       repairAddVisible: false,
       drawbackVisible: false,
+      visible: false,
       // 总数据
       salesData: [
       ],
       estimateData: [
+      ],
+      importColumns: [
+      {
+          title: '客户名',
+          dataIndex: 'customerName',
+          key: 'customerName',
+          align: 'center'
+        },
+        {
+          title: '联系方式',
+          dataIndex: 'customerPhone',
+          key: 'customerPhone',
+          align: 'center'
+        },
+        {
+          title: '品牌',
+          dataIndex: 'brand',
+          key: 'brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'productModel',
+          key: 'productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'productNo',
+          key: 'productNo',
+          align: 'center'
+        },
+        {
+          title: '购买日期',
+          dataIndex: 'purchaseDate',
+          key: 'purchaseDate',
+          align: 'center',
+          customRender: (text) => text ? moment(text).format('YYYY年MM月DD日') : ''
+        },
+        {
+          title: '问题分类',
+          dataIndex: 'problemCategory',
+          key: 'problemCategory',
+          align: 'center'
+        },
+        {
+          title: '收货地址',
+          dataIndex: 'receiveAddress',
+          key: 'receiveAddress',
+          align: 'center'
+        }
       ],
       estimateColumns: [
         {
@@ -514,10 +578,83 @@ export default {
       current: 0,
       saleId: null,
       checkMonthly: 'all',
-      changeStatus: 'WAIT_EVALUATE'
+      changeStatus: 'WAIT_EVALUATE',
+      importDataList: [] // 导入的数据
     }
   },
   methods: {
+    saveImport () {
+      console.log(this.importDataList, '导入数组是')
+      // 请求后台接口把导入数组传递过去即可
+      this.visible = false
+      this.importDataList.map(item => {
+        this.addSaleForm(item)
+      })
+    },
+    async addSaleForm (apiData) {
+      const res = await addAfterSale(apiData)
+      if (res.status === 200) {
+        this.getAfterSaleData() // 再请求下数据
+      }
+    },
+    importData (file) {
+      this.importDataList = []
+      let reader = new FileReader()
+      reader.readAsBinaryString(file.file) // 这个是file.file文件，可不是file……
+      reader.onload = (ev) => {
+        const res = ev.target.result
+        const worker = xlsx.read(res, { type: 'binary' })
+        // 将返回的数据转换为json对象的数据
+        reader = xlsx.utils.sheet_to_json(worker.Sheets[worker.SheetNames[0]])
+        const date = new Date() // 日期
+        for (let i = 0; i < reader.length; i++) {
+          // 定义要导出的
+          const sheetData = {
+            customerName: reader[i]['客户名称'],
+            customerPhone: reader[i]['客户电话'],
+            brand: reader[i]['产品品牌'],
+            productNo: reader[i]['产品编号'],
+            productModel: reader[i]['产品型号'],
+            problemCategory: reader[i]['问题分类'],
+            problemExplain: reader[i]['问题描述'],
+            receiveAddress: reader[i]['收货地址'],
+            serviceAddress: reader[i]['上门地址'],
+            purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString())))
+
+          }
+          this.importDataList.push(sheetData)
+        }
+        this.visible = true
+        console.log(this.importDataList, '导入的数据是---')
+      }
+    },
+    close () {
+      this.visible = false
+    },
+    exportData () {
+      // if (this.selectedList.length === 0) {
+      //   message.warning('请选择你要导出的订单')
+      //   return
+      // }
+      // Modal.confirm({
+      //   title: `确认导出${this.selectedList.length}条数据吗?`,
+      //   icon: createVNode(ExclamationCircleOutlined),
+      //   onOk () {
+      //     const { export_json_to_excel } = require('../excel/Export2Excel') // 注意下路径
+      //      // excel的表头
+      //     const tHeader = ["", ""]
+      //     // 字段和table表格中对应
+      //     const fitlerVal = ["title", "author","publish_time"]
+
+      //     const res = data.selectedList.map((v) => fitlerVal.map((j) => v[j]))
+
+      //     export_json_to_excel(tHeader, res, "导出的数据是----")
+      //     this.selectedList = []; //置空
+      //   },
+      //   onCancel() {},
+      //   class: "test",
+      // })
+    },
     openRepairModal (data) {
       // console.log(data)
       this.repairVisible = true
