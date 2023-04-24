@@ -91,6 +91,19 @@
           </a-col>
         </a-row>
         <a-row>
+          <a-col style="font-size: 24px;" :span="12">
+            <a-form-model-item label="是否月结单" prop="monthlyStatement">
+              <div>
+                <a-radio-group name="radioGroup" v-model="infoForm.monthlyStatement">
+                  <a-radio :value="true">是</a-radio>
+                  <a-radio :value="false">否</a-radio>
+                </a-radio-group>
+                <span style="color: red;">（慎重选择）</span>
+              </div>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
           <a-col :span="12">
             <a-form-model-item label="上传">
               <a-upload
@@ -172,20 +185,10 @@ export default {
         uploadImage: [], // 上传
         receiveAddress: '', // 收货地址
         isSameAddress: false, // 判断收货和上门地址是否一样
-        serviceAddress: '' // 上门地址
+        serviceAddress: '', // 上门地址
+        monthlyStatement: null // 是否月结
       },
-      question: [
-        {
-          value: '漏水???',
-          label: '漏水??',
-          children: [
-            {
-              value: '破洞',
-              label: '修补漏洞'
-            }
-          ]
-        }
-      ],
+      question: [],
       addRules: {
         customerName: [
           { required: true, message: '请输入客户名称', trigger: 'blur' }
@@ -350,18 +353,6 @@ export default {
       }
     },
     onSubmit () {
-      // const apiData = JSON.parse(JSON.stringify(this.infoForm))
-      // apiData.problemCategory = this.infoForm.problemCategoryArr[0] + '/' + this.infoForm.problemCategoryArr[1]
-      // apiData.problemExplain = this.infoForm.problemExplain
-      // apiData.afterSaleType = 'WEB'
-      // const upload = []
-      // // console.log('apiData.uploadImage', apiData.uploadImage)
-      // for (let i = 0; i < apiData.uploadImage.length; i++) {
-      //   upload.push(apiData.uploadImage[i])
-      // }
-      // apiData.uploadImage = upload
-      // delete apiData.problemCategoryArr
-      // console.log('提交表单', apiData)
       this.$refs.infoForm.validate(valid => {
         if (valid) {
         //   console.log('校验ok')
