@@ -190,6 +190,7 @@ import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
 import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale } from '@/api/afterSale'
 import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
+import { getUserInfo } from '@/api/login'
 export default {
   components: {
     saleRepairAdd,
@@ -223,6 +224,7 @@ export default {
   },
   data () {
     return {
+      MyInfo: {},
       repairVisible: false,
       repairAddVisible: false,
       drawbackVisible: false,
@@ -755,6 +757,10 @@ export default {
     }
   },
   methods: {
+    async getMe () {
+      const res = await getUserInfo()
+      this.MyInfo = res.data
+    },
     saveImport () {
       this.visible = false
       this.importDataList.map(item => {
@@ -789,8 +795,8 @@ export default {
             problemExplain: reader[i]['问题描述'],
             receiveAddress: reader[i]['收货地址'],
             serviceAddress: reader[i]['上门地址'],
-            purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString())))
-
+            purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString()))),
+            monthlyStatement: true
           }
           this.importDataList.push(sheetData)
         }
@@ -863,9 +869,21 @@ export default {
     filterExcelData (tHeader, fitlerVal, filterExportData, mode) {
       const res = filterExportData.map((v) => fitlerVal.map((j) => {
         if (j === 'createdAt' || j === 'purchaseDate') {
-          return moment(v[j]).format('YYYY-MM-DD HH:mm')
+          return moment(v[j]).format('YYYY-MM-DD')
+        } else if (j === 'serviceAddress') {
+          if (v.customerInfo[j] !== '') {
+            return v.customerInfo[j]
+          } else {
+            return v.customerInfo['receiveAddress']
+          }
         } else if (j === 'monthlyStatement') {
-          return v[j] ? '是' : '否'
+          return v[j] ? '是' : (v[j] == null ? '-' : '否')
+        } else if (j === 'isOverWarranty') {
+          if (v.processes.length > 0) {
+            return v.processes[0][j] ? '是' : '否'
+          } else {
+            return '-'
+          }
         } else if (j === 'totalCost' || j === 'customerPay') {
           var totalCost = 0
           v.processes.map(item => {
@@ -873,12 +891,16 @@ export default {
           })
           return totalCost
         } else if (j === 'needPieceSend' || j === 'needVisit') {
-          const sendList = v.processes.filter(item => {
+          if (v.processes.length > 0) {
+            const sendList = v.processes.filter(item => {
             return item[j]
-          })
-          if (sendList.length > 0) {
-            return '是'
-          } else { return '否' }
+            })
+            if (sendList.length > 0) {
+              return '是'
+            } else { return '否' }
+          } else {
+            return '-'
+          }
         } else if (j === 'problems') {
           var problemList = ''
           v.processes.map(item => {
@@ -901,10 +923,14 @@ export default {
           return v.customerInfo[j]
         }
       }))
+      // 获取当前时间
+      const myDate = new Date()
+      const today = moment(myDate).format('YYYY-MM-DD ')
+      const name = this.MyInfo.nickname
       if (mode === 'all') {
-        exportExcel(tHeader, res, this.filterBrand + '信息单')
+        exportExcel(tHeader, res, this.filterBrand + '信息单' + today + name)
       } else if (mode === 'account') {
-        exportExcel(tHeader, res, '对账单')
+        exportExcel(tHeader, res, '对账单' + today + name)
       }
     },
     exportAllData () {
@@ -1118,6 +1144,7 @@ export default {
   mounted () {
     // 查询工单
     this.getAfterSaleData()
+    this.getMe()
   }
 }
 </script>
