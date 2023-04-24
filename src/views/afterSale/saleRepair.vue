@@ -39,9 +39,15 @@
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
               </span>
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.monthlyStatement | filterBoolean }}
+              </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
                 <a @click="openRepairModal(record)">评估</a>
+                <a-popconfirm title="确定删除？" @confirm="delRepair(record)">
+                  <a v-if="record.monthlyStatement"> | 删除</a>
+                </a-popconfirm>
               </span>
             </a-table>
           </a-tab-pane>
@@ -54,6 +60,9 @@
             >
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
+              </span>
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.monthlyStatement | filterBoolean }}
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
@@ -159,6 +168,7 @@
       :repairData="repairData"
       @closeRepairModal="closeRepairModal"
       :current="current"
+      :transferData="transferData"
     />
     <saleRepairAdd
       :repairAddVisible="repairAddVisible"
@@ -178,7 +188,7 @@ import moment from 'moment'
 import saleRepairModal from './saleRepairModal.vue'
 import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
-import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale } from '@/api/afterSale'
+import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale } from '@/api/afterSale'
 import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
 export default {
   components: {
@@ -202,10 +212,12 @@ export default {
       }
     },
     filterBoolean (value) {
-      if (value) {
+      if (value === true) {
         return '是'
-      } else {
+      } else if (value === false) {
         return '否'
+      } else if (value === null) {
+        return '---'
       }
     }
   },
@@ -305,6 +317,11 @@ export default {
           align: 'center'
         },
         {
+          title: '是否月结单',
+          scopedSlots: { customRender: 'monthlyStatement' },
+          align: 'center'
+        },
+        {
           title: '评估次数',
           scopedSlots: { customRender: 'processes' },
           align: 'center'
@@ -363,6 +380,11 @@ export default {
           title: '记录客服',
           dataIndex: 'customerService',
           key: 'customerService',
+          align: 'center'
+        },
+        {
+          title: '是否月结单',
+          scopedSlots: { customRender: 'monthlyStatement' },
           align: 'center'
         },
         {
@@ -611,6 +633,7 @@ export default {
       checkMonthly: 'all',
       changeStatus: 'WAIT_EVALUATE',
       importDataList: [], // 导入的数据
+      transferData: null, // 月结单
       brandArrs: [
         {
           name: '杜马',
@@ -946,6 +969,7 @@ export default {
       })
       this.repairData = data
       this.repairData.processes = testData
+      this.transferData = this.repairData.monthlyStatement
       console.log('评估', this.repairData)
     },
     closeRepairModal () {
@@ -1029,7 +1053,7 @@ export default {
       }
       apiSearchAfterSale(apiData).then(res => {
         if (res.status === 200) {
-          console.log(res.data)
+          // console.log(res.data)
           switch (this.changeStatus) {
             case 'WAIT_EVALUATE':
               this.estimateData = res.data
@@ -1075,6 +1099,18 @@ export default {
           this.changeStatus = 'SOLVED'
           break
       }
+    },
+    delRepair (data) {
+      console.log(data)
+      const delId = data.id
+      apiDelAfterSale(delId).then(res => {
+        if (res.status === 200) {
+          this.$message.success('删除成功')
+          this.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
     }
   },
   created () {
