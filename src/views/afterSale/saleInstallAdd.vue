@@ -154,6 +154,9 @@ export default {
         ],
         serviceAddress: [
           { required: true, message: '请输入上门地址', trigger: 'blur' }
+        ],
+        productNo: [
+          { required: true, message: '请输入产品编号', trigger: 'blur' }
         ]
       },
       // 品牌库
@@ -299,6 +302,8 @@ export default {
               this.$message.success('安装工单新建成功')
               this.$parent.getAfterSaleData()
               this.$emit('closeAddInstall')
+            } else {
+              this.$message.error(res.message)
             }
           })
         }
@@ -313,6 +318,12 @@ export default {
   mounted () {
   },
   watch: {
+    'infoForm.receiveAddress' (newData, oldData) {
+    //   console.log(newData, oldData)
+      if (this.addressIndex === 1) {
+        this.infoForm.serviceAddress = newData
+      }
+    },
     'infoForm.brand' (newData, oldData) {
       this.infoForm.productModel = undefined
       this.brandArrs.filter(item => {

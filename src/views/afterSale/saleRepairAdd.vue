@@ -94,10 +94,12 @@
           <a-col style="font-size: 24px;" :span="12">
             <a-form-model-item label="是否月结单" prop="monthlyStatement">
               <div>
-                <a-radio-group name="radioGroup" v-model="infoForm.monthlyStatement">
-                  <a-radio :value="true">是</a-radio>
-                  <a-radio :value="false">否</a-radio>
-                </a-radio-group>
+                <span>
+                  <a-radio-group name="radioGroup" v-model="infoForm.monthlyStatement">
+                    <a-radio :value="true">是</a-radio>
+                    <a-radio :value="false">否</a-radio>
+                  </a-radio-group>
+                </span>
                 <span style="color: red;">（慎重选择）</span>
               </div>
             </a-form-model-item>
