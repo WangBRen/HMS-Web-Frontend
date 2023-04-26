@@ -26,6 +26,8 @@
     <saleInstallModal
       :installVisible="installVisible"
       @closeInstallModal="closeInstallModal"
+      :waitData="waitData"
+      :current="current"
     />
     <saleInstallAdd
       :installAddVisible="installAddVisible"
@@ -97,13 +99,33 @@ export default {
           scopedSlots: { customRender: 'action' },
           align: 'center'
         }
-      ]
+      ],
+      waitData: {},
+      current: 0
     }
   },
   methods: {
     openInstallModal (data) {
       console.log(data)
+      this.waitData = data
       this.installVisible = true
+      switch (data.status) {
+        case 'WAIT_EVALUATE':
+          this.current = 0
+          break
+        case 'EVALUATED':
+          this.current = 1
+          break
+        case 'PAID':
+          this.current = 2
+          break
+        case 'WAIT_VISIT':
+          this.current = 3
+          break
+        case 'SOLVED':
+          this.current = 4
+          break
+      }
     },
     closeInstallModal () {
       this.installVisible = false
@@ -128,6 +150,8 @@ export default {
           })
           console.log('allData', this.allData)
           console.log('waitInstallData', this.waitInstallData)
+        } else {
+          this.$message.error(res.message)
         }
       })
     }

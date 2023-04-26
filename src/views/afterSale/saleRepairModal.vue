@@ -249,10 +249,12 @@
             <!-- 是否月结单 -->
             <div v-if="transferData===null">
               <span style="color: #f5222d;">* </span>月结单：
-              <a-radio-group @change="onStatement" v-model="statementIndex" name="radioGroup">
-                <a-radio :value="true">是</a-radio>
-                <a-radio :value="false">否</a-radio>
-              </a-radio-group>
+              <span>
+                <a-radio-group @change="onStatement" v-model="statementIndex" name="radioGroup">
+                  <a-radio :value="true">是</a-radio>
+                  <a-radio :value="false">否</a-radio>
+                </a-radio-group>
+              </span>
               <span style="color: red;">（慎重选择）</span>
             </div>
             <!-- 是否在保修期 -->

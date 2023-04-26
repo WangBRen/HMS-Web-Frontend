@@ -5,7 +5,8 @@ const customerApi = {
     healthDis: diseaseId => `/health-diseases/${diseaseId}/children`, // 疾病诊断
     healthReport: (customerId) => `/health-reports/${customerId}/reports`, // 新建检测报告
     healthCustomerReport: '/health-reports/',
-    heathLevels: diseaseId => `/chronic-diseases/${diseaseId}/levels` // 获取与更新分级
+    heathLevels: diseaseId => `/chronic-diseases/${diseaseId}/levels`, // 获取与更新分级
+    analysisChronicDisease: (customerId) => `/customers/${customerId}/chronic-diseases/trigger-auto-analysis` // 自动分析慢病
 }
 
 // 获取健康指标
@@ -69,4 +70,12 @@ export function getHeathLevels (diseaseId) {
       method: 'get',
       url: customerApi.heathLevels(diseaseId)
   })
+}
+
+// 慢病分析
+export function analysisChronicDisease (customerId) {
+return request({
+    url: customerApi.analysisChronicDisease(customerId),
+    method: 'post'
+})
 }
