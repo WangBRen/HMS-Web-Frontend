@@ -9,16 +9,18 @@
           :model="userForm"
         >
           <a-form-model-item label="昵称">
-            <a-input placeholder="请输入您的昵称" v-model="userForm.nickname" />
+            <a-input placeholder="请输入您的昵称" v-model="userForm.name" />
           </a-form-model-item>
           <a-form-model-item label="个人简介">
-            <a-textarea rows="4" v-model="userForm.userInfo" placeholder="请输入个人简介"/>
+            <a-textarea rows="4" v-model="userForm.introduction" placeholder="请输入个人简介"/>
           </a-form-model-item>
           <a-form-model-item label="邮箱" :required="false">
             <a-input placeholder="请输入邮箱" v-model="userForm.email"/>
           </a-form-model-item>
           <a-form-model-item>
-            <a-button type="primary" @click="editUser">更新信息</a-button>
+            <a-popconfirm title="确定更新？" @confirm="editUser">
+              <a-button type="primary">更新信息</a-button>
+            </a-popconfirm>
           </a-form-model-item>
         </a-form-model>
       </a-col>
@@ -41,7 +43,7 @@
 <script>
 import AvatarModal from './AvatarModal'
 import { baseMixin } from '@/store/app-mixin'
-import { getUserInfo as apiGetUserInfo } from '@/api/login'
+import { getUserInfo as apiGetUserInfo, editUserMsg as apiEditUserMsg } from '@/api/login'
 
 export default {
   mixins: [baseMixin],
@@ -70,8 +72,8 @@ export default {
         fixedNumber: [1, 1]
       },
       userForm: {
-        nickname: '',
-        userInfo: '',
+        name: '',
+        introduction: '',
         email: '',
         avatar: ''
       }
@@ -85,19 +87,28 @@ export default {
     },
     editUser () {
       console.log(this.userForm)
+      apiEditUserMsg(this.userForm).then(res => {
+        if (res.status === 200) {
+          this.$message.success('编辑成功')
+          this.getUserInfo()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
       // https://files.hms.yootane.com/file/21bc3976-2a17-4c55-848b-35e43e8991b8.blob
-      this.getUserInfo()
+      // this.getUserInfo()
     },
     getUserInfo () {
       apiGetUserInfo().then(res => {
         if (res.status === 200) {
           // console.log('登陆信息', res.data)
-          this.userForm.nickname = res.data.nickname
+          this.userForm.name = res.data.userInfo.name
           this.userForm.email = res.data.email
-          // this.userForm.avatar = res.data.avatar
-          this.userForm.avatar = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
-          this.userForm.userInfo = res.data.userInfo
-          this.option.img = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
+          this.userForm.avatar = res.data.avatar
+          // this.userForm.avatar = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
+          this.userForm.introduction = res.data.userInfo.introduction
+          this.option.img = res.data.avatar
+          // this.option.img = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
         }
       })
     }

@@ -51,7 +51,8 @@ export default {
     setTimeout(() => {
       const userInfo = this.$store.getters.userInfo || {}
       this.currentUser = {
-        name: userInfo.nickname || userInfo.account
+        // name: userInfo.nickname || userInfo.account
+        name: userInfo.userInfo.name
       }
     }, 1500)
   }
