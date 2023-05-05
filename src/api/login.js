@@ -16,7 +16,8 @@ const userApi = {
   // 创建用户信息
   UserMsg: '/users/me/initial',
   editUserMsg: '/users/me',
-  getUserInfo: '/users/me' // 获取当前登录用户基础信息
+  getUserInfo: '/users/me', // 获取当前登录用户基础信息
+  editUserPassword: '/users/me/password' // 修改登录密码
 }
 
 /**
@@ -113,6 +114,15 @@ export function getUserInfo () {
 export function editUserMsg (parameter) {
   return request({
     url: userApi.editUserMsg,
+    method: 'put',
+    data: parameter
+  })
+}
+
+// 修改登录密码
+export function editUserPassword (parameter) {
+  return request({
+    url: userApi.editUserPassword,
     method: 'put',
     data: parameter
   })

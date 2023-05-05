@@ -9,7 +9,11 @@ const api = {
   getAppointments: (id) => `/health-stations/${id}/appointments`, // 新增预约
   editAppointment: (id, bookingId) => `/health-stations/${id}/appointment/${bookingId}`, // 更新预约记录
   deleteDoctor: (id, doctorId) => `/health-stations/${id}/doctor/${doctorId}`,
-  signInAppointment: (id, bookingId) => `/health-stations/${id}/appointment/${bookingId}/checkin`
+  signInAppointment: (id, bookingId) => `/health-stations/${id}/appointment/${bookingId}/checkin`,
+  addDevice: (id) => `/health-stations/${id}/device`, // 新增设备
+  delDevice: (id, deviceId) => `/health-stations/${id}/device/${deviceId}`, // 删除设备
+  getDevice: (id) => `/health-stations/${id}/devices`, // 查询设备
+  editDevice: (id, deviceId) => `/health-stations/${id}/device/${deviceId}` // 编辑设备
 }
 
 export function addStation (parameter) {
@@ -96,6 +100,39 @@ export function signInAppointment (id, bookingId, parameter) {
   return request({
     url: api.signInAppointment(id, bookingId),
     method: 'post',
+    data: parameter
+  })
+}
+
+// 新建设备
+export function addDevice (id, parameter) {
+  return request({
+    url: api.addDevice(id),
+    method: 'post',
+    data: parameter
+  })
+}
+
+export function delDevice (id, deviceId) {
+  return request({
+    url: api.delDevice(id, deviceId),
+    method: 'delete'
+  })
+}
+
+// 获取小站设备
+export function getDevice (id) {
+  return request({
+    url: api.getDevice(id),
+    method: 'get'
+  })
+}
+
+// 编辑设备
+export function editDevice (id, deviceId, parameter) {
+  return request({
+    url: api.editDevice(id, deviceId),
+    method: 'put',
     data: parameter
   })
 }
