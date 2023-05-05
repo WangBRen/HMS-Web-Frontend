@@ -46,7 +46,8 @@
 <script>
 import HealthStationAdd from './components/HeathStationAdd.vue'
 import StationEquipment from './components/StationEquipment.vue'
-import { getStations, getStationInfo } from '@/api/station'
+// import { getStations, getStationInfo } from '@/api/station'
+import { getStations } from '@/api/station'
 const columns = [
   {
     title: '小站名称',
@@ -126,11 +127,17 @@ export default {
       this.loadData()
     },
     editStation (record) {
+      // this.stationId = record.id
+      // getStationInfo(this.stationId).then(res => {
+      //   this.stationInfo = res.data
+      //   this.stationVisible = true
+      // })
+
+      // 新
       this.stationId = record.id
-      getStationInfo(this.stationId).then(res => {
-        this.stationInfo = res.data
-        this.stationVisible = true
-      })
+      this.stationInfo = record
+      this.stationVisible = true
+
       // editstation(record.id)
     },
     editEquipment (record) {

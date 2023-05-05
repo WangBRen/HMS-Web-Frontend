@@ -49,7 +49,7 @@
             <a-button :disabled="!codeIndex" v-if="!codeIndex" style="line-height: 29px;" @click="getCode">{{ count }}秒后重试</a-button>
           </div>
           <div style="margin-left: 85px;">
-            <a-button :disabled="!(telephone!=='' && telephoneCode!=='' && !codeIndex)" type="primary" @click="okTelephpne">确定修改手机号</a-button>
+            <a-button :disabled="!(telephone!=='' && telephoneCode!=='')" type="primary" @click="okTelephone">确定修改手机号</a-button>
           </div>
         </div>
       </a-list-item-meta>
@@ -58,7 +58,9 @@
 </template>
 
 <script>
-import { getUserInfo as apiGetUserInfo } from '@/api/login'
+import { getUserInfo as apiGetUserInfo, editUserPassword as apiEditUserPassword } from '@/api/login'
+// import { getUserInfo as apiGetUserInfo } from '@/api/login'
+// import { getCode as apiGetCode } from '@/api/customer'
 
 export default {
   data () {
@@ -119,23 +121,33 @@ export default {
     },
     getCode () {
       var Reg = /^[1][34578][0-9]{9}$/
-      console.log(this.telephone)
+      console.log('新', this.telephone, '旧', this.userInfo.telephone)
       if (Reg.test(this.telephone)) {
-        this.token = 'aonkna1312xz'
-        const TIME_COUNT = 60
-        if (!this.timer) {
-          this.count = TIME_COUNT
-          this.codeIndex = false
-          this.timer = setInterval(() => {
-            if (this.count > 0 && this.count <= TIME_COUNT) {
-              this.count--
-            } else {
-              this.codeIndex = true
-              clearInterval(this.timer)
-              this.timer = null
-            }
-          }, 1000)
+        if (this.telephone !== this.userInfo.telephone) {
+          const TIME_COUNT = 60
+          if (!this.timer) {
+            this.count = TIME_COUNT
+            this.codeIndex = false
+            this.timer = setInterval(() => {
+              if (this.count > 0 && this.count <= TIME_COUNT) {
+                this.count--
+              } else {
+                this.codeIndex = true
+                clearInterval(this.timer)
+                this.timer = null
+              }
+            }, 1000)
+          }
+          this.token = 'aonkna1312xz'
+        } else {
+          this.$message.info('输入的手机号与旧手机号相同，请更换')
         }
+        // apiGetCode(this.telephone).then(res => {
+        //   if (res.status === 200) {
+        //     this.$message.success(res.message || '验证码发送成功')
+        //     this.token = res.data.token
+        //   }
+        // })
       } else {
         this.$message.info('输入的手机号格式不正确')
       }
@@ -148,7 +160,7 @@ export default {
       this.passwordIndex = !this.passwordIndex
     },
     okPassword () {
-      console.log(this.passwordForm)
+      // console.log(this.passwordForm)
       // this.$refs.passwordForm.resetFields()
       this.$refs.passwordForm.validate(valid => {
         if (valid) {
@@ -157,7 +169,20 @@ export default {
               oldPassword: this.passwordForm.oldPassword,
               newPassword: this.passwordForm.newSecondPassword
             }
-            console.log('密码相同,可改', apiData)
+            // console.log('密码相同,可改', apiData)
+            apiEditUserPassword(apiData).then(res => {
+              if (res.status === 200) {
+                // console.log('密码修改成功')
+                this.$message.info('修改成功，正在退出登录')
+                setTimeout(() => {
+                  return this.$store.dispatch('Logout').then(() => {
+                    this.$router.push({ name: 'login' })
+                  })
+                }, 2000)
+              } else {
+                this.$message.error(res.message)
+              }
+            })
           } else {
             this.$message.error('两次输入的密码不同，请修改')
           }
@@ -167,8 +192,8 @@ export default {
     resetPassword () {
       this.$refs.passwordForm.resetFields()
     },
-    okTelephpne () {
-      console.log(this.telephone, this.token)
+    okTelephone () {
+      console.log(this.telephone, this.token, this.telephoneCode)
     }
   },
   mounted () {
