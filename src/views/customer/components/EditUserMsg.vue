@@ -137,8 +137,8 @@
                 </div>
                 <div style="width:280px;" v-if="form.isExposure">
                   <a-row v-for="(item,index) in form.exposureSelect" :key="index">
-                    <a-col :span="6"><a-tag>{{ item.name }}</a-tag></a-col>
-                    <a-col :span="18"><a-input v-model="item.otherValue" :placeholder="`列如：${item.name=='化学品'?'氨气':(item.name=='毒物'?'氨基乙酸':'α射线')}...`" /></a-col>
+                    <a-col :span="6"><a-tag>{{ item.species }}</a-tag></a-col>
+                    <a-col :span="18"><a-input v-model="item.specificName" :placeholder="`列如：${item.species=='化学品'?'氨气':(item.species=='毒物'?'氨基乙酸':'α射线')}...`" /></a-col>
                   </a-row>
                 </div>
               </div>
@@ -163,7 +163,7 @@
                     <a-col :span="4"><a-tag>{{ item.name }}</a-tag></a-col>
                     <a-col :span="10"><a-month-picker v-model="item.time" placeholder="选择确诊日期" size="small"/></a-col>
                     <a-col :span="10" v-if="item.name==='其他法定传染病' || item.name==='职业病' || item.name==='其他'">
-                      <a-input :placeholder="`请输入,例如${item.name==='其他法定传染病'?'艾滋病':(item.name==='职业病'?'尘肺':'梅毒')}...`"/>
+                      <a-input v-model="item.specificName" :placeholder="`请输入,例如${item.name==='其他法定传染病'?'艾滋病':(item.name==='职业病'?'尘肺':'梅毒')}...`"/>
                     </a-col>
                   </a-row>
                 </div>
@@ -225,18 +225,29 @@
                     有
                   </a-radio>
                 </a-radio-group>
-                <div class="flexBox" v-if="form.isBloodTrans">
-                  <a-select v-model="form.aboBloodType" style="width:157px;" placeholder="请选择血型">
-                    <a-select-option v-for="(item,index) in aboBloodTypeArr" :key="index" :value="item">
-                      {{ item }}
-                    </a-select-option>
-                  </a-select>
-                  <a-select v-model="form.rhBloodType" style="width:157px;" placeholder="请选择RH">
-                    <a-select-option v-for="(item,index) in rhBloodTypeArr" :key="index" :value="item">
-                      {{ item }}
-                    </a-select-option>
-                  </a-select>
-                  <a-month-picker v-model="form.bloodDate" placeholder="选择输血日期"/>
+                <div v-if="form.isBloodTrans">
+                  <div v-for="(item,index) in form.bloodHistory" :key="index" class="flexBox">
+                    <a-select v-model="item.name" style="width:157px;" placeholder="请选择血型">
+                      <a-select-option v-for="(bloodType,index2) in aboBloodTypeArr" :key="index2" :value="bloodType">
+                        {{ bloodType }}
+                      </a-select-option>
+                    </a-select>
+                    <a-select v-model="item.rh" style="width:157px;" placeholder="请选择RH">
+                      <a-select-option v-for="(rhBlood,index3) in rhBloodTypeArr" :key="index3" :value="rhBlood">
+                        {{ rhBlood }}
+                      </a-select-option>
+                    </a-select>
+                    <a-month-picker v-model="item.time" placeholder="选择输血日期"/>
+                    <a-icon
+                      v-if="form.bloodHistory.length > 1"
+                      class="dynamic-delete-button"
+                      type="minus-circle-o"
+                      @click="removeDomain(item)"
+                    />
+                  </div>
+                  <a-button type="dashed" @click="addDomain">
+                    <a-icon type="plus" />
+                  </a-button>
                 </div>
               </div>
             </a-form-model-item>
@@ -258,9 +269,9 @@
                   </a-select>
                   <div>
                     <a-row v-for="(item, index) in form.familyPerson" :key="index">
-                      <a-col :span="6"><a-tag>{{ item.name }}</a-tag></a-col>
+                      <a-col :span="6"><a-tag>{{ item.relation }}</a-tag></a-col>
                       <a-col :span="18">
-                        <a-select v-model="item.disease" mode="tags" style="width:280px;" placeholder="请选择家族疾病">
+                        <a-select v-model="item.content" mode="tags" style="width:280px;" placeholder="请选择家族疾病">
                           <a-select-option v-for="(item2,index2) in diseaseSelectList" :key="index2" :value="item2">
                             {{ item2 }}
                           </a-select-option>
@@ -314,12 +325,12 @@
             </a-form-model-item>
             <a-form-model-item label="医疗支付方式：" class="flexBox">
               <div class="flexBox" style="margin-left:20px;">
-                <a-select v-model="form.payMethod" style="width:240px;" placeholder="请选择医疗费用支付方式">
+                <a-select v-model="form.payMethod" mode="tags" style="width:240px;" placeholder="请选择医疗费用支付方式">
                   <a-select-option v-for="(item,index) in payments" :key="index" :value="item">
                     {{ item }}
                   </a-select-option>
                 </a-select>
-                <div class="flexBox" style="width:280px;" v-if="form.payMethod === '其他'">
+                <div class="flexBox" style="width:280px;" v-if="form.payMethod.includes('其他')">
                   <a-input v-model="form.otherpayMethod" placeholder="请输入其他支付方式" />
                 </div>
               </div>
@@ -372,7 +383,7 @@
 </template>
 <script>
 import Address from '@/components/CheckAddress/CheckAddress.vue'
-import { editGroupCustomer as apiEditGroupCustomer, getCode as apiGetCode, updatePhone as apiUpdatePhone, submitHealthHistory } from '@/api/customer'
+import { editGroupCustomer as apiEditGroupCustomer, getCode as apiGetCode, updatePhone as apiUpdatePhone, submitHealthHistory, getHealthHistory } from '@/api/customer'
 import { nation } from './nation'
 
 export default {
@@ -431,9 +442,10 @@ export default {
         isTrauma: false,
         traumaList: [],
         isBloodTrans: false,
-        aboBloodType: undefined,
-        rhBloodType: undefined,
-        bloodDate: '',
+        // aboBloodType: undefined,
+        // rhBloodType: undefined,
+        // bloodDate: '',
+        bloodHistory: [],
         isFamilyHistory: false,
         familyPerson: [],
         // familyHistoryDisease: [],
@@ -442,7 +454,7 @@ export default {
         isDisability: false,
         disabilityList: [],
         otherDisability: '', // 其他残疾
-        payMethod: undefined, // 医疗支付方式
+        payMethod: [], // 医疗支付方式
         otherpayMethod: ''
       },
       tabPosition: 'left',
@@ -485,6 +497,36 @@ export default {
     }
   },
   methods: {
+    async init (customerId) {
+      const res = await getHealthHistory(customerId)
+      if (res.status === 200) {
+        console.log(res)
+        this.form = {
+          isAllergy: res.data.drugAllergyHistory.length > 0, // 是否有药物过敏史
+          allergySelect: res.data.drugAllergyHistory,
+          allergyHistory: res.data.otherAllergy,
+          isExposure: res.data.exposureHistory.length > 0, // 暴露史
+          exposureSelect: res.data.exposureHistory,
+          isDisease: res.data.pastHistory.diseaseHistory.length > 0, // 疾病史
+          isOperation: res.data.pastHistory.operationHistory.length > 0,
+          diseaseSelect: res.data.pastHistory.diseaseHistory,
+          operationList: res.data.pastHistory.operationHistory,
+          isTrauma: res.data.pastHistory.traumaHistory.length > 0,
+          traumaList: res.data.pastHistory.traumaHistory,
+          isBloodTrans: res.data.pastHistory.bloodTransfusionHistory.length > 0,
+          bloodHistory: res.data.pastHistory.bloodTransfusionHistory,
+          isFamilyHistory: res.data.familyHistory.length > 0,
+          familyPerson: res.data.familyHistory,
+          isHereditary: res.data.geneticHistory.length > 0,
+          hereditaryDiseaseList: res.data.geneticHistory,
+          isDisability: res.data.disability.length > 0,
+          disabilityList: res.data.disability,
+          otherDisability: res.data.otherDisability, // 其他残疾
+          payMethod: res.data.paymentMethod, // 医疗支付方式
+          otherpayMethod: res.data.otherPayMethod
+        }
+      }
+    },
     openModel () {
       this.visible = true
     },
@@ -492,6 +534,7 @@ export default {
       this.groupId = groupId
       const arrData = data.member
       this.customerId = arrData.id
+      this.init(arrData.id)
       this.name = arrData.baseInfo.name
       this.userData.baseInfo = {
         eduBG: arrData.baseInfo.eduBG,
@@ -618,83 +661,40 @@ export default {
       })
     },
     async healthHistoryForm () {
-      var allergySelect = []
-      if (this.form.isAllergy) {
-        allergySelect = this.form.allergySelect.map(item => {
-          if (item === '其他') {
-            return '其他(' + this.form.allergyHistory + ')'
-          } else { return item }
-        })
-      }
-      var exposureHistory = []
-      if (this.form.isExposure) {
-        exposureHistory = this.form.exposureSelect.map(item => {
-          return item.name + '(' + item.otherValue + ')'
-        })
-      }
-      var bloodTransfusionHistory = []
-      if (this.form.isBloodTrans) {
-        bloodTransfusionHistory = { name: this.form.aboBloodType + this.form.rhBloodType, time: this.form.bloodDate }
-      }
-      var diseaseSelect = []
-      if (this.form.isDisease) {
-        diseaseSelect = this.form.diseaseSelect
-      }
       const pastHistory = {
-        diseaseHistory: diseaseSelect, // 疾病史
-        operationHistory: this.form.operationList, // 手术史
-        traumaHistory: this.form.traumaList, // 外伤史
-        bloodTransfusionHistory: [bloodTransfusionHistory]
-      }
-      const familyHistory = []
-      if (this.form.isFamilyHistory) {
-        this.form.familyPerson.map(item => {
-          var content = ''
-          for (let i = 0; i < item.disease.length; i++) {
-            content = content + item.disease[i] + '、'
-          }
-          const familyMember = {
-            relation: item.name,
-            content: content
-          }
-          familyHistory.push({ familyMember: familyMember })
-        })
-      }
-      var disability = []
-      if (this.form.isDisability) {
-        disability = this.form.disabilityList.map(item => {
-          if (item === '其他残疾') {
-            return '其他残疾(' + this.form.otherDisability + ')'
-          } else { return item }
-        })
-      }
-      var paymentMethod = ''
-      if (this.form.payMethod === '其他') {
-        paymentMethod = this.form.otherpayMethod
-      } else {
-        paymentMethod = this.form.payMethod
+        diseaseHistory: this.form.isDisease ? this.form.diseaseSelect : [], // 疾病史
+        operationHistory: this.form.isOperation ? this.form.operationList : [], // 手术史
+        traumaHistory: this.form.isTrauma ? this.form.traumaList : [], // 外伤史
+        bloodTransfusionHistory: this.form.isBloodTrans ? this.form.bloodHistory : []
       }
       const payLoad = {
-        drugAllergyHistory: allergySelect, // 过敏史
-        exposureHistory: exposureHistory, // 暴露史
+        drugAllergyHistory: this.form.isAllergy ? this.form.allergySelect : [], // 过敏史
+        exposureHistory: this.form.isExposure ? this.form.exposureSelect : [], // 暴露史
         pastHistory: pastHistory,
-        familyHistory: familyHistory,
-        geneticHistory: this.form.hereditaryDiseaseList,
-        disability: disability,
-        paymentMethod: [paymentMethod]
+        familyHistory: this.form.isFamilyHistory ? this.form.familyPerson : [],
+        geneticHistory: this.form.isHereditary ? this.form.hereditaryDiseaseList : [],
+        disability: this.form.isDisability ? this.form.disabilityList : [],
+        paymentMethod: this.form.payMethod,
+        otherDisability: this.form.otherDisability,
+        otherPayMethod: this.form.otherpayMethod,
+        otherAllergy: this.form.allergyHistory
       }
       const res = await submitHealthHistory(this.customerId, payLoad)
+      if (res.status === 200) {
+        this.$message.success('修改成功')
+        this.visible = false
+      }
       console.log('提交表单结果', res)
     },
     changeSelect (e, value) {
       value.push({ name: e, time: '' })
     },
     changeSelectExposure (e) {
-      this.form.exposureSelect.push({ name: e, otherValue: '' })
+      this.form.exposureSelect.push({ species: e, specificName: '' })
     },
     changeSelectFamily (e) {
       console.log(e)
-      this.form.familyPerson.push({ name: e, disease: [] })
+      this.form.familyPerson.push({ relation: e, content: [] })
     },
     deselectTrauma (e) {
       this.form.traumaList = this.form.traumaList.filter(item => {
@@ -713,13 +713,26 @@ export default {
     },
     deselectExposure (e) {
       this.form.exposureSelect = this.form.exposureSelect.filter(item => {
-        return item.name !== e
+        return item.species !== e
       })
     },
     deselectFamily (e) {
       this.form.familyPerson = this.form.familyPerson.filter(item => {
-        return item.name !== e
+        return item.relation !== e
       })
+    },
+    addDomain () {
+      this.form.bloodHistory.push({
+        name: undefined,
+        rh: undefined,
+        time: ''
+      })
+    },
+    removeDomain (item) {
+      const index = this.form.bloodHistory.indexOf(item)
+      if (index !== -1) {
+        this.form.bloodHistory.splice(index, 1)
+      }
     }
   }
 }

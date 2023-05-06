@@ -203,84 +203,100 @@
       <a-collapse style="margin:10px 28px;">
         <a-collapse-panel header="用户健康史">
           <div v-if="showHistory">
-            <a-row>
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >药物过敏史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.drugAllergyHistory }}</span>
+                <a-tag class="info_index" v-for="(item,index) in healthHistoryData.drugAllergyHistory" :key="index">{{ item }}</a-tag>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >暴露史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.exposureHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.exposureHistory" :key="index">【{{ item.species }}】{{ item.specificName }}、</span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >疾病史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.pastHistory.diseaseHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.diseaseHistory" :key="index">
+                  【{{ item.name }}
+                  {{ item.time | moment('YYYY年MM月') }}
+                  {{ item.specificName }}】
+                </span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >手术史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.pastHistory.operationHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.operationHistory" :key="index">
+                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}
+                </span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >外伤史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.pastHistory.traumaHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.traumaHistory" :key="index">
+                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}
+                </span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >输血史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.pastHistory.bloodTransfusionHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.bloodTransfusionHistory" :key="index">
+                  【{{ item.name }}-{{ item.rh }}-{{ item.time | moment('YYYY年MM月') }}】
+                </span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >家族史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.familyHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.familyHistory" :key="index">
+                  {{ item.relation }} <a-tag color="blue" v-for="(item2,index2) in item.content" :key="index2">{{ item2 }}</a-tag>、
+                </span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >遗传病史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.geneticHistory }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.geneticHistory" :key="index">
+                  <a-tag color="blue">{{ item }}</a-tag>
+                </span>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="3" class="info_title">
                 <span >残疾情况：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.disability }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.disability" :key="index"><a-tag>{{ item }}</a-tag></span>
+                <a-tag v-if="healthHistoryData.otherDisability">{{ healthHistoryData.otherDisability }}</a-tag>
               </a-col>
             </a-row>
-            <a-row >
+            <a-row style="height: 30px;">
               <a-col :span="4" class="info_title">
                 <span >医疗支付方式：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index">{{ healthHistoryData.paymentMethod }}</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.paymentMethod" :key="index">{{ item }}、</span>
+                <span>{{ healthHistoryData.otherPayMethod }}</span>
               </a-col>
             </a-row>
           </div>
