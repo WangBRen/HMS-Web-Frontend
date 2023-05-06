@@ -740,6 +740,6 @@ export default {
 }
 
 .ant-select-selection--multiple{
-  height: 90px;
+  /* height: 90px; */
 }
 </style>

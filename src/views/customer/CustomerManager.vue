@@ -133,9 +133,11 @@
       :chronicVisible="chronicList.visible"
       @onclose="closeChronicModal"/>
     <SeeUserMsg
+      v-if="seeVisible"
       :seeVisible="seeVisible"
       :seeData="seeData"
       @closeSeeModal="closeSeeModal"
+      :customerId="healthCustomerId"
     />
   </div>
 </template>
@@ -275,6 +277,7 @@ export default {
       openHealthvisible: false,
       // 健康报告列表
       currentCustomerId: -1,
+      healthCustomerId: -1,
       chronicList: {
         custId: null,
         baseInfo: {},
@@ -417,6 +420,7 @@ export default {
     seeUser (record) {
       // console.log(record)
       this.seeData = record.member.baseInfo
+      this.healthCustomerId = record.member.id
       this.seeVisible = true
     },
     closeSeeModal () {

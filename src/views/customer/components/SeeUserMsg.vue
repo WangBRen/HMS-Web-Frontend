@@ -200,22 +200,114 @@
           </a-col>
         </a-row>
       </div>
+      <a-collapse style="margin:10px 28px;">
+        <a-collapse-panel header="用户健康史">
+          <div v-if="showHistory">
+            <a-row>
+              <a-col :span="3" class="info_title">
+                <span >药物过敏史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.drugAllergyHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >暴露史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.exposureHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >疾病史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.pastHistory.diseaseHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >手术史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.pastHistory.operationHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >外伤史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.pastHistory.traumaHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >输血史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.pastHistory.bloodTransfusionHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >家族史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.familyHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >遗传病史：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.geneticHistory }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="3" class="info_title">
+                <span >残疾情况：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.disability }}</span>
+              </a-col>
+            </a-row>
+            <a-row >
+              <a-col :span="4" class="info_title">
+                <span >医疗支付方式：</span>
+              </a-col>
+              <a-col :span="20">
+                <span class="info_index">{{ healthHistoryData.paymentMethod }}</span>
+              </a-col>
+            </a-row>
+          </div>
+          <div v-else>暂无健康史，你可以前往编辑页添加健康史</div>
+        </a-collapse-panel>
+      </a-collapse>
     </a-modal>
   </div>
 </template>
 <script>
+import { getHealthHistory } from '@/api/customer'
 export default {
     props: {
-    seeVisible: {
-        type: Boolean,
-        default: false
-    },
-    seeData: {
-        type: Object,
-        default: function () {
-        return {}
-        }
-    }
+      seeVisible: {
+          type: Boolean,
+          default: false
+      },
+      seeData: {
+          type: Object,
+          default: function () {
+          return {}
+          }
+      },
+      customerId: {
+        type: Number,
+        default: null
+      }
     },
     filters: {
     filterBirth: function (value) {
@@ -244,18 +336,30 @@ export default {
     data () {
     return {
         labelCol: { span: 6 },
-        wrapperCol: { span: 16 }
+        wrapperCol: { span: 16 },
+        healthHistoryData: {
+          drugAllergyHistory: []
+        },
+        showHistory: false
     }
     },
     methods: {
-    closeSeeModal () {
-        this.$emit('closeSeeModal')
-    }
+      closeSeeModal () {
+          this.$emit('closeSeeModal')
+      },
+      async init () {
+        const res = await getHealthHistory(this.customerId)
+        if (res.status === 200) {
+          this.showHistory = true
+          this.healthHistoryData = res.data
+        }
+      }
     },
     created () {
     },
     mounted () {
-    //   console.log(this.seeData)
+      this.init()
+      console.log('this.customerId', this.customerId)
     }
 }
 </script>
