@@ -50,9 +50,16 @@ export default {
   mounted () {
     setTimeout(() => {
       const userInfo = this.$store.getters.userInfo || {}
-      this.currentUser = {
-        name: userInfo.nickname || userInfo.account
+      console.log('userInfo', userInfo)
+      if (userInfo.userInfo !== null) {
+        this.currentUser = { name: userInfo.userInfo.name }
+      } else {
+        this.currentUser = { name: userInfo.account }
       }
+      // this.currentUser = {
+      //   // name: userInfo.nickname || userInfo.account
+      //   name: userInfo.userInfo.name || userInfo.account
+      // }
     }, 1500)
   }
 }

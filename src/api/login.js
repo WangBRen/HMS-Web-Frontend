@@ -13,9 +13,11 @@ const userApi = {
   UserMenu: '/user/nav',
   // 手机验证码
   UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
-  // 修改用户信息
+  // 创建用户信息
   UserMsg: '/users/me/initial',
-  getUserInfo: 'users/me' // 获取当前登录用户基础信息
+  editUserMsg: '/users/me',
+  getUserInfo: '/users/me', // 获取当前登录用户基础信息
+  editUserPassword: '/users/me/password' // 修改登录密码
 }
 
 /**
@@ -93,7 +95,7 @@ export function getCode (phone) {
   })
 }
 
-// 修改用户信息
+// 创建用户信息
 export function UserMsg (parameter) {
   return request({
     url: userApi.UserMsg,
@@ -105,5 +107,23 @@ export function getUserInfo () {
   return request({
     url: userApi.getUserInfo,
     method: 'get'
+  })
+}
+
+// 编辑用户信息
+export function editUserMsg (parameter) {
+  return request({
+    url: userApi.editUserMsg,
+    method: 'put',
+    data: parameter
+  })
+}
+
+// 修改登录密码
+export function editUserPassword (parameter) {
+  return request({
+    url: userApi.editUserPassword,
+    method: 'put',
+    data: parameter
   })
 }
