@@ -26,9 +26,24 @@
       <a-form-model-item label="厂商">
         <a-input v-model="form.manufacturer" />
       </a-form-model-item>
-      <a-form-model-item label="设备日期">
+      <a-form-model-item label="设备启用日期">
+        <a-date-picker
+          v-model="form.enableTime"
+          type="date"
+          placeholder="设备启用日期"
+          style="width: 100%;"
+        />
+      </a-form-model-item>
+      <a-form-model-item label="设备生产日期">
+        <a-date-picker
+          v-model="form.productionTime"
+          type="date"
+          placeholder="设备生产日期"
+          style="width: 100%;"
+        />
+      </a-form-model-item>
+      <!-- <a-form-model-item label="设备日期">
         <a-row>
-          <!-- <a-col :span="6"></a-col> -->
           <a-col :span="12">
             <a-date-picker
               v-model="form.enableTime"
@@ -46,7 +61,7 @@
             />
           </a-col>
         </a-row>
-      </a-form-model-item>
+      </a-form-model-item> -->
       <!-- <a-form-model-item label="设备生产日期"> -->
       <!-- </a-form-model-item> -->
       <a-form-model-item label="备注">
