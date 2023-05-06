@@ -168,7 +168,7 @@ export default {
       // console.log('删除', this.stationId, data.id)
       apiDelDevice(this.stationId, data.id).then(res => {
         // console.log('res', res)
-        if (res.status === 204) {
+        if (res.status === 200) {
           this.$message.success('删除设备成功')
           this.getDevice(this.stationId)
         } else {

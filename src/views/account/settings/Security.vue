@@ -42,14 +42,14 @@
           <a @click="changeTelephone"> 更改</a>
         </span>
         <div v-if="telephoneIndex" slot="description">
-          <div>绑定手机号：<a-input style="width: 22%;" v-model="telephone" placeholder="输入手机号" /></div>
+          <div>绑定手机号：<a-input style="width: 26%;" v-model="telephone" placeholder="输入手机号" /></div>
           <div style="margin-left: 28px;">
-            <span style="width: 10%;">验证码：</span><a-input v-model="telephoneCode" style="width: 10%;"></a-input>
+            <span style="width: 10%;">验证码：</span><a-input v-model="telephoneCode" style="width: 12%;"></a-input>
             <a-button :disabled="!telephone" v-if="codeIndex" @click="getCode" style="line-height: 29px;">获取验证码</a-button>
-            <a-button :disabled="!codeIndex" v-if="!codeIndex" style="line-height: 29px;" @click="getCode">{{ count }}秒后重试</a-button>
+            <a-button :disabled="!codeIndex" v-if="!codeIndex" style="line-height: 29px;">{{ count }}秒后重试</a-button>
           </div>
           <div style="margin-left: 85px;">
-            <a-button :disabled="!(telephone!=='' && telephoneCode!=='')" type="primary" @click="okTelephone">确定修改手机号</a-button>
+            <a-button :disabled="!(telephone!=='' && telephoneCode!=='' && isCode)" type="primary" @click="okTelephone">确定修改手机号</a-button>
           </div>
         </div>
       </a-list-item-meta>
@@ -58,9 +58,10 @@
 </template>
 
 <script>
-import { getUserInfo as apiGetUserInfo, editUserPassword as apiEditUserPassword } from '@/api/login'
+import { getUserInfo as apiGetUserInfo, editUserPassword as apiEditUserPassword, editUserPhone as apiEditUserPhone, getUserPhoneCode as apiGetUserPhoneCode } from '@/api/login'
 // import { getUserInfo as apiGetUserInfo } from '@/api/login'
 // import { getCode as apiGetCode } from '@/api/customer'
+// import { getUserPhoneCode as apiGetUserPhoneCode } from '@/api/login'
 
 export default {
   data () {
@@ -71,6 +72,7 @@ export default {
       telephoneCode: '', // 验证码
       token: '', // 验证码返回
       codeIndex: true,
+      isCode: false,
       count: '', // 秒数提示
       timer: null,
       // 表单样式
@@ -108,8 +110,10 @@ export default {
     getUserInfo () {
       apiGetUserInfo().then(res => {
         if (res.status === 200) {
-          console.log('登陆信息', res.data)
+          // console.log('登陆信息', res.data)
           this.userInfo = res.data
+        } else {
+          this.$message.error(res.message)
         }
       })
     },
@@ -117,6 +121,7 @@ export default {
       this.telephone = ''
       this.telephoneCode = ''
       this.token = ''
+      this.isCode = false
       this.telephoneIndex = !this.telephoneIndex
     },
     getCode () {
@@ -124,6 +129,7 @@ export default {
       console.log('新', this.telephone, '旧', this.userInfo.telephone)
       if (Reg.test(this.telephone)) {
         if (this.telephone !== this.userInfo.telephone) {
+          // 60秒延迟
           const TIME_COUNT = 60
           if (!this.timer) {
             this.count = TIME_COUNT
@@ -138,16 +144,20 @@ export default {
               }
             }, 1000)
           }
-          this.token = 'aonkna1312xz'
+          // 验证码
+          apiGetUserPhoneCode(this.telephone).then(res => {
+            if (res.status === 200) {
+              this.$message.success('验证码发送成功')
+              this.token = res.data.token
+            } else {
+              this.$message.error(res.message)
+            }
+          })
+          // this.token = 'aonkna1312xz'
+          this.isCode = true // 获取验证码后可更改
         } else {
           this.$message.info('输入的手机号与旧手机号相同，请更换')
         }
-        // apiGetCode(this.telephone).then(res => {
-        //   if (res.status === 200) {
-        //     this.$message.success(res.message || '验证码发送成功')
-        //     this.token = res.data.token
-        //   }
-        // })
       } else {
         this.$message.info('输入的手机号格式不正确')
       }
@@ -193,7 +203,26 @@ export default {
       this.$refs.passwordForm.resetFields()
     },
     okTelephone () {
-      console.log(this.telephone, this.token, this.telephoneCode)
+      // console.log(this.telephone, this.token, this.telephoneCode)
+      var Reg = /^[1][34578][0-9]{9}$/
+      if (Reg.test(this.telephone)) {
+        const apiData = {
+          newTelephone: this.telephone,
+          code: this.telephoneCode,
+          token: this.token
+        }
+        apiEditUserPhone(apiData).then(res => {
+          if (res.status === 200) {
+            this.$message.success('绑定手机号更改成功')
+            this.getUserInfo()
+            this.telephoneIndex = false
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+      } else {
+        this.$message.info('输入的手机号格式不正确')
+      }
     }
   },
   mounted () {

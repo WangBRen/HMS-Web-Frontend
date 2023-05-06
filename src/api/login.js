@@ -11,13 +11,16 @@ const userApi = {
   // get my info
   UserInfo: '/users/me/detail',
   UserMenu: '/user/nav',
-  // 手机验证码
+  // 手机验证码(需输入手机号)
   UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
   // 创建用户信息
   UserMsg: '/users/me/initial',
   editUserMsg: '/users/me',
   getUserInfo: '/users/me', // 获取当前登录用户基础信息
-  editUserPassword: '/users/me/password' // 修改登录密码
+  editUserPassword: '/users/me/password', // 修改登录密码
+  editUserPhone: '/forget-password/reset-phone',
+  // 更改绑定手机号发送验证码
+  getUserPhoneCode: phone => `/forget-password/phone/${phone}/valid-code`
 }
 
 /**
@@ -124,6 +127,23 @@ export function editUserPassword (parameter) {
   return request({
     url: userApi.editUserPassword,
     method: 'put',
+    data: parameter
+  })
+}
+
+// 修改绑定手机号
+export function editUserPhone (parameter) {
+  return request({
+    url: userApi.editUserPhone,
+    method: 'post',
+    data: parameter
+  })
+}
+
+export function getUserPhoneCode (phone, parameter) {
+  return request({
+    url: userApi.getUserPhoneCode(phone),
+    method: 'post',
     data: parameter
   })
 }

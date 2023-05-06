@@ -50,7 +50,7 @@ export default {
   mounted () {
     setTimeout(() => {
       const userInfo = this.$store.getters.userInfo || {}
-      console.log('userInfo', userInfo)
+      // console.log('userInfo', userInfo)
       if (userInfo.userInfo !== null) {
         this.currentUser = { name: userInfo.userInfo.name }
       } else {
