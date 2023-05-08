@@ -2,6 +2,7 @@ import request from '@/utils/request'
 
 const userApi = {
   Login: '/login',
+  phoneLogin: '/login/byPhone',
   Logout: '/logout',
   ForgePassword: '/auth/forge-password',
   Register: '/auth/register',
@@ -37,6 +38,14 @@ const userApi = {
 export function login (parameter) {
   return request({
     url: userApi.Login,
+    method: 'post',
+    data: parameter
+  })
+}
+
+export function phoneLogin (parameter) {
+  return request({
+    url: userApi.phoneLogin,
     method: 'post',
     data: parameter
   })
