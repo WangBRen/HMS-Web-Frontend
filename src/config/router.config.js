@@ -18,14 +18,14 @@ export const asyncRouterMap = [
        // 用户管理
       {
         path: '/customers/user-manage',
-            name: 'customerManager',
-            component: () => import('@/views/customer/CustomerManager'),
-            meta: {
-              title: 'menu.user-management',
-              icon: 'team',
-              keepAlive: true,
-              permission: ['customer']
-            }
+        name: 'customerManager',
+        component: () => import('@/views/customer/CustomerManager'),
+        meta: {
+          title: 'menu.user-management',
+          icon: 'team',
+          keepAlive: true,
+          permission: ['customer']
+        }
       },
       // Exception
       {
