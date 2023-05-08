@@ -113,7 +113,7 @@
                     <a-select-option value="其他">其他</a-select-option>
                   </a-select>
                 </div>
-                <div class="flexBox" style="width:280px;" v-if="form.isAllergy && form.allergySelect.includes('其他')">
+                <div class="flexBox" style="width:280px;" v-if="form.isAllergy && form.allergySelect?.includes('其他')">
                   <a-input v-model="form.allergyHistory" placeholder="请输入其他过敏史，例如头孢" />
                 </div>
               </div>
@@ -317,7 +317,7 @@
                       {{ item }}
                     </a-select-option>
                   </a-select>
-                  <div class="flexBox" style="width:280px;" v-if="form.isDisability && form.disabilityList.includes('其他残疾')">
+                  <div class="flexBox" style="width:280px;" v-if="form.isDisability && form.disabilityList?.includes('其他残疾')">
                     <a-input v-model="form.otherDisability" placeholder="请输入其他残疾情况" />
                   </div>
                 </div>
@@ -330,7 +330,7 @@
                     {{ item }}
                   </a-select-option>
                 </a-select>
-                <div class="flexBox" style="width:280px;" v-if="form.payMethod.includes('其他')">
+                <div class="flexBox" style="width:280px;" v-if="form.payMethod?.includes('其他')">
                   <a-input v-model="form.otherpayMethod" placeholder="请输入其他支付方式" />
                 </div>
               </div>
