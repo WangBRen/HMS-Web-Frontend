@@ -43,7 +43,7 @@
         <a @click="delChronicTable(record)">删除</a> -->
       </span>
     </a-table>
-    <!-- <a-modal
+    <a-modal
       title="新建慢病"
       v-if="addChronicIndexVisible"
       :visible="addChronicIndexVisible"
@@ -131,7 +131,7 @@
           </a-col>
         </a-row>
       </a-form-model>
-    </a-modal> -->
+    </a-modal>
     <editChronice
       :editData="editData"
       :editVisible="editVisible"
