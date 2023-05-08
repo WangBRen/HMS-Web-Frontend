@@ -134,10 +134,10 @@
 // import md5 from 'md5'
 import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
-import { getCode, UserMsg } from '@/api/login'
-// import { getCode, UserMsg, phoneLogin as apiPhoneLogin } from '@/api/login'
-// import storage from 'store'
-// import { ACCESS_TOKEN } from '@/store/mutation-types'
+// import { getCode, UserMsg } from '@/api/login'
+import { getCode, UserMsg, login as apiLogin, phoneLogin as apiPhoneLogin } from '@/api/login'
+import storage from 'store'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 export default {
   components: {
@@ -145,7 +145,7 @@ export default {
   data () {
     // 身份证校验
     var checkIdno = (rule, value, callback) => {
-    if (value) {
+      if (value) {
         // 加权因子
         var weightfactor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
         // 校验码
@@ -213,16 +213,16 @@ export default {
           { required: true, message: '请选择证件类型', trigger: 'blur' }
         ],
         idNo: [
-           { required: true, message: '请输入证件号码', trigger: 'blur' },
+          { required: true, message: '请输入证件号码', trigger: 'blur' },
           //  { min: 15, max: 18, message: '请输入正确的证件号码', trigger: 'blur' },
           //  { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的证件号码' },
-           { validator: checkIdno, trigger: 'blur' }
+          { validator: checkIdno, trigger: 'blur' }
         ],
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
         code: [
-           { required: true, message: '请输入验证码', trigger: 'blur' }
+          { required: true, message: '请输入验证码', trigger: 'blur' }
         ],
         telephone: [
           { required: true, message: '请输入电话号码', trigger: 'blur' },
@@ -230,16 +230,16 @@ export default {
           { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
         ],
         oldPassword: [
-           { required: true, message: '请输入密码', trigger: 'blur' },
-           { min: 8, message: '密码长度至少8位', trigger: 'blur' },
-           { max: 16, message: '密码长度最高16位', trigger: 'blur' },
-           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 8, message: '密码长度至少8位', trigger: 'blur' },
+          { max: 16, message: '密码长度最高16位', trigger: 'blur' },
+          { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
         ],
         newPassword: [
-           { required: true, message: '请再次输入密码', trigger: 'blur' },
-           { min: 8, message: '密码长度至少8位', trigger: 'blur' },
-           { max: 16, message: '密码长度最高16位', trigger: 'blur' },
-           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
+          { required: true, message: '请再次输入密码', trigger: 'blur' },
+          { min: 8, message: '密码长度至少8位', trigger: 'blur' },
+          { max: 16, message: '密码长度最高16位', trigger: 'blur' },
+          { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, message: '密码需包含大写字母,小写字母和数字' }
         ]
       },
       customActiveKey: 'tab1',
@@ -267,60 +267,60 @@ export default {
       if (Reg.test(this.formdata.telephone)) {
         // 获取验证码
         getCode(i).then(res => {
-        // console.log(res)
-        if (res.status === 200) {
-          this.$message.info('验证码发送成功')
-          // console.log(res.data.token)
-          this.formdata.token = res.data.token // 保存token到data中
-          // 60秒刷新
-          const TIME_COUNT = 60
-          if (!this.timer) {
-            this.count = TIME_COUNT
-            this.codeShow = false
-            this.timer = setInterval(() => {
-            if (this.count > 0 && this.count <= TIME_COUNT) {
-              this.count--
-            } else {
-              this.codeShow = true
-              clearInterval(this.timer)
-              this.timer = null
-              }
-            }, 1000)
+          // console.log(res)
+          if (res.status === 200) {
+            this.$message.info('验证码发送成功')
+            // console.log(res.data.token)
+            this.formdata.token = res.data.token // 保存token到data中
+            // 60秒刷新
+            const TIME_COUNT = 60
+            if (!this.timer) {
+              this.count = TIME_COUNT
+              this.codeShow = false
+              this.timer = setInterval(() => {
+                if (this.count > 0 && this.count <= TIME_COUNT) {
+                  this.count--
+                } else {
+                  this.codeShow = true
+                  clearInterval(this.timer)
+                  this.timer = null
+                }
+              }, 1000)
+            }
+          } else if (res.status === 400) {
+            this.$message.error(res.message || '获取验证码失败')
+            const TIME_COUNT = 60
+            if (!this.timer) {
+              this.count = TIME_COUNT
+              this.codeShow = false
+              this.timer = setInterval(() => {
+                if (this.count > 0 && this.count <= TIME_COUNT) {
+                  this.count--
+                } else {
+                  this.codeShow = true
+                  clearInterval(this.timer)
+                  this.timer = null
+                }
+              }, 1000)
+            }
+          } else {
+            const TIME_COUNT = 60
+            if (!this.timer) {
+              this.count = TIME_COUNT
+              this.codeShow = false
+              this.timer = setInterval(() => {
+                if (this.count > 0 && this.count <= TIME_COUNT) {
+                  this.count--
+                } else {
+                  this.codeShow = true
+                  clearInterval(this.timer)
+                  this.timer = null
+                }
+              }, 1000)
+            }
+            this.$message.error(res.message)
           }
-        } else if (res.status === 400) {
-          this.$message.error(res.message || '获取验证码失败')
-          const TIME_COUNT = 60
-          if (!this.timer) {
-            this.count = TIME_COUNT
-            this.codeShow = false
-            this.timer = setInterval(() => {
-            if (this.count > 0 && this.count <= TIME_COUNT) {
-              this.count--
-            } else {
-              this.codeShow = true
-              clearInterval(this.timer)
-              this.timer = null
-              }
-            }, 1000)
-          }
-        } else {
-          const TIME_COUNT = 60
-          if (!this.timer) {
-            this.count = TIME_COUNT
-            this.codeShow = false
-            this.timer = setInterval(() => {
-            if (this.count > 0 && this.count <= TIME_COUNT) {
-              this.count--
-            } else {
-              this.codeShow = true
-              clearInterval(this.timer)
-              this.timer = null
-              }
-            }, 1000)
-          }
-          this.$message.error(res.message)
-        }
-      })
+        })
       } else {
         this.$message.info('输入的手机号格式不正确')
       }
@@ -338,22 +338,22 @@ export default {
           // 判断密码是否相同且不为空
           if (this.formdata.newPassword === this.formdata.oldPassword && this.formdata.newPassword !== '' && this.formdata.oldPassword !== '') {
             // console.log('密码相同，可修改')
-             UserMsg(this.formdata).then(res => {
+            UserMsg(this.formdata).then(res => {
               // console.log('成功'.res)
               // console.log('提交的信息', userinfo)
               if (res.status === 200) {
-                  console.log('修改成功'.res)
-                  const userinfo = this.formdata
-                  this.$delete(userinfo, 'oldPassword')
-                  this.$message.info('修改成功，请重新登陆')
-                  // alert('修改成功，请重新登陆')
-                  localStorage.removeItem('Authorization')
-                  window.location.reload()// 刷新页面
-                  this.visible = false
-                } else {
-                  this.$message.error(res.message || '修改失败')
-                }
-             })
+                // console.log('修改成功'.res)
+                const userinfo = this.formdata
+                this.$delete(userinfo, 'oldPassword')
+                this.$message.info('修改成功，请重新登陆')
+                // alert('修改成功，请重新登陆')
+                localStorage.removeItem('Authorization')
+                window.location.reload()// 刷新页面
+                this.visible = false
+              } else {
+                this.$message.error(res.message || '修改失败')
+              }
+            })
           } else {
             this.$message.error('两次输入的密码不同,请修改')
           }
@@ -390,15 +390,13 @@ export default {
     },
     handleSubmit (e) {
       e.preventDefault()
-      // 新登录
-      // 新登录
 
       const {
         form: { validateFields },
         state,
-        customActiveKey,
-        Login,
-        phoneLogin
+        customActiveKey
+        // Login,
+        // phoneLogin
       } = this
       // console.log('登录', this)
       state.loginBtn = true
@@ -414,39 +412,45 @@ export default {
           loginParams.rememberMe = !!values.rememberMe
           if (customActiveKey === 'tab1') {
             // console.log('账号登陆')
-            Login(loginParams)
-              .then((res) => this.loginSuccess(res))
-              .catch(err => this.requestFailed(err))
-              .finally(() => {
-                state.loginBtn = false
-              })
+            // vuex登陆
+            // Login(loginParams)
+            //   .then((res) => this.loginSuccess(res))
+            //   .catch(err => this.requestFailed(err))
+            //   .finally(() => {
+            //     state.loginBtn = false
+            //   })
+            // 不用vuex登陆
+            apiLogin(loginParams).then(res => {
+              if (res.status === 200) {
+                this.loginSuccessed(res)
+              } else {
+                this.loginFailed(res)
+              }
+            }).finally(() => {
+              state.loginBtn = false
+            })
           } else if (customActiveKey === 'tab2') {
-            // console.log('手机号登陆')
             const apiData = {
               telephone: loginParams.mobile,
               code: loginParams.captcha,
               token: this.phoneToken
             }
             // console.log(apiData)
-            phoneLogin(apiData)
-              .then((res) => this.loginSuccess(res))
-              .catch(err => this.requestFailed(err))
-              .finally(() => {
-                state.loginBtn = false
-              })
-            // apiPhoneLogin(apiData).then(res => {
-            //   if (res.status === 200) {
-            //     const result = res.data
-            //     storage.set(ACCESS_TOKEN, result.access_token, new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
-            //     // storage.set('Authorization', result.access_token, new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
-            //     // commit('SET_TOKEN', result.access_token)
-            //     this.loginSuccess(res)
-            //   } else {
-            //     console.log('错误', res)
-            //     this.requestFailed(res)
-            //   }
-            // })
-            .finally(() => {
+            // vuex登陆
+            // phoneLogin(apiData)
+            //   .then((res) => this.loginSuccess(res))
+            //   .catch(err => this.requestFailed(err))
+            //   .finally(() => {
+            //     state.loginBtn = false
+            //   })
+            // 不用vuex登陆
+            apiPhoneLogin(apiData).then(res => {
+              if (res.status === 200) {
+                this.loginSuccessed(res)
+              } else {
+                this.loginFailed(res)
+              }
+            }).finally(() => {
               state.loginBtn = false
             })
           }
@@ -455,6 +459,25 @@ export default {
             state.loginBtn = false
           }, 600)
         }
+      })
+    },
+    loginSuccessed (res) {
+      storage.set(ACCESS_TOKEN, res.data.access_token, new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
+      this.$router.push({ path: '/' })
+      // 延迟 1 秒显示欢迎信息
+      setTimeout(() => {
+        this.$notification.success({
+          message: '欢迎',
+          description: res.message || `${timeFix()}，欢迎回来`
+        })
+      }, 1000)
+    },
+    loginFailed (res) {
+      this.isLoginError = true
+      this.$notification['error']({
+        message: '错误',
+        description: res.message || '请求出现错误，请稍后再试',
+        duration: 4
       })
     },
     getCaptcha (e) {
