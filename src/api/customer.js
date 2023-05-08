@@ -168,7 +168,7 @@ export function getChronic (pages) {
 export function submitHealthHistory (customerId, params) {
   return request({
       url: customerApi.healthHistory(customerId),
-      method: 'put',
+      method: 'post',
       data: params
   })
 }

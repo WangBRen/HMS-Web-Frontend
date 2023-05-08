@@ -429,34 +429,7 @@ export default {
       families: ['父亲', '母亲', '兄弟姐妹', '子女'],
       disability: ['视力残疾', '听力残疾', '言语残疾', '肢体残疾', '智力残疾', '精神残疾', '其他残疾'],
       payments: ['城镇职工基本医疗保险', '城镇居民基本医疗保险', '新型农村合作医疗', '贫困救助', '商业医疗保险', '全公费', '全自费', '其他'],
-      form: {
-        isAllergy: false, // 是否有药物过敏史
-        allergySelect: [],
-        allergyHistory: '',
-        isExposure: false, // 暴露史
-        exposureSelect: [],
-        isDisease: false, // 疾病史
-        isOperation: false,
-        diseaseSelect: [],
-        operationList: [],
-        isTrauma: false,
-        traumaList: [],
-        isBloodTrans: false,
-        // aboBloodType: undefined,
-        // rhBloodType: undefined,
-        // bloodDate: '',
-        bloodHistory: [],
-        isFamilyHistory: false,
-        familyPerson: [],
-        // familyHistoryDisease: [],
-        isHereditary: false,
-        hereditaryDiseaseList: [],
-        isDisability: false,
-        disabilityList: [],
-        otherDisability: '', // 其他残疾
-        payMethod: [], // 医疗支付方式
-        otherpayMethod: ''
-      },
+      form: {},
       tabPosition: 'left',
       labelCol: { span: 6 },
       wrapperCol: { span: 18 },
@@ -524,6 +497,31 @@ export default {
           otherDisability: res.data.otherDisability, // 其他残疾
           payMethod: res.data.paymentMethod, // 医疗支付方式
           otherpayMethod: res.data.otherPayMethod
+        }
+      } else {
+        this.form = {
+          isAllergy: null, // 是否有药物过敏史
+          allergySelect: [],
+          allergyHistory: '',
+          isExposure: null, // 暴露史
+          exposureSelect: [],
+          isDisease: null, // 疾病史
+          isOperation: null,
+          diseaseSelect: [],
+          operationList: [],
+          isTrauma: null,
+          traumaList: [],
+          isBloodTrans: null,
+          bloodHistory: [],
+          isFamilyHistory: null,
+          familyPerson: [],
+          isHereditary: null,
+          hereditaryDiseaseList: [],
+          isDisability: null,
+          disabilityList: [],
+          otherDisability: '', // 其他残疾
+          payMethod: [], // 医疗支付方式
+          otherpayMethod: ''
         }
       }
     },
