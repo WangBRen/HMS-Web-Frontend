@@ -18,14 +18,14 @@ export const asyncRouterMap = [
        // 用户管理
       {
         path: '/customers/user-manage',
-            name: 'customerManager',
-            component: () => import('@/views/customer/CustomerManager'),
-            meta: {
-              title: 'menu.user-management',
-              icon: 'team',
-              keepAlive: true,
-              permission: ['customer']
-            }
+        name: 'customerManager',
+        component: () => import('@/views/customer/CustomerManager'),
+        meta: {
+          title: 'menu.user-management',
+          icon: 'team',
+          keepAlive: true,
+          permission: ['customer']
+        }
       },
       // Exception
       {
@@ -190,6 +190,66 @@ export const asyncRouterMap = [
               icon: 'tool',
               keepAlive: true,
               permission: ['role_permission']
+            }
+          }
+        ]
+      },
+      {
+        path: '/afterSale',
+        component: RouteView,
+        redirect: '/afterSale/saleInstall',
+        name: 'afterSale',
+        meta: { title: 'menu.afterSale', icon: 'schedule', keepAlive: true, permission: ['after_sales_manage']
+        },
+        children: [
+          {
+            path: '/afterSale/saleRepair',
+            name: 'saleRepair',
+            component: () => import('@/views/afterSale/saleRepair'),
+            meta: {
+              title: 'menu.afterSale.repair',
+              keepAlive: true,
+              permission: ['after_sales_repair']
+            }
+          },
+          {
+            path: '/afterSale/saleInstall',
+            name: 'manage',
+            component: () => import('@/views/afterSale/saleInstall'),
+            meta: {
+              title: 'menu.afterSale.install',
+              keepAlive: true,
+              permission: ['after_sales_install']
+            }
+          }
+        ]
+      },
+      {
+        path: '/afterSaleData',
+        component: RouteView,
+        redirect: '/afterSaleData/salePartManage',
+        name: 'afterSalesManage',
+        meta: { title: 'menu.afterSaleData', icon: 'schedule', keepAlive: true, permission: ['after_sales_information']
+        },
+        children: [
+          {
+            path: '/afterSaleData/salePartManage',
+            name: 'part',
+            component: () => import('@/views/afterSaleData/salePartManage'),
+            meta: {
+              title: 'menu.afterSaleData.part',
+              keepAlive: true,
+              permission: ['after_sales_part']
+            }
+          },
+          {
+            path: '/afterSaleData/saleQuestionManage',
+            name: 'question',
+            component: () => import('@/views/afterSaleData/saleQuestionManage'),
+            meta: {
+              title: 'menu.afterSaleData.question',
+              keepAlive: true,
+              permission: ['after_sales_guide']
             }
           }
         ]

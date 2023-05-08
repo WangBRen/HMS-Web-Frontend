@@ -548,7 +548,7 @@ export default {
 }
 .customStyle{
   background: rgba(73,204,144,.1);
-  border-color: #49cc90;
+  // border-color: #49cc90;
   border-radius: 4px;
   // margin-bottom: 24px;
   // line-height: 36px;
@@ -556,7 +556,7 @@ export default {
 .customStyle .ant-collapse-content{
   background-color: rgba(73,204,144,.0);
 }
-.ant-collapse{
+.card .ant-collapse{
   border: 1px solid #49cc90;
   font-size: 17px;
   border-radius: 4px;

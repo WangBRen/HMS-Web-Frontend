@@ -7,18 +7,13 @@
       :rowKey="(record,index)=>{return index}">
       <a slot="name" slot-scope="text">{{ text }}</a>
       <!-- <span slot="customTitle"><a-icon type="smile-o" /> Name</span> -->
-      <span slot="mode">
-        <a-tag>短信</a-tag>
-        <!-- <a-tag
-          v-for="tag in tags"
-          :key="tag"
-          :color="tag === '短信' ? 'geekblue' : 'green'"
-        >
-          {{ tag }}
-        </a-tag> -->
+      <span slot="status" slot-scope="text, scope">
+        <span v-if="scope.status === 'success' && scope.read === true">已读</span>
+        <span v-if="scope.status === 'success' && scope.read === false">发送成功</span>
+        <span v-if="scope.status === 'created'">创建成功</span>
       </span>
       <span slot="action" slot-scope="text, scope">
-        <a v-if="scope.statue !== 'success'" @click="retransmission(text, scope)">重发 | </a>
+        <a v-if="scope.status !== 'success'" @click="retransmission(text, scope)">重发 | </a>
         <a @click="coachingSee(text, scope)">查看</a>
       </span>
     </a-table>
@@ -65,11 +60,11 @@ const columns = [
     }
   },
   {
-    title: '发送方式',
-    key: 'mode',
+    title: '状态',
+    key: 'status',
     align: 'center',
-    dataIndex: 'mode',
-    scopedSlots: { customRender: 'mode' }
+    dataIndex: 'status',
+    scopedSlots: { customRender: 'status' }
   },
   {
     title: '操作',
@@ -99,6 +94,8 @@ export default {
         return null
       }
     }
+  },
+  filters: {
   },
   data () {
     return {
@@ -154,6 +151,7 @@ export default {
       this.sendVisible = true
     },
     closeSendModel () {
+      // console.log('关闭')
       this.sendVisible = false
     },
     coachingSee (text, scope) {

@@ -4,12 +4,13 @@ import storage from 'store'
 import notification from 'ant-design-vue/es/notification'
 import { VueAxios } from './axios'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
+import { message } from 'ant-design-vue'
 
 // 创建 axios 实例
 const request = axios.create({
   // API 请求的默认前缀
   baseURL: process.env.VUE_APP_API_BASE_URL,
-  timeout: 6000 // 请求超时时间
+  timeout: 12000 // 请求超时时间
 })
 
 // 异常拦截处理器
@@ -37,6 +38,18 @@ const errorHandler = (error) => {
         })
       }
     }
+  }
+  if (error.message.includes('timeout')) {
+    // 处理超时
+    console.log('error.message', error.message)
+    // Message({
+    //   message: '请求超时',
+    //   type: 'error',
+    //   duration: 5 * 1000
+    // })
+    message.error('请求超时,请刷新页面')
+    // const res = ''
+    // return res && Promise.reject(error)
   }
   return Promise.reject(error)
 }

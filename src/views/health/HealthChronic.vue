@@ -7,7 +7,13 @@
         </a-col>
       </a-row>
     </a-card>
-    <a-table class="chronicTable" :columns="columns" :data-source="tableData" :rowKey="record=>record.id" :pagination="pagination">
+    <a-table
+      class="chronicTable"
+      :columns="columns"
+      :data-source="tableData"
+      :rowKey="record=>record.id"
+      :pagination="pagination"
+      :loading="chronicLoading">
       <span slot="items" slot-scope="text, record">
         <!-- <a>{{ record.items }}</a> -->
         <a-popover>
@@ -77,7 +83,6 @@
                 :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane'"
                 @change="value => handleChange(value)"
               >
-                <!-- :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-' + formData.name" -->
                 <a-button><a-icon type="upload" />上传慢病资料</a-button>
               </a-upload>
             </a-form-model-item>
@@ -102,7 +107,6 @@
                   />
                 </a-col>
                 <a-col :span="2" style="text-align: center;margin: 0 auto;">
-                  <!-- <a-icon class="targetIcon" @click="addTargetArr" type="plus-circle" /> -->
                   <a-icon class="targetIcon" @click="delTargetArr(target)" type="close-circle" />
                 </a-col>
               </a-row>
@@ -121,8 +125,6 @@
         </a-row>
         <a-row>
           <a-col :span="22">
-            <!-- <span style="font-size: 16px;">指标</span>
-            <a-icon @click="addTargetArr" type="plus-circle" />-->
             <a-button @click="addTargetArr" type="dashed" style="display:block;margin:0 auto;width:60%">
               <a-icon type="plus" /> 添加指标
             </a-button>
@@ -158,6 +160,7 @@
 
 <script>
 import { getHealthIndex, getHeathLevels } from '@/api/health'
+// import { getHeathLevels } from '@/api/health'
 // import { getHealthIndex } from '@/api/health'
 // import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
 import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList, getOneChronic as apiGetOneChronic } from '@/api/chronic'
@@ -247,7 +250,8 @@ export default {
           showTotal: total => `共 ${total} 个慢病`, // 显示总数
           onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
           onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-        }
+        },
+        chronicLoading: true
       }
     },
     filters: {
@@ -274,30 +278,6 @@ export default {
       this.$setPageDataLoader(this.getChronic)
     },
     mounted () {
-      // 获取指标
-      getHealthIndex().then(res => {
-        if (res.status === 200) {
-          const resData = res.data
-          // console.log('接口数据', resData)
-          for (var i = 0; i < resData.length; i++) {
-            if (resData[i].items) {
-              for (var j = 0; j < resData[i].items.length; j++) {
-                // console.log('指标', resData[i].items[j].name)
-                const firstIndex = resData[i]
-                const secondIndex = resData[i].items[j]
-                this.indexArr.push({
-                  category: firstIndex.name,
-                  id: secondIndex.id,
-                  name: secondIndex.name,
-                  result: secondIndex.result,
-                  type: secondIndex.type,
-                  unit: secondIndex.unit
-                })
-              }
-            }
-          }
-        }
-      })
       this.getChronic()
     },
     methods: {
@@ -441,6 +421,34 @@ export default {
             // this.tableData = resData
             this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
             this.pagination.total = res.data.totalElements
+            // 获取指标
+            getHealthIndex().then(res => {
+              if (res.status === 200) {
+                const resData = res.data
+                // console.log('接口数据', resData)
+                for (var i = 0; i < resData.length; i++) {
+                  if (resData[i].items) {
+                    for (var j = 0; j < resData[i].items.length; j++) {
+                      // console.log('指标', resData[i].items[j].name)
+                      const firstIndex = resData[i]
+                      const secondIndex = resData[i].items[j]
+                      this.indexArr.push({
+                        category: firstIndex.name,
+                        id: secondIndex.id,
+                        name: secondIndex.name,
+                        result: secondIndex.result,
+                        type: secondIndex.type,
+                        unit: secondIndex.unit
+                      })
+                    }
+                  }
+                }
+                this.chronicLoading = false
+              } else {
+                this.chronicLoading = false
+                this.$message.error('获取失败' + res.message)
+              }
+            })
           }
         })
       },

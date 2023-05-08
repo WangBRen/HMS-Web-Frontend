@@ -3,21 +3,23 @@
     <a-card :bordered="false" class="search">
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
-          <a-row :gutter="48">
-            <a-col :md="8" :sm="24">
-              <a-form-item >
-                <a-input-search
-                  placeholder="请输入关键字"
-                  enter-button="查询"
-                  :loading="loadingShow"
-                  @search="onSearch"
-                />
-              </a-form-item>
+          <a-row>
+            <a-col :span="8">
+              <a-input-search
+                placeholder="请输入关键字"
+                enter-button="查询"
+                :loading="loadingShow"
+                @search="onSearch"
+              />
             </a-col>
-            <a-col :md="13" :sm="24"/>
-            <a-col :md="3" :sm="24">
-              <span class="table-page-search-submitButtons">
-                <a-button type="primary " style="margin-left: 8px" @click="handleOpen">新建家庭</a-button>
+            <a-col :span="4" style="line-height:32px;">
+              <a-checkbox @change="checkDuty">
+                我的用户
+              </a-checkbox>
+            </a-col>
+            <a-col :span="3" :offset="9">
+              <span class="">
+                <a-button type="primary " style="margin-left: 8px;float: right;" @click="handleOpen">新建家庭</a-button>
               </span>
             </a-col>
           </a-row>
@@ -131,14 +133,18 @@
       :chronicVisible="chronicList.visible"
       @onclose="closeChronicModal"/>
     <SeeUserMsg
+      v-if="seeVisible"
       :seeVisible="seeVisible"
       :seeData="seeData"
       @closeSeeModal="closeSeeModal"
+      :customerId="healthCustomerId"
     />
   </div>
 </template>
 <script>
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
+import { getUserInfo as apiGetUserInfo } from '@/api/login'
+
 import moment from 'moment'
 import ChronicInformation from './components/ChronicInformation.vue'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
@@ -271,11 +277,14 @@ export default {
       openHealthvisible: false,
       // 健康报告列表
       currentCustomerId: -1,
+      healthCustomerId: -1,
       chronicList: {
         custId: null,
         baseInfo: {},
         visible: false
-      }
+      },
+      dutyIndex: false,
+      loginName: null
     }
   },
   created () {
@@ -355,17 +364,42 @@ export default {
       // console.log('???', JSON.parse(JSON.stringify(grecord)))
     },
     onSearch (value) {
-      const pages = {
-        page: this.pagination.current,
-        size: this.pagination.pageSize
-      }
-      apiCustomerSearch(value, pages).then(res => {
-        if (res.status === 200) {
-          this.loadingShow = false
-          this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-          this.pagination.total = res.data.totalElements
+      // console.log('value', value)
+      // 判断是否属于自己管理
+      if (this.dutyIndex) {
+        const pages = {
+          page: this.pagination.current,
+          size: this.pagination.pageSize,
+          createdBy: this.loginName
         }
-      })
+        apiCustomerSearch(value, pages).then(res => {
+          if (res.status === 200) {
+            this.loadingShow = false
+            this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+            this.pagination.total = res.data.totalElements
+            this.$message.success('数据加载成功')
+          } else {
+            this.$message.error('加载失败')
+          }
+        })
+        // console.log(pages, '展示自己管理的', this.loginName)
+      } else {
+        const pages = {
+          page: this.pagination.current,
+          size: this.pagination.pageSize,
+          createdBy: ''
+        }
+        apiCustomerSearch(value, pages).then(res => {
+          if (res.status === 200) {
+            this.loadingShow = false
+            this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+            this.pagination.total = res.data.totalElements
+            this.$message.success('数据加载成功')
+          } else {
+            this.$message.error('加载失败')
+          }
+        })
+      }
     },
     selectGroup (expanded, record) {
       this.selectGroupId = record.id
@@ -386,17 +420,32 @@ export default {
     seeUser (record) {
       // console.log(record)
       this.seeData = record.member.baseInfo
+      this.healthCustomerId = record.member.id
       this.seeVisible = true
     },
     closeSeeModal () {
       this.seeVisible = false
+    },
+    checkDuty (e) {
+      this.dutyIndex = e.target.checked
+      // console.log('选择自己管理的部分', this.dutyIndex)
     }
+  },
+  mounted () {
+    apiGetUserInfo().then((res) => {
+      if (res.status === 200) {
+        // console.log(res.data)
+        this.loginName = res.data.id
+      } else {
+        this.$message.error(res.message || '获取账户信息失败')
+      }
+    })
   }
 }
 </script>
 <style scoped>
 .table-page-search-wrapper{
-  margin:  0 auto;
+  margin-bottom: 10px;
 }
 
 .search{

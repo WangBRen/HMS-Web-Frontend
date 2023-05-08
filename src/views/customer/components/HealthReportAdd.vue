@@ -288,7 +288,7 @@
   </div>
 </template>
 <script>
-import { getHealthIndex, addHealthReport } from '@/api/health'
+import { getHealthIndex, addHealthReport, analysisChronicDisease as apiAnalysisChronicDisease } from '@/api/health'
 // import { getHealthIndex } from '@/api/health'
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
 import Symptom from '@/components/DiaMsg/UserSymptom.vue'
@@ -419,11 +419,21 @@ export default {
                   // console.log('apiData', apiData, 'formData', formData)
                   // 调接口创建报告单
                   addHealthReport(customerId, apiData).then(res => {
-                      if (res.status === 201) {
-                          this.$message.info('成功新建报告单')
-                          this.addReportVisible = false
-                          this.$emit('successCreatReport')
-                      }
+                    if (res.status === 201) {
+                      apiAnalysisChronicDisease(customerId).then(res => {
+                        if (res.status === 200) {
+                          this.$message.info('判断慢病成功')
+                          // console.log('111')
+                        } else {
+                          this.$message.error(res.message)
+                        }
+                      })
+                      this.$message.info('成功新建报告单')
+                      this.addReportVisible = false
+                      this.$emit('successCreatReport')
+                    } else {
+                      this.$message.error(res.message)
+                    }
                   })
                 }
                 // console.log('apiData', apiData, 'formData', formData)
@@ -730,6 +740,6 @@ export default {
 }
 
 .ant-select-selection--multiple{
-  height: 90px;
+  /* height: 90px; */
 }
 </style>

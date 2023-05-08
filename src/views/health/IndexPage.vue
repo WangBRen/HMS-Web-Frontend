@@ -17,6 +17,7 @@
           :columns="columns"
           :data-source="tab.items"
           :pagination="false"
+          :customRow="customRow"
         >
           <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
           <span slot="referenceRange" slot-scope="text, record">{{ record.min }}-{{ record.max }}
@@ -103,6 +104,7 @@
       </a-tab-pane>
     </a-tabs>
 
+    <!-- 新建指标项目 -->
     <a-modal
       :title="mode === 'create' ? `新建 ${this.currentProjectName()} 指标条目` : `编辑 ${this.currentProjectName()} 指标条目【${current.name}】`"
       style="top: 20px"
@@ -404,6 +406,8 @@
         </a-row>
       </a-form>
     </a-modal>
+
+    <!-- 新建指标条目 -->
     <a-modal
       :title="currentProject.mode === 'create' ? '新建指标项目' : '编辑指标项目'"
       style="top: 20px"
@@ -1048,6 +1052,49 @@ export default {
       } else {
         this.$message.success('指标项目删除成功')
         this.reloadData()
+      }
+    },
+    customRow (record, index) {
+      return {
+        props: {
+          draggable: 'true'
+        },
+        style: {
+          cursor: 'pointer'
+        },
+        on: {
+          // 鼠标移入
+          mouseenter: (event) => {
+            // 兼容IE
+            var ev = event || window.event
+            ev.target.draggable = true
+            // console.log('鼠标移入')
+          },
+          // 开始拖拽
+          dragstart: (event) => {
+            // 兼容IE
+            var ev = event || window.event
+            // 阻止冒泡
+            ev.stopPropagation()
+            // 得到源目标数据
+            this.sourceObj = record
+            // console.log(record)
+            console.log('第一个指标', record.name, record.id)
+          },
+          // 拖动元素经过的元素
+          dragover: (event) => {
+            // 兼容 IE
+            var ev = event || window.event
+            // 阻止默认行为
+            ev.preventDefault()
+          },
+          drop: (event) => {
+            var ev = window.event
+            ev.stopPropagation()
+            // 获得数据
+            console.log('第二个指标', record.name, record.id)
+          }
+        }
       }
     }
   },

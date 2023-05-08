@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="编辑设备"
+    :title="mode === 'edit' ? '编辑设备' : '新建设备'"
     :visible="editVisible"
     @ok="handleOk"
     @cancel="handleCancel"
@@ -17,18 +17,33 @@
         <a-input v-model="form.model" />
       </a-form-model-item>
       <a-form-model-item label="设备状态" prop="status">
-        <a-radio-group v-model="form.stationStatus" class="stationStatus">
+        <a-radio-group v-model="form.status" class="status">
           <a-radio value="OPEN">启用</a-radio>
-          <a-radio value="CLOSED">检修</a-radio>
-          <a-radio value="DISABLED">退休</a-radio>
+          <a-radio value="DISABLED">检修</a-radio>
+          <a-radio value="CLOSE">退休</a-radio>
         </a-radio-group>
       </a-form-model-item>
       <a-form-model-item label="厂商">
         <a-input v-model="form.manufacturer" />
       </a-form-model-item>
-      <a-form-model-item label="设备日期">
+      <a-form-model-item label="设备启用日期">
+        <a-date-picker
+          v-model="form.enableTime"
+          type="date"
+          placeholder="设备启用日期"
+          style="width: 100%;"
+        />
+      </a-form-model-item>
+      <a-form-model-item label="设备生产日期">
+        <a-date-picker
+          v-model="form.productionTime"
+          type="date"
+          placeholder="设备生产日期"
+          style="width: 100%;"
+        />
+      </a-form-model-item>
+      <!-- <a-form-model-item label="设备日期">
         <a-row>
-          <!-- <a-col :span="6"></a-col> -->
           <a-col :span="12">
             <a-date-picker
               v-model="form.enableTime"
@@ -46,17 +61,18 @@
             />
           </a-col>
         </a-row>
-      </a-form-model-item>
+      </a-form-model-item> -->
       <!-- <a-form-model-item label="设备生产日期"> -->
       <!-- </a-form-model-item> -->
       <a-form-model-item label="备注">
-        <a-input v-model="form.remark" type="textarea" />
+        <a-input v-model="form.remarks" type="textarea" />
       </a-form-model-item>
     </a-form-model>
   </a-modal>
 </template>
 
 <script>
+import { addDevice as apiAddDevice, editDevice as apiEditDevice } from '@/api/station'
 export default {
   props: {
     editVisible: {
@@ -68,10 +84,21 @@ export default {
       default: () => {
         return {}
       }
+    },
+    stationId: {
+      type: Number,
+      default: 0
+    },
+    mode: {
+      type: String,
+      default: ''
     }
   },
   mounted () {
-    if (this.equipmentData) {
+    // if (this.equipmentData) {
+    //   this.form = this.equipmentData
+    // }
+    if (this.mode === 'edit') {
       this.form = this.equipmentData
     }
   },
@@ -80,14 +107,14 @@ export default {
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
       form: {
-        number: '',
-        status: '',
-        name: '',
-        model: '',
-        enableTime: '',
-        productionTime: '',
-        manufacturer: '',
-        remark: ''
+        number: null,
+        status: null,
+        name: null,
+        model: null,
+        enableTime: null,
+        productionTime: null,
+        manufacturer: null,
+        remarks: null
       },
       rules: {
         name: [{ required: true, message: '请输入设备名称', trigger: 'blur' }],
@@ -99,7 +126,36 @@ export default {
   },
   methods: {
     handleOk () {
-      this.$emit('closeEditModel')
+      // console.log('form', this.form)
+      // console.log('id', this.stationId)
+      // console.log('mode', this.mode)
+      this.$refs.ruleForm.validate(valid => {
+        if (valid) {
+          // console.log('成功')
+          if (this.mode === 'add') {
+            apiAddDevice(this.stationId, this.form).then(res => {
+              if (res.status === 200) {
+                this.$message.success('新建设备成功')
+                this.$parent.getDevice(this.stationId)
+                this.$emit('closeEditModel')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          } else if (this.mode === 'edit') {
+            apiEditDevice(this.stationId, this.form.id, this.form).then(res => {
+              if (res.status === 200) {
+                this.$message.success('编辑设备成功')
+                this.$parent.getDevice(this.stationId)
+                this.$emit('closeEditModel')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          }
+        }
+      })
+      // this.$emit('closeEditModel')
     },
     handleCancel () {
       this.$emit('closeEditModel')

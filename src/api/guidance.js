@@ -7,6 +7,7 @@ const customerApi = {
   creatGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/create`, // 创建健康指导
   guidanceSendingInfo: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/sending-info`, // 健康指导待发送
   ApiSendGuidance: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/send`, // 发送健康指导
+  ApiSendGuidanceWechat: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}/sendWechat`, // 发送健康指导到小程序端
   guidanceSee: (customerId, guidanceId) => `/customers/${customerId}/health-guidances/${guidanceId}` // 查看健康指导
   }
 
@@ -57,6 +58,14 @@ export function ApiSendGuidance (customerId, guidanceId, parameter) {
       data: parameter
   })
 }
+export function ApiSendGuidanceWechat (customerId, guidanceId, parameter) {
+  return request({
+      url: customerApi.ApiSendGuidanceWechat(customerId, guidanceId),
+      method: 'post',
+      data: parameter
+  })
+}
+
 export function guidanceSee (customerId, guidanceId) {
   return request({
       url: customerApi.guidanceSee(customerId, guidanceId),

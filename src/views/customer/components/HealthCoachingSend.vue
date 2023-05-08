@@ -30,6 +30,9 @@
           </span> -->
           <a-button @click="handleOnSendMessageClick" style="font-size: 14px;" type="primary" :disabled="disableClickButton">发送到短信</a-button>
         </div>
+        <div style="margin: 20px auto;display: flex;align-items: center;">
+          <a-button @click="sendApp" style="font-size: 14px;" type="primary">发送到小程序</a-button>
+        </div>
       </div>
       <!-- <div>
         <a-button @click="sendWechat" style="font-size: 14px;border-radius: 8px;color: white;background-color: rgba(2, 189, 110, 1);"><a-icon type="wechat" />发送到小程序</a-button>
@@ -38,7 +41,8 @@
   </div>
 </template>
 <script>
-import { guidanceSendingInfo, ApiSendGuidance } from '@/api/guidance'
+import { guidanceSendingInfo, ApiSendGuidance, ApiSendGuidanceWechat } from '@/api/guidance'
+
 import { notification } from 'ant-design-vue'
 export default {
   props: {
@@ -85,7 +89,8 @@ export default {
       const apiPhone = this.phone
       const res = await ApiSendGuidance(this.customerId, this.guidanceId, { telephone: apiPhone })
       if (res.status === 200) {
-        this.$emit('onMessageSendSuccess', res.data)
+        this.$message.success('发送成功')
+        this.$emit('onMessageSendSuccess')
         // console.log('发送到短信了', res)
       } else if (res.status === 400) {
         this.$message.error(res.message)
@@ -102,6 +107,19 @@ export default {
       } else {
         this.disableClickButton = false
       }
+    },
+    sendApp () {
+      // console.log('发送到小程序', this.customerId, this.guidanceId)
+      ApiSendGuidanceWechat(this.customerId, this.guidanceId, { telephone: '' }).then(res => {
+        if (res.status === 200) {
+          // console.log('发送成功', res)
+          this.$message.success('发送成功')
+          this.$emit('onMessageSendSuccess')
+        } else {
+          console.log('发送失败')
+          this.$message.error(res.message)
+        }
+      })
     }
   },
   created () {

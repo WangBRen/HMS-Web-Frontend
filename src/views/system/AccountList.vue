@@ -5,12 +5,12 @@
         <a-row>
           <a-col :xl="5" :sm="10">
             <a-form-item label="用户名">
-              <a-input v-model="checkId" placeholder="请输入用户名"/>
+              <a-input v-model="checkName" placeholder="请输入用户名"/>
             </a-form-item>
           </a-col>
           <a-col :xl="3" :sm="10">
             <span class="table-page-search-submitButtons">
-              <a-button @click="searchId" type="primary">查询</a-button>
+              <a-button @click="searchName" type="primary">查询</a-button>
             </span>
           </a-col>
           <a-col :xl="5" :sm="10">
@@ -59,8 +59,11 @@
           @confirm="statusDisable(record)"
         >
           <a >禁用</a>
+          |
         </a-popconfirm>
         <a v-else>---</a>
+
+        <a @click="openDuty(record)">家庭分配</a>
       </span>
     </a-table>
 
@@ -98,13 +101,22 @@
           />
         </a-form-item>
       </a-form>
+
     </a-modal>
+
+    <AssignDuty
+      v-if="dutyVisible"
+      :dutyVisible="dutyVisible"
+      :accountCheckData="accountCheckData"
+      @closeDuty="closeDuty"
+    />
   </a-card>
 </template>
 
 <script>
 import { getUserList, getRoleList, changeDisable } from '@/api/manage'
 // import { getRoleList } from '@/api/manage'
+import AssignDuty from './AssignDuty.vue'
 
 const columns = [
   {
@@ -113,7 +125,7 @@ const columns = [
   },
   {
     title: '用户名',
-    dataIndex: 'nickname',
+    dataIndex: 'userInfo.name',
     scopedSlots: { customRender: 'nickname' }
   },
   {
@@ -159,6 +171,9 @@ const columns = [
 
 export default {
   name: 'AccountList',
+  components: {
+    AssignDuty
+  },
   data () {
     return {
       accountData: [],
@@ -173,7 +188,7 @@ export default {
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
       checkState: 'all',
-      checkId: null,
+      checkName: '',
       role: {
         list: [],
         initialValue: -1
@@ -195,7 +210,9 @@ export default {
       columns,
       expandedRowKeys: [],
       selectedRowKeys: [],
-      selectedRows: []
+      selectedRows: [],
+      dutyVisible: false,
+      accountCheckData: {}
     }
   },
   filters: {
@@ -240,10 +257,10 @@ export default {
       this.selectedRowKeys = selectedRowKeys
       this.selectedRows = selectedRows
     },
-    searchId () {
-      console.log('搜索Id', this.checkId)
+    searchName () {
+      // console.log('搜索Id', this.checkName)
       this.pagination.current = 1
-      // this.getAccount()
+      this.getAccount()
     },
     searchStatus () {
       // console.log('搜索状态', this.checkState)
@@ -272,15 +289,22 @@ export default {
         page: this.pagination.current,
         size: this.pagination.pageSize
       }
+      // 状态
       if (this.checkState !== 'all') {
         pages.status = this.checkState
       }
-      // console.log('pages', test)
+      // 搜索栏
+      if (this.checkName !== '') {
+        // console.log('按用户名搜索', this.checkName)
+        pages.name = this.checkName
+      }
       getUserList(pages).then(res => {
         if (res.status === 200) {
           // console.log(res.data)
           this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
           this.pagination.total = res.data.totalElements
+        } else {
+          this.$message.error('搜索失败' + res.message)
         }
       })
     },
@@ -292,21 +316,18 @@ export default {
     onPageChange (page, pageSize) {
       this.pagination.current = page
       this.getAccount()
+    },
+    openDuty (record) {
+      this.dutyVisible = true
+      this.accountCheckData = record
+      // console.log('责任分配', record)
+    },
+    closeDuty () {
+      this.dutyVisible = false
     }
   },
   watch: {
-    /*
-      'selectedRows': function (selectedRows) {
-        this.needTotalList = this.needTotalList.map(item => {
-          return {
-            ...item,
-            total: selectedRows.reduce( (sum, val) => {
-              return sum + val[item.dataIndex]
-            }, 0)
-          }
-        })
-      }
-      */
+
   }
 }
 </script>

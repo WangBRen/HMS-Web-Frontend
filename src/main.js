@@ -22,11 +22,12 @@ import './utils/filter' // global filter
 import './global.less' // global style
 import Print from 'vue-print-nb'
 // 表单组件注册
-import { FormModel, collapse, slider } from 'ant-design-vue'
+import { FormModel, collapse, slider, cascader } from 'ant-design-vue'
 Vue.use(FormModel)
 Vue.use(collapse)
 Vue.use(slider)
 Vue.use(Print)
+Vue.use(cascader)
 
 Vue.config.productionTip = false
 

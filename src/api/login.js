@@ -2,6 +2,7 @@ import request from '@/utils/request'
 
 const userApi = {
   Login: '/login',
+  phoneLogin: '/login/byPhone',
   Logout: '/logout',
   ForgePassword: '/auth/forge-password',
   Register: '/auth/register',
@@ -11,11 +12,16 @@ const userApi = {
   // get my info
   UserInfo: '/users/me/detail',
   UserMenu: '/user/nav',
-  // 手机验证码
+  // 手机验证码(需输入手机号)
   UserCode: phone => { return `/mailbox/phone/${phone}/valid-code` },
-  // 修改用户信息
+  // 创建用户信息
   UserMsg: '/users/me/initial',
-  getUserInfo: 'users/me' // 获取当前登录用户基础信息
+  editUserMsg: '/users/me',
+  getUserInfo: '/users/me', // 获取当前登录用户基础信息
+  editUserPassword: '/users/me/password', // 修改登录密码
+  editUserPhone: '/forget-password/reset-phone',
+  // 更改绑定手机号发送验证码
+  getUserPhoneCode: phone => `/forget-password/phone/${phone}/valid-code`
 }
 
 /**
@@ -32,6 +38,14 @@ const userApi = {
 export function login (parameter) {
   return request({
     url: userApi.Login,
+    method: 'post',
+    data: parameter
+  })
+}
+
+export function phoneLogin (parameter) {
+  return request({
+    url: userApi.phoneLogin,
     method: 'post',
     data: parameter
   })
@@ -93,7 +107,7 @@ export function getCode (phone) {
   })
 }
 
-// 修改用户信息
+// 创建用户信息
 export function UserMsg (parameter) {
   return request({
     url: userApi.UserMsg,
@@ -105,5 +119,40 @@ export function getUserInfo () {
   return request({
     url: userApi.getUserInfo,
     method: 'get'
+  })
+}
+
+// 编辑用户信息
+export function editUserMsg (parameter) {
+  return request({
+    url: userApi.editUserMsg,
+    method: 'put',
+    data: parameter
+  })
+}
+
+// 修改登录密码
+export function editUserPassword (parameter) {
+  return request({
+    url: userApi.editUserPassword,
+    method: 'put',
+    data: parameter
+  })
+}
+
+// 修改绑定手机号
+export function editUserPhone (parameter) {
+  return request({
+    url: userApi.editUserPhone,
+    method: 'post',
+    data: parameter
+  })
+}
+
+export function getUserPhoneCode (phone, parameter) {
+  return request({
+    url: userApi.getUserPhoneCode(phone),
+    method: 'post',
+    data: parameter
   })
 }

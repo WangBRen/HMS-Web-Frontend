@@ -6,7 +6,8 @@ const api = {
   service: '/service',
   permission: '/role-permission/permissions',
   orgTree: '/org/tree',
-  changeDisable: (id) => '/users/' + id + '/status'
+  changeDisable: (id) => '/users/' + id + '/status',
+  editHomeDuty: '/groups/setCreatedBy'
 }
 
 export default api
@@ -74,5 +75,13 @@ export function changeDisable (id, parameter) {
     url: api.changeDisable(id),
     method: 'get',
     params: parameter
+  })
+}
+
+export function editHomeDuty (parameter) {
+  return request({
+    url: api.editHomeDuty,
+    method: 'post',
+    data: parameter
   })
 }

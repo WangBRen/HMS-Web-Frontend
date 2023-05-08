@@ -18,7 +18,8 @@ const customerApi = {
     makeDiagnosed: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-diagnosed`,
     makeUnexpected: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}/make-unexpected`,
     getChronicDetail: (customerId, diseaseId) => `/customers/${customerId}/chronic-diseases/${diseaseId}`,
-    getChronic: `/groups/search-customers-disease` // 获取得过的慢病
+    getChronic: `/groups/search-customers-disease`, // 获取得过的慢病
+    healthHistory: (customerId) => `/customers/${customerId}/history` // 健康史
 }
 
 export function searchCustomerUnderGroup (values, pages) {
@@ -27,6 +28,7 @@ export function searchCustomerUnderGroup (values, pages) {
         method: 'get',
         params: {
             word: values || '',
+            createdBy: pages.createdBy || '',
             page: pages.page || 1,
             size: pages.size || 10
         }
@@ -161,5 +163,18 @@ export function getChronic (pages) {
         page: pages.page || 1,
         size: pages.size || 20
     }
+  })
+}
+export function submitHealthHistory (customerId, params) {
+  return request({
+      url: customerApi.healthHistory(customerId),
+      method: 'post',
+      data: params
+  })
+}
+export function getHealthHistory (customerId) {
+  return request({
+      url: customerApi.healthHistory(customerId),
+      method: 'get'
   })
 }

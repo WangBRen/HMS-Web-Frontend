@@ -3,30 +3,26 @@
     <a-row :gutter="16" type="flex" justify="center">
       <a-col :order="isMobile ? 2 : 1" :md="24" :lg="16">
 
-        <a-form layout="vertical">
-          <a-form-item
-            :label="$t('account.settings.basic.nickname')"
-          >
-            <a-input :placeholder="$t('account.settings.basic.nickname-message')" />
-          </a-form-item>
-          <a-form-item
-            :label="$t('account.settings.basic.profile')"
-          >
-            <a-textarea rows="4" :placeholder="$t('account.settings.basic.profile-message')"/>
-          </a-form-item>
-
-          <a-form-item
-            :label="$t('account.settings.basic.email')"
-            :required="false"
-          >
-            <a-input placeholder="example@ant.design"/>
-          </a-form-item>
-
-          <a-form-item>
-            <a-button type="primary">{{ $t('account.settings.basic.update') }}</a-button>
-          </a-form-item>
-        </a-form>
-
+        <a-form-model
+          ref="userForm"
+          layout="vertical"
+          :model="userForm"
+        >
+          <a-form-model-item label="昵称">
+            <a-input placeholder="请输入您的昵称" v-model="userForm.name" />
+          </a-form-model-item>
+          <a-form-model-item label="个人简介">
+            <a-textarea rows="4" v-model="userForm.introduction" placeholder="请输入个人简介"/>
+          </a-form-model-item>
+          <a-form-model-item label="邮箱" :required="false">
+            <a-input placeholder="请输入邮箱" v-model="userForm.email"/>
+          </a-form-model-item>
+          <a-form-model-item>
+            <a-popconfirm title="确定更新？" @confirm="editUser">
+              <a-button type="primary">更新信息</a-button>
+            </a-popconfirm>
+          </a-form-model-item>
+        </a-form-model>
       </a-col>
       <a-col :order="1" :md="24" :lg="8" :style="{ minHeight: '180px' }">
         <div class="ant-upload-preview" @click="$refs.modal.edit(1)" >
@@ -37,7 +33,6 @@
           <img :src="option.img"/>
         </div>
       </a-col>
-
     </a-row>
 
     <avatar-modal ref="modal" @ok="setavatar"/>
@@ -48,6 +43,7 @@
 <script>
 import AvatarModal from './AvatarModal'
 import { baseMixin } from '@/store/app-mixin'
+import { getUserInfo as apiGetUserInfo, editUserMsg as apiEditUserMsg } from '@/api/login'
 
 export default {
   mixins: [baseMixin],
@@ -59,7 +55,9 @@ export default {
       // cropper
       preview: {},
       option: {
-        img: '/avatar2.jpg',
+        // img: '/avatar2.jpg',
+        // img: 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob',
+        img: '',
         info: true,
         size: 1,
         outputType: 'jpeg',
@@ -72,13 +70,51 @@ export default {
         // 开启宽度和高度比例
         fixed: true,
         fixedNumber: [1, 1]
+      },
+      userForm: {
+        name: '',
+        introduction: '',
+        email: '',
+        avatar: ''
       }
     }
   },
   methods: {
     setavatar (url) {
+      console.log(url)
       this.option.img = url
+      this.userForm.avatar = url
+    },
+    editUser () {
+      console.log(this.userForm)
+      apiEditUserMsg(this.userForm).then(res => {
+        if (res.status === 200) {
+          this.$message.success('编辑成功')
+          this.getUserInfo()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+      // https://files.hms.yootane.com/file/21bc3976-2a17-4c55-848b-35e43e8991b8.blob
+      // this.getUserInfo()
+    },
+    getUserInfo () {
+      apiGetUserInfo().then(res => {
+        if (res.status === 200) {
+          // console.log('登陆信息', res.data)
+          this.userForm.name = res.data.userInfo.name
+          this.userForm.email = res.data.email
+          this.userForm.avatar = res.data.avatar
+          // this.userForm.avatar = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
+          this.userForm.introduction = res.data.userInfo.introduction
+          this.option.img = res.data.avatar
+          // this.option.img = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
+        }
+      })
     }
+  },
+  mounted () {
+    this.getUserInfo()
   }
 }
 </script>
