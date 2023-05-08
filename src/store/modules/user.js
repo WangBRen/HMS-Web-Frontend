@@ -1,6 +1,6 @@
 import storage from 'store'
 import expirePlugin from 'store/plugins/expire'
-import { login, getInfo, logout } from '@/api/login'
+import { login, getInfo, logout, phoneLogin } from '@/api/login'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 import { welcome } from '@/utils/util'
 
@@ -39,6 +39,20 @@ const user = {
     Login ({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
+          const result = response.data
+          storage.set(ACCESS_TOKEN, result.access_token, new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
+          commit('SET_TOKEN', result.access_token)
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+
+    // 手机号登陆
+    phoneLogin ({ commit }, userInfo) {
+      return new Promise((resolve, reject) => {
+        phoneLogin(userInfo).then(response => {
           const result = response.data
           storage.set(ACCESS_TOKEN, result.access_token, new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.access_token)
