@@ -9,12 +9,13 @@
         <div class="top">
           <div class="header">
             <a href="/">
-              <img src="~@/assets/logo.svg" class="logo" alt="logo">
-              <!-- <span class="title">攸太科技</span> -->
+              <span class="title" v-if="domin.includes('aftersale')">智能马桶信息管理</span>
+              <img v-else src="~@/assets/logo.svg" class="logo" alt="logo"></img>
             </a>
           </div>
           <div class="desc">
-            {{ $t('layouts.userLayout.title') }}
+            <div v-if="domin.includes('aftersale')">{{ $t('layouts.saleLayout.title') }}</div>
+            <div v-else>{{ $t('layouts.userLayout.title') }}</div>
           </div>
         </div>
 
@@ -44,8 +45,14 @@ export default {
   components: {
     SelectLang
   },
+  data () {
+    return {
+      domin: ''
+    }
+  },
   mixins: [deviceMixin],
   mounted () {
+    this.domin = window.location.host
     document.body.classList.add('userLayout')
   },
   beforeDestroy () {

@@ -371,6 +371,7 @@ if (domain === 'dev.aftersale.yootane.com') {
           ]
         },
         {
+          hidden: true,
           path: '/afterSale',
           component: RouteView,
           redirect: '/afterSale/saleInstall',
@@ -401,6 +402,7 @@ if (domain === 'dev.aftersale.yootane.com') {
           ]
         },
         {
+          hidden: true,
           path: '/afterSaleData',
           component: RouteView,
           redirect: '/afterSaleData/salePartManage',
