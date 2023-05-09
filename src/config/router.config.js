@@ -52,7 +52,7 @@ if (domain === 'dev.aftersale.yootane.com') {
           component: RouteView,
           redirect: '/afterSaleData/salePartManage',
           name: 'afterSalesManage',
-          meta: { title: 'menu.afterSaleData', icon: 'schedule', keepAlive: true, permission: ['after_sales_information']
+          meta: { title: 'menu.afterSaleData', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
           },
           children: [
             {
