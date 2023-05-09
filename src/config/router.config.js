@@ -8,7 +8,7 @@ const RouteView = {
 }
 const domain = window.location.host
 export var asyncRouterMap = []
-if (domain === 'dev.aftersale.yootane.com') {
+if (domain.includes('aftersale')) {
   asyncRouterMap = [
     {
       path: '/',
