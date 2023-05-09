@@ -31,6 +31,7 @@
               placeholder="请编辑生活话术模板"
               :auto-size="{ minRows: 3, maxRows: 10 }"
             />
+            <span>{{ item.lifeTemplate.templateText?.length }}/1500</span>
           </a-tab-pane>
           <a-tab-pane key="2" tab="运动指导">
             <a-textarea
@@ -39,6 +40,7 @@
               placeholder="请编辑运动话术模板"
               :auto-size="{ minRows: 3, maxRows: 10 }"
             />
+            <span>{{ item.sportTemplate.templateText?.length }}/1500</span>
           </a-tab-pane>
           <a-tab-pane key="3" tab="饮食指导">
             <a-textarea
@@ -47,6 +49,7 @@
               placeholder="请编辑饮食话术模板"
               :auto-size="{ minRows: 3, maxRows: 10 }"
             />
+            <span>{{ item.dietTemplate.templateText?.length }}/1500</span>
           </a-tab-pane>
         </a-tabs>
         <div class="check_variable_list">

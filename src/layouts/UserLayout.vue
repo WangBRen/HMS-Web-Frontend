@@ -1,7 +1,7 @@
 <template>
 
   <div id="userLayout" :class="['user-layout-wrapper', isMobile && 'mobile']">
-    <div class="container">
+    <div :class="['container', domin.includes('aftersale')?'saleBg':'healthBg']">
       <!-- <div class="user-layout-lang">
         <select-lang class="select-lang-trigger" />
       </div> -->
@@ -9,12 +9,13 @@
         <div class="top">
           <div class="header">
             <a href="/">
-              <img src="~@/assets/logo.svg" class="logo" alt="logo">
-              <!-- <span class="title">攸太科技</span> -->
+              <span class="title" v-if="domin.includes('aftersale')">智能马桶信息管理</span>
+              <img v-else src="~@/assets/logo.svg" class="logo" alt="logo"></img>
             </a>
           </div>
           <div class="desc">
-            {{ $t('layouts.userLayout.title') }}
+            <div v-if="domin.includes('aftersale')">{{ $t('layouts.saleLayout.title') }}</div>
+            <div v-else>{{ $t('layouts.userLayout.title') }}</div>
           </div>
         </div>
 
@@ -44,8 +45,14 @@ export default {
   components: {
     SelectLang
   },
+  data () {
+    return {
+      domin: ''
+    }
+  },
   mixins: [deviceMixin],
   mounted () {
+    this.domin = window.location.host
     document.body.classList.add('userLayout')
   },
   beforeDestroy () {
@@ -66,11 +73,16 @@ export default {
       }
     }
   }
-
+.saleBg {
+  background: #f0f2f5 url(~@/assets/background2.svg) no-repeat 50%;
+}
+.healthBg{
+  background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
+}
   .container {
     width: 100%;
     min-height: 100%;
-    background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
+    // background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
     background-size: 100%;
     //padding: 50px 0 84px;
     position: relative;

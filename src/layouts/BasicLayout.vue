@@ -20,7 +20,8 @@
           我们推荐使用这种方式进行 LOGO 和 title 自定义
     -->
     <template v-slot:menuHeaderRender>
-      <div>
+      <h1 v-if="domin.includes('aftersale')">智能马桶信息管理</h1>
+      <div v-else>
         <logo-svg />
         <h1>{{ title }}</h1>
       </div>
@@ -111,7 +112,8 @@ export default {
       query: {},
 
       // 是否手机模式
-      isMobile: false
+      isMobile: false,
+      domin: ''
     }
   },
   computed: {
@@ -132,6 +134,7 @@ export default {
     })
   },
   mounted () {
+    this.domin = window.location.host
     const userAgent = navigator.userAgent
     if (userAgent.indexOf('Edge') > -1) {
       this.$nextTick(() => {

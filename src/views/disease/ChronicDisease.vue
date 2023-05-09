@@ -102,9 +102,11 @@
       @onclose="closeFollowUpFormModal"
       @grandFatherMethod="handleSuccessLevel"/>
     <SeeUserMsg
+      v-if="seeVisible"
       :seeVisible="seeVisible"
       :seeData="seeData"
       @closeSeeModal="closeSeeModal"
+      :customerId="healthCustomerId"
     />
   </div>
 </template>
@@ -218,6 +220,7 @@ export default {
       diseaseId: null,
       seeData: null,
       seeVisible: false,
+      healthCustomerId: null,
       showLoading: false,
       pagination: {
         total: 0,
@@ -338,6 +341,7 @@ export default {
     seeUser (record) {
       this.seeData = record.baseInfo
       this.seeVisible = true
+      this.healthCustomerId = record.id
     },
     closeSeeModal () {
       this.seeVisible = false
