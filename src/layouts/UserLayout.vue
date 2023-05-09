@@ -1,7 +1,7 @@
 <template>
 
   <div id="userLayout" :class="['user-layout-wrapper', isMobile && 'mobile']">
-    <div class="container">
+    <div :class="['container', domin.includes('aftersale')?'saleBg':'healthBg']">
       <!-- <div class="user-layout-lang">
         <select-lang class="select-lang-trigger" />
       </div> -->
@@ -73,11 +73,16 @@ export default {
       }
     }
   }
-
+.saleBg {
+  background: #f0f2f5 url(~@/assets/background2.svg) no-repeat 50%;
+}
+.healthBg{
+  background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
+}
   .container {
     width: 100%;
     min-height: 100%;
-    background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
+    // background: #f0f2f5 url(~@/assets/background.svg) no-repeat 50%;
     background-size: 100%;
     //padding: 50px 0 84px;
     position: relative;
