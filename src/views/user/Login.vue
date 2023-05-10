@@ -423,6 +423,16 @@ export default {
             apiLogin(loginParams).then(res => {
               if (res.status === 200) {
                 this.loginSuccessed(res)
+              } else if (res.status === 201) {
+                setTimeout(() => {
+                  this.$notification.success({
+                    message: '账号首次登录，请修改信息后登陆',
+                    description: '请及时修改密码及个人信息'
+                  })
+                  setTimeout(() => {
+                    this.visible = true
+                  }, 2000)
+                }, 1000)
               } else {
                 this.loginFailed(res)
               }
