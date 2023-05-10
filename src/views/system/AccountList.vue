@@ -212,22 +212,36 @@ export default {
       selectedRowKeys: [],
       selectedRows: [],
       dutyVisible: false,
-      accountCheckData: {}
+      accountCheckData: {},
+      domin: ''
     }
   },
   filters: {
   },
   mounted () {
+    this.domin = window.location.host
     this.getAccount()
   },
   created () {
     getRoleList().then(res => {
       this.roles = res.data || []
-      this.role.list = (res.data || []).filter(role => role.name !== 'root')
+      this.role.list = (res.data || []).filter(role => {
+        if (role.name !== 'root') {
+          if (this.domin.includes('aftersale')) {
+            if (role.displayName.includes('售后')) {
+              return role
+            }
+          } else {
+            if (role.displayName.indexOf('售后') === -1) {
+              return role
+            }
+          }
+        }
+      })
       if (this.role.list.length > 0) {
         this.role.initialValue = this.role.list[0].id
       }
-      // console.log('getRoleList.call()', res.data)
+      console.log('getRoleList.call()', res.data)
     })
     this.$setPageDataLoader(this.getAccount)
   },
@@ -302,6 +316,18 @@ export default {
         if (res.status === 200) {
           // console.log(res.data)
           this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+          this.accountData = this.accountData.filter(item => {
+            if (this.domin.includes('aftersale')) {
+              if (item.roleName.includes('After_sales')) {
+                return item
+              }
+            } else {
+              if (item.roleName.indexOf('After_sales') === -1) {
+                return item
+              }
+            }
+          })
+          console.log('this.accountData', this.accountData)
           this.pagination.total = res.data.totalElements
         } else {
           this.$message.error('搜索失败' + res.message)
