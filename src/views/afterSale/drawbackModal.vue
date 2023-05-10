@@ -157,7 +157,7 @@ export default {
         outRefundNo: outRefundNo,
         notifyUrl: 'https://dev.hms.yootane.com/afterSale/saleRepair', // 微信支付结果通知的回调地址
         totalFee: item1.pays[0].actualAmount * 100, // 订单金额  item1.pays[0].actualAmount
-        refundFee: refundFee[0].totalNum * item1.discount / 10 * 100,
+        refundFee: item1.discount ? refundFee[0].totalNum * item1.discount / 10 * 100 : refundFee[0].totalNum * 100,
         refundDesc: refundReason // 退款描述
       }
       this.refund(payLoad, item1.id, refundReason)
