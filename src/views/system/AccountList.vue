@@ -314,21 +314,23 @@ export default {
       }
       getUserList(pages).then(res => {
         if (res.status === 200) {
-          // console.log(res.data)
-          this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-          this.accountData = this.accountData.filter(item => {
-            if (this.domin.includes('aftersale')) {
-              if (item.roleName.includes('After_sales')) {
-                return item
+          getUserList({ page: 1, size: res.data.totalElements }).then(res => {
+            // console.log(res.data)
+            this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+            this.accountData = this.accountData.filter(item => {
+              if (this.domin.includes('aftersale')) {
+                if (item.roleName.includes('After_sales')) {
+                  return item
+                }
+              } else {
+                if (item.roleName.indexOf('After_sales') === -1) {
+                  return item
+                }
               }
-            } else {
-              if (item.roleName.indexOf('After_sales') === -1) {
-                return item
-              }
-            }
+            })
+            console.log('this.accountData', this.accountData)
+            this.pagination.total = this.accountData.length
           })
-          console.log('this.accountData', this.accountData)
-          this.pagination.total = res.data.totalElements
         } else {
           this.$message.error('搜索失败' + res.message)
         }
