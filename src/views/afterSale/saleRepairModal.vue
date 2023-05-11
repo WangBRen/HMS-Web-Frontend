@@ -353,7 +353,7 @@
                 </a-descriptions-item>
                 <a-descriptions-item label="优惠折扣" :span="2">
                   <div>
-                    输入折扣：<a-input-number style="width: 60px;" :min="1" :max="10" v-model="discount" @change="onChangeDiscount"></a-input-number> 折 (需要则填写)
+                    输入折扣：<a-input-number style="width: 60px;" :min="1" :max="10" v-model="discount"></a-input-number> 折 (需要则填写)
                   </div>
                   <div v-show="discount">
                     <span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input>
@@ -1206,34 +1206,8 @@ export default {
     changeZeroPay () {
       // 改变状态
       const id = this.repairData.id
-      let changeStatus = {}
-      // 获取登陆账户 - 内勤
-      apiGetUserInfo().then(res => {
-        if (res.status === 200) {
-          changeStatus = {
-            status: 'PAID',
-            managerName: res.data.userInfo.name
-          }
-          // 改变大状态和记录内勤
-          apiUpdateStatus(id, changeStatus).then(res => {
-            if (res.status === 200) {
-              this.$message.success('状态改变成功')
-              // console.log('状态改变成功')
-              this.closeRepairModals()
-              this.$parent.getAfterSaleData()
-            } else {
-              this.$message.error(res.message)
-            }
-          })
-        } else {
-          this.$message.error(res.message)
-        }
-      })
       const processId = this.repairData.processes[this.repairData.processes.length - 1].id
-      const changePay = {
-        payResult: true
-      }
-      // console.log(changePay, id, processId)
+      const changePay = { payResult: true }
       // 改变流程里的支付状态
       apiUpdateProcess(id, processId, changePay).then(res => {
         if (res.status === 200) {
@@ -1242,9 +1216,29 @@ export default {
           this.$message.error(res.message)
         }
       })
-    },
-    onChangeDiscount () {
-      // this.priceSum = this.priceSum * this.discount * 0.1
+      const changeStatus = { status: 'PAID' }
+      // 改变大状态
+      apiUpdateStatus(id, changeStatus).then(res => {
+        if (res.status === 200) {
+          this.$message.success('状态改变成功')
+          // console.log('状态改变成功')
+          this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+      // 获取登陆账户 - 内勤
+      // apiGetUserInfo().then(res => {
+      //   if (res.status === 200) {
+      //     changeStatus = {
+      //       status: 'PAID',
+      //       managerName: res.data.userInfo.name
+      //     }
+      //   } else {
+      //     this.$message.error(res.message)
+      //   }
+      // })
     },
     countPart (data) {
       let price = 0
