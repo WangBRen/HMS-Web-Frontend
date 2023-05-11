@@ -376,9 +376,15 @@
           <!-- 问题汇总 -->
           <div style="text-align: center;margin-top: 20px;">
             <div style="font-size: 24px;">等待客户支付</div>
-            <a-popconfirm title="确定再评估？" @confirm="changeEdit">
-              <a-button type="primary">再评估</a-button>
-            </a-popconfirm>
+            <div>
+              <a-popconfirm style="margin: 0 20px;" title="确定再评估？" @confirm="changepProcesses">
+                <a-button type="primary">再评估</a-button>
+              </a-popconfirm>
+              <a-popconfirm style="margin: 0 20px;" v-if="repairData.processes[repairData.processes.length-1].customerPay === 0" title="确定进行0元支付？" @confirm="changeZeroPay">
+                <a-button type="primary">0元支付</a-button>
+              </a-popconfirm>
+            </div>
+            <!-- <div>{{ repairData.processes[repairData.processes.length-1].customerPay }}</div> -->
           </div>
         </div>
         <!-- 已支付 -->
@@ -792,7 +798,9 @@ export default {
             pieceName: item.name,
             piecePrice: item.price, // 报价
             pieceCost: item.cost, // 成本
-            pieceStock: item.stock // 库存
+            pieceStock: item.stock, // 库存
+            pieceId: item.id, // id
+            pieceNumber: item.serialNumber // 编码
           }
           this.secondPart.push(addData)
         }
@@ -804,11 +812,14 @@ export default {
       const partAdd = {}
       this.secondPart.filter(item => {
         if (item.pieceName === this.checkD) {
+          // console.log('item', item)
           partAdd.pieceName = item.pieceName
           partAdd.piecePrice = item.piecePrice
           partAdd.pieceCost = item.pieceCost
           partAdd.pieceStock = item.pieceStock
           partAdd.pieceNum = this.checkE
+          partAdd.pieceId = item.pieceId
+          partAdd.pieceNumber = item.pieceNumber
         }
       })
       if (this.partArr.length !== 0) {
@@ -961,10 +972,9 @@ export default {
               // 获取登陆账户 - 客服
               apiGetUserInfo().then(res => {
                 if (res.status === 200) {
-                  // console.log(res.data.nickname)
                   const changeStatus = {
                     status: 'EVALUATED',
-                    customerService: res.data.nickname
+                    customerService: res.data.userInfo.name
                   }
                   if (this.statementIndex === true) {
                     changeStatus.status = 'PAID'
@@ -1121,7 +1131,7 @@ export default {
                 if (res.status === 200) {
                   const changeStatus = {
                     status: 'WAIT_VISIT',
-                    managerName: res.data.nickname
+                    managerName: res.data.userInfo.name
                   }
                   if (this.payForm.pieceDeliveryNo !== null) {
                     changeStatus.send = 'EXECUTED'
@@ -1159,11 +1169,26 @@ export default {
       this.payForm.technicianPhoneList = []
       // console.log('重置后', this.payForm)
     },
-    changeEdit () {
+    // 再评估
+    changepProcesses () {
       const id = this.repairData.id
+      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      const changeInvalid = {
+        isInvalid: false
+      }
+      // console.log(changePay, id, processId)
+      // 改变流程里的状态
+      apiUpdateProcess(id, processId, changeInvalid).then(res => {
+        if (res.status === 200) {
+          this.$message.success('状态改变成功')
+        } else {
+          this.$message.error(res.message)
+        }
+      })
       const changeStatus = {
         status: 'WAIT_EVALUATE'
       }
+      // 改变大状态
       apiUpdateStatus(id, changeStatus).then(res => {
         if (res.status === 200) {
           this.$message.success('状态改变成功')
@@ -1174,7 +1199,49 @@ export default {
           this.$message.error(res.message)
         }
       })
+      // isInvalid
       // console.log('编辑')
+    },
+    // 0元支付
+    changeZeroPay () {
+      // 改变状态
+      const id = this.repairData.id
+      let changeStatus = {}
+      // 获取登陆账户 - 内勤
+      apiGetUserInfo().then(res => {
+        if (res.status === 200) {
+          changeStatus = {
+            status: 'PAID',
+            managerName: res.data.userInfo.name
+          }
+          // 改变大状态和记录内勤
+          apiUpdateStatus(id, changeStatus).then(res => {
+            if (res.status === 200) {
+              this.$message.success('状态改变成功')
+              // console.log('状态改变成功')
+              this.closeRepairModals()
+              this.$parent.getAfterSaleData()
+            } else {
+              this.$message.error(res.message)
+            }
+          })
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      const changePay = {
+        payResult: true
+      }
+      // console.log(changePay, id, processId)
+      // 改变流程里的支付状态
+      apiUpdateProcess(id, processId, changePay).then(res => {
+        if (res.status === 200) {
+          this.$message.success('状态改变成功')
+        } else {
+          this.$message.error(res.message)
+        }
+      })
     },
     onChangeDiscount () {
       // this.priceSum = this.priceSum * this.discount * 0.1
