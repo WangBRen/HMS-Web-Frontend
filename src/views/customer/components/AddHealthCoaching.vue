@@ -166,8 +166,13 @@ export default {
       // 请求话术模板
       const resp = await apiGuidanceTemplates(this.customerId, this.chronicId)
       if (resp.status === 200) {
-        console.log('data', resp)
-        this.templateData = resp.data
+        // console.log('data1', resp.data)
+        // console.log('data2', JSON.parse(resp.data))
+        const filrerData = JSON.parse(resp.data)
+        this.lifeTemplate = filrerData.lifeTemplate
+        this.dietTemplate = filrerData.dietTemplate
+        this.sportTemplate = filrerData.sportTemplate
+        // this.templateData = resp.data
       } else {
         this.disabled = true
         this.$notification.info({
@@ -186,7 +191,7 @@ export default {
     loadData () {
       this.chronicName = ''
       // this.selectedData = ''
-      this.templateData = ''
+      // this.templateData = ''
       if (this.diseaseId > 0) {
         this.chronicId = this.diseaseId
         this.doRequest()
