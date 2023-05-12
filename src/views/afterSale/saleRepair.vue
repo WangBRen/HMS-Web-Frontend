@@ -18,6 +18,7 @@
           </a-select>
         </a-col>
         <a-col :span="9">
+          <a-button type="primary" @click="openAddRepair">新增维修工单</a-button>
         </a-col>
         <a-button type="primary" @click="exportAllData">导出信息单</a-button>
       </a-row>
@@ -25,7 +26,7 @@
         <a-tabs default-active-key="1" @change="checkTab">
           <a-tab-pane key="1" tab="待评估">
             <a-space>
-              <a-button type="primary" @click="openAddRepair">新增维修工单</a-button>
+              <!-- <a-button type="primary" @click="openAddRepair">新增维修工单</a-button> -->
               <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false">
                 <a-button> <a-icon type="upload" />导入excel</a-button>
               </a-upload>
