@@ -311,14 +311,14 @@ import { getHealthHistory } from '@/api/customer'
 export default {
     props: {
       seeVisible: {
-          type: Boolean,
-          default: false
+        type: Boolean,
+        default: false
       },
       seeData: {
-          type: Object,
-          default: function () {
+        type: Object,
+        default: function () {
           return {}
-          }
+        }
       },
       customerId: {
         type: Number,
@@ -327,36 +327,36 @@ export default {
     },
     filters: {
     filterBirth: function (value) {
-        const data = new Date(value)
-        const year = data.getFullYear()
-        const month = data.getMonth() + 1
-        const day = data.getDay()
-    //   console.log(year + '年' + month + '月' + day + '日')
-        return year + '年' + month + '月' + day + '日'
+      const data = new Date(value)
+      const year = data.getFullYear()
+      const month = data.getMonth() + 1
+      const day = data.getDate()
+      // console.log(year + '年' + month + '月' + day + '日')
+      return year + '年' + month + '月' + day + '日'
     },
     filterAge: function (value) {
-        const userYear = new Date(value).getFullYear()
-        const userMonth = new Date(value).getMonth() + 1
-        const userDay = new Date(value).getDay()
-        const nowDate = new Date()
-        const nowMonth = nowDate.getMonth() + 1
-        const nowDay = nowDate.getDate
-        let age = nowDate.getFullYear() - userYear
-        if (nowMonth < userMonth || (userMonth === nowMonth && nowDay < userDay)) {
+      const userYear = new Date(value).getFullYear()
+      const userMonth = new Date(value).getMonth() + 1
+      const userDay = new Date(value).getDay()
+      const nowDate = new Date()
+      const nowMonth = nowDate.getMonth() + 1
+      const nowDay = nowDate.getDate
+      let age = nowDate.getFullYear() - userYear
+      if (nowMonth < userMonth || (userMonth === nowMonth && nowDay < userDay)) {
         return age--
-        } else {
+      } else {
         return age
-        }
+      }
     }
     },
     data () {
     return {
-        labelCol: { span: 6 },
-        wrapperCol: { span: 16 },
-        healthHistoryData: {
-          drugAllergyHistory: []
-        },
-        showHistory: false
+      labelCol: { span: 6 },
+      wrapperCol: { span: 16 },
+      healthHistoryData: {
+        drugAllergyHistory: []
+      },
+      showHistory: false
     }
     },
     methods: {
