@@ -34,17 +34,17 @@ if (domain.includes('aftersale')) {
                 keepAlive: true,
                 permission: ['after_sales_repair']
               }
-            },
-            {
-              path: '/afterSale/saleInstall',
-              name: 'manage',
-              component: () => import('@/views/afterSale/saleInstall'),
-              meta: {
-                title: 'menu.afterSale.install',
-                keepAlive: true,
-                permission: ['after_sales_install']
-              }
             }
+            // {
+            //   path: '/afterSale/saleInstall',
+            //   name: 'manage',
+            //   component: () => import('@/views/afterSale/saleInstall'),
+            //   meta: {
+            //     title: 'menu.afterSale.install',
+            //     keepAlive: true,
+            //     permission: ['after_sales_install']
+            //   }
+            // }
           ]
         },
         {
@@ -374,7 +374,7 @@ if (domain.includes('aftersale')) {
           hidden: true,
           path: '/afterSale',
           component: RouteView,
-          redirect: '/afterSale/saleInstall',
+          redirect: '/afterSale/saleRepair',
           name: 'afterSale',
           meta: { title: 'menu.afterSale', icon: 'schedule', keepAlive: true, permission: ['after_sales_manage']
           },
@@ -388,17 +388,17 @@ if (domain.includes('aftersale')) {
                 keepAlive: true,
                 permission: ['after_sales_repair']
               }
-            },
-            {
-              path: '/afterSale/saleInstall',
-              name: 'manage',
-              component: () => import('@/views/afterSale/saleInstall'),
-              meta: {
-                title: 'menu.afterSale.install',
-                keepAlive: true,
-                permission: ['after_sales_install']
-              }
             }
+            // {
+            //   path: '/afterSale/saleInstall',
+            //   name: 'manage',
+            //   component: () => import('@/views/afterSale/saleInstall'),
+            //   meta: {
+            //     title: 'menu.afterSale.install',
+            //     keepAlive: true,
+            //     permission: ['after_sales_install']
+            //   }
+            // }
           ]
         },
         {
