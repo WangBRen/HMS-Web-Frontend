@@ -7,8 +7,9 @@
           ref="userForm"
           layout="vertical"
           :model="userForm"
+          :rules="infoRules"
         >
-          <a-form-model-item label="昵称">
+          <a-form-model-item label="昵称" prop="name">
             <a-input placeholder="请输入您的昵称" v-model="userForm.name" />
           </a-form-model-item>
           <a-form-model-item label="个人简介">
@@ -44,6 +45,7 @@
 import AvatarModal from './AvatarModal'
 import { baseMixin } from '@/store/app-mixin'
 import { getUserInfo as apiGetUserInfo, editUserMsg as apiEditUserMsg } from '@/api/login'
+// import { getUserInfo as apiGetUserInfo } from '@/api/login'
 
 export default {
   mixins: [baseMixin],
@@ -76,6 +78,11 @@ export default {
         introduction: '',
         email: '',
         avatar: ''
+      },
+      infoRules: {
+        name: [
+          { required: true, message: '请输入昵称', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -86,17 +93,23 @@ export default {
       this.userForm.avatar = url
     },
     editUser () {
-      console.log(this.userForm)
-      apiEditUserMsg(this.userForm).then(res => {
-        if (res.status === 200) {
-          this.$message.success('编辑成功')
-          this.getUserInfo()
+      // console.log(this.userForm)
+      this.$refs.userForm.validate(valid => {
+        if (valid) {
+          apiEditUserMsg(this.userForm).then(res => {
+            if (res.status === 200) {
+              this.$message.success('编辑成功')
+              this.getUserInfo()
+            } else {
+              this.$message.error(res.message)
+            }
+          })
         } else {
-          this.$message.error(res.message)
+          this.$message.error('昵称不能为空')
         }
-      })
       // https://files.hms.yootane.com/file/21bc3976-2a17-4c55-848b-35e43e8991b8.blob
       // this.getUserInfo()
+      })
     },
     getUserInfo () {
       apiGetUserInfo().then(res => {

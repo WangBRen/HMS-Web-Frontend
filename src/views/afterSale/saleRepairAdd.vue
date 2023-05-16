@@ -1,6 +1,7 @@
 <template>
   <div>
     <a-modal
+      title="新建维修工单"
       :width="1000"
       :visible="repairAddVisible"
       v-if="repairAddVisible"

@@ -58,7 +58,7 @@
         </div>
         <!-- 共用数据 -->
         <div>
-          <div class="big_title" v-if="repairData.processes.length<2">历史评估</div>
+          <div class="big_title" v-if="repairData.processes.length===1">历史评估</div>
           <div v-for="(item4,index4) in repairData.processes" :key="item4.id">
             <div class="big_title" v-if="repairData.processes.length>1">第{{ index4+1 }}次评估：</div>
             <div class="processList">
@@ -183,7 +183,7 @@
           <div class="form_estimateData" >
             <!-- 问题选择 -->
             <div class="form_estimateData_checkquestion">
-              <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);"><span style="color: #f5222d;">* </span>问题判断：</div>
+              <div style="font-size: 24px;color: rgba(0, 0, 0, 0.85);"><span style="color: #f5222d;">* </span>问题判断（必选）：</div>
               <a-select @change="checkFirst" style="width: 200px" v-model="checkA">
                 <a-select-option v-for="item in question" :key="item.name">
                   {{ item.name }}
@@ -206,14 +206,14 @@
               </div>
             </div>
             <!-- 问题汇总 -->
-            <div>
+            <div v-if="gatherArr.length">
               <span style="font-size: 24px;color: rgba(0, 0, 0, 0.85);">问题汇总：</span>
               <a-row style="margin: 10px;" v-for="item in gatherArr" :key="item.index">
                 <a-col>
                   <span>问题详情：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }}</span>
                   <!-- <span>问题详情：{{ item.problemJudge.firstPro }} ->{{ item.problemJudge.secondPro }} ->{{ item.problemJudge.thirdPro }}</span> -->
                   <span @click="delGather(item)">
-                    <a-icon type="close-circle" />
+                    --- <a-icon style="color: red;" type="close-circle" />
                   </span>
                 </a-col>
                 <a-col>解决方案：{{ item.solution }}</a-col>
@@ -229,7 +229,7 @@
               >
                 <a-row>
                   <a-col>
-                    <a-form-model-item style="font-size: 24px;" label="问题解释" prop="problemePxplain">
+                    <a-form-model-item style="font-size: 24px;" label="问题解释（必填）" prop="problemePxplain">
                       <a-textarea v-model="extraForm.problemePxplain" :auto-size="{ minRows: 3, maxRows: 21 }" :maxLength="1000" placeholder="输入问题解释"></a-textarea>
                     <!-- <span v-if="medicineData.attention" style="position: relative;float: right;">{{ medicineData.attention.length }}/1000</span> -->
                     <!-- <span v-else style="position: relative;float: right;">0/1000</span> -->
@@ -1451,7 +1451,7 @@ export default {
 }
 .form_estimateData_checkquestion {
   line-height: 30px;
-  margin: 10px 0px;
+  margin: 20px 0px;
 }
 .form_pay_title {
   font-size: 24px;
