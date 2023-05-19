@@ -9,18 +9,19 @@
             @search="onSearch"
           />
         </a-col>
-        <a-col :span="6">
+        <a-col :span="4">
           <span>&nbsp;月结单：</span>
           <a-select v-model="checkMonthly" default-value="all" style="width: 100px;">
             <a-select-option value="all">全部</a-select-option>
             <a-select-option value="true">是</a-select-option>
             <a-select-option value="false">否</a-select-option>
           </a-select>
+          <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
-        <a-col :span="9">
-          <a-button type="primary" @click="openAddRepair">新增维修工单</a-button>
+        <a-col style="text-align: right;" :span="14">
+          <a-button style="margin-right: 10px;" type="primary" @click="openAddRepair">新增维修工单</a-button>
+          <a-button type="primary" @click="exportAllData">导出信息单</a-button>
         </a-col>
-        <a-button type="primary" @click="exportAllData">导出信息单</a-button>
       </a-row>
       <div>
         <a-tabs default-active-key="1" @change="checkTab">
@@ -90,7 +91,26 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="4" tab="待上门">
+          <a-tab-pane key="4" tab="已寄件">
+            <a-table
+              :columns="sendColumns"
+              :rowKey="(record, index) => index"
+              :data-source="sendData"
+              :pagination="false"
+            >
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.monthlyStatement | filterBoolean }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
+              </span>
+              <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
+              <span slot="action" slot-scope="text,record">
+                <a @click="openRepairModal(record)">填单</a>
+              </span>
+            </a-table>
+          </a-tab-pane>
+          <a-tab-pane key="5" tab="待上门">
             <a-table
               :columns="comeColumns"
               :rowKey="(record, index) => index"
@@ -109,7 +129,7 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="5" tab="已解决">
+          <a-tab-pane key="6" tab="已解决">
             <a-button type="primary" @click="exportData">导出对账单</a-button>
             <a-table
               :columns="solveColumns"
@@ -207,6 +227,8 @@ export default {
           return '已评估'
         case 'PAID':
           return '已支付'
+        case 'SEND':
+          return '已寄件'
         case 'WAIT_VISIT':
           return '待上门'
         case 'SOLVED':
@@ -342,7 +364,7 @@ export default {
         },
         {
           title: '操作',
-          // width: '150px',
+          width: '100px',
           dataIndex: 'action',
           scopedSlots: { customRender: 'action' },
           align: 'center'
@@ -380,7 +402,7 @@ export default {
           align: 'center'
         },
         {
-          title: '记录客服',
+          title: '评估客服',
           dataIndex: 'customerService',
           key: 'customerService',
           align: 'center'
@@ -453,7 +475,7 @@ export default {
           align: 'center'
         },
         {
-          title: '记录客服',
+          title: '评估客服',
           dataIndex: 'customerService',
           key: 'customerService',
           align: 'center'
@@ -483,6 +505,79 @@ export default {
         }
       ],
       payData: [],
+      sendColumns: [
+        {
+          title: '客户名',
+          dataIndex: 'customerInfo.customerName',
+          key: 'customerInfo.customerName',
+          align: 'center'
+        },
+        {
+          title: '联系方式',
+          dataIndex: 'customerInfo.customerPhone',
+          key: 'customerInfo.customerPhone',
+          align: 'center'
+        },
+        {
+          title: '品牌',
+          dataIndex: 'customerInfo.brand',
+          key: 'customerInfo.brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'customerInfo.productModel',
+          key: 'customerInfo.productModel',
+          align: 'center'
+        },
+        {
+          title: '产品编号',
+          dataIndex: 'customerInfo.productNo',
+          key: 'customerInfo.productNo',
+          align: 'center'
+        },
+        {
+          title: '评估客服',
+          dataIndex: 'customerService',
+          key: 'customerService',
+          align: 'center'
+        },
+        {
+          title: '寄件内勤',
+          dataIndex: 'managerName',
+          key: 'managerName',
+          align: 'center'
+        },
+        {
+          title: '是否月结单',
+          scopedSlots: { customRender: 'monthlyStatement' },
+          align: 'center'
+        },
+        {
+          title: '评估次数',
+          scopedSlots: { customRender: 'processes' },
+          align: 'center'
+        },
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          scopedSlots: { customRender: 'createTime' },
+          align: 'center',
+          sorter: (a, b) => {
+            const t1 = new Date(a.createdAt).getTime()
+            const t2 = new Date(b.createdAt).getTime()
+            return t1 - t2
+          }
+        },
+        {
+          title: '操作',
+          // width: '150px',
+          dataIndex: 'action',
+          scopedSlots: { customRender: 'action' },
+          align: 'center'
+        }
+      ],
+      sendData: [],
       comeColumns: [
       {
           title: '客户名',
@@ -515,13 +610,13 @@ export default {
           align: 'center'
         },
         {
-          title: '记录客服',
+          title: '评估客服',
           dataIndex: 'customerService',
           key: 'customerService',
           align: 'center'
         },
         {
-          title: '记录内勤',
+          title: '寄件内勤',
           dataIndex: 'managerName',
           key: 'managerName',
           align: 'center'
@@ -549,7 +644,7 @@ export default {
         },
         {
           title: '操作',
-          // width: '150px',
+          width: '100px',
           dataIndex: 'action',
           scopedSlots: { customRender: 'action' },
           align: 'center'
@@ -588,13 +683,13 @@ export default {
           align: 'center'
         },
         {
-          title: '记录客服',
+          title: '评估客服',
           dataIndex: 'customerService',
           key: 'customerService',
           align: 'center'
         },
         {
-          title: '记录内勤',
+          title: '寄件内勤',
           dataIndex: 'managerName',
           key: 'managerName',
           align: 'center'
@@ -973,7 +1068,6 @@ export default {
     openRepairModal (data) {
       // console.log(data)
       this.repairVisible = true
-      // this.current = 0
       switch (data.status) {
         case 'WAIT_EVALUATE':
           this.current = 0
@@ -984,11 +1078,14 @@ export default {
         case 'PAID':
           this.current = 2
           break
-        case 'WAIT_VISIT':
+        case 'SEND':
           this.current = 3
           break
-        case 'SOLVED':
+        case 'WAIT_VISIT':
           this.current = 4
+          break
+        case 'SOLVED':
+          this.current = 5
           break
       }
       const testData = data.processes.sort((a, b) => {
@@ -1037,6 +1134,11 @@ export default {
           })
           this.payData = this.salesData.filter(item => {
             if (item.status === 'PAID') {
+              return item
+            }
+          })
+          this.sendData = this.salesData.filter(item => {
+            if (item.status === 'SEND') {
               return item
             }
           })
@@ -1090,6 +1192,9 @@ export default {
               break
             case 'PAID':
               this.payData = res.data
+              break
+            case 'SEND':
+              this.sendData = res.data
               break
             case 'WAIT_VISIT':
               this.comeData = res.data
