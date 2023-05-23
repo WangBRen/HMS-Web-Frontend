@@ -115,7 +115,7 @@
                 </a-descriptions-item>
               </a-descriptions>
               <!-- 寄件汇总 -->
-              <div v-if="item4.needPieceSend">
+              <div class="sendDes" v-if="item4.needPieceSend">
                 <div style="font-size: 17px;">寄件汇总：</div>
                 <a-descriptions bordered size="small">
                   <a-descriptions-item label="寄件汇总" :span="3">
@@ -646,24 +646,12 @@ export default {
       labelCol: { span: 6 },
       wrapperCol: { span: 16 },
       steps: [
-        {
-          title: '待评估'
-        },
-        {
-          title: '已评估'
-        },
-        {
-          title: '已支付'
-        },
-        {
-          title: '已寄件'
-        },
-        {
-          title: '待上门'
-        },
-        {
-          title: '已解决'
-        }
+        { title: '待评估' },
+        { title: '已评估' },
+        { title: '已支付' },
+        { title: '已寄件' },
+        { title: '待上门' },
+        { title: '已解决' }
       ],
       question: [],
       secondArr: [], // 二级问题
@@ -694,18 +682,7 @@ export default {
       deliveryIndex: null,
       partArr: [], // 配件汇总
       // 配件库
-      part: [
-        {
-          partTo: '第一类',
-          partStore: [
-            {
-              pieceName: '零配件一',
-              piecePrice: 10,
-              pieceCost: 8
-            }
-          ]
-        }
-      ],
+      part: [],
       discount: null, // 折扣
       discountData: '', // 折扣理由
       partData: [], // 去除师傅组的配件库
@@ -1046,8 +1023,7 @@ export default {
            // 评估
           apiAddProcess(id, apiData).then(res => {
             if (res.status === 200) {
-              this.$message.success('评估成功')
-              // console.log('评估成功')
+              // this.$message.success('评估成功')
               // 获取登陆账户 - 客服
               apiGetUserInfo().then(res => {
                 if (res.status === 200) {
@@ -1657,4 +1633,8 @@ export default {
 /deep/.reasonDes .ant-descriptions-item-label {
   width: 140px;
 }
+/deep/.sendDes .ant-descriptions-item-label {
+  width: 120px;
+}
+
 </style>

@@ -2,14 +2,7 @@
   <div>
     <a-card>
       <a-row>
-        <a-col :span="6">
-          <a-input-search
-            placeholder="请输入关键字"
-            enter-button="查询"
-            @search="onSearch"
-          />
-        </a-col>
-        <a-col :span="4">
+        <a-col :span="3">
           <span>&nbsp;月结单：</span>
           <a-select v-model="checkMonthly" default-value="all" style="width: 100px;">
             <a-select-option value="all">全部</a-select-option>
@@ -18,7 +11,23 @@
           </a-select>
           <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
-        <a-col style="text-align: right;" :span="14">
+        <a-col :span="4">
+          <a-range-picker
+            style="width: 200px;"
+            :show-time="{ format: 'HH:mm' }"
+            format="YYYY-MM-DD HH:mm"
+            :placeholder="['开始时间', '结束时间']"
+            @change="onOkTime"
+          />
+        </a-col>
+        <a-col :span="5">
+          <a-input-search
+            placeholder="请输入关键字"
+            enter-button="查询"
+            @search="onSearch"
+          />
+        </a-col>
+        <a-col style="text-align: right;" :span="12">
           <a-button style="margin-right: 10px;" type="primary" @click="openAddRepair">新增维修工单</a-button>
           <a-button type="primary" @click="exportAllData">导出信息单</a-button>
         </a-col>
@@ -212,6 +221,8 @@ import saleRepairDrawback from './drawbackModal.vue'
 import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale } from '@/api/afterSale'
 import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
 import { getUserInfo } from '@/api/login'
+import { brandData } from './saleRepairData'
+
 export default {
   components: {
     saleRepairAdd,
@@ -260,7 +271,7 @@ export default {
       estimateData: [
       ],
       importColumns: [
-      {
+        {
           title: '客户名',
           dataIndex: 'customerName',
           key: 'customerName',
@@ -732,124 +743,13 @@ export default {
       changeStatus: 'WAIT_EVALUATE',
       importDataList: [], // 导入的数据
       transferData: null, // 月结单
-      brandArrs: [
-        {
-          name: '杜马',
-          modelArr: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'T1', 'T5']
-        },
-        {
-          name: '德希顿',
-          modelArr: ['A4', 'A5', 'A6', '202', 'U5-03', 'U6-03', 'U7', 'K4', 'K5', 'K6', '1012', '2023']
-        },
-        {
-          name: '攸太',
-          modelArr: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5']
-        },
-        {
-          name: '摩琥',
-          modelArr: ['A4', 'A5', 'A6', '202', 'K4', 'K5']
-        },
-        {
-          name: '北控',
-          modelArr: ['A4', 'A5', 'A6']
-        },
-        {
-          name: '法仕德',
-          modelArr: ['A4', 'A5', 'A6', 'U1', 'U2', 'U6-03', 'K4']
-        },
-        {
-          name: '徳斯图',
-          modelArr: ['A4', 'A5', 'A6', 'K5']
-        },
-        {
-          name: '舒艾莎',
-          modelArr: ['A4', 'A5', 'A6', 'U1', 'U2', 'U6-03']
-        },
-        {
-          name: '北极熊',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7']
-        },
-        {
-          name: '芙林',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7']
-        },
-        {
-          name: '麦特拉赫',
-          modelArr: ['U1', 'U2', 'U3', 'U7']
-        },
-        {
-          name: '嘉饰缇娜',
-          modelArr: ['U1', 'U2', 'U3']
-        },
-        {
-          name: '有质',
-          modelArr: ['U1', 'U2', 'U3', 'K5']
-        },
-        {
-          name: '一米',
-          modelArr: ['U1', 'U2', 'U3', 'U6-03', 'K4', 'K5']
-        },
-        {
-          name: '德爽康',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03']
-        },
-        {
-          name: '哈雅',
-          modelArr: ['U1', 'U2', 'U6-03', 'U7', 'K4']
-        },
-        {
-          name: '史密斯',
-          modelArr: ['U1', 'U2', 'U6-03', 'U7']
-        },
-        {
-          name: '犀鸟',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7', 'K4', 'K5']
-        },
-        {
-          name: '摩柏',
-          modelArr: ['U1', 'U2', 'K4', 'K5']
-        },
-        {
-          name: '梵云优尚',
-          modelArr: ['U2', 'U3', 'K5']
-        },
-        {
-          name: '事达',
-          modelArr: ['U2', 'U3', 'U5-03', 'U6-03', 'K5']
-        },
-        {
-          name: '亨本',
-          modelArr: ['U2', 'K4']
-        },
-        {
-          name: '法兰多',
-          modelArr: ['U3', 'U5-03']
-        },
-        {
-          name: '德朗斯汀',
-          modelArr: ['U6-03', 'K4', 'K5']
-        },
-        {
-          name: '博蒙',
-          modelArr: ['K4', 'K5']
-        },
-        {
-          name: '德斯图',
-          modelArr: ['K4']
-        },
-        {
-          name: '蒙娜丽莎',
-          modelArr: ['K4', 'K5']
-        },
-        {
-          name: '卡恩诺',
-          modelArr: ['K4', 'K5']
-        }
-      ],
+      brandArrs: brandData,
       filterBrand: '',
       selectModel: '',
       modelArr: [],
-      allModel: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5']
+      allModel: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5'],
+      startTime: null,
+      endTime: null
     }
   },
   methods: {
@@ -1174,9 +1074,13 @@ export default {
         type: 'REPAIR',
         status: this.changeStatus
       }
+      // 是否筛选时间
+      if (this.startTime) {
+        console.log(this.startTime, this.endTime)
+      }
+      // 是否月结
       if (this.checkMonthly === 'true') {
         apiData.monthlyStatement = true
-        // console.log(apiData)
       } else if (this.checkMonthly === 'false') {
         apiData.monthlyStatement = false
       }
@@ -1225,9 +1129,12 @@ export default {
           this.changeStatus = 'PAID'
           break
         case '4':
-          this.changeStatus = 'WAIT_VISIT'
+          this.changeStatus = 'SEND'
           break
         case '5':
+          this.changeStatus = 'WAIT_VISIT'
+          break
+        case '6':
           this.changeStatus = 'SOLVED'
           break
       }
@@ -1243,6 +1150,13 @@ export default {
           this.$message.error(res.message)
         }
       })
+    },
+    onOkTime (value) {
+      this.startTime = value[0]
+      this.endTime = value[1]
+      // console.log(this.startTime, this.endTime)
+      // console.log(moment(value[0]).format('YYYY-MM-DD'))
+      // console.log(moment(value[1]).format('YYYY-MM-DD'))
     }
   },
   created () {
