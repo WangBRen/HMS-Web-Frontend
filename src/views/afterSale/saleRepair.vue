@@ -17,7 +17,7 @@
             :show-time="{ format: 'HH:mm' }"
             format="YYYY-MM-DD HH:mm"
             :placeholder="['开始时间', '结束时间']"
-            @change="onOkTime"
+            @change="changeTime"
           />
         </a-col>
         <a-col :span="5">
@@ -516,224 +516,11 @@ export default {
         }
       ],
       payData: [],
-      sendColumns: [
-        {
-          title: '客户名',
-          dataIndex: 'customerInfo.customerName',
-          key: 'customerInfo.customerName',
-          align: 'center'
-        },
-        {
-          title: '联系方式',
-          dataIndex: 'customerInfo.customerPhone',
-          key: 'customerInfo.customerPhone',
-          align: 'center'
-        },
-        {
-          title: '品牌',
-          dataIndex: 'customerInfo.brand',
-          key: 'customerInfo.brand',
-          align: 'center'
-        },
-        {
-          title: '产品型号',
-          dataIndex: 'customerInfo.productModel',
-          key: 'customerInfo.productModel',
-          align: 'center'
-        },
-        {
-          title: '产品编号',
-          dataIndex: 'customerInfo.productNo',
-          key: 'customerInfo.productNo',
-          align: 'center'
-        },
-        {
-          title: '评估客服',
-          dataIndex: 'customerService',
-          key: 'customerService',
-          align: 'center'
-        },
-        {
-          title: '寄件内勤',
-          dataIndex: 'managerName',
-          key: 'managerName',
-          align: 'center'
-        },
-        {
-          title: '是否月结单',
-          scopedSlots: { customRender: 'monthlyStatement' },
-          align: 'center'
-        },
-        {
-          title: '评估次数',
-          scopedSlots: { customRender: 'processes' },
-          align: 'center'
-        },
-        {
-          title: '创建时间',
-          dataIndex: 'createdAt',
-          scopedSlots: { customRender: 'createTime' },
-          align: 'center',
-          sorter: (a, b) => {
-            const t1 = new Date(a.createdAt).getTime()
-            const t2 = new Date(b.createdAt).getTime()
-            return t1 - t2
-          }
-        },
-        {
-          title: '操作',
-          // width: '150px',
-          dataIndex: 'action',
-          scopedSlots: { customRender: 'action' },
-          align: 'center'
-        }
-      ],
+      sendColumns: [],
       sendData: [],
-      comeColumns: [
-      {
-          title: '客户名',
-          dataIndex: 'customerInfo.customerName',
-          key: 'customerInfo.customerName',
-          align: 'center'
-        },
-        {
-          title: '联系方式',
-          dataIndex: 'customerInfo.customerPhone',
-          key: 'customerInfo.customerPhone',
-          align: 'center'
-        },
-        {
-          title: '品牌',
-          dataIndex: 'customerInfo.brand',
-          key: 'customerInfo.brand',
-          align: 'center'
-        },
-        {
-          title: '产品型号',
-          dataIndex: 'customerInfo.productModel',
-          key: 'customerInfo.productModel',
-          align: 'center'
-        },
-        {
-          title: '产品编号',
-          dataIndex: 'customerInfo.productNo',
-          key: 'customerInfo.productNo',
-          align: 'center'
-        },
-        {
-          title: '评估客服',
-          dataIndex: 'customerService',
-          key: 'customerService',
-          align: 'center'
-        },
-        {
-          title: '寄件内勤',
-          dataIndex: 'managerName',
-          key: 'managerName',
-          align: 'center'
-        },
-        {
-          title: '是否月结单',
-          scopedSlots: { customRender: 'monthlyStatement' },
-          align: 'center'
-        },
-        {
-          title: '评估次数',
-          scopedSlots: { customRender: 'processes' },
-          align: 'center'
-        },
-        {
-          title: '创建时间',
-          dataIndex: 'createdAt',
-          scopedSlots: { customRender: 'createTime' },
-          align: 'center',
-          sorter: (a, b) => {
-            const t1 = new Date(a.createdAt).getTime()
-            const t2 = new Date(b.createdAt).getTime()
-            return t1 - t2
-          }
-        },
-        {
-          title: '操作',
-          width: '100px',
-          dataIndex: 'action',
-          scopedSlots: { customRender: 'action' },
-          align: 'center'
-        }
-      ],
+      comeColumns: [],
       comeData: [],
-      solveColumns: [
-        {
-          title: '客户名',
-          dataIndex: 'customerInfo.customerName',
-          key: 'customerInfo.customerName',
-          align: 'center'
-        },
-        {
-          title: '联系方式',
-          dataIndex: 'customerInfo.customerPhone',
-          key: 'customerInfo.customerPhone',
-          align: 'center'
-        },
-        {
-          title: '品牌',
-          dataIndex: 'customerInfo.brand',
-          key: 'customerInfo.brand',
-          align: 'center'
-        },
-        {
-          title: '产品型号',
-          dataIndex: 'customerInfo.productModel',
-          key: 'customerInfo.productModel',
-          align: 'center'
-        },
-        {
-          title: '产品编号',
-          dataIndex: 'customerInfo.productNo',
-          key: 'customerInfo.productNo',
-          align: 'center'
-        },
-        {
-          title: '评估客服',
-          dataIndex: 'customerService',
-          key: 'customerService',
-          align: 'center'
-        },
-        {
-          title: '寄件内勤',
-          dataIndex: 'managerName',
-          key: 'managerName',
-          align: 'center'
-        },
-        {
-          title: '是否月结单',
-          scopedSlots: { customRender: 'monthlyStatement' },
-          align: 'center'
-        },
-        {
-          title: '评估次数',
-          scopedSlots: { customRender: 'processes' },
-          align: 'center'
-        },
-        {
-          title: '创建时间',
-          dataIndex: 'createdAt',
-          scopedSlots: { customRender: 'createTime' },
-          align: 'center',
-          sorter: (a, b) => {
-            const t1 = new Date(a.createdAt).getTime()
-            const t2 = new Date(b.createdAt).getTime()
-            return t1 - t2
-          }
-        },
-        {
-          title: '操作',
-          width: '150px',
-          dataIndex: 'action',
-          scopedSlots: { customRender: 'action' },
-          align: 'center'
-        }
-      ],
+      solveColumns: [],
       solveData: [],
       // 传给子组件的数据
       repairData: {},
@@ -1076,7 +863,9 @@ export default {
       }
       // 是否筛选时间
       if (this.startTime) {
-        console.log(this.startTime, this.endTime)
+        // console.log(this.startTime, this.endTime)
+        apiData.start = this.startTime
+        apiData.end = this.endTime
       }
       // 是否月结
       if (this.checkMonthly === 'true') {
@@ -1116,6 +905,15 @@ export default {
         }
       })
     },
+    changeTime (value) {
+      this.startTime = value[0]
+      this.endTime = value[1]
+      // console.log(this.startTime, '---', this.endTime)
+      // this.startTime = moment(value[0]).format('YYYY-MM-DD')
+      // this.endTime = moment(value[1]).format('YYYY-MM-DD')
+      // console.log(moment(value[0]).format('YYYY-MM-DD'))
+      // console.log(moment(value[1]).format('YYYY-MM-DD'))
+    },
     checkTab (key) {
       // console.log(key)
       switch (key) {
@@ -1140,7 +938,7 @@ export default {
       }
     },
     delRepair (data) {
-      console.log(data)
+      // console.log(data)
       const delId = data.id
       apiDelAfterSale(delId).then(res => {
         if (res.status === 200) {
@@ -1150,18 +948,107 @@ export default {
           this.$message.error(res.message)
         }
       })
-    },
-    onOkTime (value) {
-      this.startTime = value[0]
-      this.endTime = value[1]
-      // console.log(this.startTime, this.endTime)
-      // console.log(moment(value[0]).format('YYYY-MM-DD'))
-      // console.log(moment(value[1]).format('YYYY-MM-DD'))
     }
   },
   created () {
   },
   mounted () {
+    const basicColumns = [
+      {
+        title: '客户名',
+        dataIndex: 'customerInfo.customerName',
+        key: 'customerInfo.customerName',
+        align: 'center'
+      },
+      {
+        title: '联系方式',
+        dataIndex: 'customerInfo.customerPhone',
+        key: 'customerInfo.customerPhone',
+        align: 'center'
+      },
+      {
+        title: '品牌',
+        dataIndex: 'customerInfo.brand',
+        key: 'customerInfo.brand',
+        align: 'center'
+      },
+      {
+        title: '产品型号',
+        dataIndex: 'customerInfo.productModel',
+        key: 'customerInfo.productModel',
+        align: 'center'
+      },
+      {
+        title: '产品编号',
+        dataIndex: 'customerInfo.productNo',
+        key: 'customerInfo.productNo',
+        align: 'center'
+      },
+      {
+        title: '评估客服',
+        dataIndex: 'customerService',
+        key: 'customerService',
+        align: 'center'
+      },
+      {
+        title: '寄件内勤',
+        dataIndex: 'managerName',
+        key: 'managerName',
+        align: 'center'
+      },
+      {
+        title: '是否月结单',
+        scopedSlots: { customRender: 'monthlyStatement' },
+        align: 'center'
+      },
+      {
+        title: '评估次数',
+        scopedSlots: { customRender: 'processes' },
+        align: 'center'
+      },
+      {
+        title: '创建时间',
+        dataIndex: 'createdAt',
+        scopedSlots: { customRender: 'createTime' },
+        align: 'center',
+        sorter: (a, b) => {
+          const t1 = new Date(a.createdAt).getTime()
+          const t2 = new Date(b.createdAt).getTime()
+          return t1 - t2
+        }
+      }
+    ]
+    this.sendColumns = JSON.parse(JSON.stringify(basicColumns))
+    this.sendColumns.push(
+      {
+        title: '操作',
+        // width: '150px',
+        dataIndex: 'action',
+        scopedSlots: { customRender: 'action' },
+        align: 'center'
+      }
+    )
+    this.comeColumns = JSON.parse(JSON.stringify(basicColumns))
+    this.comeColumns.push(
+      {
+        title: '操作',
+        width: '100px',
+        dataIndex: 'action',
+        scopedSlots: { customRender: 'action' },
+        align: 'center'
+      }
+    )
+    // 已解决列
+    this.solveColumns = JSON.parse(JSON.stringify(basicColumns))
+    this.solveColumns.push(
+      {
+        title: '操作',
+        width: '150px',
+        dataIndex: 'action',
+        scopedSlots: { customRender: 'action' },
+        align: 'center'
+      }
+    )
     // 查询工单
     this.getAfterSaleData()
     this.getMe()

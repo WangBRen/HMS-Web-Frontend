@@ -63,7 +63,7 @@
             <div class="big_title" v-if="repairData.processes.length>1">第{{ index4+1 }}次评估：</div>
             <div class="processList">
               <!-- 问题汇总 -->
-              <a-descriptions :column="10" bordered size="small" >
+              <a-descriptions class="questionDes" :column="10" bordered size="small" >
                 <a-descriptions-item label="问题汇总" :span="10">
                   <div v-for="(item5,index5) in item4.problems" :key="index5">
                     <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
@@ -139,7 +139,7 @@
                 </a-descriptions>
               </div>
               <!-- 上门信息 -->
-              <div v-if="item4.needVisit && item4.afterSaleVisit.technicalServiceNo">
+              <div class="visitDes" v-if="item4.needVisit && item4.afterSaleVisit.technicalServiceNo">
                 <!-- <div style="padding: 0 10px;" v-if="item4.needVisit"> -->
                 <div style="font-size: 17px;">上门信息：</div>
                 <a-descriptions bordered size="small">
@@ -662,13 +662,13 @@ export default {
         problemePxplain: null, // 问题解释
         technicalSupport: null // 技术支持
       },
-      checkA: null,
-      checkB: null,
-      checkC: null,
-      checkD: null,
-      checkE: null,
-      checkF: null,
-      checkG: null,
+      checkA: null, // 选择的一级问题
+      checkB: null, // 选择的二级问题
+      checkC: null, // 选择的一级配件
+      checkD: null, // 选择的二级配件
+      checkE: null, // 选择配件的数量
+      checkF: null, // 选择的师傅
+      checkG: null, // 师傅价格
       // checkH: null,
       checkId: null,
       totalCost: 0, // 成本
@@ -1531,11 +1531,11 @@ export default {
           this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
         if (this.discount) {
-          // console.log('??')
           this.priceSum = this.priceSum * this.discount * 0.1
         }
       }
     },
+    // 监听折扣
     discount () {
       this.discountData = null
       this.priceSum = 0
@@ -1549,7 +1549,6 @@ export default {
         this.totalCost += item.piecePrice * item.pieceNum
       }) // 配件
       if (this.discount) {
-        // console.log('??')
         this.priceSum = this.priceSum * this.discount * 0.1
       }
       if (this.guaranteeIndex) {
@@ -1621,7 +1620,7 @@ export default {
 }
 
 /deep/.customDes .ant-descriptions-item-label {
-  width: 100px;
+  width: 140px;
 }
 /deep/.proDes .ant-descriptions-item-label {
   width: 120px;
@@ -1634,7 +1633,14 @@ export default {
   width: 140px;
 }
 /deep/.sendDes .ant-descriptions-item-label {
-  width: 120px;
+  width: 140px;
+}
+/deep/.questionDes .ant-descriptions-item-label {
+  width: 140px;
+}
+
+/deep/.visitDes .ant-descriptions-item-label {
+  width: 140px;
 }
 
 </style>

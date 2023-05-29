@@ -122,10 +122,10 @@ export default {
 </script>
 
 <style>
-.ant-radio-wrapper{
+/* .ant-radio-wrapper{
   font-size: large;
   margin:10px 40px;
-}
+} */
 .level-box{
   width: 90%;
   margin: 0 auto;
@@ -138,7 +138,7 @@ export default {
 .levels{
   margin-bottom: 10px;
 }
-.remark{
+/* .remark{ */
   /* line-height: 24px; */
-}
+/* } */
 </style>

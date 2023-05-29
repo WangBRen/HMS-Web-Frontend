@@ -175,7 +175,7 @@ export default {
   data () {
     return {
       addressIndex: 2,
-      labelCol: { span: 7 },
+      labelCol: { span: 8 },
       wrapperCol: { span: 16 },
       infoForm: {
         customerName: '', // 客户名称
@@ -232,7 +232,9 @@ export default {
   },
   methods: {
     handleCancel () {
+      this.addressIndex = 2
       this.$refs.infoForm.resetFields()
+      this.infoForm.serviceAddress = ''
       this.infoForm.uploadImage = []
       this.$emit('closeAddRepair')
     },
@@ -306,10 +308,12 @@ export default {
         // console.log('res', res.data)
       }
     })
+    // console.log('111')
+    // console.log(this.$data)
+    // console.log(this.$options.data())
   },
   watch: {
     'infoForm.receiveAddress' (newData, oldData) {
-    //   console.log(newData, oldData)
       if (this.addressIndex === 1) {
         this.infoForm.serviceAddress = newData
       }
