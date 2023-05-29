@@ -864,8 +864,11 @@ export default {
       // 是否筛选时间
       if (this.startTime) {
         // console.log(this.startTime, this.endTime)
-        apiData.start = this.startTime
-        apiData.end = this.endTime
+        const localOffset = new Date().getTimezoneOffset() * 60000
+        const startTime = new Date(this.startTime - localOffset).toISOString()
+        const endTime = new Date(this.endTime - localOffset).toISOString()
+        apiData.start = startTime
+        apiData.end = endTime
       }
       // 是否月结
       if (this.checkMonthly === 'true') {
@@ -908,11 +911,10 @@ export default {
     changeTime (value) {
       this.startTime = value[0]
       this.endTime = value[1]
-      // console.log(this.startTime, '---', this.endTime)
       // this.startTime = moment(value[0]).format('YYYY-MM-DD')
       // this.endTime = moment(value[1]).format('YYYY-MM-DD')
-      // console.log(moment(value[0]).format('YYYY-MM-DD'))
-      // console.log(moment(value[1]).format('YYYY-MM-DD'))
+      // console.log(moment(value[0]).format('YYYY-MM-DD HH:mm'))
+      // console.log(moment(value[1]).format('YYYY-MM-DD HH:mm'))
     },
     checkTab (key) {
       // console.log(key)
