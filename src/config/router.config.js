@@ -77,6 +77,36 @@ if (domain.includes('aftersale')) {
             }
           ]
         },
+        {
+          path: '/product',
+          component: RouteView,
+          redirect: '/product/productOut',
+          name: 'productOut',
+          meta: { title: '产品管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          },
+          children: [
+            {
+              path: '/product/productOut',
+              name: 'productOut',
+              component: () => import('@/views/product/productOut'),
+              meta: {
+                title: '产品出入库',
+                keepAlive: true,
+                permission: ['after_sales_part']
+              }
+            },
+            {
+              path: '/product/productModel ',
+              name: 'productModel',
+              component: () => import('@/views/product/productModel '),
+              meta: {
+                title: '产品型号库',
+                keepAlive: true,
+                permission: ['after_sales_repair']
+              }
+            }
+          ]
+        },
         // Exception
         {
           hidden: true,
