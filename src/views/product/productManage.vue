@@ -1,8 +1,8 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin-bottom: 16px;" type="primary">新增产品编号</a-button>
-      <!-- <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="outProdect">批量出库</a-button> -->
+      <a-button style="margin-bottom: 16px;" type="primary" @click="handAddProduct">新增产品编号</a-button>
+      <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="outProdect">批量出库</a-button>
       <span style="margin-left: 8px">
         <template v-if="hasSelected">
           {{ `选中 ${selectedRowKeys.length} 项` }}
@@ -17,11 +17,16 @@
       :outModelvisible="outModelvisible"
       @closeOutModal="closeOutModal"
     />
+    <addProduct
+      v-if="productAddVisible"
+      :productAddVisible="productAddVisible"
+    />
   </div>
 </template>
 
 <script>
 import outRegistration from './outRegistration.vue'
+import addProduct from './addProduct.vue'
 const columns = [
   {
     title: '产品编号',
@@ -39,7 +44,7 @@ const columns = [
     key: 'name'
   },
   {
-    title: '出库状态',
+    title: '状态',
     dataIndex: 'chuku',
     key: 'chuku',
     scopedSlots: { customRender: 'chuku' }
@@ -70,7 +75,15 @@ const dataSource = [
     number: 'DM3401230052023002',
     date: '2023-05-30 09:18',
     name: '王强',
-    chuku: '已出库',
+    chuku: '未出库',
+    chukuDate: '2023-05-30 09:28'
+  },
+  {
+    key: '3',
+    number: 'DM3401230052023002',
+    date: '2023-05-30 09:18',
+    name: '王强',
+    chuku: '已绑定',
     chukuDate: '2023-05-30 09:28'
   }
 ]
@@ -87,7 +100,8 @@ const rowSelection = {
 }
 export default {
   components: {
-    outRegistration
+    outRegistration,
+    addProduct
   },
   data () {
     return {
@@ -95,7 +109,8 @@ export default {
       dataSource,
       rowSelection,
       selectedRowKeys: [],
-      outModelvisible: false // 出库登记弹框
+      outModelvisible: false, // 出库登记弹框
+      productAddVisible: false
     }
   },
   computed: {
@@ -114,6 +129,9 @@ export default {
     },
     closeOutModal () {
       this.outModelvisible = false
+    },
+    handAddProduct () {
+      this.productAddVisible = true
     }
   }
 }

@@ -1,25 +1,31 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin: 0 0 16px 20px;" @click="outProdect">批量出库</a-button>
+      <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false">
+        <a-button><a-icon type="export" />excel出库</a-button>
+      </a-upload>
       <span style="margin-left: 8px">
         <template v-if="hasSelected">
           {{ `选中 ${selectedRowKeys.length} 项` }}
         </template>
       </span>
-      <a-table :columns="columns" :data-source="dataSource" :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
+      <a-table :columns="columns" :data-source="dataSource">
         <a slot="operation">查看</a>
       </a-table>
     </a-card>
     <outRegistration
+      v-if="outModelvisible"
       :outModelvisible="outModelvisible"
       @closeOutModal="closeOutModal"
+      :importDataList="importDataList"
     />
   </div>
 </template>
 
 <script>
 import outRegistration from './outRegistration.vue'
+// import moment from 'moment'
+import xlsx from 'xlsx'
 const columns = [
   {
     title: '出库编号',
@@ -70,17 +76,6 @@ const dataSource = [
     chukuDate: '2023-05-30 09:28'
   }
 ]
-const rowSelection = {
-  onChange: (selectedRowKeys, selectedRows) => {
-    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-  },
-  onSelect: (record, selected, selectedRows) => {
-    console.log(record, selected, selectedRows)
-  },
-  onSelectAll: (selected, selectedRows, changeRows) => {
-    console.log(selected, selectedRows, changeRows)
-  }
-}
 export default {
   components: {
     outRegistration
@@ -89,7 +84,6 @@ export default {
     return {
       columns,
       dataSource,
-      rowSelection,
       selectedRowKeys: [],
       outModelvisible: false // 出库登记弹框
     }
@@ -104,12 +98,32 @@ export default {
       console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
     },
-    outProdect () {
-      this.outModelvisible = true
-      console.log(this.outModelvisible)
-    },
     closeOutModal () {
       this.outModelvisible = false
+    },
+    importData (file) {
+      this.importDataList = []
+      let reader = new FileReader()
+      reader.readAsBinaryString(file.file) // 这个是file.file文件，可不是file……
+      reader.onload = (ev) => {
+        const res = ev.target.result
+        const worker = xlsx.read(res, { type: 'binary' })
+        // 将返回的数据转换为json对象的数据
+        reader = xlsx.utils.sheet_to_json(worker.Sheets[worker.SheetNames[0]])
+        for (let i = 0; i < reader.length; i++) {
+          // 定义要导出的
+          const sheetData = {
+            brand: reader[i]['产品品牌'],
+            productModel: reader[i]['产品型号'],
+            unitPrice: reader[i]['单价'],
+            number: reader[i]['型号数量'],
+            productNo: reader[i]['产品编号']
+          }
+          this.importDataList.push(sheetData)
+        }
+        this.outModelvisible = true
+        console.log(this.importDataList, '导入的数据是---')
+      }
     }
   }
 }
