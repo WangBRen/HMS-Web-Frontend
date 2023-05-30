@@ -82,15 +82,25 @@ if (domain.includes('aftersale')) {
           component: RouteView,
           redirect: '/product/productOut',
           name: 'productOut',
-          meta: { title: '产品管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
           },
           children: [
+            {
+              path: '/product/productManage',
+              name: 'productManage',
+              component: () => import('@/views/product/productManage'),
+              meta: {
+                title: '产品运营',
+                keepAlive: true,
+                permission: ['after_sales_part']
+              }
+            },
             {
               path: '/product/productOut',
               name: 'productOut',
               component: () => import('@/views/product/productOut'),
               meta: {
-                title: '产品出入库',
+                title: '产品出库',
                 keepAlive: true,
                 permission: ['after_sales_part']
               }

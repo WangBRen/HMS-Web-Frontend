@@ -1,14 +1,16 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin: 0 0 16px 20px;" @click="outProdect">批量出库</a-button>
+      <a-button style="margin-bottom: 16px;" type="primary">新增产品编号</a-button>
+      <!-- <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="outProdect">批量出库</a-button> -->
       <span style="margin-left: 8px">
         <template v-if="hasSelected">
           {{ `选中 ${selectedRowKeys.length} 项` }}
         </template>
       </span>
       <a-table :columns="columns" :data-source="dataSource" :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
-        <a slot="operation">查看</a>
+        <a slot="operation" @click="outProdect">出库</a>
+        <a-tag slot="chuku" slot-scope="text">{{ text }}</a-tag>
       </a-table>
     </a-card>
     <outRegistration
@@ -22,29 +24,25 @@
 import outRegistration from './outRegistration.vue'
 const columns = [
   {
-    title: '出库编号',
+    title: '产品编号',
     dataIndex: 'number',
     key: 'number'
   },
   {
-    title: '出库数量',
-    dataIndex: 'num',
-    key: 'num'
+    title: '生产日期',
+    dataIndex: 'date',
+    key: 'date'
   },
   {
-    title: '客户名称',
-    dataIndex: 'customerName',
-    key: 'customerName'
-  },
-  {
-    title: '客户电话',
-    dataIndex: 'phone',
-    key: 'phone'
-  },
-  {
-    title: '出库人',
+    title: '生产人',
     dataIndex: 'name',
     key: 'name'
+  },
+  {
+    title: '出库状态',
+    dataIndex: 'chuku',
+    key: 'chuku',
+    scopedSlots: { customRender: 'chuku' }
   },
   {
     title: '出库日期',
@@ -62,9 +60,15 @@ const dataSource = [
   {
     key: '1',
     number: 'DM3401230052023001',
-    num: 23,
-    customerName: '张三',
-    phone: '18237463647',
+    date: '2023-05-30 09:18',
+    name: '王强',
+    chuku: '已出库',
+    chukuDate: '2023-05-30 09:28'
+  },
+  {
+    key: '2',
+    number: 'DM3401230052023002',
+    date: '2023-05-30 09:18',
     name: '王强',
     chuku: '已出库',
     chukuDate: '2023-05-30 09:28'
