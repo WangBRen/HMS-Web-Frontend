@@ -1,12 +1,13 @@
 <template>
   <a-modal
-    title="出库登记"
+    :title="mode==='shipment'?'出库登记':'出库详情'"
     :visible="outModelvisible"
     @ok="handleOk"
     @cancel="handleCancel"
     :width="1200"
   >
     <a-form-model
+      v-if="mode==='shipment'"
       ref="ruleForm"
       :model="form"
       :label-col="{ span:6 }"
@@ -75,6 +76,41 @@
       <!-- <a-row>
       </a-row> -->
     </a-form-model>
+    <a-descriptions bordered title="出库登记表" style="margin:10px 28px" v-if="mode==='viewDetail'">
+      <a-descriptions-item label="出库编号">
+        DM3401230052023001
+      </a-descriptions-item>
+      <a-descriptions-item label="出库总数量">
+        10
+      </a-descriptions-item>
+      <a-descriptions-item label="出库时间">
+        2023-05-30 18:00:00
+      </a-descriptions-item>
+      <a-descriptions-item label="客户名称">
+        张三
+      </a-descriptions-item>
+      <a-descriptions-item label="客户电话">
+        18273627362
+      </a-descriptions-item>
+      <a-descriptions-item label="出库人员">
+        李斯
+      </a-descriptions-item>
+      <a-descriptions-item label="物流方">
+        中通快递
+      </a-descriptions-item>
+      <a-descriptions-item label="应收金额">
+        1000
+      </a-descriptions-item>
+      <a-descriptions-item label="实收金额">
+        800
+      </a-descriptions-item>
+      <a-descriptions-item label="出货地">
+        广东省深圳市南山区
+      </a-descriptions-item>
+      <a-descriptions-item label="详细地址" :span="2">
+        南山智园108号
+      </a-descriptions-item>
+    </a-descriptions>
     <a-card title="出库单" style="margin:10px 28px">
       <a-table :columns="columns" :data-source="importDataList" :rowKey="(record, index) => index">
         <span slot="result" slot-scope="text,scope">
@@ -107,11 +143,11 @@ const columns = [
   },
   {
     title: '数量',
-    dataIndex: 'number',
-    key: 'number'
+    dataIndex: 'quantity',
+    key: 'quantity'
   },
   {
-    title: '出库编号',
+    title: '产品编号',
     dataIndex: 'productNo',
     key: 'productNo',
     width: 200
@@ -138,7 +174,14 @@ export default {
       default: () => {
         return []
       }
+    },
+    mode: {
+      type: String,
+      default: null
     }
+  },
+  mounted () {
+    console.log(this.mode)
   },
   data () {
     return {

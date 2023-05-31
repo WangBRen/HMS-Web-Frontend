@@ -10,7 +10,7 @@
         </template>
       </span>
       <a-table :columns="columns" :data-source="dataSource">
-        <a slot="operation">查看</a>
+        <a slot="operation" @click="viewDetails">查看</a>
       </a-table>
     </a-card>
     <outRegistration
@@ -18,6 +18,7 @@
       :outModelvisible="outModelvisible"
       @closeOutModal="closeOutModal"
       :importDataList="importDataList"
+      :mode="mode"
     />
   </div>
 </template>
@@ -85,7 +86,8 @@ export default {
       columns,
       dataSource,
       selectedRowKeys: [],
-      outModelvisible: false // 出库登记弹框
+      outModelvisible: false, // 出库登记弹框
+      mode: null
     }
   },
   computed: {
@@ -116,14 +118,19 @@ export default {
             brand: reader[i]['产品品牌'],
             productModel: reader[i]['产品型号'],
             unitPrice: reader[i]['单价'],
-            number: reader[i]['型号数量'],
+            quantity: reader[i]['型号数量'],
             productNo: reader[i]['产品编号']
           }
           this.importDataList.push(sheetData)
         }
         this.outModelvisible = true
+        this.mode = 'shipment'
         console.log(this.importDataList, '导入的数据是---')
       }
+    },
+    viewDetails () {
+      this.outModelvisible = true
+      this.mode = 'viewDetail'
     }
   }
 }

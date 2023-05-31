@@ -2,23 +2,29 @@
   <div>
     <a-card>
       <a-button style="margin-bottom: 16px;" type="primary" @click="handAddProduct">新增产品编号</a-button>
-      <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="outProdect">批量出库</a-button>
+      <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="batchOutProdect">批量出库</a-button>
       <span style="margin-left: 8px">
         <template v-if="hasSelected">
           {{ `选中 ${selectedRowKeys.length} 项` }}
         </template>
       </span>
-      <a-table :columns="columns" :data-source="dataSource" :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
-        <a slot="operation" @click="outProdect">出库</a>
-        <a-tag slot="chuku" slot-scope="text">{{ text }}</a-tag>
+      <a-table :columns="columns" :data-source="dataSource" :row-selection="rowSelection">
+        <span slot="operation" slot-scope="text,scope">
+          <a @click="outProdect(scope)" v-if="scope.state==='未出库'">出库</a>
+          <span v-else>-</span>
+        </span>
+        <a-tag slot="state" slot-scope="text">{{ text }}</a-tag>
       </a-table>
     </a-card>
     <outRegistration
+      :importDataList="dataList"
       :outModelvisible="outModelvisible"
       @closeOutModal="closeOutModal"
+      :mode="mode"
     />
     <addProduct
       v-if="productAddVisible"
+      @closeProductAdd="closeProductAdd"
       :productAddVisible="productAddVisible"
     />
   </div>
@@ -30,8 +36,18 @@ import addProduct from './addProduct.vue'
 const columns = [
   {
     title: '产品编号',
-    dataIndex: 'number',
-    key: 'number'
+    dataIndex: 'productNo',
+    key: 'productNo'
+  },
+  {
+    title: '品牌',
+    dataIndex: 'brand',
+    key: 'brand'
+  },
+  {
+    title: '型号',
+    dataIndex: 'productModel',
+    key: 'productModel'
   },
   {
     title: '生产日期',
@@ -45,14 +61,9 @@ const columns = [
   },
   {
     title: '状态',
-    dataIndex: 'chuku',
-    key: 'chuku',
-    scopedSlots: { customRender: 'chuku' }
-  },
-  {
-    title: '出库日期',
-    dataIndex: 'chukuDate',
-    key: 'chukuDate'
+    dataIndex: 'state',
+    key: 'state',
+    scopedSlots: { customRender: 'state' }
   },
   {
     title: '操作',
@@ -64,40 +75,41 @@ const columns = [
 const dataSource = [
   {
     key: '1',
-    number: 'DM3401230052023001',
+    productNo: 'DM3401230052023001',
     date: '2023-05-30 09:18',
+    brand: '杜马',
+    productModel: 'U32',
     name: '王强',
-    chuku: '已出库',
-    chukuDate: '2023-05-30 09:28'
+    state: '已出库'
   },
   {
     key: '2',
-    number: 'DM3401230052023002',
+    productNo: 'DM3401230052023002',
     date: '2023-05-30 09:18',
+    brand: '杜马',
+    productModel: 'U32',
     name: '王强',
-    chuku: '未出库',
-    chukuDate: '2023-05-30 09:28'
+    state: '未出库'
   },
   {
     key: '3',
-    number: 'DM3401230052023002',
+    productNo: 'DM3401230052023003',
     date: '2023-05-30 09:18',
+    brand: '杜马',
+    productModel: 'U32',
     name: '王强',
-    chuku: '已绑定',
-    chukuDate: '2023-05-30 09:28'
+    state: '已绑定'
+  },
+  {
+    key: '4',
+    productNo: 'DM3401230052023004',
+    date: '2023-05-30 09:18',
+    brand: '杜马',
+    productModel: 'U32',
+    name: '王强',
+    state: '未出库'
   }
 ]
-const rowSelection = {
-  onChange: (selectedRowKeys, selectedRows) => {
-    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-  },
-  onSelect: (record, selected, selectedRows) => {
-    console.log(record, selected, selectedRows)
-  },
-  onSelectAll: (selected, selectedRows, changeRows) => {
-    console.log(selected, selectedRows, changeRows)
-  }
-}
 export default {
   components: {
     outRegistration,
@@ -107,31 +119,65 @@ export default {
     return {
       columns,
       dataSource,
-      rowSelection,
       selectedRowKeys: [],
       outModelvisible: false, // 出库登记弹框
-      productAddVisible: false
+      productAddVisible: false,
+      dataList: [],
+      mode: null
     }
   },
   computed: {
     hasSelected () {
       return this.selectedRowKeys.length > 0
+    },
+    rowSelection () {
+      return {
+        onChange: (selectedRowKeys, selectedRows) => {
+          // this.dataList = selectedRows
+          // this.selectedRowKeys = selectedRowKeys
+          this.onChange(selectedRowKeys, selectedRows)
+        },
+        getCheckboxProps: record => ({
+          props: {
+            disabled: record.state !== '未出库',
+            state: record.state
+          }
+        })
+      }
     }
   },
   methods: {
-    onSelectChange (selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
+    onChange (selectedRowKeys, selectedRows) {
+      this.dataList = selectedRows
       this.selectedRowKeys = selectedRowKeys
+      // console.log('selectedRows: ', selectedRows, this.dataList)
     },
-    outProdect () {
+    outProdect (scope) {
+      console.log(scope)
       this.outModelvisible = true
-      console.log(this.outModelvisible)
+      this.dataList = []
+      const data = {
+        brand: scope.brand,
+        productModel: scope.productModel,
+        unitPrice: 0,
+        quantity: 1,
+        productNo: scope.productNo
+      }
+      this.dataList.push(data)
+      this.mode = 'shipment'
+    },
+    batchOutProdect () {
+      this.outModelvisible = true
+      this.mode = 'shipment'
     },
     closeOutModal () {
       this.outModelvisible = false
     },
     handAddProduct () {
       this.productAddVisible = true
+    },
+    closeProductAdd () {
+      this.productAddVisible = false
     }
   }
 }
