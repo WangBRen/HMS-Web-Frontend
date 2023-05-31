@@ -125,7 +125,7 @@ const columns = [
   },
   {
     title: '用户名',
-    dataIndex: 'userInfo.name',
+    dataIndex: 'nickname',
     scopedSlots: { customRender: 'nickname' }
   },
   {
