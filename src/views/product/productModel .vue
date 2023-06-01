@@ -15,7 +15,7 @@
         <span slot="action" slot-scope="text,record">
           <!-- <a-popconfirm title="确定删除？" @confirm="(record)"> -->
           <a @click="openEditModal('edit', record)">编辑 </a>
-          <a>| 删除</a>
+          <a @click="delProduct(record)">| 删除</a>
           <!-- </a-popconfirm> -->
         </span>
       </a-table>
@@ -36,8 +36,27 @@ const modelData = [
     productNumber: 123, // 产品号
     productModel: '产品型号113',
     productSequence: '产品序列',
-    productFunctions: ['功能一', '功能二', '功能三'],
-    productParts: ['配件一', '配件二'],
+    productFunctions: [
+      {
+        funName: '功能一'
+      },
+      {
+        funName: '功能二'
+      },
+      {
+        funName: '功能三'
+      }
+    ],
+    productParts: [
+      {
+        pieceName: '配件一',
+        piecePrice: 100
+      },
+      {
+        pieceName: '配件二',
+        piecePrice: 40
+      }
+    ],
     productControl: 123456, // 产品控制方案
     factoryPrice: 1001, // 出厂价格
     productBrand: '品牌逆风'
@@ -72,18 +91,18 @@ export default {
           key: 'productModel',
           align: 'center'
         },
-        {
-          title: '产品功能',
-          dataIndex: 'productFunctions',
-          key: 'productFunctions',
-          align: 'center'
-        },
-        {
-          title: '产品配件',
-          dataIndex: 'productParts',
-          key: 'productParts',
-          align: 'center'
-        },
+        // {
+        //   title: '产品功能',
+        //   dataIndex: 'productFunctions',
+        //   key: 'productFunctions',
+        //   align: 'center'
+        // },
+        // {
+        //   title: '产品配件',
+        //   dataIndex: 'productParts',
+        //   key: 'productParts',
+        //   align: 'center'
+        // },
         {
           title: '控制方案',
           dataIndex: 'productControl',
@@ -130,6 +149,9 @@ export default {
     },
     closeEditModal () {
       this.modalVisible = false
+    },
+    delProduct (data) {
+      console.log(data)
     }
   },
   created () {
