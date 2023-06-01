@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      title="新建产品型号"
+      :title="modalIndex === 1?'新建产品型号':'编辑产品型号'"
       v-if="modalVisible"
       :visible="modalVisible"
       @ok="okModal"
@@ -39,20 +39,27 @@
         <a-row>
           <a-col>
             <a-form-model-item label="产品功能" prop="productFunctions">
-              <!-- <a-input placeholder="请输入产品功能" v-model="productForm.productFunctions"></a-input> -->
-              <a-select style="width: 200px" >
-                <a-select-option v-for="item in partData" :key="item">
-                  {{ item }}
+              <a-select placeholder="请选择产品功能" style="width: 200px" v-model="checkC">
+                <a-select-option v-for="item in functionsData" :key="item.funName">
+                  {{ item.funName }}
                 </a-select-option>
               </a-select>
-              {{ productForm.productFunctions }}
+              <a-button style="line-height: 30px;" @click="addFun" :disabled="!checkC" type="primary">添加</a-button>
+              <div>
+                <div v-for="item in productForm.productFunctions" :key="item.funName">
+                  {{ item.funName }}
+                  <span>
+                    <a-icon @click="delFun(item)" type="close-circle" />
+                  </span>
+                </div>
+              </div>
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
           <a-col>
             <a-form-model-item label="产品配件" prop="productParts">
-              <a-select @change="checkFirstPart" style="width: 200px" v-model="checkA">
+              <a-select placeholder="请选择产品配件" @change="checkFirstPart" style="width: 200px" v-model="checkA">
                 <a-select-option v-for="item in partData" :key="item">
                   {{ item }}
                 </a-select-option>
@@ -63,7 +70,6 @@
                 </a-select-option>
               </a-select>
               <a-button style="line-height: 30px;" @click="addPart" :disabled="!checkB" type="primary">添加</a-button>
-              {{ productForm.productParts.pieceName }}
               <div>
                 <div v-for="item in productForm.productParts" :key="item.pieceName">
                   {{ item.pieceName }}
@@ -77,11 +83,17 @@
         </a-row>
         <a-row>
           <a-col>
+            <a-form-model-item label="控制方案" prop="productControl">
+              <a-input placeholder="请输入控制方案" v-model="productForm.productControl"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
             <a-form-model-item label="出厂价格" prop="factoryPrice">
               <a-input placeholder="请输入出厂价格" v-model="productForm.factoryPrice"></a-input>
             </a-form-model-item>
           </a-col>
-
         </a-row>
         <a-row>
           <a-col>
@@ -135,19 +147,28 @@ export default {
       part: [],
       partData: [],
       secondPart: [],
-      checkA: null,
-      checkB: null
+      checkA: undefined,
+      checkB: undefined,
+      checkC: undefined,
+      functionsData: [
+        {
+          funName: '功能一'
+        },
+        {
+          funName: '功能二'
+        }
+      ]
     }
   },
   methods: {
     closeEditModal1 () {
-      this.checkA = null
-      this.checkB = null
+      this.checkA = undefined
+      this.checkB = undefined
       this.$refs.productForm.resetFields()
     },
     closeEditModal () {
-      this.checkA = null
-      this.checkB = null
+      this.checkA = undefined
+      this.checkB = undefined
       this.$refs.productForm.resetFields()
       this.$emit('closeEditModal')
     },
@@ -160,7 +181,7 @@ export default {
       })
     },
     checkFirstPart (data) {
-      this.checkB = null
+      this.checkB = undefined
       this.secondPart = []
       this.part.filter(item => {
         if (item.belongPart === data) {
@@ -204,8 +225,8 @@ export default {
       } else {
         this.productForm.productParts.push(partAdd)
       }
-      this.checkA = null
-      this.checkB = null
+      this.checkA = undefined
+      this.checkB = undefined
       this.secondPart = []
     },
     delPart (deldata) {
@@ -235,6 +256,24 @@ export default {
         })
       }
     })
+    },
+    addFun () {
+    //   console.log(this.checkC)
+      const funAdd = {}
+      this.functionsData.filter(item => {
+        if (item.funName === this.checkC) {
+          funAdd.funName = item.funName
+        }
+      })
+      this.productForm.productFunctions.push(funAdd)
+      this.checkC = undefined
+    },
+    delFun (deldata) {
+      console.log(222, deldata)
+      const testData = this.productForm.productFunctions.filter(item => {
+        return item.funName !== deldata.funName
+      })
+      this.productForm.productFunctions = testData
     }
   },
   created () {
@@ -247,7 +286,7 @@ export default {
       if (this.modalIndex === 2) {
         // console.log('11', this.modalData)
         this.productForm = this.modalData
-        this.$forceUpdate()
+        // this.$forceUpdate()
         console.log(this.productForm)
       } else if (this.modalIndex === 1) {
         // console.log('22', this.modalData)
