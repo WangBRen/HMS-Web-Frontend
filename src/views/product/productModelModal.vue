@@ -4,7 +4,7 @@
       :title="modalIndex === 1?'新建产品型号':'编辑产品型号'"
       v-if="modalVisible"
       :visible="modalVisible"
-      @ok="okModal"
+      :footer="null"
       @cancel="closeEditModal"
       :width="1000"
     >
@@ -102,6 +102,16 @@
             </a-form-model-item>
           </a-col>
         </a-row>
+        <a-row style="text-align: center;">
+          <a-col>
+            <a-popconfirm title="确定提交信息？" @confirm="okModal">
+              <a-button style="margin: 0 20px;" type="primary">确认</a-button>
+            </a-popconfirm>
+            <a-popconfirm title="确定重置信息？" @confirm="resetModal">
+              <a-button style="margin: 0 20px;">重置</a-button>
+            </a-popconfirm>
+          </a-col>
+        </a-row>
       </a-form-model>
     </a-modal>
   </div>
@@ -179,6 +189,11 @@ export default {
           console.log('222')
         }
       })
+    },
+    resetModal () {
+      this.checkA = undefined
+      this.checkB = undefined
+      this.$refs.productForm.resetFields()
     },
     checkFirstPart (data) {
       this.checkB = undefined
@@ -269,7 +284,7 @@ export default {
       this.checkC = undefined
     },
     delFun (deldata) {
-      console.log(222, deldata)
+    //   console.log(222, deldata)
       const testData = this.productForm.productFunctions.filter(item => {
         return item.funName !== deldata.funName
       })

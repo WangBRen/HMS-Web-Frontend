@@ -13,10 +13,10 @@
         :pagination="false"
       >
         <span slot="action" slot-scope="text,record">
-          <!-- <a-popconfirm title="确定删除？" @confirm="(record)"> -->
           <a @click="openEditModal('edit', record)">编辑 </a>
-          <a @click="delProduct(record)">| 删除</a>
-          <!-- </a-popconfirm> -->
+          <a-popconfirm title="确定删除？" @confirm="delProduct(record)">
+            <a>| 删除</a>
+          </a-popconfirm>
         </span>
       </a-table>
     </a-card>
@@ -65,8 +65,27 @@ const modelData = [
     productNumber: 31, // 产品号
     productModel: '产品型号007',
     productSequence: '产品序列',
-    productFunctions: ['功能一', '功能二', '功能三'],
-    productParts: ['配件1', '配件5'],
+    productFunctions: [
+      {
+        funName: '功能一'
+      },
+      {
+        funName: '功能二'
+      },
+      {
+        funName: '功能三'
+      }
+    ],
+    productParts: [
+      {
+        pieceName: '配件一',
+        piecePrice: 100
+      },
+      {
+        pieceName: '配件二',
+        piecePrice: 40
+      }
+    ],
     productControl: 12, // 产品控制方案
     factoryPrice: 8000, // 出厂价格
     productBrand: '品牌顺风'
@@ -151,12 +170,17 @@ export default {
       this.modalVisible = false
     },
     delProduct (data) {
-      console.log(data)
+      console.log('删除', data)
+      this.getModel()
+    },
+    getModel () {
+      console.log('获取产品型号库')
     }
   },
   created () {
   },
   mounted () {
+    this.getModel()
   }
 }
 </script>

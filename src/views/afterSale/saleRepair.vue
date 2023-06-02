@@ -2,7 +2,7 @@
   <div>
     <a-card>
       <a-row>
-        <a-col :span="3">
+        <a-col :span="4">
           <span>&nbsp;月结单：</span>
           <a-select v-model="checkMonthly" default-value="all" style="width: 100px;">
             <a-select-option value="all">全部</a-select-option>
@@ -11,7 +11,7 @@
           </a-select>
           <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
-        <a-col :span="4">
+        <a-col :span="5">
           <a-range-picker
             style="width: 200px;"
             :show-time="{ format: 'HH:mm' }"
@@ -27,7 +27,7 @@
             @search="onSearch"
           />
         </a-col>
-        <a-col style="text-align: right;" :span="12">
+        <a-col style="text-align: right;" :span="10">
           <a-button style="margin-right: 10px;" type="primary" @click="openAddRepair">新增维修工单</a-button>
           <a-button type="primary" @click="exportAllData">导出信息单</a-button>
         </a-col>
