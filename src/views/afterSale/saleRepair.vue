@@ -194,6 +194,7 @@
       </a-row>
     </a-modal>
     <saleRepairModal
+      v-if="repairVisible"
       :repairVisible="repairVisible"
       :repairData="repairData"
       @closeRepairModal="closeRepairModal"

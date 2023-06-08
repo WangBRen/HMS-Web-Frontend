@@ -20,7 +20,8 @@ const api = {
   addNewPart: 'after-sale/part',
   editPart: (id) => { return `after-sale/part/${id}` },
   searchAfterSale: 'after-sale/search',
-  delAfterSale: (id) => 'after-sale/' + id + '/delete'
+  delAfterSale: (id) => 'after-sale/' + id + '/delete',
+  updateCustomerInfo: (id) => `after-sale/${id}/customerInfo` // 更新用户信息
 }
 
 // 新建维修工单
@@ -209,5 +210,13 @@ export function delAfterSale (id) {
   return request({
     url: api.delAfterSale(id),
     method: 'delete'
+  })
+}
+
+export function updateCustomerInfo (id, parameter) {
+  return request({
+    url: api.updateCustomerInfo(id),
+    method: 'put',
+    data: parameter
   })
 }

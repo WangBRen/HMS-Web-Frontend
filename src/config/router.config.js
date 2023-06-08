@@ -78,11 +78,41 @@ if (domain.includes('aftersale')) {
           ]
         },
         {
+          path: '/productIn',
+          component: RouteView,
+          redirect: '/productIn/productManage',
+          name: 'productManage',
+          meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          },
+          children: [
+            {
+              path: '/productIn/productManage',
+              name: 'productManage',
+              component: () => import('@/views/product/productManage'),
+              meta: {
+                title: '产品生产',
+                keepAlive: true,
+                permission: ['after_sales_part']
+              }
+            },
+            {
+              path: '/productIn/productModel ',
+              name: 'productModel',
+              component: () => import('@/views/product/productModel '),
+              meta: {
+                title: '产品型号库',
+                keepAlive: true,
+                permission: ['after_sales_repair']
+              }
+            }
+          ]
+        },
+        {
           path: '/product',
           component: RouteView,
           redirect: '/product/productOut',
           name: 'productOut',
-          meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          meta: { title: '出库管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
           },
           children: [
             {
@@ -103,16 +133,6 @@ if (domain.includes('aftersale')) {
                 title: '产品出库',
                 keepAlive: true,
                 permission: ['after_sales_part']
-              }
-            },
-            {
-              path: '/product/productModel ',
-              name: 'productModel',
-              component: () => import('@/views/product/productModel '),
-              meta: {
-                title: '产品型号库',
-                keepAlive: true,
-                permission: ['after_sales_repair']
               }
             }
           ]

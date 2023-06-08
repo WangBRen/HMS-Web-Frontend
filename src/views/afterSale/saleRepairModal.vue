@@ -14,25 +14,43 @@
         </a-steps>
         <!-- 客户信息 -->
         <div class="customDes" v-if="current>-1">
-          <div class="big_title">客户信息</div>
+          <div class="big_title">客户信息
+            <div style="float:right;">
+              <span @click="startClick" v-if="!editCustomer"><a-icon type="edit"/>修改信息</span>
+              <a-button v-if="editCustomer" @click="saveCustomer" type="primary">保存</a-button>
+            </div>
+          </div>
           <a-descriptions bordered size="small">
             <a-descriptions-item label="客户名">
-              {{ repairData.customerInfo.customerName }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.customerName }}</span>
+              <a-input placeholder="请输入客户姓名" v-if="editCustomer" v-model="editForm.customerName"/>
             </a-descriptions-item>
             <a-descriptions-item label="联系方式">
-              {{ repairData.customerInfo.customerPhone }}
+              <span>{{ repairData.customerInfo.customerPhone }}</span>
             </a-descriptions-item>
             <a-descriptions-item label="购买日期">
-              {{ repairData.customerInfo.purchaseDate | getDay }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.purchaseDate | getDay }}</span>
+              <a-date-picker v-if="editCustomer" v-model="editForm.purchaseDate"/>
             </a-descriptions-item>
             <a-descriptions-item label="品牌">
-              {{ repairData.customerInfo.brand }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.brand }}</span>
+              <a-select style="width: 100%;" v-if="editCustomer" placeholder="请选择产品品牌" v-model="editForm.brand" @change="changeBrand">
+                <a-select-option v-for="(item) in brandArrs" :key="item.name">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
             </a-descriptions-item>
             <a-descriptions-item label="型号">
-              {{ repairData.customerInfo.productModel }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.productModel }}</span>
+              <a-select style="width: 100%;" :disabled="!editForm.brand" v-if="editCustomer" placeholder="请选择产品型号" v-model="editForm.productModel">
+                <a-select-option v-for="(item) in modelArr" :key="item">
+                  {{ item }}
+                </a-select-option>
+              </a-select>
             </a-descriptions-item>
             <a-descriptions-item label="编号">
-              {{ repairData.customerInfo.productNo || '---' }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.productNo || '---' }}</span>
+              <a-input placeholder="请输入编号" v-if="editCustomer" v-model="editForm.productNo"/>
             </a-descriptions-item>
             <a-descriptions-item label="问题分类" :span="3">
               {{ repairData.customerInfo.problemCategory }}
@@ -41,15 +59,26 @@
               {{ repairData.customerInfo.problemExplain || '---' }}
             </a-descriptions-item>
             <a-descriptions-item label="收货地址">
-              {{ repairData.customerInfo.receiveAddress }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.receiveAddress }}</span>
+              <a-input placeholder="请输入收货地址" v-if="editCustomer" v-model="editForm.receiveAddress"/>
             </a-descriptions-item>
             <a-descriptions-item label="上门地址">
-              {{ repairData.customerInfo.isSameAddress? repairData.customerInfo.receiveAddress:repairData.customerInfo.serviceAddress }}
+              <span v-if="!editCustomer">{{ repairData.customerInfo.isSameAddress? repairData.customerInfo.receiveAddress:repairData.customerInfo.serviceAddress }}</span>
+              <a-input placeholder="请输入上门地址" v-if="editCustomer" v-model="editForm.serviceAddress"/>
             </a-descriptions-item>
             <a-descriptions-item label="图片/视频">
               <div v-for="(file,index) in repairData.customerInfo.uploadImage" :key="index">
                 <a :href="file.url" target="_blank">资料{{ index+1 }}</a>
               </div>
+              <a-upload
+                v-if="editCustomer"
+                name="file"
+                multiple
+                :action="'https://dev.hms.yootane.com/api/files/upload/file?watermark=yootane-'"
+                @change="value => handleChangeUpload(value)"
+              >
+                <a-button><a-icon type="upload" />上传文件</a-button>
+              </a-upload>
             </a-descriptions-item>
             <a-descriptions-item v-if="repairData.monthlyStatement !== null" label="月结单">
               <span style="font-size: 20px;font-weight: bold">{{ repairData.monthlyStatement | filterBoolean }}</span>
@@ -588,11 +617,12 @@
 </template>
 
 <script>
-import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess, getGuide as apiGetGuide, getParts as apiGetParts } from '@/api/afterSale'
+import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess, getGuide as apiGetGuide, getParts as apiGetParts, updateCustomerInfo } from '@/api/afterSale'
 import { getUserInfo as apiGetUserInfo } from '@/api/login'
 import { getUserList as apiGetUserList } from '@/api/manage'
 import saleRepairModalEstimate from './saleRepairModalAgainEstimate.vue'
 import moment from 'moment'
+import { brandData } from './saleRepairData'
 
 export default {
   props: {
@@ -716,10 +746,64 @@ export default {
       technologyArr: [],
       monthlyStatementIndex: null,
       estimateVisible: false,
-      modalIndex: ''
+      modalIndex: '',
+      editCustomer: false,
+      editForm: {},
+      // 品牌库
+      brandArrs: brandData,
+      // 产品库
+      modelArr: []
     }
   },
   methods: {
+    handleChangeUpload (data) {
+    // console.log('上传文件', data)
+      if (data.file.status === 'done') {
+        this.editForm.uploadImage.push(data.file.response.data)
+      } else if (data.file.status === 'error') {
+
+      } else if (data.file.status === 'removed') {
+        // const testArr = data.fileList.map(item => {
+        //   return item.response.data
+        // })
+        // this.editForm.uploadImage = testArr
+        this.editForm.uploadImage = this.editForm.uploadImage.filter(item => {
+          return item.fileName !== data.file.name
+        })
+      }
+    },
+    changeBrand () {
+      this.editForm.productModel = undefined
+    },
+    startClick () {
+      this.editForm = this.repairData.customerInfo
+      this.editCustomer = true
+      console.log('开始编辑', this.brandArrs)
+    },
+    // 保存用户信息
+    async saveCustomer () {
+      const payLoad = {}
+      payLoad.customerName = this.editForm.customerName
+      // payLoad.customerPhone = this.editForm.customerPhone
+      payLoad.productModel = this.editForm.productModel
+      payLoad.productNo = this.editForm.productNo
+      payLoad.brand = this.editForm.brand
+      payLoad.purchaseDate = this.editForm.purchaseDate
+      // payLoad.problemCategory = this.editForm.problemCategory
+      // payLoad.problemExplain = this.editForm.problemExplain
+      payLoad.uploadImage = this.editForm.uploadImage
+      payLoad.receiveAddress = this.editForm.receiveAddress
+      payLoad.isSameAddress = this.editForm.isSameAddress
+      payLoad.serviceAddress = this.editForm.serviceAddress
+      // payLoad.afterSaleType = this.editForm.afterSaleType
+      console.log('保存用户信息', payLoad)
+      const id = this.repairData.id
+      const res = await updateCustomerInfo(id, payLoad)
+      if (res.status === 200) {
+        this.$message.success('更改成功')
+        this.editCustomer = false
+      }
+    },
     closeRepairModals () {
     //   Object.assign(this.$data, this.$options.data())
       if (this.current === 0) {
@@ -1410,6 +1494,9 @@ export default {
   created () {
   },
   mounted () {
+    console.log('this.repairData.customerInfo', this.repairData.customerInfo)
+    this.editForm = this.repairData.customerInfo
+    this.editCustomer = false
     // 配件库
     const pages = { page: 0, size: 1 }
     apiGetParts(pages).then(res => {
@@ -1584,6 +1671,17 @@ export default {
         // ]
       }
       this.statementIndex = this.transferData
+    },
+    'editForm.brand' (newData, oldData) {
+      console.log(newData, oldData)
+    //   console.log('brandArrs', this.brandArrs)
+      // this.editForm.productModel = undefined
+      this.brandArrs.filter(item => {
+        if (item.name === newData) {
+          this.modelArr = item.modelArr
+        }
+      })
+    //   console.log('this.modelArr', this.modelArr)
     }
   }
 }
@@ -1618,7 +1716,9 @@ export default {
   box-shadow: 1px 1px 10px #55c7db81,
   -1px -1px 6px #7ee7faa4;
 }
-
+.customDes{
+  margin-top: 30px;
+}
 /deep/.customDes .ant-descriptions-item-label {
   width: 140px;
 }
