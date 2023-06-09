@@ -805,6 +805,7 @@ export default {
       }
     },
     closeRepairModals () {
+      this.editCustomer = false
     //   Object.assign(this.$data, this.$options.data())
       if (this.current === 0) {
         this.checkA = null

@@ -129,6 +129,10 @@ const columns = [
     scopedSlots: { customRender: 'nickname' }
   },
   {
+    title: '姓名',
+    dataIndex: 'userInfo.name'
+  },
+  {
     title: '用户角色',
     dataIndex: 'displayName',
     scopedSlots: { customRender: 'displayName' }
