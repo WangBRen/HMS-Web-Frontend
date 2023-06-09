@@ -30,67 +30,7 @@
 </template>
 <script>
 import productModelModal from './productModelModal.vue'
-
-const modelData = [
-  {
-    productNumber: 123, // 产品号
-    productModel: '产品型号113',
-    productSequence: '产品序列',
-    productFunctions: [
-      {
-        funName: '功能一'
-      },
-      {
-        funName: '功能二'
-      },
-      {
-        funName: '功能三'
-      }
-    ],
-    productParts: [
-      {
-        pieceName: '配件一',
-        piecePrice: 100
-      },
-      {
-        pieceName: '配件二',
-        piecePrice: 40
-      }
-    ],
-    productControl: 123456, // 产品控制方案
-    factoryPrice: 1001, // 出厂价格
-    productBrand: '品牌逆风'
-  },
-  {
-    productNumber: 31, // 产品号
-    productModel: '产品型号007',
-    productSequence: '产品序列',
-    productFunctions: [
-      {
-        funName: '功能一'
-      },
-      {
-        funName: '功能二'
-      },
-      {
-        funName: '功能三'
-      }
-    ],
-    productParts: [
-      {
-        pieceName: '配件一',
-        piecePrice: 100
-      },
-      {
-        pieceName: '配件二',
-        piecePrice: 40
-      }
-    ],
-    productControl: 12, // 产品控制方案
-    factoryPrice: 8000, // 出厂价格
-    productBrand: '品牌顺风'
-  }
-]
+import { getProducts } from '@/api/product'
 export default {
   components: {
     productModelModal
@@ -148,13 +88,20 @@ export default {
           align: 'center'
         }
       ],
-      modelData,
+      modelData: [],
       modalVisible: false,
       modalIndex: 1,
       modalData: {}
     }
   },
   methods: {
+    async getModel () {
+      const res = await getProducts()
+      if (res.status === 200) {
+        this.modelData = res.data.content
+      }
+      console.log('产品型号库', res)
+    },
     openEditModal (index, record) {
       // console.log(record)
       if (index === 'add') {
@@ -172,9 +119,6 @@ export default {
     delProduct (data) {
       console.log('删除', data)
       this.getModel()
-    },
-    getModel () {
-      console.log('获取产品型号库')
     }
   },
   created () {

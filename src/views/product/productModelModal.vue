@@ -65,14 +65,14 @@
                 </a-select-option>
               </a-select>
               <a-select :disabled="!secondPart.length" style="width: 200px" v-model="checkB">
-                <a-select-option v-for="item in secondPart" :key="item.pieceName">
-                  {{ item.pieceName }}
+                <a-select-option v-for="item in secondPart" :key="item.name">
+                  {{ item.name }}
                 </a-select-option>
               </a-select>
               <a-button style="line-height: 30px;" @click="addPart" :disabled="!checkB" type="primary">添加</a-button>
               <div>
-                <div v-for="item in productForm.productParts" :key="item.pieceName">
-                  {{ item.pieceName }}
+                <div v-for="item in productForm.productParts" :key="item.id">
+                  {{ item.name }}
                   <span>
                     <a-icon @click="delPart(item)" type="close-circle" />
                   </span>
@@ -118,6 +118,8 @@
 </template>
 <script>
 import { getParts as apiGetParts } from '@/api/afterSale'
+import { addProduct } from '@/api/product'
+
 export default {
   props: {
     modalVisible: {
@@ -186,9 +188,29 @@ export default {
       console.log('111', this.productForm)
       this.$refs.productForm.validate(valid => {
         if (valid) {
+          // 提交表单
+          const payLoad = {}
+          payLoad.name = this.productForm.productModel
+          payLoad.productNumber = this.productForm.productNumber
+          payLoad.productModel = this.productForm.productModel
+          payLoad.productSerial = this.productForm.productSequence
+          payLoad.productFunction = this.productForm.productFunctions
+          payLoad.productParts = this.productForm.productParts
+          payLoad.productControlPlan = this.productForm.productControl
+          payLoad.productPrice = this.productForm.factoryPrice
+          payLoad.productBrand = this.productForm.productBrand
+          this.creatProduct(payLoad)
           console.log('222')
         }
       })
+    },
+    async creatProduct (payLoad) {
+      const res = await addProduct(payLoad)
+      if (res.status === 200) {
+        this.$message.success('添加成功')
+        this.$emit('closeEditModal')
+      }
+      console.log('提交表单', res)
     },
     resetModal () {
       this.checkA = undefined
@@ -197,34 +219,36 @@ export default {
     },
     checkFirstPart (data) {
       this.checkB = undefined
-      this.secondPart = []
-      this.part.filter(item => {
-        if (item.belongPart === data) {
-          const addData = {
-            pieceName: item.name,
-            piecePrice: item.price, // 报价
-            pieceCost: item.cost, // 成本
-            pieceStock: item.stock, // 库存
-            pieceId: item.id, // id
-            pieceNumber: item.serialNumber // 编码
-          }
-          this.secondPart.push(addData)
-        }
+      const secondPart = this.part.filter(item => {
+        // if (item.belongPart === data) {
+        //   return item
+          // const addData = {
+          //   pieceName: item.name,
+          //   piecePrice: item.price, // 报价
+          //   pieceCost: item.cost, // 成本
+          //   pieceStock: item.stock, // 库存
+          //   pieceId: item.id, // id
+          //   pieceNumber: item.serialNumber // 编码
+          // }
+          // this.secondPart.push(addData)
+        // }
+        return item.belongPart === data
       })
+      this.secondPart = secondPart
     },
     addPart () {
-      const partAdd = {}
-      this.secondPart.filter(item => {
-        if (item.pieceName === this.checkB) {
-          partAdd.pieceName = item.pieceName
-          partAdd.piecePrice = item.piecePrice
-          partAdd.pieceCost = item.pieceCost
-          partAdd.pieceStock = item.pieceStock
-          partAdd.pieceNum = this.checkE
-          partAdd.pieceId = item.pieceId
-          partAdd.pieceNumber = item.pieceNumber
-        }
-      })
+      const partAdd = this.secondPart.filter(item => {
+        // if () {
+          return item.name === this.checkB
+          // partAdd.pieceName = item.pieceName
+          // partAdd.piecePrice = item.piecePrice
+          // partAdd.pieceCost = item.pieceCost
+          // partAdd.pieceStock = item.pieceStock
+          // partAdd.pieceNum = this.checkE
+          // partAdd.pieceId = item.pieceId
+          // partAdd.pieceNumber = item.pieceNumber
+        // }
+      })[0]
       if (this.productForm.productParts.length !== 0) {
         for (let i = 0; i < this.productForm.productParts.length; i++) {
           if (this.checkB === this.productForm.productParts[i].pieceName) {
@@ -246,7 +270,7 @@ export default {
     },
     delPart (deldata) {
       const testData = this.productForm.productParts.filter(item => {
-        return item.pieceName !== deldata.pieceName
+        return item.id !== deldata.id
       })
       this.productForm.productParts = testData
     },
