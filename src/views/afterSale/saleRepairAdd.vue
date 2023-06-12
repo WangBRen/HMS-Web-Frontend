@@ -97,8 +97,8 @@
               <div>
                 <span>
                   <a-radio-group name="radioGroup" v-model="infoForm.monthlyStatement">
-                    <a-radio :value="true">是</a-radio>
-                    <a-radio :value="false">否</a-radio>
+                    <a-radio @click.native.prevent="onStatement(true)" :value="true">是</a-radio>
+                    <a-radio @click.native.prevent="onStatement(false)" :value="false">否</a-radio>
                   </a-radio-group>
                 </span>
                 <span style="color: red;">（慎重选择）</span>
@@ -296,6 +296,13 @@ export default {
     },
     disabledDate (current) {
       return current && current > moment().endOf('day')
+    },
+    onStatement (data) {
+      if (data === this.infoForm.monthlyStatement) {
+        this.infoForm.monthlyStatement = null
+      } else {
+        this.infoForm.monthlyStatement = data
+      }
     }
   },
   created () {
