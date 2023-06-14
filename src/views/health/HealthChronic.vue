@@ -125,14 +125,17 @@
         </a-row>
         <a-row>
           <a-col :span="22">
-            <a-button @click="addTargetArr" type="dashed" style="display:block;margin:0 auto;width:60%">
+            <a-button v-if="!(formData.targetArr.length>0 && formData.targetArr[formData.targetArr.length-1].indexItemId === null)" @click="addTargetArr" type="dashed" style="display:block;margin:0 auto;width:60%">
               <a-icon type="plus" /> 添加指标
+              <!-- formData.targetArr[formData.targetArr.length-1].indexItemId -->
             </a-button>
           </a-col>
         </a-row>
       </a-form-model>
     </a-modal>
     <editChronice
+      v-if="editVisible"
+      :indexArr="indexArr"
       :editData="editData"
       :editVisible="editVisible"
       @closeEditModal="closeEditModal"
@@ -159,12 +162,8 @@
 </template>
 
 <script>
-import { getHealthIndex, getHeathLevels } from '@/api/health'
-// import { getHeathLevels } from '@/api/health'
-// import { getHealthIndex } from '@/api/health'
-// import { addChronic as apiAddChronic, getChronic as apiGetChronic } from '@/api/chronic'
+import { getHealthIndex as apiGetHealthIndex, getHeathLevels as apiGetHeathLevels } from '@/api/health'
 import { getChronic as apiGetChronic, addChronic as apiAddChronic, getSpeechList as apiGetSpeechList, getOneChronic as apiGetOneChronic } from '@/api/chronic'
-// import { getChronic as apiGetChronic, getSpeechList as apiGetSpeechList } from '@/api/chronic'
 
 import getChronicName from './components/HealthChronicName.vue'
 import editChronice from './HealthChronicEdit.vue'
@@ -236,8 +235,7 @@ export default {
           files: [],
           targetArr: []
         },
-        indexArr: [
-        ],
+        indexArr: [],
         addChronicIndexVisible: false,
         labelCol: { span: 4 },
         wrapperCol: { span: 16 },
@@ -275,7 +273,7 @@ export default {
       }
     },
     created () {
-      this.$setPageDataLoader(this.getChronic)
+      this.$setPageDataLoader(this.getChronic2)
     },
     mounted () {
       this.getChronic()
@@ -364,7 +362,7 @@ export default {
         // console.log('gradingVisible', this.gradingVisible)
         const diseaseId = data.id
         this.gradingVisible = true
-        getHeathLevels(diseaseId).then(res => {
+        apiGetHeathLevels(diseaseId).then(res => {
           if (res.status === 200) {
             this.gradingInfo = data
             this.gradingData = []
@@ -409,7 +407,7 @@ export default {
       delChronicTable (data) {
         // console.log('删除', data)
       },
-      // 获取慢病表
+      // 获取慢病表和指标表
       getChronic () {
         const pages = {
           page: this.pagination.current,
@@ -422,7 +420,7 @@ export default {
             this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
             this.pagination.total = res.data.totalElements
             // 获取指标
-            getHealthIndex().then(res => {
+            apiGetHealthIndex().then(res => {
               if (res.status === 200) {
                 const resData = res.data
                 // console.log('接口数据', resData)
@@ -452,14 +450,30 @@ export default {
           }
         })
       },
+      // 获取慢病表
+      getChronic2 () {
+        const pages = {
+          page: this.pagination.current,
+          size: this.pagination.pageSize
+        }
+        apiGetChronic(pages).then(res => {
+          if (res.status === 200) {
+            // const resData = res.data.content
+            // this.tableData = resData
+            this.tableData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+            this.pagination.total = res.data.totalElements
+            // 获取指标
+          }
+        })
+      },
       onSizeChange (current, pageSize) {
         this.pagination.current = 1
         this.pagination.pageSize = pageSize
-        this.getChronic()
+        this.getChronic2()
       },
       onPageChange (page, pageSize) {
         this.pagination.current = page
-        this.getChronic()
+        this.getChronic2()
       },
       setChronicName (value, filter) {
         // console.log('value', value)
