@@ -35,10 +35,14 @@ export function creatDevice (parameter) {
 }
 
 // 查询设备
-export function getDevices () {
+export function getDevices (pages) {
   return request({
     url: api.devices,
-    method: 'get'
+    method: 'get',
+    params: {
+        page: pages.page || 0,
+        size: pages.size || 10
+    }
   })
 }
 
@@ -50,10 +54,15 @@ export function creatOrders (parameter) {
   })
 }
 
-export function getOrders () {
+export function getOrders (pages) {
   return request({
     url: api.orders,
-    method: 'get'
+    method: 'get',
+    params: {
+        page: pages.page || 0,
+        size: pages.size || 10,
+        order: 'desc'
+    }
   })
 }
 

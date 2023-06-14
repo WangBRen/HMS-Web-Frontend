@@ -80,23 +80,23 @@ if (domain.includes('aftersale')) {
         {
           path: '/productIn',
           component: RouteView,
-          redirect: '/productIn/productManage',
-          name: 'productManage',
+          redirect: '/productIn/products',
+          name: 'products',
           meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
           },
           children: [
             {
-              path: '/productIn/productManage',
-              name: 'productManage',
+              path: '/productIn/products',
+              name: 'products',
               component: () => import('@/views/product/productManage'),
               meta: {
-                title: '产品生产',
+                title: '设备生产',
                 keepAlive: true,
                 permission: ['after_sales_part']
               }
             },
             {
-              path: '/productIn/productModel ',
+              path: '/productIn/productModel',
               name: 'productModel',
               component: () => import('@/views/product/productModel '),
               meta: {
@@ -116,24 +116,25 @@ if (domain.includes('aftersale')) {
           },
           children: [
             {
-              path: '/product/productManage',
-              name: 'productManage',
-              component: () => import('@/views/product/productManage'),
+              path: '/product/productOut',
+              name: 'productOut',
+              component: () => import('@/views/product/productOut'),
               meta: {
-                title: '产品运营',
+                title: '出库订单',
                 keepAlive: true,
                 permission: ['after_sales_part']
               }
             },
             {
-              path: '/product/productOut',
-              name: 'productOut',
-              component: () => import('@/views/product/productOut'),
+              path: '/product/productManage',
+              name: 'productManage',
+              component: () => import('@/views/product/productManage'),
               meta: {
-                title: '产品出库',
+                title: '设备运营',
                 keepAlive: true,
                 permission: ['after_sales_part']
-              }
+              },
+              props: true
             }
           ]
         },

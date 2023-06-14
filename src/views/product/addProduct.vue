@@ -13,23 +13,24 @@
       :wrapper-col="{ span: 18 }"
       :rules="formRules"
     >
-      <a-form-model-item ref="brand" label="品牌" prop="brand">
-        <a-select v-model="form.brand" placeholder="请选择品牌">
-          <a-select-option value="shanghai">
-            杜马
+      <!-- <a-form-model-item ref="productId" label="产品" prop="productId">
+        <a-select v-model="form.productId" placeholder="请选择产品">
+          <a-select-option :value="product.id" v-for="product in products" :key="product.id">
+            {{ product.productNumber }}_{{ product.productModel }}_{{ product.productBrand }}
           </a-select-option>
-          <a-select-option value="beijing">
-            攸太
+        </a-select>
+      </a-form-model-item> -->
+      <a-form-model-item ref="brand" label="品牌" prop="brand">
+        <a-select v-model="form.brand" placeholder="请选择品牌" @change="changeBrand">
+          <a-select-option :value="brand" v-for="brand in brands" :key="brand.index">
+            {{ brand }}
           </a-select-option>
         </a-select>
       </a-form-model-item>
       <a-form-model-item ref="productModel" label="型号" prop="productModel">
-        <a-select v-model="form.productModel" placeholder="请选择型号">
-          <a-select-option value="1">
-            U32
-          </a-select-option>
-          <a-select-option value="2">
-            A5+
+        <a-select :disabled="!form.brand" v-model="form.productModel" placeholder="请选择型号">
+          <a-select-option :value="model" v-for="model in models" :key="model.index">
+            {{ model }}
           </a-select-option>
         </a-select>
       </a-form-model-item>
@@ -71,8 +72,10 @@
 </template>
 
 <script>
-import { creatDevice } from '@/api/product'
+import { creatDevice, getDevices, getProducts } from '@/api/product'
 import { getUserInfo } from '@/api/login'
+import moment from 'moment'
+
 export default {
   props: {
     productAddVisible: {
@@ -83,12 +86,13 @@ export default {
   data () {
     return {
       form: {
+        productId: undefined,
         brand: undefined,
         productModel: undefined,
         color: undefined,
         definition: undefined,
         ceramicPitSpacing: undefined,
-        num: 0
+        num: null
       },
       formRules: {
         brand: [
@@ -97,6 +101,9 @@ export default {
         productModel: [
           { required: true, message: '请选择型号', trigger: 'blur' }
         ],
+        // productId: [
+        //   { required: true, message: '请选择产品', trigger: 'blur' }
+        // ],
         color: [
           { required: true, message: '请选择颜色', trigger: 'blur' }
         ],
@@ -113,20 +120,59 @@ export default {
           { required: true, message: '请输入台数', trigger: 'blur' }
         ]
       },
-      operator: ''
+      operator: '',
+      totalNum: '',
+      products: [],
+      brands: [],
+      models: []
     }
   },
   methods: {
+    changeBrand (e) {
+      console.log(e)
+      this.form.productModel = undefined
+      const models = new Set(this.products.filter(item => {
+        return item.productBrand === e
+      }).map(product => { return product.productModel }))
+      this.models = [...models]
+    },
+    async getProducts () {
+      const res = await getProducts()
+      this.products = res.data.content
+      const brands = new Set(this.products.map(item => {
+        return item.productBrand
+      }))
+      this.brands = [...brands]
+    },
+    async getTodayNum () {
+      const resp = await getDevices({ page: 0, size: 1 })
+      const size = resp.data.totalElements || 1
+      const res = await getDevices({ page: 0, size: size })
+      if (res.status === 200) {
+        const num = res.data.content.filter(item => {
+          return moment(item.createdAt).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+        })
+        this.totalNum = num.length
+      }
+    },
     handleOk (e) {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
-          const serialNumber = ''
+          const today = new Date()
+          const year = today.getFullYear()
+          const month = String(today.getMonth() + 1).padStart(2, '0')
+          const day = String(today.getDate()).padStart(2, '0')
+          const form = this.form
+          const product = this.products.filter(item => {
+            return item.productBrand === form.brand && item.productModel === form.productModel
+          })[0]
+          const serialNumber = form.brand + form.productModel + form.color + form.definition + form.ceramicPitSpacing + day + month + year // 产品编号前缀
           const payLoad = {}
-          payLoad.serialNumber = serialNumber
-          payLoad.productId = null
+          payLoad.productId = product.id
           payLoad.status = 'NOT_OUT'
           payLoad.operator = this.operator
-          for (var i = 0; i < this.num; i++) {
+          for (var i = 1; i <= form.num; i++) {
+            payLoad.serialNumber = serialNumber + String(i + this.totalNum).padStart(3, '0')
             this.creatDevice(payLoad)
           }
         } else {
@@ -138,7 +184,7 @@ export default {
     async creatDevice (payLoad) {
       const res = await creatDevice(payLoad)
       if (res.status === 200) {
-        this.$emit('closeOutModal')
+        this.$emit('successProductAdd')
       }
       console.log('创建设备', res)
     },
@@ -151,6 +197,8 @@ export default {
     }
   },
   mounted () {
+    this.getProducts()
+    this.getTodayNum()
     getUserInfo().then(res => {
       this.operator = res.data.nickname
       // console.log('getUserInfo', res)

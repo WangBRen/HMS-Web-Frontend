@@ -9,39 +9,44 @@
           {{ `选中 ${selectedRowKeys.length} 项` }}
         </template>
       </span>
-      <a-table :columns="columns" :data-source="dataSource">
-        <a slot="operation" @click="viewDetails">查看</a>
+      <a-table :columns="columns" :data-source="dataSource" :pagination="pagination">
+        <span slot="operation" slot-scope="text,scope">
+          <a @click="viewDetails(scope)">查看</a>
+        </span>
       </a-table>
     </a-card>
     <outRegistration
       v-if="outModelvisible"
       :outModelvisible="outModelvisible"
       @closeOutModal="closeOutModal"
-      :importDataList="importDataList"
+      @successOut="successOut"
+      :dataList="importDataList"
       :mode="mode"
+      :viewDetail="detailData"
     />
   </div>
 </template>
 
 <script>
 import outRegistration from './outRegistration.vue'
-// import moment from 'moment'
+import { getOrders } from '@/api/product'
+import moment from 'moment'
 import xlsx from 'xlsx'
 const columns = [
   {
     title: '出库编号',
-    dataIndex: 'number',
-    key: 'number'
+    dataIndex: 'outNumber',
+    key: 'outNumber'
   },
   {
     title: '出库数量',
-    dataIndex: 'num',
-    key: 'num'
+    dataIndex: 'totalAmount',
+    key: 'totalAmount'
   },
   {
     title: '客户名称',
-    dataIndex: 'customerName',
-    key: 'customerName'
+    dataIndex: 'name',
+    key: 'name'
   },
   {
     title: '客户电话',
@@ -50,31 +55,20 @@ const columns = [
   },
   {
     title: '出库人',
-    dataIndex: 'name',
-    key: 'name'
+    dataIndex: 'outPerson',
+    key: 'outPerson'
   },
   {
     title: '出库日期',
-    dataIndex: 'chukuDate',
-    key: 'chukuDate'
+    dataIndex: 'outTime',
+    key: 'outTime',
+    customRender: (text, record, index) => record ? moment(record.outTime).format('YYYY-MM-DD HH:mm:ss') : ''
   },
   {
     title: '操作',
     dataIndex: 'operation',
     key: 'operation',
     scopedSlots: { customRender: 'operation' }
-  }
-]
-const dataSource = [
-  {
-    key: '1',
-    number: 'DM3401230052023001',
-    num: 23,
-    customerName: '张三',
-    phone: '18237463647',
-    name: '王强',
-    chuku: '已出库',
-    chukuDate: '2023-05-30 09:28'
   }
 ]
 export default {
@@ -84,10 +78,22 @@ export default {
   data () {
     return {
       columns,
-      dataSource,
+      dataSource: [],
       selectedRowKeys: [],
       outModelvisible: false, // 出库登记弹框
-      mode: null
+      mode: null,
+      detailData: {},
+      importDataList: [],
+      pagination: {
+        total: 0,
+        current: 1,
+        pageSize: 10, // 默认每页显示数量
+        showSizeChanger: true, // 显示可改变每页数量
+        pageSizeOptions: ['10', '20', '50', '100'], // 每页数量选项
+        showTotal: total => `共 ${total} 个订单`, // 显示总数
+        onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
+        onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
+      }
     }
   },
   computed: {
@@ -95,10 +101,38 @@ export default {
       return this.selectedRowKeys.length > 0
     }
   },
+  mounted () {
+    this.getOrders()
+  },
   methods: {
+    onPageChange (page, pageSize) {
+      this.pagination.current = page
+      this.getOrders()
+    },
+    onSizeChange (current, pageSize) {
+      this.pagination.current = 1
+      this.pagination.pageSize = pageSize
+      this.getOrders()
+    },
+    async getOrders () {
+      const pages = {
+        page: this.pagination.current - 1,
+        size: this.pagination.pageSize
+      }
+      const res = await getOrders(pages)
+      if (res.status === 200) {
+        this.dataSource = res.data.content
+      }
+      this.pagination.total = res.data.totalElements
+      console.log(res)
+    },
     onSelectChange (selectedRowKeys) {
       console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
+    },
+    successOut () {
+      this.$message.success('出库成功')
+      this.outModelvisible = false
     },
     closeOutModal () {
       this.outModelvisible = false
@@ -117,10 +151,11 @@ export default {
           const sheetData = {
             brand: reader[i]['产品品牌'],
             productModel: reader[i]['产品型号'],
-            unitPrice: reader[i]['单价'],
-            quantity: reader[i]['型号数量'],
-            productNo: reader[i]['产品编号']
+            price: reader[i]['单价'],
+            amount: reader[i]['型号数量'],
+            serialNumbers: reader[i]['产品编号'].split('、')
           }
+          console.log('切割编号', reader[i]['产品编号'].split('、'))
           this.importDataList.push(sheetData)
         }
         this.outModelvisible = true
@@ -128,8 +163,11 @@ export default {
         console.log(this.importDataList, '导入的数据是---')
       }
     },
-    viewDetails () {
+    viewDetails (data) {
+      console.log('data', data)
       this.outModelvisible = true
+      this.detailData = data
+      this.importDataList = data.orders
       this.mode = 'viewDetail'
     }
   }

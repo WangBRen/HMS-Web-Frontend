@@ -50,34 +50,22 @@ export default {
           key: 'productModel',
           align: 'center'
         },
-        // {
-        //   title: '产品功能',
-        //   dataIndex: 'productFunctions',
-        //   key: 'productFunctions',
-        //   align: 'center'
-        // },
-        // {
-        //   title: '产品配件',
-        //   dataIndex: 'productParts',
-        //   key: 'productParts',
-        //   align: 'center'
-        // },
-        {
-          title: '控制方案',
-          dataIndex: 'productControl',
-          key: 'productControl',
-          align: 'center'
-        },
-        {
-          title: '出厂价格',
-          dataIndex: 'factoryPrice',
-          key: 'factoryPrice',
-          align: 'center'
-        },
         {
           title: '品牌',
           dataIndex: 'productBrand',
           key: 'productBrand',
+          align: 'center'
+        },
+        {
+          title: '出厂价格',
+          dataIndex: 'productPrice',
+          key: 'productPrice',
+          align: 'center'
+        },
+        {
+          title: '控制方案',
+          dataIndex: 'productControlPlan',
+          key: 'productControlPlan',
           align: 'center'
         },
         {
@@ -115,6 +103,7 @@ export default {
     },
     closeEditModal () {
       this.modalVisible = false
+      this.getModel()
     },
     delProduct (data) {
       console.log('删除', data)

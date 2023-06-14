@@ -31,23 +31,23 @@
         </a-row>
         <a-row>
           <a-col>
-            <a-form-model-item label="产品序列" prop="productSequence">
-              <a-input placeholder="请输入产品序列" v-model="productForm.productSequence"></a-input>
+            <a-form-model-item label="产品序列" prop="productSerial">
+              <a-input placeholder="请输入产品序列" v-model="productForm.productSerial"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
           <a-col>
-            <a-form-model-item label="产品功能" prop="productFunctions">
+            <a-form-model-item label="产品功能" prop="productFunction">
               <a-select placeholder="请选择产品功能" style="width: 200px" v-model="checkC">
-                <a-select-option v-for="item in functionsData" :key="item.funName">
-                  {{ item.funName }}
+                <a-select-option v-for="item in functionsData" :key="item">
+                  {{ item }}
                 </a-select-option>
               </a-select>
               <a-button style="line-height: 30px;" @click="addFun" :disabled="!checkC" type="primary">添加</a-button>
               <div>
-                <div v-for="item in productForm.productFunctions" :key="item.funName">
-                  {{ item.funName }}
+                <div v-for="item in productForm.productFunction" :key="item">
+                  {{ item }}
                   <span>
                     <a-icon @click="delFun(item)" type="close-circle" />
                   </span>
@@ -83,15 +83,15 @@
         </a-row>
         <a-row>
           <a-col>
-            <a-form-model-item label="控制方案" prop="productControl">
-              <a-input placeholder="请输入控制方案" v-model="productForm.productControl"></a-input>
+            <a-form-model-item label="控制方案" prop="productControlPlan">
+              <a-input placeholder="请输入控制方案" v-model="productForm.productControlPlan"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
         <a-row>
           <a-col>
-            <a-form-model-item label="出厂价格" prop="factoryPrice">
-              <a-input placeholder="请输入出厂价格" v-model="productForm.factoryPrice"></a-input>
+            <a-form-model-item label="出厂价格" prop="productPrice">
+              <a-input-number placeholder="请输入出厂价格" :min="1" v-model="productForm.productPrice"></a-input-number>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -118,7 +118,7 @@
 </template>
 <script>
 import { getParts as apiGetParts } from '@/api/afterSale'
-import { addProduct } from '@/api/product'
+import { addProduct, updateProduct } from '@/api/product'
 
 export default {
   props: {
@@ -144,11 +144,11 @@ export default {
       productForm: {
         productNumber: undefined,
         productModel: undefined,
-        productSequence: undefined,
-        productFunctions: [],
+        productSerial: undefined,
+        productFunction: [],
         productParts: [],
-        productControl: undefined,
-        factoryPrice: undefined,
+        productControlPlan: undefined,
+        productPrice: undefined,
         productBrand: undefined
       },
       modelRules: {
@@ -163,12 +163,7 @@ export default {
       checkB: undefined,
       checkC: undefined,
       functionsData: [
-        {
-          funName: '功能一'
-        },
-        {
-          funName: '功能二'
-        }
+        '功能一', '功能二'
       ]
     }
   },
@@ -193,16 +188,27 @@ export default {
           payLoad.name = this.productForm.productModel
           payLoad.productNumber = this.productForm.productNumber
           payLoad.productModel = this.productForm.productModel
-          payLoad.productSerial = this.productForm.productSequence
-          payLoad.productFunction = this.productForm.productFunctions
-          payLoad.productParts = this.productForm.productParts
-          payLoad.productControlPlan = this.productForm.productControl
-          payLoad.productPrice = this.productForm.factoryPrice
+          payLoad.productSerial = this.productForm.productSerial
+          payLoad.productFunction = this.productForm.productFunction
+          payLoad.productPartsId = this.productForm.productParts.map(item => { return item.id })
+          payLoad.productControlPlan = this.productForm.productControlPlan
+          payLoad.productPrice = this.productForm.productPrice
           payLoad.productBrand = this.productForm.productBrand
-          this.creatProduct(payLoad)
-          console.log('222')
+          if (this.modalIndex === 1) {
+            this.creatProduct(payLoad)
+          } else {
+            this.updateProduct(payLoad)
+          }
+          console.log('222', this.modalIndex)
         }
       })
+    },
+    async updateProduct (payLoad) {
+      const res = await updateProduct(this.modalData.id, payLoad)
+      if (res.status === 200) {
+        this.$message.success('修改成功')
+        this.$emit('closeEditModal')
+      }
     },
     async creatProduct (payLoad) {
       const res = await addProduct(payLoad)
@@ -297,22 +303,23 @@ export default {
     })
     },
     addFun () {
-    //   console.log(this.checkC)
-      const funAdd = {}
+      console.log(this.checkC, this.productForm)
+      var funAdd = ''
       this.functionsData.filter(item => {
-        if (item.funName === this.checkC) {
-          funAdd.funName = item.funName
+        if (item === this.checkC) {
+          console.log('111', item, this.checkC)
+          funAdd = item
         }
       })
-      this.productForm.productFunctions.push(funAdd)
+      this.productForm.productFunction.push(funAdd)
       this.checkC = undefined
     },
     delFun (deldata) {
     //   console.log(222, deldata)
-      const testData = this.productForm.productFunctions.filter(item => {
-        return item.funName !== deldata.funName
+      const testData = this.productForm.productFunction.filter(item => {
+        return item !== deldata
       })
-      this.productForm.productFunctions = testData
+      this.productForm.productFunction = testData
     }
   },
   created () {
@@ -332,11 +339,11 @@ export default {
         this.productForm = {
           productNumber: undefined,
           productModel: undefined,
-          productSequence: undefined,
-          productFunctions: [],
+          productSerial: undefined,
+          productFunction: [],
           productParts: [],
-          productControl: undefined,
-          factoryPrice: undefined,
+          productControlPlan: undefined,
+          productPrice: undefined,
           productBrand: undefined
         }
         this.$forceUpdate()

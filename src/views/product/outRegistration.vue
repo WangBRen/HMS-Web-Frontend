@@ -5,6 +5,7 @@
     @ok="handleOk"
     @cancel="handleCancel"
     :width="1200"
+    :footer="mode === 'shipment' ? undefined : null"
   >
     <a-form-model
       v-if="mode==='shipment'"
@@ -48,10 +49,10 @@
         <a-col :span="12">
           <a-form-model-item ref="logistics" label="物流方" prop="logistics">
             <a-select v-model="form.logistics" placeholder="请选择物流">
-              <a-select-option value="shanghai">
+              <a-select-option value="中通">
                 中通
               </a-select-option>
-              <a-select-option value="beijing">
+              <a-select-option value="申通">
                 申通
               </a-select-option>
             </a-select>
@@ -78,45 +79,52 @@
     </a-form-model>
     <a-descriptions bordered title="出库登记表" style="margin:10px 28px" v-if="mode==='viewDetail'">
       <a-descriptions-item label="出库编号">
-        DM3401230052023001
+        {{ viewDetail.outNumber }}
       </a-descriptions-item>
       <a-descriptions-item label="出库总数量">
-        10
+        {{ viewDetail.totalAmount }}
       </a-descriptions-item>
       <a-descriptions-item label="出库时间">
-        2023-05-30 18:00:00
+        {{ viewDetail.outTime }}
       </a-descriptions-item>
       <a-descriptions-item label="客户名称">
-        张三
+        {{ viewDetail.name }}
       </a-descriptions-item>
       <a-descriptions-item label="客户电话">
-        18273627362
+        {{ viewDetail.phone }}
       </a-descriptions-item>
       <a-descriptions-item label="出库人员">
-        李斯
+        {{ viewDetail.outPerson }}
       </a-descriptions-item>
       <a-descriptions-item label="物流方">
-        中通快递
+        {{ viewDetail.logistics }}
       </a-descriptions-item>
       <a-descriptions-item label="应收金额">
-        1000
+        {{ viewDetail.totalPrice }}
       </a-descriptions-item>
       <a-descriptions-item label="实收金额">
-        800
+        {{ viewDetail.amountReceived }}
       </a-descriptions-item>
       <a-descriptions-item label="出货地">
-        广东省深圳市南山区
+        {{ viewDetail.province }}{{ viewDetail.city }}{{ viewDetail.area }}
       </a-descriptions-item>
       <a-descriptions-item label="详细地址" :span="2">
-        南山智园108号
+        {{ viewDetail.address }}
       </a-descriptions-item>
     </a-descriptions>
-    <a-card title="出库单" style="margin:10px 28px">
+    <a-card :title="`出库单【 总数：${totalNum} 】`" style="margin:10px 28px">
       <a-table :columns="columns" :data-source="importDataList" :rowKey="(record, index) => index">
-        <span slot="result" slot-scope="text,scope">
-          <a v-if="scope.productModel==='K5'"><a-icon type="check-circle" /> 检验通过</a>
-          <!-- <a v-else>DM3423430052023006 不存在</a> -->
-          <span v-else style="color:red;">DM3423430052023005 已出库</span>
+        <span slot="status" slot-scope="text,scope">
+          <span v-for="item in scope.status" :key="item.index">
+            <div v-if="item.status==='NOT_OUT'"><a><a-icon type="check-circle" /> 检验通过</a></div>
+            <a-tag v-else-if="item.status==='OUT'" color="volcano">{{ item.serialNumber }} 已出库</a-tag>
+            <div v-else style="color:red;">{{ item.serialNumber }} {{ item.status }}</div>
+          </span>
+        </span>
+        <span slot="serialNumber" slot-scope="text,scope">
+          <a v-for="item in scope.serialNumbers" :key="item.index">
+            <a-tag>{{ item }}</a-tag>
+          </a>
         </span>
       </a-table>
     </a-card>
@@ -125,6 +133,10 @@
 
 <script>
 import Address from '@/components/CheckAddress/CheckAddress.vue'
+import { creatOrders, updateDevices, getDevices } from '@/api/product'
+import { getUserInfo } from '@/api/login'
+import moment from 'moment'
+
 const columns = [
   {
     title: '品牌',
@@ -138,26 +150,27 @@ const columns = [
   },
   {
     title: '单价',
-    dataIndex: 'unitPrice',
-    key: 'unitPrice'
+    dataIndex: 'price',
+    key: 'price'
   },
   {
     title: '数量',
-    dataIndex: 'quantity',
-    key: 'quantity'
+    dataIndex: 'amount',
+    key: 'amount'
   },
   {
     title: '产品编号',
-    dataIndex: 'productNo',
-    key: 'productNo',
-    width: 200
+    dataIndex: 'serialNumber',
+    key: 'serialNumber',
+    width: 200,
+    scopedSlots: { customRender: 'serialNumber' }
   },
   {
     title: '校验结果',
-    dataIndex: 'result',
-    key: 'result',
-    width: 240,
-    scopedSlots: { customRender: 'result' }
+    dataIndex: 'status',
+    key: 'status',
+    width: 300,
+    scopedSlots: { customRender: 'status' }
   }
 ]
 export default {
@@ -169,10 +182,16 @@ export default {
       type: Boolean,
       default: false
     },
-    importDataList: {
+    dataList: {
       type: Array,
       default: () => {
         return []
+      }
+    },
+    viewDetail: {
+      type: Object,
+      default: () => {
+        return {}
       }
     },
     mode: {
@@ -181,7 +200,16 @@ export default {
     }
   },
   mounted () {
-    console.log(this.mode)
+    getUserInfo().then(res => {
+      this.outPerson = res.data.nickname
+      // console.log('getUserInfo', res)
+    })
+    this.getDevices()
+    var num = 0
+    this.importDataList.map(item => {
+      num = num + item.serialNumbers.length
+    })
+    this.totalNum = num
   },
   data () {
     return {
@@ -216,14 +244,81 @@ export default {
         logistics: [
           { required: true, message: '请选择物流方', trigger: 'blur' }
         ]
-      }
+      },
+      totalNum: 0, // 出库总数量
+      deviceList: [],
+      importDataList: [...this.dataList],
+      outPerson: ''
     }
   },
   methods: {
+    // 创建出库订单
+    async creatOrders (payLoad) {
+      const res = await creatOrders(payLoad)
+      console.log('创建订单', res)
+      if (res.status === 200) {
+        this.$emit('successOut')
+      }
+    },
+    // 更新设备信息
+    updateDevices () {
+      this.deviceList.map(item => {
+        this.importDataList.map(device => {
+          device.serialNumbers.map(number => {
+            if (number === item.serialNumber) {
+              this.updateDevice(item)
+            }
+          })
+        })
+      })
+    },
+    async updateDevice (item) {
+      const payLoad = {}
+      payLoad.serialNumber = item.serialNumber
+      payLoad.productId = item.product.id
+      payLoad.status = 'OUT'
+      payLoad.operator = item.operator
+      const res = await updateDevices(item.id, payLoad)
+      console.log(res)
+    },
+    async getDevices () {
+      const res = await getDevices({ page: 0, size: 1 })
+      const pages = {
+        page: 0,
+        size: res.data.totalElements || 1
+      }
+      const resp = await getDevices(pages)
+      if (resp.status === 200) {
+        this.deviceList = resp.data.content
+      }
+      this.importDataList = this.importDataList.map(item => {
+        const statusList = []
+        item.serialNumbers.map(number => {
+          this.deviceList.map(device => {
+            if (device.serialNumber === number) {
+              statusList.push({ serialNumber: number, status: device.status })
+            }
+          })
+          const isStrInArr = this.deviceList.map(item => item.serialNumber === number).includes(true)
+          if (!isStrInArr) {
+            statusList.push({ serialNumber: number, status: '编号不存在' })
+          }
+        })
+        return { ...item, status: statusList }
+      })
+    },
     handleOk (e) {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
-          this.$emit('closeOutModal')
+          const payLoad = this.form
+          payLoad.outNumber = 'CK' + moment(new Date()).format('YYYYMMDDHHmmss') // 出库单号
+          payLoad.outPerson = this.outPerson
+          payLoad.outTime = new Date()
+          payLoad.orders = this.importDataList.map(item => { return { brand: item.brand, productModel: item.productModel, price: item.price, amount: item.amount, serialNumbers: item.serialNumbers } })
+          payLoad.totalAmount = this.totalNum // 出库总数量
+          console.log('payLoad', payLoad)
+          this.creatOrders(payLoad)
+          this.updateDevices()
         } else {
           console.log('error submit!!')
           return false
