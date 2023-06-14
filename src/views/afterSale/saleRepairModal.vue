@@ -1544,7 +1544,7 @@ export default {
           if (res.status === 200) {
             // console.log('所有信息', res.data.content)
             this.technologyArr = res.data.content.filter(item => {
-              return item.roleName === 'After_salesDirector'
+              return item.roleName === 'After_salesTechnology'
             })
             // console.log('userData', this.technologyArr)
           } else {
