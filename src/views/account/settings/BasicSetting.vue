@@ -9,8 +9,8 @@
           :model="userForm"
           :rules="infoRules"
         >
-          <a-form-model-item label="昵称" prop="name">
-            <a-input placeholder="请输入您的昵称" v-model="userForm.name" />
+          <a-form-model-item label="昵称" prop="nickname">
+            <a-input placeholder="请输入您的昵称" v-model="userForm.nickname" />
           </a-form-model-item>
           <a-form-model-item label="个人简介">
             <a-textarea rows="4" v-model="userForm.introduction" placeholder="请输入个人简介"/>
@@ -74,13 +74,13 @@ export default {
         fixedNumber: [1, 1]
       },
       userForm: {
-        name: '',
+        nickname: '',
         introduction: '',
         email: '',
         avatar: ''
       },
       infoRules: {
-        name: [
+        nickname: [
           { required: true, message: '请输入昵称', trigger: 'blur' }
         ]
       }
@@ -115,11 +115,11 @@ export default {
       apiGetUserInfo().then(res => {
         if (res.status === 200) {
           // console.log('登陆信息', res.data)
-          this.userForm.name = res.data.userInfo.name
+          this.userForm.nickname = res.data.nickname
           this.userForm.email = res.data.email
           this.userForm.avatar = res.data.avatar
           // this.userForm.avatar = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
-          this.userForm.introduction = res.data.userInfo.introduction
+          this.userForm.introduction = res.data.userInfo?.introduction
           this.option.img = res.data.avatar
           // this.option.img = 'https://files.hms.yootane.com/file/5a9ebe12-c3b1-4a51-ac1f-93fec6a0556d.blob'
         }

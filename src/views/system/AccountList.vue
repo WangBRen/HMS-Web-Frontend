@@ -318,7 +318,10 @@ export default {
       }
       getUserList(pages).then(res => {
         if (res.status === 200) {
-          getUserList({ page: 1, size: res.data.totalElements }).then(res => {
+          const size = res.data.totalElements > 0 ? res.data.totalElements : 1
+          const status = this.checkState === 'all' ? null : this.checkState
+          const name = this.checkName !== '' ? this.checkName : null
+          getUserList({ page: 1, size: size, status: status, name: name }).then(res => {
             // console.log(res.data)
             this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
             this.accountData = this.accountData.filter(item => {
