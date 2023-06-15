@@ -294,7 +294,7 @@ export default {
     getGuide () {
       apiGetGuide().then(res => {
         if (res.status === 200) {
-          console.log(res.data)
+          // console.log(res.data)
           this.questData = res.data
           if (this.questData.length !== 0) {
             this.firstTabKey = this.questData[0].id
@@ -356,6 +356,7 @@ export default {
     // }
   },
   created () {
+    this.$setPageDataLoader(this.getGuide)
   },
   mounted () {
     this.getGuide()
