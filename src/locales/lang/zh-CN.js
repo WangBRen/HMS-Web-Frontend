@@ -22,7 +22,7 @@ export default {
   'layouts.usermenu.dialog.title': '信息',
   'layouts.usermenu.dialog.content': '您确定要注销吗？',
   'layouts.userLayout.title': '欢迎使用攸太健康管理系统',
-  'layouts.saleLayout.title': '欢迎使用智能马桶信息管理系统',
+  'layouts.saleLayout.title': '欢迎使用攸太售后管理系统',
   ...components,
   ...global,
   ...menu,
