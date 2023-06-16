@@ -504,7 +504,7 @@ export default {
       selectReport: []
     }
   },
-  created () {
+  mounted () {
     if (this.custId) {
       this.findCustomerHealthReports()
     }
@@ -841,6 +841,14 @@ export default {
           }
         })
       }
+    }
+  },
+  watch: {
+    openHealthvisible (newVal, oldVal) {
+      if (oldVal) {
+        this.pagination.current = 1
+      }
+      console.log('newVal, oldVal', newVal, oldVal)
     }
   }
 }
