@@ -958,6 +958,7 @@ export default {
     }
   },
   created () {
+    this.$setPageDataLoader(this.getAfterSaleData)
   },
   mounted () {
     const basicColumns = [
