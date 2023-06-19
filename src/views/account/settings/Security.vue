@@ -26,7 +26,7 @@
             <a-form-model-item label="再次输入新密码" prop="newSecondPassword">
               <a-input-password v-model="passwordForm.newSecondPassword"/>
             </a-form-model-item>
-            <a-button style="margin-left: 22%" @click="okPassword">确定</a-button>
+            <a-button style="margin-left: 22%" type="primary" @click="okPassword">确定</a-button>
             <a-button style="margin-left: 2%" @click="resetPassword">重置</a-button>
           </a-form-model>
         </div>

@@ -1085,9 +1085,8 @@ export default {
           isVisit = false
           this.$message.error('请选择是否上门')
         } else {
-          console.log(this.checkG)
           if (this.visitIndex === true) {
-            if (!this.checkG) {
+            if (this.checkG === null) {
               isVisit = false
               this.$message.error('请选择上门信息')
             }

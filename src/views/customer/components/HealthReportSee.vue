@@ -269,7 +269,7 @@ export default {
               items: healthData[j].items
             }
             this.formData.testData.push(aa)
-            console.log('this.formData.testData', this.formData.testData)
+            // console.log('this.formData.testData', this.formData.testData)
           }
         }
       }
