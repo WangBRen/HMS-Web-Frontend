@@ -57,6 +57,12 @@ export default {
           align: 'center'
         },
         {
+          title: '品牌简称',
+          dataIndex: 'name',
+          key: 'name',
+          align: 'center'
+        },
+        {
           title: '出厂价格',
           dataIndex: 'productPrice',
           key: 'productPrice',

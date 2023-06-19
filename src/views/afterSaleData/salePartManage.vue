@@ -173,7 +173,17 @@ export default {
             })
             this.categorys = [...new Set(set)]
             if (ifFirst === 'search') {
-              this.filterDataSource = this.dataSource
+              if (this.categorys.includes(this.category)) {
+                this.filterDataSource = this.dataSource
+                .filter(item => {
+                  return item.belongPart === this.category
+                })
+              } else {
+                this.filterDataSource = this.dataSource
+                .filter(item => {
+                  return item.belongPart === this.categorys[0]
+                })
+              }
             } else {
               this.filterDataSource = this.dataSource
               .filter(item => {

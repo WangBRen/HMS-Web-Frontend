@@ -98,7 +98,14 @@
         <a-row>
           <a-col>
             <a-form-model-item label="品牌" prop="productBrand">
-              <a-input placeholder="请输入品牌" v-model="productForm.productBrand"></a-input>
+              <a-input placeholder="请输入品牌中文名" v-model="productForm.productBrand"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
+            <a-form-model-item label="品牌简称" prop="name">
+              <a-input placeholder="请输入品牌简称字母" v-model="productForm.name"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -149,7 +156,8 @@ export default {
         productParts: [],
         productControlPlan: undefined,
         productPrice: undefined,
-        productBrand: undefined
+        productBrand: undefined,
+        name: undefined
       },
       modelRules: {
         productNumber: [
@@ -185,7 +193,7 @@ export default {
         if (valid) {
           // 提交表单
           const payLoad = {}
-          payLoad.name = this.productForm.productModel
+          payLoad.name = this.productForm.name
           payLoad.productNumber = this.productForm.productNumber
           payLoad.productModel = this.productForm.productModel
           payLoad.productSerial = this.productForm.productSerial

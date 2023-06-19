@@ -20,6 +20,11 @@
           </a-select-option>
         </a-select>
       </a-form-model-item> -->
+      <a-row>
+        <a-col :offset="4">
+          <a-tag>{{ brandName }}</a-tag>
+        </a-col>
+      </a-row>
       <a-form-model-item ref="brand" label="品牌" prop="brand">
         <a-select v-model="form.brand" placeholder="请选择品牌" @change="changeBrand">
           <a-select-option :value="brand" v-for="brand in brands" :key="brand.index">
@@ -65,7 +70,7 @@
         </a-select>
       </a-form-model-item>
       <a-form-model-item ref="num" label="台数" prop="num">
-        <a-input-number v-model="form.num" :min="1" :formatter="formatNumber"/>
+        <a-input-number v-model="form.num" :min="1" :max="999" :formatter="formatNumber"/>
       </a-form-model-item>
     </a-form-model>
   </a-modal>
@@ -124,7 +129,8 @@ export default {
       totalNum: '',
       products: [],
       brands: [],
-      models: []
+      models: [],
+      brandName: ''
     }
   },
   methods: {
@@ -135,6 +141,9 @@ export default {
         return item.productBrand === e
       }).map(product => { return product.productModel }))
       this.models = [...models]
+      this.brandName = this.products.filter(item => {
+        return item.productBrand === e
+      })[0].name
     },
     async getProducts () {
       const res = await getProducts()
@@ -166,7 +175,7 @@ export default {
           const product = this.products.filter(item => {
             return item.productBrand === form.brand && item.productModel === form.productModel
           })[0]
-          const serialNumber = form.brand + form.productModel + form.color + form.definition + form.ceramicPitSpacing + day + month + year // 产品编号前缀
+          const serialNumber = this.brandName + form.productModel + form.color + form.definition + form.ceramicPitSpacing + day + month + year // 产品编号前缀
           const payLoad = {}
           payLoad.productId = product.id
           payLoad.status = 'NOT_OUT'

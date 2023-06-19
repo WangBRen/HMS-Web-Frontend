@@ -172,6 +172,11 @@
       @cancel="handleCancel"
     >
       <a-row>
+        <a-col :offset="2">
+          <a-range-picker @change="onChangeDate" v-model="selectDate"/>
+        </a-col>
+      </a-row>
+      <a-row style="margin-top:30px">
         <a-col :span="4" :offset="2">筛选品牌：
           <a-select placeholder="请选择产品品牌" v-model="filterBrand" style="width: 120px" @change="handleChangeBrand">
             <a-select-option v-for="(item) in brandArrs" :key="item.name">
@@ -531,15 +536,44 @@ export default {
       importDataList: [], // 导入的数据
       transferData: null, // 月结单
       brandArrs: brandData,
+      selectDate: null,
       filterBrand: '',
       selectModel: '',
       modelArr: [],
       allModel: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5'],
       startTime: null,
-      endTime: null
+      endTime: null,
+      exportStart: '',
+      exportEnd: ''
     }
   },
   methods: {
+    onChangeDate (date, dateString) {
+      this.exportStart = dateString[0]
+      this.exportEnd = dateString[1]
+      const filterData = this.salesData.filter(item => {
+        if (this.filterBrand !== '' && this.filterBrand !== null && this.selectModel !== '' && this.selectModel !== null) {
+          return item.customerInfo.brand === this.filterBrand && item.customerInfo.productModel === this.selectModel
+        } else if (this.filterBrand !== '' && this.filterBrand !== null) {
+          return item.customerInfo.brand === this.filterBrand
+        } else if (this.selectModel !== '' && this.selectModel !== null) {
+          return item.customerInfo.productModel === this.selectModel
+        } else {
+          return true
+        }
+      })
+      if (dateString[0] !== '' && dateString[1] !== '') {
+        this.exportfilterData = filterData.filter(item => {
+          const dateTime = new Date(item.createdAt)
+          if (dateTime > new Date(dateString[0]) && dateTime < new Date(dateString[1])) {
+            return true
+          }
+        })
+      } else {
+        this.exportfilterData = filterData
+      }
+      console.log(date, dateString, this.exportfilterData)
+    },
     async getMe () {
       const res = await getUserInfo()
       this.MyInfo = res.data
@@ -593,9 +627,17 @@ export default {
     handleChangeBrand (value) {
       this.filterBrand = value
       this.selectModel = ''
-      this.exportfilterData = this.salesData.filter(item => {
+      const filterData = this.salesData.filter(item => {
         return item.customerInfo.brand === value
       })
+      if (this.exportStart !== '' && this.exportEnd !== '') {
+        this.exportfilterData = filterData.filter(item => {
+          const dateTime = new Date(item.createdAt)
+            return dateTime > new Date(this.exportStart) && dateTime < new Date(this.exportEnd)
+        })
+      } else {
+        this.exportfilterData = filterData
+      }
       this.brandArrs.filter(item => {
         if (item.name === this.filterBrand) {
           this.modelArr = item.modelArr
@@ -604,14 +646,20 @@ export default {
     },
     handleChangeModel (value) {
       this.selectModel = value
-      if (this.filterBrand !== '') {
-        this.exportfilterData = this.salesData.filter(item => {
+      const filterData = this.salesData.filter(item => {
+        if (this.filterBrand !== '') {
           return item.customerInfo.productModel === value && item.customerInfo.brand === this.filterBrand
+        } else {
+          return item.customerInfo.productModel === value
+        }
+      })
+      if (this.exportStart !== '' && this.exportEnd !== '') {
+        this.exportfilterData = filterData.filter(item => {
+          const dateTime = new Date(item.createdAt)
+            return dateTime > new Date(this.exportStart) && dateTime < new Date(this.exportEnd)
         })
       } else {
-        this.exportfilterData = this.salesData.filter(item => {
-          return item.customerInfo.productModel === value
-        })
+        this.exportfilterData = filterData
       }
     },
     exportData () {
@@ -717,6 +765,7 @@ export default {
       }
     },
     exportAllData () {
+      this.selectDate = null
       this.filterBrand = ''
       this.selectModel = ''
       this.exportfilterData = this.salesData
