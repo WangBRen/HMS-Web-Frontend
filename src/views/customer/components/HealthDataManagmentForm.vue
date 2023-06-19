@@ -594,7 +594,7 @@ export default {
       // 获取登陆账号，定义打印健康师
       getUserInfo().then(res => {
         if (res.status === 200) {
-          console.log('loginname', res.data.nickname)
+          // console.log('loginname', res.data.nickname)
           this.printdata.printName = res.data.nickname
           this.$forceUpdate() // 强刷，没这行代码，打印用户症状和用户诊断时不显示打印健康师
         }
@@ -697,7 +697,7 @@ export default {
             //   Files += item.fileName
             // })
           }
-          console.log(dis)
+          // console.log(dis)
           return dis
         }
       }).filter(item2 => item2 !== undefined)
@@ -851,7 +851,7 @@ export default {
       if (oldVal) {
         this.pagination.current = 1
       }
-      console.log('newVal, oldVal', newVal, oldVal)
+      // console.log('newVal, oldVal', newVal, oldVal)
     }
   }
 }
