@@ -162,7 +162,7 @@
         </a-tabs>
       </div>
     </a-card>
-    <a-modal :visible="visible" title="导入数据" @ok="saveImport" @cancel="close" :width="1200">
+    <a-modal :visible="visible" title="导入数据" @ok="saveImport" @cancel="close" :width="1500">
       <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index"/>
     </a-modal>
     <a-modal
@@ -280,7 +280,8 @@ export default {
           title: '客户名',
           dataIndex: 'customerName',
           key: 'customerName',
-          align: 'center'
+          align: 'center',
+          width: 80
         },
         {
           title: '联系方式',
@@ -292,13 +293,15 @@ export default {
           title: '品牌',
           dataIndex: 'brand',
           key: 'brand',
-          align: 'center'
+          align: 'center',
+          width: 80
         },
         {
           title: '产品型号',
           dataIndex: 'productModel',
           key: 'productModel',
-          align: 'center'
+          align: 'center',
+          width: 100
         },
         {
           title: '产品编号',
@@ -311,6 +314,7 @@ export default {
           dataIndex: 'purchaseDate',
           key: 'purchaseDate',
           align: 'center',
+          width: 150,
           customRender: (text) => text ? moment(text).format('YYYY年MM月DD日') : ''
         },
         {
@@ -320,9 +324,21 @@ export default {
           align: 'center'
         },
         {
+          title: '问题分类',
+          dataIndex: 'problemExplain',
+          key: 'problemExplain',
+          align: 'center'
+        },
+        {
           title: '收货地址',
           dataIndex: 'receiveAddress',
           key: 'receiveAddress',
+          align: 'center'
+        },
+        {
+          title: '备注',
+          dataIndex: 'remark',
+          key: 'remark',
           align: 'center'
         }
       ],
@@ -612,6 +628,7 @@ export default {
             problemExplain: reader[i]['问题描述'],
             receiveAddress: reader[i]['收货地址'],
             serviceAddress: reader[i]['上门地址'],
+            remark: reader[i]['备注'],
             purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString()))),
             monthlyStatement: true
           }
