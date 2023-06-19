@@ -52,19 +52,13 @@
               <span v-if="!editCustomer">{{ repairData.customerInfo.productNo || '---' }}</span>
               <a-input placeholder="请输入编号" v-if="editCustomer" v-model="editForm.productNo"/>
             </a-descriptions-item>
-            <a-descriptions-item label="问题分类" :span="3">
-              {{ repairData.customerInfo.problemCategory }}
-            </a-descriptions-item>
-            <a-descriptions-item label="问题描述" :span="3">
-              {{ repairData.customerInfo.problemExplain || '---' }}
-            </a-descriptions-item>
             <a-descriptions-item label="收货地址">
               <span v-if="!editCustomer">{{ repairData.customerInfo.receiveAddress }}</span>
-              <a-input placeholder="请输入收货地址" v-if="editCustomer" v-model="editForm.receiveAddress"/>
+              <a-textarea placeholder="请输入收货地址" v-if="editCustomer" v-model="editForm.receiveAddress"/>
             </a-descriptions-item>
             <a-descriptions-item label="上门地址">
               <span v-if="!editCustomer">{{ repairData.customerInfo.isSameAddress? repairData.customerInfo.receiveAddress:repairData.customerInfo.serviceAddress }}</span>
-              <a-input placeholder="请输入上门地址" v-if="editCustomer" v-model="editForm.serviceAddress"/>
+              <a-textarea placeholder="请输入上门地址" v-if="editCustomer" v-model="editForm.serviceAddress"/>
             </a-descriptions-item>
             <a-descriptions-item label="图片/视频">
               <div v-for="(file,index) in repairData.customerInfo.uploadImage" :key="index">
@@ -79,6 +73,16 @@
               >
                 <a-button><a-icon type="upload" />上传文件</a-button>
               </a-upload>
+            </a-descriptions-item>
+            <a-descriptions-item label="问题分类">
+              {{ repairData.customerInfo.problemCategory }}
+            </a-descriptions-item>
+            <a-descriptions-item label="问题描述" :span="2">
+              {{ repairData.customerInfo.problemExplain || '---' }}
+            </a-descriptions-item>
+            <a-descriptions-item label="备注">
+              <span v-if="!editCustomer">{{ repairData.customerInfo.remark }}</span>
+              <a-textarea placeholder="请输入用户备注" v-if="editCustomer" v-model="editForm.remark"/>
             </a-descriptions-item>
             <a-descriptions-item v-if="repairData.monthlyStatement !== null" label="月结单">
               <span style="font-size: 20px;font-weight: bold">{{ repairData.monthlyStatement | filterBoolean }}</span>
@@ -748,7 +752,9 @@ export default {
       estimateVisible: false,
       modalIndex: '',
       editCustomer: false,
-      editForm: {},
+      editForm: {
+        uploadImage: []
+      },
       // 品牌库
       brandArrs: brandData,
       // 产品库
@@ -759,6 +765,7 @@ export default {
     handleChangeUpload (data) {
     // console.log('上传文件', data)
       if (data.file.status === 'done') {
+        console.log('this.editForm.uploadImage', this.editForm, data.file.response.data)
         this.editForm.uploadImage.push(data.file.response.data)
       } else if (data.file.status === 'error') {
 
@@ -770,6 +777,7 @@ export default {
         this.editForm.uploadImage = this.editForm.uploadImage.filter(item => {
           return item.fileName !== data.file.name
         })
+        console.log('this.editForm.uploadImage', this.editForm.uploadImage)
       }
     },
     changeBrand () {
@@ -777,6 +785,9 @@ export default {
     },
     startClick () {
       this.editForm = this.repairData.customerInfo
+      if (this.editForm.uploadImage === null) {
+        this.editForm.uploadImage = []
+      }
       this.editCustomer = true
       console.log('开始编辑', this.brandArrs)
     },
@@ -795,6 +806,7 @@ export default {
       payLoad.receiveAddress = this.editForm.receiveAddress
       payLoad.isSameAddress = this.editForm.isSameAddress
       payLoad.serviceAddress = this.editForm.serviceAddress
+      payLoad.remark = this.editForm.remark
       // payLoad.afterSaleType = this.editForm.afterSaleType
       console.log('保存用户信息', payLoad)
       const id = this.repairData.id

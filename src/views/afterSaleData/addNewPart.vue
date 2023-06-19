@@ -103,7 +103,8 @@ export default {
         elseBelongPart: [{ required: true, message: '请输入要添加的类名', trigger: 'blur' }],
         belongProduct: [{ required: true, message: '请输入所属型号', trigger: 'change' }],
         price: [{ required: true, message: '请输入报价', trigger: 'blur' }]
-      }
+      },
+      categoryList: []
     }
   },
   mounted () {
@@ -112,7 +113,9 @@ export default {
       this.form = this.partData
       this.partId = this.partData.id
     }
-    this.categorys.push('添加其他类')
+    if (!this.categorys.includes('添加其他类')) {
+      this.categorys.push('添加其他类')
+    }
   },
   methods: {
     handleCancel () {
