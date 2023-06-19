@@ -678,11 +678,13 @@ export default {
       const disData = midData.map((item) => {
         if (item.dis) {
           let Files = ''
-          for (let i = 0; i < item.dis.diseaseFiles.length; i++) {
-            if (i + 1 === item.dis.diseaseFiles.length) {
-              Files += item.dis.diseaseFiles[i].fileName
-            } else {
-              Files += item.dis.diseaseFiles[i].fileName + '、'
+          if (item.dis.diseaseFiles !== null) {
+            for (let i = 0; i < item.dis.diseaseFiles.length; i++) {
+              if (i + 1 === item.dis.diseaseFiles.length) {
+                Files += item.dis.diseaseFiles[i].fileName
+              } else {
+                Files += item.dis.diseaseFiles[i].fileName + '、'
+              }
             }
           }
           const dis = {
@@ -690,11 +692,12 @@ export default {
             disTitle: item.dis.disease.title,
             diseaseAt: item.dis.diseaseAt,
             // disFiles: item.dis.diseaseFiles
-            disFiles: Files
+            disFiles: Files || '---'
             // disFiles: item.diseaseFiles.map((item) => {
             //   Files += item.fileName
             // })
           }
+          console.log(dis)
           return dis
         }
       }).filter(item2 => item2 !== undefined)
