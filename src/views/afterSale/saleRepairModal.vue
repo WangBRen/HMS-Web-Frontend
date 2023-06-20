@@ -15,7 +15,7 @@
         <!-- 客户信息 -->
         <div class="customDes" v-if="current>-1">
           <div class="big_title">客户信息
-            <div style="float:right;">
+            <div v-if="current===0" style="float:right;">
               <span @click="startClick" v-if="!editCustomer"><a-icon type="edit"/>修改信息</span>
               <a-button v-if="editCustomer" @click="saveCustomer" type="primary">保存</a-button>
             </div>
@@ -26,7 +26,9 @@
               <a-input placeholder="请输入客户姓名" v-if="editCustomer" v-model="editForm.customerName"/>
             </a-descriptions-item>
             <a-descriptions-item label="联系方式">
-              <span>{{ repairData.customerInfo.customerPhone }}</span>
+              <span v-if="!editCustomer">{{ repairData.customerInfo.customerPhone }}</span>
+              <a-input placeholder="请输入联系方式" v-if="editCustomer && repairData.processes.length === 0" v-model="editForm.customerPhone"/>
+              <span v-if="editCustomer && repairData.processes.length !== 0">{{ repairData.customerInfo.customerPhone }}</span>
             </a-descriptions-item>
             <a-descriptions-item label="购买日期">
               <span v-if="!editCustomer">{{ repairData.customerInfo.purchaseDate | getDay }}</span>
@@ -789,11 +791,12 @@ export default {
         this.editForm.uploadImage = []
       }
       this.editCustomer = true
-      console.log('开始编辑', this.brandArrs)
+      // console.log('开始编辑', this.brandArrs)
     },
     // 保存用户信息
     async saveCustomer () {
       const payLoad = {}
+      payLoad.customerPhone = this.editForm.customerPhone
       payLoad.customerName = this.editForm.customerName
       // payLoad.customerPhone = this.editForm.customerPhone
       payLoad.productModel = this.editForm.productModel
@@ -843,9 +846,9 @@ export default {
         this.extraForm.technicalSupport = null
       }
       // 再评估刷新
-      if (this.current === 1 || this.current === 4) {
-        this.$parent.getAfterSaleData()
-      }
+      // if (this.current === 1 || this.current === 4) {
+      //   this.$parent.getAfterSaleData()
+      // }
       // 寄件信息刷新
       if (this.current === 2) {
         this.$refs.payForm.resetFields()
@@ -1235,9 +1238,7 @@ export default {
     },
     repairSucceeded () {
       const id = this.repairData.id
-      const changeStatus = {
-        status: 'SOLVED'
-      }
+      const changeStatus = { status: 'SOLVED' }
       apiUpdateStatus(id, changeStatus).then(res => {
         if (res.status === 200) {
           this.$message.success('状态改变成功')
@@ -1266,6 +1267,7 @@ export default {
       // this.closeRepairModals()
       // console.log('失败')
     },
+    // 已支付->已寄件
     onPaySubmit () {
       const id = this.repairData.id
       const processId = this.repairData.processes[this.repairData.processes.length - 1].id
@@ -1439,14 +1441,26 @@ export default {
     // 0元支付
     changeZeroPay () {
       // 改变状态
+      const arr = this.repairData.processes[this.repairData.processes.length - 1]
       const id = this.repairData.id
-      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      const processId = arr.id
       const changePay = { payResult: true }
+
       // 改变流程里的支付状态
       apiUpdateProcess(id, processId, changePay).then(res => {
         if (res.status === 200) {
-          // this.$message.success('状态改变成功')
-          const changeStatus = { status: 'PAID' }
+          let changeStatus = {}
+          // 判断是否需要寄件
+          if (arr.needPieceSend === false && arr.needVisit === false) {
+            // 不需寄件 不需上门
+            changeStatus = { status: 'WAIT_VISIT' }
+          } else if (arr.needPieceSend === false && arr.needVisit === true) {
+            // 不需寄件 需上门
+            changeStatus = { status: 'SEND' }
+          } else if (arr.needPieceSend === true) {
+            // 需寄件
+            changeStatus = { status: 'PAID' }
+          }
           // 改变大状态
           apiUpdateStatus(id, changeStatus).then(res => {
             if (res.status === 200) {
@@ -1462,6 +1476,7 @@ export default {
           this.$message.error(res.message)
         }
       })
+
       // 获取登陆账户 - 内勤
       // apiGetUserInfo().then(res => {
       //   if (res.status === 200) {

@@ -4,10 +4,11 @@
       <a-row>
         <a-col :span="4">
           <span>&nbsp;月结单：</span>
-          <a-select v-model="checkMonthly" default-value="all" style="width: 100px;">
+          <a-select @change="changeMonthly" v-model="checkMonthly" default-value="all" style="width: 100px;">
             <a-select-option value="all">全部</a-select-option>
             <a-select-option value="true">是</a-select-option>
             <a-select-option value="false">否</a-select-option>
+            <a-select-option value="null">---</a-select-option>
           </a-select>
           <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
@@ -941,6 +942,8 @@ export default {
         apiData.monthlyStatement = true
       } else if (this.checkMonthly === 'false') {
         apiData.monthlyStatement = false
+      } else if (this.checkMonthly === 'null') {
+        apiData.monthlyStatement = null
       }
       apiSearchAfterSale(apiData).then(res => {
         if (res.status === 200) {
@@ -982,6 +985,7 @@ export default {
     changeTime (value) {
       this.startTime = value[0]
       this.endTime = value[1]
+      this.onSearch()
       // this.startTime = moment(value[0]).format('YYYY-MM-DD')
       // this.endTime = moment(value[1]).format('YYYY-MM-DD')
       // console.log(moment(value[0]).format('YYYY-MM-DD HH:mm'))
@@ -1021,6 +1025,9 @@ export default {
           this.$message.error(res.message)
         }
       })
+    },
+    changeMonthly () {
+      this.onSearch()
     }
   },
   created () {
