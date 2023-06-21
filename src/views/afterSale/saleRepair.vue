@@ -41,8 +41,10 @@
               <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false">
                 <a-button> <a-icon type="upload" />导入excel</a-button>
               </a-upload>
+              <a-button v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'" @click="sendOrders"> <a-icon type="contacts" />派单</a-button>
             </a-space>
             <a-table
+              :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
               :columns="estimateColumns"
               :rowKey="(record, index) => index"
               :data-source="estimateData"
@@ -56,7 +58,9 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">评估</a>
+                <a @click="openRepairModal(record)" v-if="record.customerService === '' || record.customerService === null">评估</a>
+                <a @click="openRepairModal(record)" v-else-if="(MyInfo.roleName === 'After_salesTechnology' || MyInfo.roleName === 'After-salesAsst') && MyInfo.userInfo.name !== record.customerService">--</a>
+                <a @click="openRepairModal(record)" v-else>评估</a>
                 <a-popconfirm title="确定删除？" @confirm="delRepair(record)">
                   <a v-if="record.monthlyStatement"> | 删除</a>
                 </a-popconfirm>
@@ -199,6 +203,18 @@
         </a-col>
       </a-row>
     </a-modal>
+    <a-modal
+      title="派单"
+      :visible="sendOrderVisible"
+      @ok="handleSendOrder"
+      @cancel="handleCancelSendOrder"
+    >
+      <p>请选择要派单的人员</p>
+      <a-radio-group v-model="sendOrderName" :default-value="1">
+        <a-radio :style="radioStyle" :value="item.userInfo.name" v-for="item in receiveList" :key="item.id">{{ item.userInfo.name }}</a-radio>
+        <a-radio :style="radioStyle" value="">清空订单负责人</a-radio>
+      </a-radio-group>
+    </a-modal>
     <saleRepairModal
       :repairVisible="repairVisible"
       :repairData="repairData"
@@ -224,9 +240,10 @@ import moment from 'moment'
 import saleRepairModal from './saleRepairModal.vue'
 import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
-import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale } from '@/api/afterSale'
+import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale, updateStatus } from '@/api/afterSale'
 import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
 import { getUserInfo } from '@/api/login'
+import { getUserList } from '@/api/manage'
 import { brandData } from './saleRepairData'
 
 export default {
@@ -264,7 +281,17 @@ export default {
   },
   data () {
     return {
+      selectedRowKeys: [],
+      selectedRows: [],
+      receiveList: [],
       MyInfo: {},
+      sendOrderName: null,
+      radioStyle: {
+        display: 'block',
+        height: '30px',
+        lineHeight: '30px'
+      },
+      sendOrderVisible: false,
       repairVisible: false,
       repairAddVisible: false,
       drawbackVisible: false,
@@ -377,6 +404,12 @@ export default {
         {
           title: '是否月结单',
           scopedSlots: { customRender: 'monthlyStatement' },
+          align: 'center'
+        },
+        {
+          title: '负责人',
+          dataIndex: 'customerService',
+          key: 'customerService',
           align: 'center'
         },
         {
@@ -565,6 +598,50 @@ export default {
     }
   },
   methods: {
+    async getUserList () {
+      const res = await getUserList({ page: 1, size: 1 })
+      if (res.status === 200) {
+        const resp = await getUserList({ page: 1, size: res.data.totalElements })
+        this.receiveList = resp.data.content.filter(item => {
+          return (item.roleName === 'After-salesAsst' || item.roleName === 'After_salesTechnology') && item.status === 'active'
+        })
+        console.log(resp)
+      }
+      console.log(res)
+    },
+    onSelectChange (selectedRowKeys, selectedRows) {
+      this.selectedRowKeys = selectedRowKeys
+      this.selectedRows = selectedRows
+    },
+    sendOrders () {
+      console.log('开始排单', this.selectedRows)
+      this.sendOrderVisible = true
+    },
+    handleCancelSendOrder () {
+      this.sendOrderVisible = false
+    },
+    handleSendOrder () {
+      if (this.selectedRows.length === 0) {
+        this.$message.warning('你还有没选择订单哦')
+      } else if (this.sendOrderName === null) {
+        this.$message.warning('请先选择派单对象')
+      } else {
+        this.selectedRows.map(item => {
+          this.updateStatus(item.id)
+        })
+      }
+    },
+    async updateStatus (id) {
+      const payLoad = {}
+      payLoad.customerService = this.sendOrderName
+      const res = await updateStatus(id, payLoad)
+      if (res.status === 200) {
+        this.getAfterSaleData()
+        this.selectedRowKeys = []
+        this.sendOrderVisible = false
+      }
+      console.log(res)
+    },
     onChangeDate (date, dateString) {
       this.exportStart = dateString[0]
       this.exportEnd = dateString[1]
@@ -1034,6 +1111,7 @@ export default {
     this.$setPageDataLoader(this.getAfterSaleData)
   },
   mounted () {
+    this.getUserList()
     const basicColumns = [
       {
         title: '客户名',
