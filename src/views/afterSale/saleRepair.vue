@@ -346,6 +346,13 @@ export default {
           customRender: (text) => text ? moment(text).format('YYYY年MM月DD日') : ''
         },
         {
+          title: '是否月结',
+          dataIndex: 'monthlyStatement',
+          key: 'monthlyStatement',
+          align: 'center',
+          customRender: (text) => text ? '是' : (text === false ? '否' : '--')
+        },
+        {
           title: '问题分类',
           dataIndex: 'problemCategory',
           key: 'problemCategory',
@@ -708,7 +715,7 @@ export default {
             serviceAddress: reader[i]['上门地址'],
             remark: reader[i]['备注'],
             purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString()))),
-            monthlyStatement: true
+            monthlyStatement: reader[i]['是否月结'] === '是' ? true : (reader[i]['是否月结'] === '否' ? false : null)
           }
           this.importDataList.push(sheetData)
         }
