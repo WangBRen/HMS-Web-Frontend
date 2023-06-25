@@ -12,7 +12,7 @@
         <a-steps :current="current" v-if="current<6">
           <a-step v-for="item in steps" :key="item.title" :title="item.title" />
         </a-steps>
-        <a-steps current="1" v-if="current===6">
+        <a-steps :current="1" v-if="current===6">
           <a-step title="订单已作废" />
         </a-steps>
         <!-- 客户信息 -->
@@ -95,7 +95,7 @@
           </a-descriptions>
         </div>
         <!-- 共用数据 -->
-        <div>
+        <div v-if="repairData.processes.length>0">
           <div class="big_title" v-if="repairData.processes.length===1">历史评估</div>
           <div v-for="(item4,index4) in repairData.processes" :key="item4.id">
             <div class="big_title" v-if="repairData.processes.length>1">第{{ index4+1 }}次评估：</div>
@@ -1744,23 +1744,26 @@ export default {
       this.statementIndex = this.transferData
 
       // 获取上门信息
-      const arr = this.repairData.processes[this.repairData.processes.length - 1].afterSaleVisit
+      console.log('this.repairData', this.repairData)
+      const arr = this.repairData.processes[this.repairData.processes.length - 1]?.afterSaleVisit
       // 赋值
-      this.sendForm.technicalCost = arr.technicalCost
-      this.sendForm.technicalName = arr.technicalName
-      this.sendForm.technicalPhone = arr.technicalPhone
-      this.sendForm.technicalPlatform = arr.technicalPlatform
-      this.sendForm.technicalServiceNo = arr.technicalServiceNo
-      this.sendForm.visitTime = arr.visitTime
-      if (arr.technicianList !== null) {
-        this.sendForm.technicianList = arr.technicianList
-      } else {
-        this.sendForm.technicianList = []
-      }
-      if (arr.technicianPhoneList !== null) {
-        this.sendForm.technicianPhoneList = arr.technicianPhoneList
-      } else {
-        this.sendForm.technicianPhoneList = []
+      if (arr) {
+        this.sendForm.technicalCost = arr.technicalCost
+        this.sendForm.technicalName = arr.technicalName
+        this.sendForm.technicalPhone = arr.technicalPhone
+        this.sendForm.technicalPlatform = arr.technicalPlatform
+        this.sendForm.technicalServiceNo = arr.technicalServiceNo
+        this.sendForm.visitTime = arr.visitTime
+        if (arr.technicianList !== null) {
+          this.sendForm.technicianList = arr.technicianList
+        } else {
+          this.sendForm.technicianList = []
+        }
+        if (arr.technicianPhoneList !== null) {
+          this.sendForm.technicianPhoneList = arr.technicianPhoneList
+        } else {
+          this.sendForm.technicianPhoneList = []
+        }
       }
     },
     'editForm.brand' (newData, oldData) {
