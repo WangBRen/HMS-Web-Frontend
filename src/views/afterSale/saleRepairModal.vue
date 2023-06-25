@@ -9,8 +9,11 @@
       v-if="repairVisible"
     >
       <div class="form">
-        <a-steps :current="current">
+        <a-steps :current="current" v-if="current<6">
           <a-step v-for="item in steps" :key="item.title" :title="item.title" />
+        </a-steps>
+        <a-steps current="1" v-if="current===6">
+          <a-step title="订单已作废" />
         </a-steps>
         <!-- 客户信息 -->
         <div class="customDes" v-if="current>-1">
@@ -428,6 +431,9 @@
               <a-popconfirm title="确定评估？" @confirm="checkOk">
                 <a-button type="primary">评估</a-button>
               </a-popconfirm>
+              <a-popconfirm title="确定作废订单吗？" @confirm="cancelOrder">
+                <a-button type="danger" style="float: right;" ghost>订单作废</a-button>
+              </a-popconfirm>
             </div>
           </div>
         </div>
@@ -764,6 +770,22 @@ export default {
     }
   },
   methods: {
+    cancelOrder () {
+      const id = this.repairData.id
+      const payLoad = {}
+      payLoad.status = 'CANCEL'
+      // 改变状态
+      apiUpdateStatus(id, payLoad).then(res => {
+        if (res.status === 200) {
+          this.$message.success('订单作废成功')
+          // console.log('状态改变成功')
+          this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    },
     handleChangeUpload (data) {
     // console.log('上传文件', data)
       if (data.file.status === 'done') {

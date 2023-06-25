@@ -164,6 +164,28 @@
               </span>
             </a-table>
           </a-tab-pane>
+          <a-tab-pane key="7">
+            <span slot="tab">
+              <a-icon type="delete" />已作废
+            </span>
+            <a-table
+              :columns="estimateColumns"
+              :rowKey="(record, index) => index"
+              :data-source="voidData"
+              :pagination="false"
+            >
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
+              </span>
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.monthlyStatement | filterBoolean }}
+              </span>
+              <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
+              <span slot="action" slot-scope="text,record">
+                <a @click="openRepairModal(record)">查看</a>
+              </span>
+            </a-table>
+          </a-tab-pane>
         </a-tabs>
       </div>
     </a-card>
@@ -209,11 +231,13 @@
       @ok="handleSendOrder"
       @cancel="handleCancelSendOrder"
     >
-      <p>请选择要派单的人员</p>
-      <a-radio-group v-model="sendOrderName" :default-value="1">
-        <a-radio :style="radioStyle" :value="item.userInfo.name" v-for="item in receiveList" :key="item.id">{{ item.userInfo.name }}</a-radio>
-        <a-radio :style="radioStyle" value="">清空订单负责人</a-radio>
-      </a-radio-group>
+      <div style="padding:0 30px;">
+        <p>请选择要派单的人员</p>
+        <a-radio-group v-model="sendOrderName" :default-value="1">
+          <a-radio :style="radioStyle" :value="item.userInfo.name" v-for="item in receiveList" :key="item.id">{{ item.userInfo.name }}</a-radio>
+          <a-radio :style="radioStyle" value="">清空订单负责人</a-radio>
+        </a-radio-group>
+      </div>
     </a-modal>
     <saleRepairModal
       :repairVisible="repairVisible"
@@ -303,6 +327,7 @@ export default {
       exportfilterData: [],
       estimateData: [
       ],
+      voidData: [], // 作废数据
       importColumns: [
         {
           title: '客户名',
@@ -344,13 +369,6 @@ export default {
           align: 'center',
           width: 150,
           customRender: (text) => text ? moment(text).format('YYYY年MM月DD日') : ''
-        },
-        {
-          title: '是否月结',
-          dataIndex: 'monthlyStatement',
-          key: 'monthlyStatement',
-          align: 'center',
-          customRender: (text) => text ? '是' : (text === false ? '否' : '--')
         },
         {
           title: '问题分类',
@@ -714,8 +732,7 @@ export default {
             receiveAddress: reader[i]['收货地址'],
             serviceAddress: reader[i]['上门地址'],
             remark: reader[i]['备注'],
-            purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString()))),
-            monthlyStatement: reader[i]['是否月结'] === '是' ? true : (reader[i]['是否月结'] === '否' ? false : null)
+            purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString())))
           }
           this.importDataList.push(sheetData)
         }
@@ -925,6 +942,9 @@ export default {
         case 'SOLVED':
           this.current = 5
           break
+        case 'CANCEL':
+          this.current = 6
+          break
       }
       const testData = data.processes.sort((a, b) => {
         return a.id - b.id
@@ -962,6 +982,11 @@ export default {
           })
           this.estimateData = this.salesData.filter(item => {
             if (item.status === 'WAIT_EVALUATE') {
+              return item
+            }
+          })
+          this.voidData = this.salesData.filter(item => {
+            if (item.status === 'CANCEL') {
               return item
             }
           })
