@@ -583,7 +583,10 @@
               <a-row style="text-align: center;">
                 <a-col>
                   <a-popconfirm title="确定提交信息？" @confirm="onSendSubmit">
-                    <a-button style="margin: 0 20px;" type="primary">确认</a-button>
+                    <a-button style="margin: 0 20px;" type="primary">提交</a-button>
+                  </a-popconfirm>
+                  <a-popconfirm title="确定保存信息？" @confirm="saveEditVisit">
+                    <a-button style="margin: 0 20px;" type="primary">保存</a-button>
                   </a-popconfirm>
                   <a-popconfirm title="确定重置信息？" @confirm="resetSendForm">
                     <a-button style="margin: 0 20px;">重置</a-button>
@@ -745,7 +748,7 @@ export default {
         technicalCost: null, // 师傅成本
         technicalPhone: null, // 师傅手机号
         visitTime: null, // 上门时间
-        technicianList: undefined, // 技术人员
+        technicianList: [], // 技术人员
         // technicianPhone: null, // 技术人员电话
         technicianPhoneList: [] // 技术人员电话组
       },
@@ -856,8 +859,8 @@ export default {
       // 上门信息刷新
       if (this.current === 3) {
         this.$refs.sendForm.resetFields()
-        this.sendForm.technicianList = undefined
-        this.sendForm.technicianPhoneList = []
+        // this.sendForm.technicianList = []
+        // this.sendForm.technicianPhoneList = []
       }
       this.$emit('closeRepairModal')
     },
@@ -1374,6 +1377,8 @@ export default {
       // console.log('重置后', this.payForm)
     },
     resetSendForm () {
+      // this.payForm.technicianList = []
+      // this.payForm.technicianPhoneList = []
       this.$refs.sendForm.resetFields()
     },
     // 月结选择
@@ -1516,6 +1521,23 @@ export default {
     },
     closeEstimate () {
       this.estimateVisible = false
+    },
+    saveEditVisit () {
+      const id = this.repairData.id
+      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      const apiData = {
+        afterSaleVisit: JSON.parse(JSON.stringify(this.sendForm))
+      }
+      // console.log(apiData)
+      apiUpdateProcess(id, processId, apiData).then(res => {
+        if (res.status === 200) {
+          this.$message.success('保存成功')
+          this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
     }
   },
   created () {
@@ -1698,6 +1720,26 @@ export default {
         // ]
       }
       this.statementIndex = this.transferData
+
+      // 获取上门信息
+      const arr = this.repairData.processes[this.repairData.processes.length - 1].afterSaleVisit
+      // 赋值
+      this.sendForm.technicalCost = arr.technicalCost
+      this.sendForm.technicalName = arr.technicalName
+      this.sendForm.technicalPhone = arr.technicalPhone
+      this.sendForm.technicalPlatform = arr.technicalPlatform
+      this.sendForm.technicalServiceNo = arr.technicalServiceNo
+      this.sendForm.visitTime = arr.visitTime
+      if (arr.technicianList !== null) {
+        this.sendForm.technicianList = arr.technicianList
+      } else {
+        this.sendForm.technicianList = []
+      }
+      if (arr.technicianPhoneList !== null) {
+        this.sendForm.technicianPhoneList = arr.technicianPhoneList
+      } else {
+        this.sendForm.technicianPhoneList = []
+      }
     },
     'editForm.brand' (newData, oldData) {
       console.log(newData, oldData)
