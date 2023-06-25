@@ -1929,7 +1929,7 @@ export default {
         // ]
       }
       this.statementIndex = this.transferData
-      
+
       // console.log('---', this.current)
       let formName = null
       switch (this.current) {
