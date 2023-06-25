@@ -160,7 +160,7 @@
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
                 <a @click="openRepairModal(record)">查看</a> |
-                <a @click="openDrawbackModal(record)">退款</a>
+                <a @click="openDrawbackModal(record)">退件退款</a>
               </span>
             </a-table>
           </a-tab-pane>

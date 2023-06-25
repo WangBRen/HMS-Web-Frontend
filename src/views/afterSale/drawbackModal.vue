@@ -20,22 +20,37 @@
         </a-row>
         <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding-bottom:50px;">
           <div class="title">第{{ index1+1 }}次评估：</div>
-          <div class="itemBox" v-if="item1.pays.length>0">
+          <div class="itemBox">
             <a-descriptions
               bordered
               size="small"
               :column="3"
             >
-              <a-descriptions-item label="支付单号"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.outTradeNo }}</span></span></a-descriptions-item>
-              <a-descriptions-item label="支付时间"><span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.payTime | moment }}</span></span></a-descriptions-item>
-              <a-descriptions-item label="当前状态">
+              <a-descriptions-item label="支付单号">
+                <div v-if="item1.pays.length>0">
+                  <span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.outTradeNo }}</span></span>
+                </div>
+                <div v-else>--</div>
+              </a-descriptions-item>
+              <a-descriptions-item label="支付时间">
+                <span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.payTime | moment }}</span></span>
+              </a-descriptions-item>
+              <a-descriptions-item label="退款状态" v-if="item1.pays.length>0">
                 <a-badge color="#f50" text="不支持退款" v-if="item1.pays[0].actualAmount===0 && item1.pays.length==1"/>
                 <a-badge color="#bbb" text="无退款记录" v-else-if="item1.pays.length<=1"/>
                 <a-badge color="#2db7f5" :text="`已退款`" v-else-if="item1.pays.length>1"/>
               </a-descriptions-item>
+              <a-descriptions-item label="状态" v-else><a-badge color="#f50" :text="`无支付记录`"/></a-descriptions-item>
               <a-descriptions-item label="是否在保修期内">{{ item1.isOverWarranty?'是':'否' }}</a-descriptions-item>
-              <a-descriptions-item label="订单总金额">￥<span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.totalAmount }}</span></span></a-descriptions-item>
-              <a-descriptions-item label="实际支付金额">￥<span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.actualAmount }}</span></span></a-descriptions-item>
+              <a-descriptions-item label="订单总金额">
+                ￥{{ item1.totalCost }}
+              </a-descriptions-item>
+              <a-descriptions-item label="实际支付金额">
+                <div v-if="item1.pays.length>0">
+                  ￥<span v-for="pay in item1.pays" :key="pay.id"><span v-if="pay.submitType=='PAY'">{{ pay.actualAmount }}</span></span>
+                </div>
+                <div v-else>￥0</div>
+              </a-descriptions-item>
               <a-descriptions-item label="退款历史记录" :span="3" v-if="item1.pays.length>1">
                 <a-row style="font-weight:600;line-height:2">
                   <a-col :span="7">退款单号</a-col>
@@ -52,39 +67,57 @@
                   </span>
                 </a-row>
               </a-descriptions-item>
-              <a-descriptions-item label="选择退款配件及数量" :span="2">
+              <a-descriptions-item label="退件历史记录" :span="3" v-if="item1.returnParts.length>0">
                 <a-row style="font-weight:600;line-height:2">
-                  <a-col :span="8">已发配件</a-col>
-                  <a-col :span="4">单价</a-col>
-                  <a-col :span="6">已发数量</a-col>
-                  <a-col :span="6">选择退款数量</a-col>
+                  <a-col :span="7">退件名</a-col>
+                  <a-col :span="4">数量</a-col>
+                  <a-col :span="6">退件时间</a-col>
                 </a-row>
-                <div v-for="(item2, index2) in item1.afterSaleExpresses" :key="index2">
-                  <a-row>
-                    <a-col :span="8">{{ item2.pieceName }}</a-col>
-                    <a-col :span="4">{{ item2.piecePrice }}</a-col>
-                    <a-col :span="6">{{ item2.pieceNum }}</a-col>
-                    <a-col :span="6"><a-input-number :min="0" :max="item2.pieceNum" @change="value => accessoriesChange(item1.id,item2,value)"/></a-col>
-                  </a-row>
-                </div>
-                <div v-for="total in totalRefund" :key="total.id">
-                  <span v-if="total.id===item1.id" style="color:red;padding-top: 20px;">
-                    <span v-if="item1.discount">折扣：{{ item1.discount }}折 <span style="margin-left:100px;">本次预计退款：￥{{ total.totalNum * item1.discount / 10 }}</span></span>
-                    <span v-else>本次预计退款：￥{{ total.totalNum }}</span>
-                  </span>
-                </div>
+                <a-row v-for="(part, index) in item1.returnParts" :key="index" class="rowActive">
+                  <a-col :span="7">{{ part.returnName }}</a-col>
+                  <a-col :span="4">{{ part.returnNum }}</a-col>
+                  <a-col :span="6">{{ part.returnTime | moment }}</a-col>
+                </a-row>
               </a-descriptions-item>
-              <a-descriptions-item label="退款操作"><a-button :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button></a-descriptions-item>
+              <a-descriptions-item label="选择退款退件数量" :span="2">
+                <div v-if="item1.afterSaleExpresses.length>0">
+                  <a-row style="font-weight:600;line-height:2">
+                    <a-col :span="8">已发配件</a-col>
+                    <a-col :span="4">单价</a-col>
+                    <a-col :span="6">已发数量</a-col>
+                    <a-col :span="6">选择数量</a-col>
+                  </a-row>
+                  <div v-for="(item2, index2) in item1.afterSaleExpresses" :key="index2">
+                    <a-row>
+                      <a-col :span="8">{{ item2.pieceName }}</a-col>
+                      <a-col :span="4">{{ item2.piecePrice }}</a-col>
+                      <a-col :span="6">{{ item2.pieceNum }}</a-col>
+                      <a-col :span="6"><a-input-number :min="0" :max="item2.pieceNum" @change="value => accessoriesChange(item1.id,item2,value)"/></a-col>
+                    </a-row>
+                  </div>
+                  <div v-for="total in totalRefund" :key="total.id">
+                    <span v-if="total.id===item1.id" style="color:red;padding-top: 20px;">
+                      <span v-if="item1.discount">折扣：{{ item1.discount }}折 <span style="margin-left:100px;">本次预计退款：￥{{ total.totalNum * item1.discount / 10 }}</span></span>
+                      <span v-else>本次预计退款：￥{{ total.totalNum }}</span>
+                    </span>
+                  </div>
+                </div>
+                <a v-else>无寄件信息</a>
+              </a-descriptions-item>
+              <a-descriptions-item label="操作">
+                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件</a-button>
+                <a-button v-if="item1.pays.length>0" :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button>
+              </a-descriptions-item>
             </a-descriptions>
           </div>
-          <div v-else>无付款记录</div>
+          <!-- <div v-else>无付款记录</div> -->
         </div>
       </div>
     </a-modal>
   </div>
 </template>
 <script>
-import { saleRefund, processPay, getSaleRepair, updateStatus } from '@/api/afterSale'
+import { saleRefund, processPay, getSaleRepair, updateStatus, updateProcess } from '@/api/afterSale'
 import md5 from '../../utils/md5'
 export default {
   props: {
@@ -102,7 +135,8 @@ export default {
       accessories: [], // 退款配件数据
       drawbackData: [], // 当前订单数据
       totalRefund: [],
-      returnNo: ''
+      returnNo: '',
+      returnParts: []
     }
   },
   methods: {
@@ -121,6 +155,22 @@ export default {
       const stringA = `appid=wxc849c3cfa10ea1d2&body=test&device_info=1000&mch_id=1635883921&nonce_str=${this.nonceStr()}`
       const stringSignTemp = stringA + '&key=yt191017yt191017yt191017yt191017'
       return md5(stringSignTemp)
+    },
+    async returnPart (item1) {
+      const unadorned = item1.returnParts
+      console.log(item1, this.returnParts)
+      const returnParts = this.returnParts.filter(item => { return item.processId === item1.id })[0].parts
+      const payLoad = {}
+      payLoad.returnParts = returnParts.filter(part => { return part.num > 0 })
+      .map(item => {
+        return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date() }
+      }).concat(unadorned)
+      const res = await updateProcess(this.saleId, item1.id, payLoad)
+      if (res.status === 200) {
+        this.$message.success('退件成功')
+        this.getSaleDate()
+      }
+      console.log(res, payLoad)
     },
     handRefund (item1) {
       const myDate = Date.parse(new Date())
@@ -205,6 +255,7 @@ export default {
           return { ...item }
         }
       })
+      this.returnParts = a
       this.totalRefund = a.map(item => {
         var totalNum = 0
         item.parts.map(part => {
