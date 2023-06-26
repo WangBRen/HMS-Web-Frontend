@@ -1454,7 +1454,8 @@ export default {
           const apiData = {
             pieceDeliveryNo: testData.pieceDeliveryNo,
             expressBrand: testData.expressBrand,
-            afterSaleVisit: testData
+            afterSaleVisit: testData,
+            sendTime: new Date()
           }
           delete apiData.afterSaleVisit.pieceDeliveryNo
           delete apiData.afterSaleVisit.expressBrand

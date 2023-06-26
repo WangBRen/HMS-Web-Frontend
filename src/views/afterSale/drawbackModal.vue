@@ -16,7 +16,7 @@
         </a-row>
         <a-row class="returnNo">
           <a-col>退件快递单号：</a-col>
-          <a-col>{{ this.drawbackData.returnsNumber }}</a-col>
+          <a-col><a-tag v-for="item in drawbackData.returnsNumber" :key="item.index">{{ item }}</a-tag></a-col>
         </a-row>
         <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding-bottom:50px;">
           <div class="title">第{{ index1+1 }}次评估：</div>
@@ -277,7 +277,9 @@ export default {
     },
     async handReturnNo () {
       if (this.returnNo) {
-        const data = { returnsNumber: this.returnNo }
+        const data = {}
+        data.returnsNumber = this.drawbackData.returnsNumber
+        data.returnsNumber.push(this.returnNo)
         const res = await updateStatus(this.drawbackData.id, data)
         console.log(res)
         if (res.status === 200) {

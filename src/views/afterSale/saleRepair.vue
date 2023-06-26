@@ -29,8 +29,9 @@
           />
         </a-col>
         <a-col style="text-align: right;" :span="10">
-          <a-button style="margin-right: 10px;" type="primary" @click="openAddRepair">新增维修工单</a-button>
-          <a-button type="primary" @click="exportAllData">导出信息单</a-button>
+          <a-button style="margin-right: 10px;" type="dashed" @click="openAddRepair">新增维修单</a-button>
+          <a-button @click="exportData"><a-icon type="pay-circle" />导出对账单</a-button>
+          <a-button type="primary" ghost @click="exportAllData">导出信息单</a-button>
         </a-col>
       </a-row>
       <div>
@@ -144,7 +145,6 @@
             </a-table>
           </a-tab-pane>
           <a-tab-pane key="6" tab="已解决">
-            <a-button type="primary" @click="exportData">导出对账单</a-button>
             <a-table
               :columns="solveColumns"
               :rowKey="(record, index) => index"
@@ -793,22 +793,25 @@ export default {
               return true
             }
           } else {
-            item.processes.map(process => {
+            for (const process of item.processes) {
               const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
               if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
                 return true
               } else if (process.pays.length > 1) {
-                process.pays.map(pay => {
+                for (const pay of process.pays) {
                   const refundTime = moment(pay.refundTime).format('YYYY-MM-DD')
-                  return pay.submitType === 'REFUND' && refundTime >= this.exportStart && refundTime <= this.exportEnd
-                })
+                  if (pay.submitType === 'REFUND' && refundTime >= this.exportStart && refundTime <= this.exportEnd) {
+                    return true
+                  }
+                }
               }
-            })
+            }
           }
         })
       } else {
         this.exportfilterData = filterData
       }
+      console.log('this.exportfilterData', this.exportfilterData)
     },
     handleChangeBrand (value) {
       this.disableMonth = false
@@ -949,6 +952,8 @@ export default {
       this.selectDate = null
       this.filterBrand = ''
       this.selectModel = ''
+      this.exportStart = ''
+      this.exportEnd = ''
       this.exportfilterData = this.salesData
       this.modelArr = this.allModel
       this.exportVisible = true
