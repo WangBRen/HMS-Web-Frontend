@@ -180,7 +180,10 @@
               <div class="visitDes" v-if="item4.needVisit && item4.afterSaleVisit.technicalServiceNo">
                 <!-- <div style="padding: 0 10px;" v-if="item4.needVisit"> -->
                 <div style="font-size: 17px;">上门信息：</div>
-                <a-descriptions bordered size="small">
+                <span v-if="!editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="openEditVisit"><a-icon type="edit"/>修改信息</span>
+                <a-button v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="saveVisitInfo" type="primary">保存</a-button>
+                <!-- 修改前 -->
+                <a-descriptions v-if="!editVisitIndex && index4+1 < repairData.processes.length && current===4" bordered size="small">
                   <a-descriptions-item label="师傅平台">
                     {{ item4.afterSaleVisit.technicalPlatform }}
                   </a-descriptions-item>
@@ -210,6 +213,142 @@
                       {{ technicianPhone }}
                     </span>
                     <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
+                  </a-descriptions-item>
+                </a-descriptions>
+                <a-descriptions v-if="!editVisitIndex && index4+1 === repairData.processes.length && current===4" bordered size="small">
+                  <a-descriptions-item label="师傅平台">
+                    <!-- <a-input placeholder="请输入师傅平台" v-model="editVisitForm.technicalPlatform"/> -->
+                    {{ editVisitForm.technicalPlatform }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅单号">
+                    {{ editVisitForm.technicalServiceNo }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅成本">
+                    {{ editVisitForm.technicalCost }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅名称">
+                    {{ editVisitForm.technicalName }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅手机号">
+                    {{ editVisitForm.technicalPhone }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="上门时间">
+                    <!-- <a-input placeholder="请输入师傅平台" v-model="editVisitForm.visitTime"/> -->
+                    {{ editVisitForm.visitTime | getTime }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术人员">
+                    <span v-for="technician in editVisitForm.technicianList" :key="technician">
+                      {{ technician }}
+                    </span>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术电话">
+                    <span v-for="item in editVisitForm.technicianPhoneList" :key="item">
+                      {{ item }}&nbsp;
+                    </span>
+                  </a-descriptions-item>
+                </a-descriptions>
+
+                <!-- 点击修改后 -->
+                <a-descriptions v-if="editVisitIndex && index4+1 < repairData.processes.length && current===4" bordered size="small">
+                  <a-descriptions-item label="师傅平台">
+                    {{ item4.afterSaleVisit.technicalPlatform }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅单号">
+                    {{ item4.afterSaleVisit.technicalServiceNo }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅成本">
+                    {{ item4.afterSaleVisit.technicalCost || '---' }} 元
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅名称">
+                    {{ item4.afterSaleVisit.technicalName || '---' }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅手机号">
+                    {{ item4.afterSaleVisit.technicalPhone || '---' }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="上门时间">
+                    {{ item4.afterSaleVisit.visitTime | getTime }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术人员">
+                    <span v-for="technician in item4.afterSaleVisit.technicianList" :key="technician">
+                      {{ technician }}
+                    </span>
+                    <!-- {{ item4.afterSaleVisit.technician }} -->
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术电话">
+                    <span v-for="technicianPhone in item4.afterSaleVisit.technicianPhoneList" :key="technicianPhone">
+                      {{ technicianPhone }}
+                    </span>
+                    <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
+                  </a-descriptions-item>
+                </a-descriptions>
+                <a-descriptions v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" bordered size="small">
+                  <a-descriptions-item label="师傅平台">
+                    <a-input placeholder="请输入师傅平台" v-model="editVisitForm.technicalPlatform"/>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅单号">
+                    <a-input placeholder="请输入师傅单号" v-model="editVisitForm.technicalServiceNo"/>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅成本">
+                    <a-input placeholder="请输入师傅成本" v-model="editVisitForm.technicalCost"/>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅名称">
+                    <a-input placeholder="请输入师傅名称" v-model="editVisitForm.technicalName"/>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅手机号">
+                    <a-input placeholder="请输入师傅手机号" v-model="editVisitForm.technicalPhone"/>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="上门时间">
+                    <!-- <a-input placeholder="请输入师傅平台" v-model="editVisitForm.visitTime"/> -->
+                    <a-date-picker
+                      show-time
+                      v-model="editVisitForm.visitTime"
+                      type="date"
+                      placeholder="请选择上门时间"
+                      style="width: 100%;"
+                    />
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术人员">
+                    <a-select mode="multiple" placeholder="请输入技术人员" @change="checkTechnology2" v-model="editVisitForm.technicianList">
+                      <a-select-option v-for="technology in technologyArr" :key="technology.nickname">
+                        {{ technology.nickname }}
+                      </a-select-option>
+                    </a-select>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术电话">
+                    <span v-for="item in editVisitForm.technicianPhoneList" :key="item">
+                      {{ item }}&nbsp;
+                    </span>
+                  </a-descriptions-item>
+                </a-descriptions>
+                <!-- 不在寄件和上门状态的显示 -->
+                <a-descriptions v-if="current!==3 && current!==4" bordered size="small">
+                  <a-descriptions-item label="师傅平台">
+                    {{ item4.afterSaleVisit.technicalPlatform }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅单号">
+                    {{ item4.afterSaleVisit.technicalServiceNo }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅成本">
+                    {{ item4.afterSaleVisit.technicalCost || '---' }} 元
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅名称">
+                    {{ item4.afterSaleVisit.technicalName || '---' }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="师傅手机号">
+                    {{ item4.afterSaleVisit.technicalPhone || '---' }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="上门时间">
+                    {{ item4.afterSaleVisit.visitTime | getTime }}
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术人员">
+                    <span v-for="technician in item4.afterSaleVisit.technicianList" :key="technician">
+                      {{ technician }}
+                    </span>
+                  </a-descriptions-item>
+                  <a-descriptions-item label="技术电话">
+                    <span v-for="technicianPhone in item4.afterSaleVisit.technicianPhoneList" :key="technicianPhone">
+                      {{ technicianPhone }}
+                    </span>
                   </a-descriptions-item>
                 </a-descriptions>
               </div>
@@ -769,7 +908,19 @@ export default {
       // 品牌库
       brandArrs: brandData,
       // 产品库
-      modelArr: []
+      modelArr: [],
+      editVisitIndex: false,
+      editVisitForm: {
+        technicalPlatform: null, // 师傅平台
+        technicalServiceNo: null, // 师傅单号
+        technicalName: null, // 师傅名字
+        technicalCost: null, // 师傅成本
+        technicalPhone: null, // 师傅手机号
+        visitTime: null, // 上门时间
+        technicianList: [], // 技术人员
+        // technicianPhone: null, // 技术人员电话
+        technicianPhoneList: [] // 技术人员电话组
+      }
     }
   },
   methods: {
@@ -884,6 +1035,7 @@ export default {
         // this.sendForm.technicianList = []
         // this.sendForm.technicianPhoneList = []
       }
+      this.editVisitIndex = false
       this.$emit('closeRepairModal')
     },
     // 选择一级问题
@@ -1541,6 +1693,17 @@ export default {
       this.sendForm.technicianPhoneList = testData
       // console.log(this.payForm.technicianPhoneList)
     },
+    checkTechnology2 (e) {
+      const testData = []
+      for (let i = 0; i < e.length; i++) {
+        for (let j = 0; j < this.technologyArr.length; j++) {
+          if (e[i] === this.technologyArr[j].nickname) {
+            testData.push(this.technologyArr[j].telephone)
+          }
+        }
+      }
+      this.editVisitForm.technicianPhoneList = testData
+    },
     closeEstimate () {
       this.estimateVisible = false
     },
@@ -1554,18 +1717,42 @@ export default {
       apiUpdateProcess(id, processId, apiData).then(res => {
         if (res.status === 200) {
           this.$message.success('保存成功')
-          this.closeRepairModals()
+          // this.closeRepairModals()
           this.$parent.getAfterSaleData()
         } else {
           this.$message.error(res.message)
         }
       })
+    },
+    openEditVisit () {
+      // console.log('修改')
+      this.editVisitIndex = true
+    },
+    saveVisitInfo () {
+      // console.log('保存', this.editVisitForm)
+      const id = this.repairData.id
+      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      const apiData = {
+        afterSaleVisit: JSON.parse(JSON.stringify(this.editVisitForm))
+      }
+      // console.log(apiData)
+      apiUpdateProcess(id, processId, apiData).then(res => {
+        if (res.status === 200) {
+          this.$message.success('保存成功')
+          // this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+          this.$forceUpdate()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+      this.editVisitIndex = false
     }
   },
   created () {
   },
   mounted () {
-    console.log('this.repairData.customerInfo', this.repairData.customerInfo)
+    // console.log('this.repairData.customerInfo', this.repairData.customerInfo)
     this.editForm = this.repairData.customerInfo
     this.editCustomer = false
     // 配件库
@@ -1743,26 +1930,33 @@ export default {
       }
       this.statementIndex = this.transferData
 
-      // 获取上门信息
-      console.log('this.repairData', this.repairData)
-      const arr = this.repairData.processes[this.repairData.processes.length - 1]?.afterSaleVisit
-      // 赋值
-      if (arr) {
-        this.sendForm.technicalCost = arr.technicalCost
-        this.sendForm.technicalName = arr.technicalName
-        this.sendForm.technicalPhone = arr.technicalPhone
-        this.sendForm.technicalPlatform = arr.technicalPlatform
-        this.sendForm.technicalServiceNo = arr.technicalServiceNo
-        this.sendForm.visitTime = arr.visitTime
+      // console.log('---', this.current)
+      let formName = null
+      switch (this.current) {
+        case 3:
+          formName = this.sendForm
+          break
+        case 4:
+          formName = this.editVisitForm
+          break
+      }
+      if (formName !== null) {
+        const arr = this.repairData.processes[this.repairData.processes.length - 1].afterSaleVisit
+        formName.technicalCost = arr.technicalCost
+        formName.technicalName = arr.technicalName
+        formName.technicalPhone = arr.technicalPhone
+        formName.technicalPlatform = arr.technicalPlatform
+        formName.technicalServiceNo = arr.technicalServiceNo
+        formName.visitTime = arr.visitTime
         if (arr.technicianList !== null) {
-          this.sendForm.technicianList = arr.technicianList
+          formName.technicianList = arr.technicianList
         } else {
-          this.sendForm.technicianList = []
+          formName.technicianList = []
         }
         if (arr.technicianPhoneList !== null) {
-          this.sendForm.technicianPhoneList = arr.technicianPhoneList
+          formName.technicianPhoneList = arr.technicianPhoneList
         } else {
-          this.sendForm.technicianPhoneList = []
+          formName.technicianPhoneList = []
         }
       }
     },
