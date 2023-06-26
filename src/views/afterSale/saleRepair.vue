@@ -193,26 +193,36 @@
       <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index"/>
     </a-modal>
     <a-modal
-      title="导出全部数据"
+      v-if="exportVisible"
+      :title="topTitle==='info'?'导出信息单':'导出对账单'"
       :visible="exportVisible"
       @ok="handleOk"
       @cancel="handleCancel"
     >
       <a-row>
         <a-col :offset="2">
-          <a-range-picker @change="onChangeDate" v-model="selectDate"/>
+          <a-range-picker
+            :ranges="ranges"
+            :disabled-date="disabledDate"
+            @change="onChangeDate"
+            v-model="selectDate"
+          />
         </a-col>
+      </a-row>
+      <a-row style="color:#888;margin-top:4px;">
+        <a-col :offset="2" v-if="topTitle==='info'"><a-icon type="info-circle"/> 将导出【创建时间】在此范围内的订单</a-col>
+        <a-col :offset="2" v-else><a-icon type="info-circle"/> 将导出【寄件时间、退款时间】在此范围内的订单</a-col>
       </a-row>
       <a-row style="margin-top:30px">
         <a-col :span="4" :offset="2">筛选品牌：
-          <a-select placeholder="请选择产品品牌" v-model="filterBrand" style="width: 120px" @change="handleChangeBrand">
+          <a-select placeholder="请选择产品品牌" v-model="filterBrand" style="width: 130px" @change="handleChangeBrand">
             <a-select-option v-for="(item) in brandArrs" :key="item.name">
               {{ item.name }}
             </a-select-option>
           </a-select>
         </a-col>
         <a-col :span="4" :offset="8">筛选型号：
-          <a-select placeholder="请选择产品型号" v-model="selectModel" style="width: 120px" @change="handleChangeModel">
+          <a-select placeholder="请选择产品型号" v-model="selectModel" style="width: 130px" @change="handleChangeModel">
             <a-select-option v-for="(item) in modelArr" :key="item">
               {{ item }}
             </a-select-option>
@@ -220,8 +230,16 @@
         </a-col>
       </a-row>
       <a-row style="margin-top:16px;">
-        <a-col :offset="2">
+        <a-col :span="8" :offset="2">
           <a-icon type="container" theme="twoTone" /> 预计导出 <span style="color:red;font-size:20px;">{{ this.exportfilterData.length }}</span> 条数据
+        </a-col>
+        <a-col :span="4" :offset="4" v-if="topTitle==='account'">月结单：
+          <a-select @change="handSelectMonth" v-model="selectMonthly" style="width: 130px;" :disabled="disableMonth">
+            <a-select-option value="all">全部</a-select-option>
+            <a-select-option value="true">是</a-select-option>
+            <a-select-option value="false">否</a-select-option>
+            <a-select-option value="null">---</a-select-option>
+          </a-select>
         </a-col>
       </a-row>
     </a-modal>
@@ -612,6 +630,8 @@ export default {
       transferData: null, // 月结单
       brandArrs: brandData,
       selectDate: null,
+      selectMonthly: 'all',
+      disableMonth: false,
       filterBrand: '',
       selectModel: '',
       modelArr: [],
@@ -619,10 +639,21 @@ export default {
       startTime: null,
       endTime: null,
       exportStart: '',
-      exportEnd: ''
+      exportEnd: '',
+      moment,
+      ranges: {
+      '今天': [moment(), moment()],
+      '本月': [moment().startOf('month'), moment().endOf('month')],
+      '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+      },
+      topTitle: ''
     }
   },
   methods: {
+    disabledDate (current) {
+      // Can not select days before today and today
+      return current && current > moment().endOf('day')
+    },
     async getUserList () {
       const res = await getUserList({ page: 1, size: 1 })
       if (res.status === 200) {
@@ -668,6 +699,8 @@ export default {
       console.log(res)
     },
     onChangeDate (date, dateString) {
+      this.disableMonth = false
+      this.selectMonthly = 'all'
       this.exportStart = dateString[0]
       this.exportEnd = dateString[1]
       const filterData = this.salesData.filter(item => {
@@ -681,16 +714,7 @@ export default {
           return true
         }
       })
-      if (dateString[0] !== '' && dateString[1] !== '') {
-        this.exportfilterData = filterData.filter(item => {
-          const dateTime = new Date(item.createdAt)
-          if (dateTime > new Date(dateString[0]) && dateTime < new Date(dateString[1])) {
-            return true
-          }
-        })
-      } else {
-        this.exportfilterData = filterData
-      }
+      this.filterTime(filterData)
       console.log(date, dateString, this.exportfilterData)
     },
     async getMe () {
@@ -743,20 +767,58 @@ export default {
     close () {
       this.visible = false
     },
+    handSelectMonth () {
+      // this.handleChangeModel(this.selectModel)
+      this.exportfilterData = this.exportfilterData.filter(item => {
+        if (this.selectMonthly === 'all') {
+          return item
+        } else if (this.selectMonthly === 'true') {
+          return item.monthlyStatement
+        } else if (this.selectMonthly === 'false') {
+          if (item.monthlyStatement === false) {
+            return item
+          }
+        } else {
+          return item.monthlyStatement === null
+        }
+      })
+      this.disableMonth = true
+    },
+    filterTime (filterData) {
+      if (this.exportStart !== '' && this.exportEnd !== '') {
+        this.exportfilterData = filterData.filter(item => {
+          if (this.topTitle === 'info') {
+            const dateTime = moment(item.createdAt).format('YYYY-MM-DD')
+            if (dateTime >= this.exportStart && dateTime <= this.exportEnd) {
+              return true
+            }
+          } else {
+            item.processes.map(process => {
+              const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
+              if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
+                return true
+              } else if (process.pays.length > 1) {
+                process.pays.map(pay => {
+                  const refundTime = moment(pay.refundTime).format('YYYY-MM-DD')
+                  return pay.submitType === 'REFUND' && refundTime >= this.exportStart && refundTime <= this.exportEnd
+                })
+              }
+            })
+          }
+        })
+      } else {
+        this.exportfilterData = filterData
+      }
+    },
     handleChangeBrand (value) {
+      this.disableMonth = false
+      this.selectMonthly = 'all'
       this.filterBrand = value
       this.selectModel = ''
       const filterData = this.salesData.filter(item => {
         return item.customerInfo.brand === value
       })
-      if (this.exportStart !== '' && this.exportEnd !== '') {
-        this.exportfilterData = filterData.filter(item => {
-          const dateTime = new Date(item.createdAt)
-            return dateTime > new Date(this.exportStart) && dateTime < new Date(this.exportEnd)
-        })
-      } else {
-        this.exportfilterData = filterData
-      }
+      this.filterTime(filterData)
       this.brandArrs.filter(item => {
         if (item.name === this.filterBrand) {
           this.modelArr = item.modelArr
@@ -764,6 +826,8 @@ export default {
       })
     },
     handleChangeModel (value) {
+      this.disableMonth = false
+      this.selectMonthly = 'all'
       this.selectModel = value
       const filterData = this.salesData.filter(item => {
         if (this.filterBrand !== '') {
@@ -772,49 +836,43 @@ export default {
           return item.customerInfo.productModel === value
         }
       })
-      if (this.exportStart !== '' && this.exportEnd !== '') {
-        this.exportfilterData = filterData.filter(item => {
-          const dateTime = new Date(item.createdAt)
-            return dateTime > new Date(this.exportStart) && dateTime < new Date(this.exportEnd)
-        })
-      } else {
-        this.exportfilterData = filterData
-      }
+      this.filterTime(filterData)
     },
     exportData () {
-      if (this.solveData.length === 0) {
-        this.$message.warning('导出数据不能为空')
-        return
-      }
-      const that = this
-      this.$confirm({
-        title: `确认导出 ${that.solveData.length} 条数据吗?`,
-        content: `是否月结单：${that.checkMonthly === 'true' ? '是' : (that.checkMonthly === 'false' ? '否' : '全部订单')}`,
-        onOk () {
-          console.log('需要导出的数据', that.solveData)
-          const tHeader = ['报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号', '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '应付金额', '实付金额']
-          const fitlerVal = [
-            'createdAt',
-            'customerName',
-            'customerPhone',
-            'serviceAddress',
-            'purchaseDate',
-            'brand',
-            'productModel',
-            'productNo',
-            'problemCategory',
-            'problems',
-            'needVisit',
-            'needPieceSend',
-            'monthlyStatement',
-            'isOverWarranty',
-            'totalCost',
-            'customerPay'
-          ]
-          that.filterExcelData(tHeader, fitlerVal, that.solveData, 'account')
-        },
-        onCancel () {}
-      })
+      this.exportDataInit('account')
+      // if (this.solveData.length === 0) {
+      //   this.$message.warning('导出数据不能为空')
+      //   return
+      // }
+      // const that = this
+      // this.$confirm({
+      //   title: `确认导出 ${that.solveData.length} 条数据吗?`,
+      //   content: `是否月结单：${that.checkMonthly === 'true' ? '是' : (that.checkMonthly === 'false' ? '否' : '全部订单')}`,
+      //   onOk () {
+      //     console.log('需要导出的数据', that.solveData)
+      //     const tHeader = ['报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号', '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '应付金额', '实付金额']
+      //     const fitlerVal = [
+      //       'createdAt',
+      //       'customerName',
+      //       'customerPhone',
+      //       'serviceAddress',
+      //       'purchaseDate',
+      //       'brand',
+      //       'productModel',
+      //       'productNo',
+      //       'problemCategory',
+      //       'problems',
+      //       'needVisit',
+      //       'needPieceSend',
+      //       'monthlyStatement',
+      //       'isOverWarranty',
+      //       'totalCost',
+      //       'customerPay'
+      //     ]
+      //     that.filterExcelData(tHeader, fitlerVal, that.solveData, 'account')
+      //   },
+      //   onCancel () {}
+      // })
     },
     filterExcelData (tHeader, fitlerVal, filterExportData, mode) {
       const res = filterExportData.map((v) => fitlerVal.map((j) => {
@@ -884,6 +942,10 @@ export default {
       }
     },
     exportAllData () {
+      this.exportDataInit('info')
+    },
+    exportDataInit (data) {
+      this.topTitle = data
       this.selectDate = null
       this.filterBrand = ''
       this.selectModel = ''
