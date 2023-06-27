@@ -4,7 +4,6 @@
       :width="1000"
       :visible="drawbackVisible"
       @cancel="handleCancel"
-      :maskClosable="false"
       :footer="null"
     >
       <div style="padding: 20px;">

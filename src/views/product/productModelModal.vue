@@ -15,17 +15,31 @@
         :wrapper-col="wrapperCol"
         :rules="modelRules"
       >
-        <a-row>
+        <!-- <a-row>
           <a-col>
             <a-form-model-item label="产品号" prop="productNumber">
               <a-input placeholder="请输入产品号" v-model="productForm.productNumber"></a-input>
             </a-form-model-item>
           </a-col>
-        </a-row>
+        </a-row> -->
         <a-row>
           <a-col>
             <a-form-model-item label="产品型号" prop="productModel">
               <a-input placeholder="请输入产品型号" v-model="productForm.productModel"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
+            <a-form-model-item label="品牌" prop="productBrand">
+              <a-input placeholder="请输入品牌中文名" v-model="productForm.productBrand"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
+            <a-form-model-item label="品牌简称" prop="name">
+              <a-input placeholder="请输入品牌简称字母" v-model="productForm.name"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -95,20 +109,6 @@
             </a-form-model-item>
           </a-col>
         </a-row>
-        <a-row>
-          <a-col>
-            <a-form-model-item label="品牌" prop="productBrand">
-              <a-input placeholder="请输入品牌中文名" v-model="productForm.productBrand"></a-input>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row>
-          <a-col>
-            <a-form-model-item label="品牌简称" prop="name">
-              <a-input placeholder="请输入品牌简称字母" v-model="productForm.name"></a-input>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
         <a-row style="text-align: center;">
           <a-col>
             <a-popconfirm title="确定提交信息？" @confirm="okModal">
@@ -160,8 +160,14 @@ export default {
         name: undefined
       },
       modelRules: {
-        productNumber: [
-          { required: true, message: '请输入产品号', trigger: 'blur' }
+        productModel: [
+          { required: true, message: '请输入产品型号', trigger: 'blur' }
+        ],
+        productBrand: [
+          { required: true, message: '请输入产品品牌', trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: '请输入品牌字母简称，如：DM', trigger: 'blur' }
         ]
       },
       part: [],

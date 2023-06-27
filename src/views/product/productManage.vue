@@ -1,8 +1,13 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin-bottom: 16px;" type="primary" @click="handAddProduct">新增设备</a-button>
       <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="batchOutProdect">批量出库</a-button>
+      <span style="float:right;">
+        <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false" style="margin:0 16px 0 0">
+          <a-button> <a-icon type="upload" />excel导入设备</a-button>
+        </a-upload>
+        <a-button type="primary" @click="handAddProduct">新增设备</a-button>
+      </span>
       <span style="margin-left: 8px">
         <template v-if="hasSelected">
           {{ `选中 ${selectedRowKeys.length} 项` }}
@@ -19,6 +24,24 @@
         <a-tag slot="status" slot-scope="text" :color="text === 'OUT'?'blue':(text === 'BOUND'?'green':'')">{{ text | filterProductStatus }}</a-tag>
       </a-table>
     </a-card>
+    <a-modal
+      v-if="visible"
+      :visible="visible"
+      title="批量导入设备"
+      @ok="saveImport"
+      @cancel="close"
+      :width="1000">
+      <a-row>
+        <a-col :span="3" :offset="1" style="font-weight:bold;font-size:17px;">选择设备状态：</a-col>
+        <a-col :span="5">
+          <a-radio-group button-style="solid" v-model="deviceStatus">
+            <a-radio-button value="OUT">已出库</a-radio-button>
+            <a-radio-button value="NOT_OUT">未出库</a-radio-button>
+          </a-radio-group>
+        </a-col>
+      </a-row>
+      <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index"/>
+    </a-modal>
     <outRegistration
       v-if="outModelvisible"
       :dataList="dataList"
@@ -37,9 +60,10 @@
 </template>
 
 <script>
+import xlsx from 'xlsx'
 import outRegistration from './outRegistration.vue'
 import addProduct from './addProduct.vue'
-import { getDevices } from '@/api/product'
+import { getDevices, creatDevice } from '@/api/product'
 import moment from 'moment'
 
 const columns = [
@@ -125,7 +149,30 @@ export default {
       productAddVisible: false,
       dataList: [],
       mode: null,
-      type: ''
+      type: '',
+      importColumns: [
+        {
+          title: '产品编号',
+          dataIndex: 'productNo',
+          key: 'productNo',
+          align: 'center'
+        },
+        {
+          title: '品牌',
+          dataIndex: 'brand',
+          key: 'brand',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'productModel',
+          key: 'productModel',
+          align: 'center'
+        }
+      ],
+      importDataList: [],
+      deviceStatus: '',
+      visible: false
     }
   },
   computed: {
@@ -154,6 +201,49 @@ export default {
     this.getDevices()
   },
   methods: {
+    close () {
+      this.visible = false
+    },
+    saveImport () {
+      if (this.deviceStatus === '') {
+        this.$message.warning('请先选择设备状态')
+      } else {
+        this.importDataList.map(item => {
+          const payLoad = {}
+          this.excelCreatDevice(payLoad)
+        })
+      }
+    },
+    async excelCreatDevice (payLoad) {
+      const res = await creatDevice(payLoad)
+      if (res.status === 200) {
+        this.visible = false
+        this.$emit('successProductAdd')
+      }
+      console.log('创建设备', res)
+    },
+    importData (file) {
+      this.importDataList = []
+      let reader = new FileReader()
+      reader.readAsBinaryString(file.file) // 这个是file.file文件，可不是file……
+      reader.onload = (ev) => {
+        const res = ev.target.result
+        const worker = xlsx.read(res, { type: 'binary' })
+        // 将返回的数据转换为json对象的数据
+        reader = xlsx.utils.sheet_to_json(worker.Sheets[worker.SheetNames[0]])
+        for (let i = 0; i < reader.length; i++) {
+          // 定义要导出的
+          const sheetData = {
+            productNo: reader[i]['产品编号'],
+            brand: reader[i]['产品品牌'],
+            productModel: reader[i]['产品型号']
+          }
+          this.importDataList.push(sheetData)
+        }
+        this.visible = true
+        console.log(this.importDataList, '导入的数据是---')
+      }
+    },
     onChange (selectedRowKeys, selectedRows) {
       this.dataList = selectedRows
       this.selectedRowKeys = selectedRowKeys

@@ -877,7 +877,7 @@ export default {
       //   onCancel () {}
       // })
     },
-    filterExcelData (tHeader, fitlerVal, filterExportData, mode) {
+    filterExcelData (tHeader, fitlerVal, filterExportData) {
       const res = filterExportData.map((v) => fitlerVal.map((j) => {
         if (j === 'createdAt' || j === 'purchaseDate') {
           return moment(v[j]).format('YYYY-MM-DD')
@@ -938,10 +938,10 @@ export default {
       const myDate = new Date()
       const today = moment(myDate).format('YYYY-MM-DD ')
       const name = this.MyInfo.nickname
-      if (mode === 'all') {
+      if (this.topTitle === 'info') {
         exportExcel(tHeader, res, this.filterBrand + '信息单' + today + name)
-      } else if (mode === 'account') {
-        exportExcel(tHeader, res, '对账单' + today + name)
+      } else if (this.topTitle === 'account') {
+        exportExcel(tHeader, res, this.filterBrand + '对账单' + today + name)
       }
     },
     exportAllData () {
@@ -964,9 +964,12 @@ export default {
         return
       }
       // 导出筛选好的数据
-      const tHeader = ['报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号', '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态']
+      const tHeader = [
+        '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
+        '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态', '寄件名', '寄件时间'
+      ]
       const fitlerVal = [
-      'createdAt',
+        'createdAt',
         'customerName',
         'customerPhone',
         'serviceAddress',
@@ -980,9 +983,11 @@ export default {
         'needPieceSend',
         'monthlyStatement',
         'isOverWarranty',
-        'status'
+        'status',
+        'pieceName',
+        'sendTime'
       ]
-      this.filterExcelData(tHeader, fitlerVal, this.exportfilterData, 'all')
+      this.filterExcelData(tHeader, fitlerVal, this.exportfilterData)
     },
     handleCancel () {
       this.exportVisible = false

@@ -5,6 +5,7 @@
     @ok="handleOk"
     @cancel="handleCancel"
     :width="1000"
+    okText="新增并导出"
   >
     <a-form-model
       ref="ruleForm"
@@ -80,6 +81,7 @@
 import { creatDevice, getDevices, getProducts } from '@/api/product'
 import { getUserInfo } from '@/api/login'
 import moment from 'moment'
+import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
 
 export default {
   props: {
@@ -180,10 +182,13 @@ export default {
           payLoad.productId = product.id
           payLoad.status = 'NOT_OUT'
           payLoad.operator = this.operator
+          const numbers = []
           for (var i = 1; i <= form.num; i++) {
             payLoad.serialNumber = serialNumber + String(i + this.totalNum).padStart(3, '0')
+            numbers.push({ serialNumber: payLoad.serialNumber })
             this.creatDevice(payLoad)
           }
+          this.exportNumberData(numbers)
         } else {
           console.log('error submit!!')
           return false
@@ -199,6 +204,14 @@ export default {
     },
     handleCancel (e) {
       this.$emit('closeProductAdd')
+    },
+    exportNumberData (numbers) {
+      const tHeader = ['产品编号']
+      const fitlerVal = ['serialNumber']
+      const res = numbers.map((v) => fitlerVal.map((j) => { return v[j] }))
+      const myDate = new Date()
+      const today = moment(myDate).format('YYYY-MM-DD ')
+      exportExcel(tHeader, res, '批量生产设备' + today)
     },
     formatNumber (value) {
       // 返回整数值
