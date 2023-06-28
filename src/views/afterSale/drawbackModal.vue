@@ -164,12 +164,27 @@ export default {
       .map(item => {
         return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date() }
       }).concat(unadorned)
-      const res = await updateProcess(this.saleId, item1.id, payLoad)
-      if (res.status === 200) {
-        this.$message.success('退件成功')
-        this.getSaleDate()
+      let shouldUpdate = true
+      item1.afterSaleExpresses.map(sendItem => {
+        var num = 0
+        payLoad.returnParts.map(item => {
+          if (item.returnName === sendItem.pieceName) {
+            num = num + item.returnNum
+          }
+        })
+        if (num > sendItem.pieceNum) {
+          this.$message.error('【' + sendItem.pieceName + '】退件总数超出寄件总数')
+          shouldUpdate = false
+        }
+      })
+      if (shouldUpdate) {
+        const res = await updateProcess(this.saleId, item1.id, payLoad)
+        if (res.status === 200) {
+          this.$message.success('退件成功')
+          this.getSaleDate()
+        }
       }
-      console.log(res, payLoad)
+      console.log('退件payLoad', payLoad, item1.afterSaleExpresses)
     },
     handRefund (item1) {
       const myDate = Date.parse(new Date())
