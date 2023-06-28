@@ -9,8 +9,8 @@
     <div style="padding:10px 38px;">
       <a-steps :current="current" type="navigation">
         <a-step title="设备生产" :sub-title="createdAt" :description="`生产人：${deviceData.operator}`" />
-        <a-step title="设备出库" :sub-title="current>0?createdAt:''" :description="current>0?`出库人：${deviceData.operator}`:''" />
-        <a-step title="设备绑定" :sub-title="current>1?createdAt:''"/>
+        <a-step title="设备出库" :sub-title="current>0?deliveryDate:''" :description="current>0?`出库人：${deviceData.deliveryPeople}`:''" />
+        <a-step title="设备绑定" :sub-title="current>1?bindDate:''"/>
       </a-steps>
       <a-descriptions title="设备信息" style="margin-top:50px;">
         <a-descriptions-item label="设备编号">
@@ -70,7 +70,9 @@ export default {
   data () {
     return {
       current: null,
-      createdAt: ''
+      createdAt: '',
+      deliveryDate: '',
+      bindDate: ''
     }
   },
   methods: {
@@ -81,6 +83,8 @@ export default {
   },
   mounted () {
     this.createdAt = moment(this.deviceData.createdAt).format('YYYY-MM-DD HH:mm')
+    this.deliveryDate = moment(this.deviceData.deliveryDate).format('YYYY-MM-DD HH:mm')
+    this.bindDate = moment(this.deviceData.bindDate).format('YYYY-MM-DD HH:mm')
     const status = this.deviceData.status
     if (status === 'NOT_OUT') {
       this.current = 0

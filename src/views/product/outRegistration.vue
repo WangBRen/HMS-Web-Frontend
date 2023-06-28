@@ -278,6 +278,8 @@ export default {
       payLoad.productId = item.product.id
       payLoad.status = 'OUT'
       payLoad.operator = item.operator
+      payLoad.deliveryPeople = this.outPerson
+      payLoad.deliveryDate = new Date()
       const res = await updateDevices(item.id, payLoad)
       console.log(res)
     },
