@@ -154,7 +154,7 @@
               </a-descriptions>
               <!-- 寄件汇总 -->
               <div class="sendDes" v-if="item4.needPieceSend">
-                <div style="font-size: 17px;">寄件汇总：</div>
+                <div class="small_title">寄件汇总：</div>
                 <a-descriptions bordered size="small">
                   <a-descriptions-item label="寄件汇总" :span="3">
                     <a-row>
@@ -179,9 +179,13 @@
               <!-- 上门信息 -->
               <div class="visitDes" v-if="item4.needVisit && item4.afterSaleVisit.technicalServiceNo">
                 <!-- <div style="padding: 0 10px;" v-if="item4.needVisit"> -->
-                <div style="font-size: 17px;">上门信息：</div>
-                <span v-if="!editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="openEditVisit"><a-icon type="edit"/>修改信息</span>
-                <a-button v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="saveVisitInfo" type="primary">保存</a-button>
+                <div class="small_title">
+                  <span>上门信息：</span>
+                  <span style="float: right;font-weight: bold;color: rgba(0, 0, 0, 0.85);margin-right: 10px">
+                    <span v-if="!editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="openEditVisit"><a-icon type="edit"/>修改上门信息</span>
+                    <a-button v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="saveVisitInfo" type="primary">保存</a-button>
+                  </span>
+                </div>
                 <!-- 修改前 -->
                 <a-descriptions v-if="!editVisitIndex && index4+1 < repairData.processes.length && current===4" bordered size="small">
                   <a-descriptions-item label="师傅平台">
@@ -308,7 +312,7 @@
                     />
                   </a-descriptions-item>
                   <a-descriptions-item label="技术人员">
-                    <a-select mode="multiple" placeholder="请输入技术人员" @change="checkTechnology2" v-model="editVisitForm.technicianList">
+                    <a-select mode="multiple" style="width: 80%" placeholder="请输入技术人员" @change="checkTechnology2" v-model="editVisitForm.technicianList">
                       <a-select-option v-for="technology in technologyArr" :key="technology.nickname">
                         {{ technology.nickname }}
                       </a-select-option>
@@ -354,7 +358,7 @@
               </div>
               <!-- 原因 -->
               <div class="reasonDes" v-if="item4.againEstimateReason!==null || item4.unresolvedReason!==null">
-                <div style="font-size: 17px;">原因：</div>
+                <div class="small_title">原因：</div>
                 <a-descriptions :column="1" bordered size="small">
                   <a-descriptions-item v-if="item4.againEstimateName" label="再评估人员">
                     <span style="color:#40a9ff;font-size: 20px;">
@@ -2036,6 +2040,11 @@ export default {
 
 /deep/.visitDes .ant-descriptions-item-label {
   width: 140px;
+}
+
+.small_title {
+  font-size: 17px;
+  line-height: 40px
 }
 
 </style>
