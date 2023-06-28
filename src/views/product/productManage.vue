@@ -18,8 +18,8 @@
           <a @click="outProdect(scope)" v-if="scope.status==='NOT_OUT'">出库</a>
           <span v-else>-</span>
         </span>
-        <span slot="serialNumber" slot-scope="text">
-          <a>{{ text }}</a>
+        <span slot="serialNumber" slot-scope="text,scope">
+          <a @click="viewDeviceLife(scope)">{{ text }}</a>
         </span>
         <a-tag slot="status" slot-scope="text" :color="text === 'OUT'?'blue':(text === 'BOUND'?'green':'')">{{ text | filterProductStatus }}</a-tag>
       </a-table>
@@ -56,12 +56,19 @@
       @successProductAdd="successProductAdd"
       :productAddVisible="productAddVisible"
     />
+    <deviceLife
+      v-if="deviceVisible"
+      :deviceVisible="deviceVisible"
+      :deviceData="deviceData"
+      @closeDeviceLife="closeDeviceLife"
+    />
   </div>
 </template>
 
 <script>
 import xlsx from 'xlsx'
 import outRegistration from './outRegistration.vue'
+import deviceLife from './deviceLife.vue'
 import addProduct from './addProduct.vue'
 import { getDevices, creatDevice } from '@/api/product'
 import moment from 'moment'
@@ -138,7 +145,8 @@ export default {
   },
   components: {
     outRegistration,
-    addProduct
+    addProduct,
+    deviceLife
   },
   data () {
     return {
@@ -172,7 +180,9 @@ export default {
       ],
       importDataList: [],
       deviceStatus: '',
-      visible: false
+      visible: false,
+      deviceVisible: false,
+      deviceData: {}
     }
   },
   computed: {
@@ -201,6 +211,13 @@ export default {
     this.getDevices()
   },
   methods: {
+    viewDeviceLife (item) {
+      this.deviceVisible = true
+      this.deviceData = item
+    },
+    closeDeviceLife () {
+      this.deviceVisible = false
+    },
     close () {
       this.visible = false
     },

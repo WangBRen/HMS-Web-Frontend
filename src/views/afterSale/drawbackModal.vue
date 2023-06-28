@@ -187,6 +187,10 @@ export default {
       console.log('退件payLoad', payLoad, item1.afterSaleExpresses)
     },
     handRefund (item1) {
+      if (item1.afterSaleExpresses.length < 1) {
+        this.$message.warning('请先退件再退款')
+        return
+      }
       const myDate = Date.parse(new Date())
       // const myYear = myDate.getFullYear()
       // const myMonth = myDate.getMonth() + 1 < 10 ? '0' + (myDate.getMonth() + 1) : myDate.getMonth() + 1
