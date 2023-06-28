@@ -570,7 +570,7 @@
               <a-popconfirm title="确定评估？" @confirm="checkOk">
                 <a-button type="primary">评估</a-button>
               </a-popconfirm>
-              <a-popconfirm title="确定作废订单吗？" @confirm="cancelOrder">
+              <a-popconfirm title="确定作废订单吗？" @confirm="cancelOrder" v-if="MyInfo.roleName==='After_salesDirector'">
                 <a-button type="danger" style="float: right;" ghost>订单作废</a-button>
               </a-popconfirm>
             </div>
@@ -920,10 +920,15 @@ export default {
         technicianList: [], // 技术人员
         // technicianPhone: null, // 技术人员电话
         technicianPhoneList: [] // 技术人员电话组
-      }
+      },
+      MyInfo: {}
     }
   },
   methods: {
+    async getMe () {
+      const res = await apiGetUserInfo()
+      this.MyInfo = res.data
+    },
     cancelOrder () {
       const id = this.repairData.id
       const payLoad = {}
@@ -1753,6 +1758,7 @@ export default {
   created () {
   },
   mounted () {
+    this.getMe()
     // console.log('this.repairData.customerInfo', this.repairData.customerInfo)
     this.editForm = this.repairData.customerInfo
     this.editCustomer = false

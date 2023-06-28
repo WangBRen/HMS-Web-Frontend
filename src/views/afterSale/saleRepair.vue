@@ -28,7 +28,10 @@
             @search="onSearch"
           />
         </a-col>
-        <a-col style="text-align: right;" :span="10">
+        <a-col :span="2" style="display:flex;align-items:center;justify-content: center;height:auto" v-if="MyInfo.roleName === 'After-salesAsst'">
+          <a-switch checked-children="仅看自己" un-checked-children="全部数据" default-checked v-model="filterMe" @change="changeFilterMe"/>
+        </a-col>
+        <a-col style="text-align: right;float: right;" :span="8">
           <a-button style="margin-right: 10px;" type="dashed" @click="openAddRepair">新增维修单</a-button>
           <a-button @click="exportData"><a-icon type="pay-circle" />导出对账单</a-button>
           <a-button type="primary" ghost @click="exportAllData">导出信息单</a-button>
@@ -646,10 +649,14 @@ export default {
       '本月': [moment().startOf('month'), moment().endOf('month')],
       '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
       },
-      topTitle: ''
+      topTitle: '',
+      filterMe: true
     }
   },
   methods: {
+    changeFilterMe (e) {
+      this.filterViewMyData()()
+    },
     disabledDate (current) {
       // Can not select days before today and today
       return current && current > moment().endOf('day')
@@ -1052,48 +1059,80 @@ export default {
             const t2 = new Date(b.createdAt).getTime()
             return t1 - t2
           })
-          this.estimateData = this.salesData.filter(item => {
-            if (item.status === 'WAIT_EVALUATE') {
-              return item
-            }
-          })
-          this.voidData = this.salesData.filter(item => {
-            if (item.status === 'CANCEL') {
-              return item
-            }
-          })
-          this.estimateOkData = this.salesData.filter(item => {
-            if (item.status === 'EVALUATED') {
-              return item
-            }
-          })
-          this.payData = this.salesData.filter(item => {
-            if (item.status === 'PAID') {
-              return item
-            }
-          })
-          this.sendData = this.salesData.filter(item => {
-            if (item.status === 'SEND') {
-              return item
-            }
-          })
-          this.comeData = this.salesData.filter(item => {
-            if (item.status === 'WAIT_VISIT') {
-              return item
-            }
-          })
-          this.solveData = this.salesData.filter(item => {
-            if (item.status === 'SOLVED') {
-              return item
-            }
-          })
-          // 已解决倒序
-          this.solveData = this.solveData.sort((a, b) => {
-            const t1 = new Date(a.createdAt).getTime()
-            const t2 = new Date(b.createdAt).getTime()
-            return t2 - t1
-          })
+          this.filterViewMyData()
         }
+      })
+    },
+    filterViewMyData () {
+      const roleName = this.MyInfo.roleName
+      this.estimateData = this.salesData.filter(item => {
+        if (item.status === 'WAIT_EVALUATE') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      this.voidData = this.salesData.filter(item => {
+        if (item.status === 'CANCEL') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      this.estimateOkData = this.salesData.filter(item => {
+        if (item.status === 'EVALUATED') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      this.payData = this.salesData.filter(item => {
+        if (item.status === 'PAID') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      this.sendData = this.salesData.filter(item => {
+        if (item.status === 'SEND') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      this.comeData = this.salesData.filter(item => {
+        if (item.status === 'WAIT_VISIT') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      this.solveData = this.salesData.filter(item => {
+        if (item.status === 'SOLVED') {
+          if (roleName === 'After-salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
+      // 已解决倒序
+      this.solveData = this.solveData.sort((a, b) => {
+        const t1 = new Date(a.createdAt).getTime()
+        const t2 = new Date(b.createdAt).getTime()
+        return t2 - t1
       })
     },
     openDrawbackModal (data) {
