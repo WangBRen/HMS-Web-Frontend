@@ -8,7 +8,7 @@
             <a-select-option value="all">全部</a-select-option>
             <a-select-option value="true">是</a-select-option>
             <a-select-option value="false">否</a-select-option>
-            <a-select-option value="null">---</a-select-option>
+            <a-select-option value="wait">---</a-select-option>
           </a-select>
           <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
@@ -1218,8 +1218,8 @@ export default {
         apiData.monthlyStatement = true
       } else if (this.checkMonthly === 'false') {
         apiData.monthlyStatement = false
-      } else if (this.checkMonthly === 'null') {
-        apiData.monthlyStatement = null
+      } else if (this.checkMonthly === 'wait') {
+        apiData.waitMonthlyStatement = true
       }
       apiSearchAfterSale(apiData).then(res => {
         if (res.status === 200) {
