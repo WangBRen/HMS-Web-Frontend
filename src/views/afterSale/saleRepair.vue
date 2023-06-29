@@ -234,7 +234,7 @@
       </a-row>
       <a-row style="margin-top:16px;">
         <a-col :span="8" :offset="2">
-          <a-icon type="container" theme="twoTone" /> 预计导出 <span style="color:red;font-size:20px;">{{ this.exportfilterData.length }}</span> 条数据
+          <a-icon type="container" theme="twoTone" /> 预计导出 <span style="color:red;font-size:20px;">{{ this.exportfilterData.length }}</span> 个订单
         </a-col>
         <a-col :span="4" :offset="4" v-if="topTitle==='account'">月结单：
           <a-select @change="handSelectMonth" v-model="selectMonthly" style="width: 130px;" :disabled="disableMonth">
@@ -655,7 +655,7 @@ export default {
   },
   methods: {
     changeFilterMe (e) {
-      this.filterViewMyData()()
+      this.filterViewMyData()
     },
     disabledDate (current) {
       // Can not select days before today and today
@@ -884,71 +884,76 @@ export default {
       //   onCancel () {}
       // })
     },
-    filterExcelData (tHeader, fitlerVal, filterExportData) {
-      const res = filterExportData.map((v) => fitlerVal.map((j) => {
-        if (j === 'createdAt' || j === 'purchaseDate') {
-          return moment(v[j]).format('YYYY-MM-DD')
-        } else if (j === 'serviceAddress') {
-          if (v.customerInfo[j] !== '') {
-            return v.customerInfo[j]
-          } else {
-            return v.customerInfo['receiveAddress']
-          }
-        } else if (j === 'monthlyStatement') {
-          return v[j] ? '是' : (v[j] == null ? '-' : '否')
-        } else if (j === 'isOverWarranty') {
-          if (v.processes.length > 0) {
-            return v.processes[0][j] ? '是' : '否'
-          } else {
-            return '-'
-          }
-        } else if (j === 'totalCost' || j === 'customerPay') {
-          var totalCost = 0
-          v.processes.map(item => {
-            totalCost = item[j] + totalCost
-          })
-          return totalCost
-        } else if (j === 'needPieceSend' || j === 'needVisit') {
-          if (v.processes.length > 0) {
-            const sendList = v.processes.filter(item => {
-            return item[j]
-            })
-            if (sendList.length > 0) {
-              return '是'
-            } else { return '否' }
-          } else {
-            return '-'
-          }
-        } else if (j === 'problems') {
-          var problemList = ''
-          v.processes.map(item => {
-            item.problems.map(pro => {
-              problemList = pro.problemJudge.firstPro + '/' + pro.problemJudge.secondPro
-            })
-          })
-          return problemList
-        } else if (j === 'status') {
-          if (v[j] === 'WAIT_EVALUATE') {
-            return '待评估'
-          } else if (v[j] === 'EVALUATED' || v[j] === 'WAIT_PAY') {
-            return '待支付'
-          } else if (v[j] === 'PAID') {
-            return '待派工'
-          } else if (v[j] === 'WAIT_VISIT') {
-            return '待上门'
-          } else if (v[j] === 'SOLVED') { return '已解决' }
-        } else {
+    filterExcelData (v, j, process) {
+      console.log('456', v, j)
+      if (j === 'createdAt' || j === 'purchaseDate') {
+        return moment(v[j]).format('YYYY-MM-DD')
+      } else if (j === 'serviceAddress') {
+        if (v.customerInfo[j] !== '') {
           return v.customerInfo[j]
+        } else {
+          return v.customerInfo['receiveAddress']
         }
-      }))
-      // 获取当前时间
-      const myDate = new Date()
-      const today = moment(myDate).format('YYYY-MM-DD ')
-      const name = this.MyInfo.nickname
-      if (this.topTitle === 'info') {
-        exportExcel(tHeader, res, this.filterBrand + '信息单' + today + name)
-      } else if (this.topTitle === 'account') {
-        exportExcel(tHeader, res, this.filterBrand + '对账单' + today + name)
+      } else if (j === 'monthlyStatement') {
+        return v[j] ? '是' : (v[j] == null ? '-' : '否')
+      } else if (j === 'isOverWarranty') {
+        if (v.processes.length > 0) {
+          return v.processes[0][j] ? '是' : '否'
+        } else {
+          return '-'
+        }
+      } else if (j === 'totalCost' || j === 'customerPay') {
+        var totalCost = 0
+        v.processes.map(item => {
+          totalCost = item[j] + totalCost
+        })
+        return totalCost
+      } else if (j === 'needPieceSend' || j === 'needVisit') {
+        if (v.processes.length > 0) {
+          const sendList = v.processes.filter(item => {
+            return item[j]
+          })
+          if (sendList.length > 0) {
+            return '是'
+          } else { return '否' }
+        } else {
+          return '-'
+        }
+      } else if (j === 'problems') {
+        var problemList = ''
+        v.processes.map(item => {
+          item.problems.map(pro => {
+            problemList = pro.problemJudge.firstPro + '/' + pro.problemJudge.secondPro
+          })
+        })
+        return problemList
+      } else if (j === 'status') {
+        if (v[j] === 'WAIT_EVALUATE') {
+          return '待评估'
+        } else if (v[j] === 'EVALUATED' || v[j] === 'WAIT_PAY') {
+          return '待支付'
+        } else if (v[j] === 'PAID') {
+          return '待寄件'
+        } else if (v[j] === 'WAIT_VISIT' || v[j] === 'SEND') {
+          return '待上门'
+        } else if (v[j] === 'SOLVED') {
+          return '已解决'
+        } else if (v[j] === 'CANCEL') { return '已废弃' }
+      } else if (j === 'pieceName') {
+        console.log('process.afterSaleExpresses', process)
+        if (process.afterSaleExpresses.length > 0) {
+          return process['afterSaleExpresses'].map(piece => {
+            return piece.pieceName + '_' + piece.pieceNum + '个、'
+          })
+        } else {
+          return '-'
+        }
+      } else if (j === 'sendTime') {
+        return process[j] ? moment(process[j]).format('YYYY-MM-DD') : '-'
+      } else if (j === 'pieceDeliveryNo') {
+        return process.pieceDeliveryNo ? process.pieceDeliveryNo : '-'
+      } else {
+        return v.customerInfo[j]
       }
     },
     exportAllData () {
@@ -964,6 +969,7 @@ export default {
       this.exportfilterData = this.salesData
       this.modelArr = this.allModel
       this.exportVisible = true
+      this.disableMonth = false
     },
     handleOk () {
       if (this.exportfilterData.length === 0) {
@@ -971,30 +977,80 @@ export default {
         return
       }
       // 导出筛选好的数据
-      const tHeader = [
-        '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
-        '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态', '寄件名', '寄件时间'
-      ]
-      const fitlerVal = [
-        'createdAt',
-        'customerName',
-        'customerPhone',
-        'serviceAddress',
-        'purchaseDate',
-        'brand',
-        'productModel',
-        'productNo',
-        'problemCategory',
-        'problems',
-        'needVisit',
-        'needPieceSend',
-        'monthlyStatement',
-        'isOverWarranty',
-        'status',
-        'pieceName',
-        'sendTime'
-      ]
-      this.filterExcelData(tHeader, fitlerVal, this.exportfilterData)
+      // 获取当前时间
+      const myDate = new Date()
+      const today = moment(myDate).format('YYYY-MM-DD ')
+      const name = this.MyInfo.nickname
+      if (this.topTitle === 'info') {
+        const tHeader = [
+          '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
+          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态'
+        ]
+        const filterVal = [
+          'createdAt',
+          'customerName',
+          'customerPhone',
+          'serviceAddress',
+          'purchaseDate',
+          'brand',
+          'productModel',
+          'productNo',
+          'problemCategory',
+          'problems',
+          'needVisit',
+          'needPieceSend',
+          'monthlyStatement',
+          'isOverWarranty',
+          'status'
+        ]
+        const res = this.exportfilterData.map((v) => filterVal.map((j) => {
+          console.log('123', v, j)
+          return this.filterExcelData(v, j)
+        }))
+        console.log('res2', res)
+        exportExcel(tHeader, res, this.filterBrand + '信息单' + today + name)
+      } else if (this.topTitle === 'account') {
+        const tHeader = [
+          '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
+          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态', '寄件', '寄件时间', '寄件单号'
+        ]
+        const filterVal = [
+          'createdAt',
+          'customerName',
+          'customerPhone',
+          'serviceAddress',
+          'purchaseDate',
+          'brand',
+          'productModel',
+          'productNo',
+          'problemCategory',
+          'problems',
+          'needVisit',
+          'needPieceSend',
+          'monthlyStatement',
+          'isOverWarranty',
+          'status',
+          'pieceName',
+          'sendTime',
+          'pieceDeliveryNo'
+        ]
+        const resultData = []
+        this.exportfilterData.map((obj) => {
+          const newArr = obj.processes.filter((process) => {
+            const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
+            if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
+              return true
+            }
+          })
+          newArr.map(process => {
+            const temp = filterVal.map((j) => {
+              return this.filterExcelData(obj, j, process)
+            })
+            resultData.push(temp)
+          })
+        })
+        exportExcel(tHeader, resultData, this.filterBrand + '对账单' + today + name)
+      }
     },
     handleCancel () {
       this.exportVisible = false
