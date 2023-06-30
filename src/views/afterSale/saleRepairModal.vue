@@ -183,7 +183,7 @@
                   <span>上门信息：</span>
                   <span style="float: right;font-weight: bold;color: rgba(0, 0, 0, 0.85);margin-right: 10px">
                     <span v-if="!editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="openEditVisit"><a-icon type="edit"/>修改上门信息</span>
-                    <a-button v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="saveVisitInfo" type="primary">保存</a-button>
+                    <!-- <a-button v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="saveVisitInfo" type="primary">保存</a-button> -->
                   </span>
                 </div>
                 <!-- 修改前 -->
@@ -285,45 +285,75 @@
                     <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
                   </a-descriptions-item>
                 </a-descriptions>
-                <a-descriptions v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" bordered size="small">
-                  <a-descriptions-item label="师傅平台">
-                    <a-input placeholder="请输入师傅平台" v-model="editVisitForm.technicalPlatform"/>
-                  </a-descriptions-item>
-                  <a-descriptions-item label="师傅单号">
-                    <a-input placeholder="请输入师傅单号" v-model="editVisitForm.technicalServiceNo"/>
-                  </a-descriptions-item>
-                  <a-descriptions-item label="师傅成本">
-                    <a-input placeholder="请输入师傅成本" v-model="editVisitForm.technicalCost"/>
-                  </a-descriptions-item>
-                  <a-descriptions-item label="师傅名称">
-                    <a-input placeholder="请输入师傅名称" v-model="editVisitForm.technicalName"/>
-                  </a-descriptions-item>
-                  <a-descriptions-item label="师傅手机号">
-                    <a-input placeholder="请输入师傅手机号" v-model="editVisitForm.technicalPhone"/>
-                  </a-descriptions-item>
-                  <a-descriptions-item label="上门时间">
-                    <!-- <a-input placeholder="请输入师傅平台" v-model="editVisitForm.visitTime"/> -->
-                    <a-date-picker
-                      show-time
-                      v-model="editVisitForm.visitTime"
-                      type="date"
-                      placeholder="请选择上门时间"
-                      style="width: 100%;"
-                    />
-                  </a-descriptions-item>
-                  <a-descriptions-item label="技术人员">
-                    <a-select mode="multiple" style="width: 80%" placeholder="请输入技术人员" @change="checkTechnology2" v-model="editVisitForm.technicianList">
-                      <a-select-option v-for="technology in technologyArr" :key="technology.nickname">
-                        {{ technology.nickname }}
-                      </a-select-option>
-                    </a-select>
-                  </a-descriptions-item>
-                  <a-descriptions-item label="技术电话">
-                    <span v-for="item in editVisitForm.technicianPhoneList" :key="item">
-                      {{ item }}&nbsp;
-                    </span>
-                  </a-descriptions-item>
-                </a-descriptions>
+                </a-descriptions> -->
+                <a-form-model
+                  ref="editVisitForm"
+                  :model="editVisitForm"
+                  :rules="sendRules"
+                >
+                  <a-descriptions v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" bordered size="small">
+                    <a-descriptions-item>
+                      <template v-slot:label>
+                        师傅平台 <span style="color: red">(必填)</span>
+                      </template>
+                      <a-form-model-item prop="technicalPlatform">
+                        <a-input class="visit_input" placeholder="请输入师傅平台" v-model="editVisitForm.technicalPlatform"/>
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item>
+                      <template v-slot:label>
+                        师傅单号 <span style="color: red">(必填)</span>
+                      </template>
+                      <a-form-model-item prop="technicalServiceNo">
+                        <a-input placeholder="请输入师傅单号" v-model="editVisitForm.technicalServiceNo"/>
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item label="师傅成本">
+                      <a-form-model-item prop="technicalCost">
+                        <a-input placeholder="请输入师傅成本" v-model="editVisitForm.technicalCost"/>
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item label="师傅名称">
+                      <a-form-model-item prop="technicalName">
+                        <a-input placeholder="请输入师傅名称" v-model="editVisitForm.technicalName"/>
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item label="师傅手机号">
+                      <a-form-model-item prop="technicalPhone">
+                        <a-input placeholder="请输入师傅手机号" v-model="editVisitForm.technicalPhone"/>
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item label="上门时间">
+                      <a-form-model-item prop="visitTime">
+                        <a-date-picker
+                          show-time
+                          v-model="editVisitForm.visitTime"
+                          type="date"
+                          placeholder="请选择上门时间"
+                          style="width: 100%;"
+                        />
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item label="技术人员(必填)">
+                      <a-form-model-item prop="technicianList">
+                        <a-select mode="multiple" style="width: 80%" placeholder="请输入技术人员" @change="checkTechnology2" v-model="editVisitForm.technicianList">
+                          <a-select-option v-for="technology in technologyArr" :key="technology.nickname">
+                            {{ technology.nickname }}
+                          </a-select-option>
+                        </a-select>
+                      </a-form-model-item>
+                    </a-descriptions-item>
+                    <a-descriptions-item label="技术电话">
+                      <span v-for="item in editVisitForm.technicianPhoneList" :key="item">
+                        {{ item }}&nbsp;
+                      </span>
+                    </a-descriptions-item>
+                  </a-descriptions>
+                  <div style="text-align: center; margin: 12px 0">
+                    <a-button v-if="editVisitIndex && index4+1 === repairData.processes.length && current===4" @click="saveVisitInfo" type="primary">保存</a-button>
+                  </div>
+                </a-form-model>
+
                 <!-- 不在寄件和上门状态的显示 -->
                 <a-descriptions v-if="current!==3 && current!==4" bordered size="small">
                   <a-descriptions-item label="师傅平台">
@@ -884,12 +914,30 @@ export default {
         ]
       },
       // 已支付校验规则
-      payRules: {},
+      payRules: {
+        pieceDeliveryNo: [
+          { required: true, message: '请输入寄件单号', trigger: 'blur' }
+        ],
+        expressBrand: [
+          { required: true, message: '请输入快递品牌', trigger: 'blur' }
+        ]
+      },
       payForm: {
         pieceDeliveryNo: null, // 寄件单号
         expressBrand: null // 快递品牌
       },
-      sendRules: {},
+      // 已寄件规则
+      sendRules: {
+        technicalPlatform: [
+          { required: true, message: '请输入平台', trigger: 'blur' }
+        ],
+        technicalServiceNo: [
+          { required: true, message: '请输入师傅单号', trigger: 'blur' }
+        ]
+        // technicianList: [
+        //   { required: true, message: '请选择技术人员', trigger: 'blur' }
+        // ]
+      },
       sendForm: {
         technicalPlatform: null, // 师傅平台
         technicalServiceNo: null, // 师傅单号
@@ -1550,6 +1598,8 @@ export default {
               this.$message.error(res.message)
             }
           })
+        } else {
+          this.$message.info('必填项未填写')
         }
       })
     },
@@ -1740,23 +1790,29 @@ export default {
     },
     saveVisitInfo () {
       // console.log('保存', this.editVisitForm)
-      const id = this.repairData.id
-      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
-      const apiData = {
-        afterSaleVisit: JSON.parse(JSON.stringify(this.editVisitForm))
-      }
-      // console.log(apiData)
-      apiUpdateProcess(id, processId, apiData).then(res => {
-        if (res.status === 200) {
-          this.$message.success('保存成功')
-          // this.closeRepairModals()
-          this.$parent.getAfterSaleData()
-          this.$forceUpdate()
+      this.$refs.editVisitForm[0].validate(valid => {
+        if (valid) {
+          const id = this.repairData.id
+          const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+          const apiData = {
+            afterSaleVisit: JSON.parse(JSON.stringify(this.editVisitForm))
+          }
+          // console.log(apiData)
+          apiUpdateProcess(id, processId, apiData).then(res => {
+            if (res.status === 200) {
+              this.$message.success('保存成功')
+              // this.closeRepairModals()
+              this.$parent.getAfterSaleData()
+              this.$forceUpdate()
+            } else {
+              this.$message.error(res.message)
+            }
+          })
+          this.editVisitIndex = false
         } else {
-          this.$message.error(res.message)
+          this.$message.info('必填项未填写')
         }
       })
-      this.editVisitIndex = false
     }
   },
   created () {
@@ -1914,34 +1970,11 @@ export default {
     // 动态规则
     repairData (newData, oldData) {
       // console.log('repairData', newData, oldData)
-      // 已支付规则
-      this.payRules = {}
-      if (this.current === 2 && newData.processes[newData.processes.length - 1].needPieceSend) {
-        this.payRules.pieceDeliveryNo = [{ required: true, message: '请输入寄件单号', trigger: 'blur' }]
-        this.payRules.expressBrand = [{ required: true, message: '请输入快递品牌', trigger: 'blur' }]
-      }
-      // 已寄件规则
-      this.sendRules = {}
-      if (this.current === 3 && newData.processes[newData.processes.length - 1].needVisit) {
-        this.sendRules.technicalPlatform = [{ required: true, message: '请输入平台', trigger: 'blur' }]
-        this.sendRules.technicalServiceNo = [{ required: true, message: '请输入师傅单号', trigger: 'blur' }]
-        // this.sendRules.technicalName = [{ required: true, message: '请输入师傅名称', trigger: 'blur' }]
-        // this.sendRules.technicalPhone = [
-        //   { required: true, message: '请输入师傅电话', trigger: 'blur' },
-        //   { len: 11, message: '请输入正确的电话号码' },
-        //   { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
-        // ]
-        // this.sendRules.technicalCost = [{ required: true, message: '请输入师傅成本', trigger: 'blur' }]
-        this.sendRules.technicianList = [{ required: true, message: '请选择技术人员', trigger: 'blur' }]
-        // this.payRules.technicianPhone = [
-        //   { required: true, message: '请输入技术电话', trigger: 'blur' },
-        //   { len: 11, message: '请输入正确的电话号码' },
-        //   { pattern: /^[1][34578][0-9]{9}$/, message: '请输入正确的电话号码' }
-        // ]
-      }
+
+      // 保存月结状态
       this.statementIndex = this.transferData
 
-      // console.log('---', this.current)
+      // 已寄件和待上门状态获取上门信息
       let formName = null
       switch (this.current) {
         case 3:
@@ -2044,7 +2077,12 @@ export default {
 
 .small_title {
   font-size: 17px;
-  line-height: 40px
+  line-height: 24px;
+  margin: 6px 0;
+}
+
+/deep/.visitDes .ant-form-item-control {
+  margin-top: 24px;
 }
 
 </style>
