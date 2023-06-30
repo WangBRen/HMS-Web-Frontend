@@ -804,14 +804,23 @@ export default {
               const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
               if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
                 return true
-              } else if (process.pays.length > 1) {
-                for (const pay of process.pays) {
-                  const refundTime = moment(pay.refundTime).format('YYYY-MM-DD')
-                  if (pay.submitType === 'REFUND' && refundTime >= this.exportStart && refundTime <= this.exportEnd) {
+              } else if (process.returnParts.length > 0) {
+                for (const returnPart of process.returnParts) {
+                  const refundTime = moment(returnPart.returnTime).format('YYYY-MM-DD')
+                  if (refundTime >= this.exportStart && refundTime <= this.exportEnd) {
                     return true
                   }
                 }
               }
+              // 按退款时间导出
+              // else if (process.pays.length > 1) {
+              //   for (const pay of process.pays) {
+              //     const refundTime = moment(pay.refundTime).format('YYYY-MM-DD')
+              //     if (pay.submitType === 'REFUND' && refundTime >= this.exportStart && refundTime <= this.exportEnd) {
+              //       return true
+              //     }
+              //   }
+              // }
             }
           }
         })
@@ -884,8 +893,11 @@ export default {
       //   onCancel () {}
       // })
     },
-    filterExcelData (v, j, process) {
+    filterExcelData (v, j, process, returnPart) {
       console.log('456', v, j)
+      if (j === 'id') {
+        return v[j]
+      }
       if (j === 'createdAt' || j === 'purchaseDate') {
         return moment(v[j]).format('YYYY-MM-DD')
       } else if (j === 'serviceAddress') {
@@ -940,18 +952,31 @@ export default {
           return '已解决'
         } else if (v[j] === 'CANCEL') { return '已废弃' }
       } else if (j === 'pieceName') {
-        console.log('process.afterSaleExpresses', process)
-        if (process.afterSaleExpresses.length > 0) {
+        if (process.afterSaleExpresses.length > 0 && returnPart === 'send') {
           return process['afterSaleExpresses'].map(piece => {
-            return piece.pieceName + '_' + piece.pieceNum + '个、'
+            return piece.pieceName + '_' + piece.pieceNum + '个'
           })
         } else {
           return '-'
         }
       } else if (j === 'sendTime') {
-        return process[j] ? moment(process[j]).format('YYYY-MM-DD') : '-'
+        if (returnPart === 'send') {
+          return process[j] ? moment(process[j]).format('YYYY-MM-DD') : '-'
+        } else { return '-' }
       } else if (j === 'pieceDeliveryNo') {
-        return process.pieceDeliveryNo ? process.pieceDeliveryNo : '-'
+        if (returnPart === 'send') {
+          return process.pieceDeliveryNo ? process.pieceDeliveryNo : '-'
+        } else { return '-' }
+      } else if (j === 'returnName') {
+        return returnPart?.returnName || '-'
+      } else if (j === 'returnNum') {
+        return returnPart?.returnNum || '-'
+      } else if (j === 'unitPrice') {
+        return returnPart?.unitPrice || '-'
+      } else if (j === 'totalPrice') {
+        return returnPart?.totalPrice || '-'
+      } else if (j === 'returnTime') {
+        return moment(returnPart?.returnTime).format('YYYY-MM-DD') || '-'
       } else {
         return v.customerInfo[j]
       }
@@ -984,7 +1009,7 @@ export default {
       if (this.topTitle === 'info') {
         const tHeader = [
           '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
-          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态'
+          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保修期内', '状态'
         ]
         const filterVal = [
           'createdAt',
@@ -1004,17 +1029,16 @@ export default {
           'status'
         ]
         const res = this.exportfilterData.map((v) => filterVal.map((j) => {
-          console.log('123', v, j)
           return this.filterExcelData(v, j)
         }))
-        console.log('res2', res)
         exportExcel(tHeader, res, this.filterBrand + '信息单' + today + name)
       } else if (this.topTitle === 'account') {
         const tHeader = [
-          '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
-          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保质期内', '状态', '寄件', '寄件时间', '寄件单号'
+        '订单编号', '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
+          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保修期内', '状态', '寄件', '寄件单号', '寄件时间', '退件名称', '退件数量', '退件单价', '退件金额', '退件时间'
         ]
         const filterVal = [
+          'id',
           'createdAt',
           'customerName',
           'customerPhone',
@@ -1031,8 +1055,13 @@ export default {
           'isOverWarranty',
           'status',
           'pieceName',
+          'pieceDeliveryNo',
           'sendTime',
-          'pieceDeliveryNo'
+          'returnName',
+          'returnNum',
+          'unitPrice',
+          'totalPrice',
+          'returnTime'
         ]
         const resultData = []
         this.exportfilterData.map((obj) => {
@@ -1040,13 +1069,31 @@ export default {
             const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
             if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
               return true
+            } else if (process.returnParts.length > 0) {
+              process.returnParts.map(item => {
+                const refundTime = moment(item.returnTime).format('YYYY-MM-DD')
+                if (refundTime >= this.exportStart && refundTime <= this.exportEnd) {
+                  return true
+                }
+              })
             }
           })
           newArr.map(process => {
             const temp = filterVal.map((j) => {
-              return this.filterExcelData(obj, j, process)
+              return this.filterExcelData(obj, j, process, 'send')
             })
             resultData.push(temp)
+          })
+          newArr.map(process => {
+            process.returnParts.map(item => {
+              const refundTime = moment(item.returnTime).format('YYYY-MM-DD')
+              if (refundTime >= this.exportStart && refundTime <= this.exportEnd) {
+                const returnArr = filterVal.map((j) => {
+                  return this.filterExcelData(obj, j, process, item)
+                })
+                resultData.push(returnArr)
+              }
+            })
           })
         })
         exportExcel(tHeader, resultData, this.filterBrand + '对账单' + today + name)

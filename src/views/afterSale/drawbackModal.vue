@@ -13,11 +13,22 @@
           <a-col :span="6"><a-input placeholder="请输入用户退件的快递单号" v-model="returnNo"/></a-col>
           <a-col><a-button type="primary" @click="handReturnNo">添加</a-button></a-col>
         </a-row>
-        <a-row class="returnNo">
+        <!-- <a-row class="returnNo">
           <a-col>退件快递单号：</a-col>
           <a-col><a-tag v-for="item in drawbackData.returnsNumber" :key="item.index">{{ item }}</a-tag></a-col>
-        </a-row>
-        <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding-bottom:50px;">
+        </a-row> -->
+        <a-descriptions bordered>
+          <a-descriptions-item label="是否月结">{{ drawbackData.monthlyStatement?'是':(drawbackData.monthlyStatement===null?'--':'否') }}</a-descriptions-item>
+          <a-descriptions-item label="是否保修期内">
+            {{ drawbackData.processes[0].isOverWarranty?'是':'否' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="退件单号">
+            <div v-for="item in drawbackData.returnsNumber" :key="item.index">
+              <a-tag>{{ item }}</a-tag>
+            </div>
+          </a-descriptions-item>
+        </a-descriptions>
+        <div v-for="(item1,index1) in drawbackData.processes" :key="item1.id" style="padding:20px 0;">
           <div class="title">第{{ index1+1 }}次评估：</div>
           <div class="itemBox">
             <a-descriptions
@@ -40,7 +51,8 @@
                 <a-badge color="#2db7f5" :text="`已退款`" v-else-if="item1.pays.length>1"/>
               </a-descriptions-item>
               <a-descriptions-item label="状态" v-else><a-badge color="#f50" :text="`无支付记录`"/></a-descriptions-item>
-              <a-descriptions-item label="是否在保修期内">{{ item1.isOverWarranty?'是':'否' }}</a-descriptions-item>
+              <!-- <a-descriptions-item label="是否在保修期内">{{ item1.isOverWarranty?'是':'否' }}</a-descriptions-item> -->
+              <a-descriptions-item label="折扣优惠">{{ item1.discount? item1.discount+'折':'无' }}</a-descriptions-item>
               <a-descriptions-item label="订单总金额">
                 ￥{{ item1.totalCost }}
               </a-descriptions-item>
@@ -68,13 +80,17 @@
               </a-descriptions-item>
               <a-descriptions-item label="退件历史记录" :span="3" v-if="item1.returnParts.length>0">
                 <a-row style="font-weight:600;line-height:2">
-                  <a-col :span="7">退件名</a-col>
+                  <a-col :span="6">退件名</a-col>
+                  <a-col :span="4">单价</a-col>
                   <a-col :span="4">数量</a-col>
+                  <a-col :span="4">金额</a-col>
                   <a-col :span="6">退件时间</a-col>
                 </a-row>
                 <a-row v-for="(part, index) in item1.returnParts" :key="index" class="rowActive">
-                  <a-col :span="7">{{ part.returnName }}</a-col>
+                  <a-col :span="6">{{ part.returnName }}</a-col>
+                  <a-col :span="4">{{ part.unitPrice }}</a-col>
                   <a-col :span="4">{{ part.returnNum }}</a-col>
+                  <a-col :span="4">{{ part.totalPrice }}</a-col>
                   <a-col :span="6">{{ part.returnTime | moment }}</a-col>
                 </a-row>
               </a-descriptions-item>
@@ -105,7 +121,7 @@
               </a-descriptions-item>
               <a-descriptions-item label="操作">
                 <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件</a-button>
-                <a-button v-if="item1.pays.length>0" :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button>
+                <!-- <a-button v-if="item1.pays.length>0" :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button> -->
               </a-descriptions-item>
             </a-descriptions>
           </div>
@@ -156,13 +172,16 @@ export default {
       return md5(stringSignTemp)
     },
     async returnPart (item1) {
+      console.log('item1', item1)
       const unadorned = item1.returnParts
       console.log(item1, this.returnParts)
       const returnParts = this.returnParts.filter(item => { return item.processId === item1.id })[0].parts
       const payLoad = {}
       payLoad.returnParts = returnParts.filter(part => { return part.num > 0 })
       .map(item => {
-        return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date() }
+        // console.log('item', item)
+        const totalPrice = item1.discount ? item.num * item.piecePrice * item1.discount * 0.1 : item.num * item.piecePrice
+        return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date(), unitPrice: item.piecePrice, totalPrice }
       }).concat(unadorned)
       let shouldUpdate = true
       item1.afterSaleExpresses.map(sendItem => {
@@ -181,6 +200,7 @@ export default {
         const res = await updateProcess(this.saleId, item1.id, payLoad)
         if (res.status === 200) {
           this.$message.success('退件成功')
+          this.handRefund(item1)
           this.getSaleDate()
         }
       }
