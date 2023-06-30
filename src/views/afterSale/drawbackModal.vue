@@ -20,7 +20,7 @@
         <a-descriptions bordered>
           <a-descriptions-item label="是否月结">{{ drawbackData.monthlyStatement?'是':(drawbackData.monthlyStatement===null?'--':'否') }}</a-descriptions-item>
           <a-descriptions-item label="是否保修期内">
-            {{ drawbackData.processes[0].isOverWarranty?'是':'否' }}
+            {{ drawbackData.processes[drawbackData.processes.length-1].isOverWarranty?'是':'否' }}
           </a-descriptions-item>
           <a-descriptions-item label="退件单号">
             <div v-for="item in drawbackData.returnsNumber" :key="item.index">
@@ -120,7 +120,7 @@
                 <a v-else>无寄件信息</a>
               </a-descriptions-item>
               <a-descriptions-item label="操作">
-                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件</a-button>
+                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件{{ item1.pays.length>0?'退款':'' }}</a-button>
                 <!-- <a-button v-if="item1.pays.length>0" :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button> -->
               </a-descriptions-item>
             </a-descriptions>

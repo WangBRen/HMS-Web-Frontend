@@ -53,7 +53,7 @@
                 </a-select-option>
               </a-select>
             </a-descriptions-item>
-            <a-descriptions-item label="编号">
+            <a-descriptions-item label="条形码编号">
               <span v-if="!editCustomer">{{ repairData.customerInfo.productNo || '---' }}</span>
               <a-input placeholder="请输入编号" v-if="editCustomer" v-model="editForm.productNo"/>
             </a-descriptions-item>
@@ -92,6 +92,9 @@
             <a-descriptions-item v-if="repairData.monthlyStatement !== null" label="月结单">
               <span style="font-size: 20px;font-weight: bold">{{ repairData.monthlyStatement | filterBoolean }}</span>
             </a-descriptions-item>
+            <a-descriptions-item label="是否保修期内">
+              <span style="font-size: 20px;font-weight: bold">{{ repairData.processes[repairData.processes.length-1].isOverWarranty | filterBoolean }}</span>
+            </a-descriptions-item>
           </a-descriptions>
         </div>
         <!-- 共用数据 -->
@@ -101,37 +104,37 @@
             <div class="big_title" v-if="repairData.processes.length>1">第{{ index4+1 }}次评估：</div>
             <div class="processList">
               <!-- 问题汇总 -->
-              <a-descriptions class="questionDes" :column="10" bordered size="small" >
-                <a-descriptions-item label="问题汇总" :span="10">
+              <a-descriptions class="questionDes" :column="8" bordered size="small" >
+                <a-descriptions-item label="问题汇总" :span="8">
                   <div v-for="(item5,index5) in item4.problems" :key="index5">
                     <div>问题{{ index5+1 }}：{{ item5.problemJudge.firstPro }} -> {{ item5.problemJudge.secondPro }}</div>
                   </div>
                 </a-descriptions-item>
-                <a-descriptions-item label="问题解释" :span="10">
+                <a-descriptions-item label="问题解释" :span="8">
                   {{ item4.problemExplain }}
                 </a-descriptions-item>
-                <a-descriptions-item label="技术支持" :span="10">
+                <a-descriptions-item label="技术支持" :span="8">
                   {{ item4.technicalSupport }}
                 </a-descriptions-item>
-                <a-descriptions-item label="是否月结单" :span="2">
+                <!-- <a-descriptions-item label="是否月结单" :span="2">
                   {{ repairData.monthlyStatement | filterBoolean }}
-                </a-descriptions-item>
-                <a-descriptions-item label="是否保修期" :span="2">
+                </a-descriptions-item> -->
+                <!-- <a-descriptions-item label="是否保修期" :span="2">
                   {{ item4.isOverWarranty | filterBoolean }}
+                </a-descriptions-item> -->
+                <a-descriptions-item label="是否上门" :span="2">
+                  {{ item4.needVisit | filterBoolean }}
                 </a-descriptions-item>
                 <a-descriptions-item label="是否寄件" :span="2">
                   {{ item4.needPieceSend | filterBoolean }}
                 </a-descriptions-item>
-                <a-descriptions-item label="是否上门" :span="2">
-                  {{ item4.needVisit | filterBoolean }}
+                <a-descriptions-item label="折扣" :span="2">
+                  {{ item4.discount?item4.discount+'折':'无' }}
                 </a-descriptions-item>
                 <a-descriptions-item label="支付状态" :span="2">
                   <a-badge color="#2db7f5" :text="`已支付`" v-if="item4.payResult"/>
-                  <a-badge color="#bbb" text="未支付" v-else/>
+                  <a-badge color="#f50" text="未支付" v-else/>
                   <!-- {{ item4.payResult?'已支付':'未支付' }} -->
-                </a-descriptions-item>
-                <a-descriptions-item label="快递费" :span="2">
-                  {{ item4.expressCost }}
                 </a-descriptions-item>
                 <a-descriptions-item label="师傅报价" :span="2">
                   {{ item4.afterSaleVisit.technicalPrice }}
@@ -139,8 +142,8 @@
                 <a-descriptions-item label="配件费用" :span="2">
                   {{ countPart(item4.afterSaleExpresses) }}
                 </a-descriptions-item>
-                <a-descriptions-item label="折扣" :span="2">
-                  {{ item4.discount?item4.discount+'折':'无' }}
+                <a-descriptions-item label="快递费" :span="2">
+                  {{ item4.expressCost }}
                 </a-descriptions-item>
                 <a-descriptions-item label="总价" :span="2">
                   {{ item4.totalCost }}
@@ -148,7 +151,7 @@
                 <a-descriptions-item v-if="item4.pays.length" label="支付时间" :span="4">
                   {{ item4.pays[0].payTime | getTime }}
                 </a-descriptions-item>
-                <a-descriptions-item label="客户实际支付">
+                <a-descriptions-item label="客户应付">
                   <a-statistic :precision="2" :value="item4.monthlyStatement?'￥0':'￥'+item4.customerPay" />
                 </a-descriptions-item>
               </a-descriptions>
@@ -285,7 +288,7 @@
                     <!-- {{ item4.afterSaleVisit.technicianPhone }} -->
                   </a-descriptions-item>
                 </a-descriptions>
-                </a-descriptions> -->
+                <!-- </a-descriptions> -->
                 <a-form-model
                   ref="editVisitForm"
                   :model="editVisitForm"
