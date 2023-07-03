@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-card>
-      <a-row>
+      <a-row style="display:flex;align-items: center;">
         <a-col :span="4">
           <span>&nbsp;月结单：</span>
           <a-select @change="changeMonthly" v-model="checkMonthly" default-value="all" style="width: 100px;">

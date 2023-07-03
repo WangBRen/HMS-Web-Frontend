@@ -13,7 +13,7 @@
           {{ `选中 ${selectedRowKeys.length} 项` }}
         </template>
       </span>
-      <a-table :columns="columns" :data-source="dataSource" :row-selection="rowSelection" :rowKey="(record, index) => index">
+      <a-table :columns="columns" :data-source="dataSource" :row-selection="rowSelection" :rowKey="(record, index) => record.id">
         <span slot="operation" slot-scope="text,scope">
           <a @click="outProdect(scope)" v-if="scope.status==='NOT_OUT'">出库</a>
           <span v-else>-</span>
@@ -334,6 +334,8 @@ export default {
         if (this.type === 'productManage') {
           this.dataSource = res.data.content.filter(item => {
             return item.status !== 'NOT_OUT'
+          }).sort((a, b) => {
+            return b.createdAt > a.createdAt ? 1 : -1
           })
         } else {
           this.dataSource = res.data.content.sort((a, b) => {
