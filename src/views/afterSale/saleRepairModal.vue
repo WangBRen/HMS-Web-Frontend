@@ -1527,9 +1527,14 @@ export default {
               // 获取登陆账户 - 内勤
               apiGetUserInfo().then(res => {
                 if (res.status === 200) {
-                  const changeStatus = {
-                    status: 'SEND',
-                    managerName: res.data.userInfo.name
+                  let changeStatus = {}
+                  if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
+                    changeStatus = { status: 'WAIT_VISIT' }
+                  } else if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === true) {
+                    changeStatus = {
+                      status: 'SEND',
+                      managerName: res.data.userInfo.name
+                    }
                   }
                   if (this.payForm.pieceDeliveryNo !== null) {
                     changeStatus.send = 'EXECUTED'
