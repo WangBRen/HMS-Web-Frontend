@@ -20,7 +20,7 @@
         <a-descriptions bordered>
           <a-descriptions-item label="是否月结">{{ drawbackData.monthlyStatement?'是':(drawbackData.monthlyStatement===null?'--':'否') }}</a-descriptions-item>
           <a-descriptions-item label="是否保修期内">
-            {{ drawbackData.processes[drawbackData.processes.length-1].isOverWarranty?'是':'否' }}
+            {{ drawbackData.processes[drawbackData.processes.length-1]?.isOverWarranty?'是':'否' }}
           </a-descriptions-item>
           <a-descriptions-item label="退件单号">
             <div v-for="item in drawbackData.returnsNumber" :key="item.index">
@@ -200,8 +200,8 @@ export default {
         const res = await updateProcess(this.saleId, item1.id, payLoad)
         if (res.status === 200) {
           this.$message.success('退件成功')
-          this.handRefund(item1)
           this.getSaleDate()
+          this.handRefund(item1)
         }
       }
       console.log('退件payLoad', payLoad, item1.afterSaleExpresses)

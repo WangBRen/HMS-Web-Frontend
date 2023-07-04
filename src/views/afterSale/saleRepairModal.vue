@@ -4,7 +4,7 @@
       :width="1200"
       :visible="repairVisible"
       @cancel="closeRepairModals"
-      :maskClosable="false"
+      :maskClosable="current===0?false:true"
       :footer="null"
       v-if="repairVisible"
     >
@@ -2026,7 +2026,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .form{
-  margin: 20px;
+  margin: 20px 40px;
 }
 .form_estimateData_checkquestion {
   line-height: 30px;

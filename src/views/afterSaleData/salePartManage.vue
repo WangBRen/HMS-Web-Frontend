@@ -179,10 +179,10 @@ export default {
                   return item.belongPart === this.category
                 })
               } else {
-                this.filterDataSource = this.dataSource
-                .filter(item => {
+                this.filterDataSource = this.dataSource.filter(item => {
                   return item.belongPart === this.categorys[0]
                 })
+                this.callback(this.categorys[0])
               }
             } else {
               this.category = this.categorys[0]

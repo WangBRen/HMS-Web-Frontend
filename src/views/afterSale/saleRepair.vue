@@ -897,7 +897,6 @@ export default {
       // })
     },
     filterExcelData (v, j, process, returnPart) {
-      console.log('456', v, j)
       if (j === 'id') {
         return v[j]
       }
@@ -979,7 +978,9 @@ export default {
       } else if (j === 'totalPrice') {
         return returnPart?.totalPrice || '-'
       } else if (j === 'returnTime') {
-        return moment(returnPart?.returnTime).format('YYYY-MM-DD') || '-'
+        if (returnPart !== 'send') {
+          return moment(returnPart?.returnTime).format('YYYY-MM-DD') || '-'
+        } else { return '-' }
       } else {
         return v.customerInfo[j]
       }
