@@ -26,7 +26,7 @@
           </a-col>
         </a-row>
       </div>
-      <a-tabs default-active-key="1" @change="callback" >
+      <a-tabs @change="callback" :activeKey="category">
         <a-tab-pane v-for="item in categorys" :key="item" :tab="`${item}`">
           <!-- 表格数据 -->
           <a-table :columns="columns" :data-source="filterDataSource" :rowKey="(record, index) => { return index }" :pagination="false" size="small">
@@ -185,6 +185,7 @@ export default {
                 })
               }
             } else {
+              this.category = this.categorys[0]
               this.filterDataSource = this.dataSource
               .filter(item => {
                 return item.belongPart === this.category
@@ -192,12 +193,6 @@ export default {
             }
           }
         }
-      }
-      if (ifFirst === 'getFirst') {
-        this.category = this.categorys[0]
-        this.filterDataSource = this.dataSource.filter(item => {
-          return item.belongPart === this.category
-        })
       }
     },
     successAddNewPart () {

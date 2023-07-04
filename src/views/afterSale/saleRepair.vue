@@ -63,7 +63,7 @@
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
                 <a @click="openRepairModal(record)" v-if="record.customerService === '' || record.customerService === null">评估</a>
-                <a @click="openRepairModal(record)" v-else-if="(MyInfo.roleName === 'After_salesTechnology' || MyInfo.roleName === 'After-salesAsst') && MyInfo.userInfo.name !== record.customerService">--</a>
+                <a v-else-if="(MyInfo.roleName === 'After_salesTechnology' || MyInfo.roleName === 'After-salesAsst') && MyInfo.userInfo.name !== record.customerService">--</a>
                 <a @click="openRepairModal(record)" v-else>评估</a>
                 <a-popconfirm title="确定删除？" @confirm="delRepair(record)">
                   <a v-if="record.monthlyStatement"> | 删除</a>
@@ -254,9 +254,9 @@
     >
       <div style="padding:0 30px;">
         <p>请选择要派单的人员</p>
-        <a-radio-group v-model="sendOrderName" :default-value="1">
+        <a-radio-group v-model="sendOrderName" :default-value="1" button-style="solid">
           <a-radio :style="radioStyle" :value="item.userInfo.name" v-for="item in receiveList" :key="item.id">{{ item.userInfo.name }}</a-radio>
-          <a-radio :style="radioStyle" value="">清空订单负责人</a-radio>
+          <a-radio-button :style="radioStyle" value="" style="margin-top:20px;">清空订单负责人</a-radio-button>
         </a-radio-group>
       </div>
     </a-modal>
@@ -800,14 +800,17 @@ export default {
               return true
             }
           } else {
+            // 过滤寄件时间和退件时间在范围内的订单
             for (const process of item.processes) {
               const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
               if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
+                console.log('sendTime', sendTime, this.exportStart, this.exportEnd)
                 return true
               } else if (process.returnParts.length > 0) {
                 for (const returnPart of process.returnParts) {
                   const refundTime = moment(returnPart.returnTime).format('YYYY-MM-DD')
                   if (refundTime >= this.exportStart && refundTime <= this.exportEnd) {
+                    console.log('refundTime', refundTime, this.exportStart, this.exportEnd)
                     return true
                   }
                 }
@@ -1070,19 +1073,22 @@ export default {
             if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
               return true
             } else if (process.returnParts.length > 0) {
-              process.returnParts.map(item => {
+              for (const item of process.returnParts) {
                 const refundTime = moment(item.returnTime).format('YYYY-MM-DD')
                 if (refundTime >= this.exportStart && refundTime <= this.exportEnd) {
                   return true
                 }
-              })
+              }
             }
           })
           newArr.map(process => {
-            const temp = filterVal.map((j) => {
-              return this.filterExcelData(obj, j, process, 'send')
-            })
-            resultData.push(temp)
+            const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
+            if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
+              const temp = filterVal.map((j) => {
+                return this.filterExcelData(obj, j, process, 'send')
+              })
+              resultData.push(temp)
+            }
           })
           newArr.map(process => {
             process.returnParts.map(item => {

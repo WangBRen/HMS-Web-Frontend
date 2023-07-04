@@ -93,7 +93,7 @@
               <span style="font-size: 20px;font-weight: bold">{{ repairData.monthlyStatement | filterBoolean }}</span>
             </a-descriptions-item>
             <a-descriptions-item label="是否保修期内">
-              <span style="font-size: 20px;font-weight: bold">{{ repairData.processes[repairData.processes.length-1].isOverWarranty | filterBoolean }}</span>
+              <span style="font-size: 20px;font-weight: bold">{{ repairData.processes[repairData.processes.length-1]?.isOverWarranty | filterBoolean }}</span>
             </a-descriptions-item>
           </a-descriptions>
         </div>
@@ -841,6 +841,9 @@ export default {
   },
   filters: {
     filterBoolean (value) {
+      if (value === '' || value === undefined) {
+        return '--'
+      }
       if (value) {
         return '是'
       } else {
