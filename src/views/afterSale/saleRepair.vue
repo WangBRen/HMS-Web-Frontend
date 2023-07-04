@@ -2,9 +2,9 @@
   <div>
     <a-card>
       <a-row style="display:flex;align-items: center;">
-        <a-col :span="4">
+        <a-col :span="3">
           <span>&nbsp;月结单：</span>
-          <a-select @change="changeMonthly" v-model="checkMonthly" default-value="all" style="width: 100px;">
+          <a-select @change="changeMonthly" v-model="checkMonthly" default-value="all" style="width: 50%;">
             <a-select-option value="all">全部</a-select-option>
             <a-select-option value="true">是</a-select-option>
             <a-select-option value="false">否</a-select-option>
@@ -12,16 +12,16 @@
           </a-select>
           <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
-        <a-col :span="5">
+        <a-col :span="7">
           <a-range-picker
-            style="width: 200px;"
+            style="width: 100%;"
             :show-time="{ format: 'HH:mm' }"
             format="YYYY-MM-DD HH:mm"
             :placeholder="['开始时间', '结束时间']"
             @change="changeTime"
           />
         </a-col>
-        <a-col :span="5">
+        <a-col :span="4">
           <a-input-search
             placeholder="请输入关键字"
             enter-button="查询"
@@ -30,6 +30,7 @@
         </a-col>
         <a-col :span="2" style="display:flex;align-items:center;justify-content: center;height:auto" v-if="MyInfo.roleName === 'After-salesAsst'">
           <a-switch checked-children="仅看自己" un-checked-children="全部数据" default-checked v-model="filterMe" @change="changeFilterMe"/>
+          <!-- <a-switch v-if="MyInfo.roleName === 'After-salesAsst'"/> -->
         </a-col>
         <a-col style="text-align: right;float: right;" :span="8">
           <a-button style="margin-right: 10px;" type="dashed" @click="openAddRepair">新增维修单</a-button>
