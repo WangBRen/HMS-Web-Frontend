@@ -1,12 +1,12 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'first')">新建售后问题分类</a-button>
+      <a-button style="margin-right: 10px;" type="primary" @click="editQusetion('', 'add')">新建【{{ getFirstName() }}】问题</a-button>
       <a-button style="margin-right: 10px;" @click="openModal('edit', 'first')">编辑【{{ getFirstName() }}】名称</a-button>
-      <a-button style="float: right;" type="primary" @click="editQusetion('', 'add')">新建【{{ getFirstName() }}】问题</a-button>
       <a-popconfirm title="确定删除？" @confirm="delFirst()">
         <a-button>删除【{{ getFirstName() }}】</a-button>
       </a-popconfirm>
+      <a-button style="float: right;" type="primary" @click="openModal('add', 'first')">新建售后问题分类</a-button>
       <a-tabs v-model="firstTabKey">
         <a-tab-pane v-for="tab in questData" :key="tab.id" :tab="tab.name">
           <!-- <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'second')">新建异常现象二级</a-button>
