@@ -8,6 +8,7 @@
       :footer="null"
       v-if="repairVisible"
     >
+      <span>订单号: {{ repairData.id }}</span>
       <div class="form">
         <a-steps :current="current" v-if="current<6">
           <a-step v-for="item in steps" :key="item.title" :title="item.title" />
@@ -1354,6 +1355,7 @@ export default {
           if (!this.discountData) {
             validIndex = false
             this.$message.error('请输入折扣理由')
+            return
           }
         }
         // if (valid && this.gatherArr.length !== 0 && validIndex && isVisit && isDelivery && isGuarantee && isStatement) {

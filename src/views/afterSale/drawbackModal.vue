@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      :width="1000"
+      :width="1200"
       :visible="drawbackVisible"
       @cancel="handleCancel"
       :footer="null"
@@ -20,7 +20,7 @@
         <a-descriptions bordered>
           <a-descriptions-item label="是否月结">{{ drawbackData.monthlyStatement?'是':(drawbackData.monthlyStatement===null?'--':'否') }}</a-descriptions-item>
           <a-descriptions-item label="是否保修期内">
-            {{ drawbackData.processes[drawbackData.processes.length-1]?.isOverWarranty?'是':'否' }}
+            <span v-if="drawbackData.processes">{{ drawbackData.processes[drawbackData.processes.length-1]?.isOverWarranty?'是':'否' }}</span>
           </a-descriptions-item>
           <a-descriptions-item label="退件单号">
             <div v-for="item in drawbackData.returnsNumber" :key="item.index">
@@ -66,33 +66,40 @@
                 <a-row style="font-weight:600;line-height:2">
                   <a-col :span="7">退款单号</a-col>
                   <a-col :span="4">退款金额</a-col>
-                  <a-col :span="6">退款时间</a-col>
+                  <a-col :span="5">退款时间</a-col>
                   <a-col :span="7">备注</a-col>
                 </a-row>
                 <a-row v-for="(pay, index) in item1.pays" :key="index" class="rowActive">
                   <span v-if="pay.outRefundNo">
                     <a-col :span="7">{{ pay.outRefundNo }}</a-col>
                     <a-col :span="4">￥{{ pay.refundAmount /100 }}</a-col>
-                    <a-col :span="6">{{ pay.refundTime | moment }}</a-col>
+                    <a-col :span="5">{{ pay.refundTime | moment }}</a-col>
                     <a-col :span="7">{{ pay.refundReason }}</a-col>
                   </span>
                 </a-row>
               </a-descriptions-item>
               <a-descriptions-item label="退件历史记录" :span="3" v-if="item1.returnParts.length>0">
                 <a-row style="font-weight:600;line-height:2">
-                  <a-col :span="6">退件名</a-col>
-                  <a-col :span="4">单价</a-col>
-                  <a-col :span="4">数量</a-col>
-                  <a-col :span="4">金额</a-col>
-                  <a-col :span="6">退件时间</a-col>
+                  <a-col :span="5">退件名</a-col>
+                  <a-col :span="2">单价</a-col>
+                  <a-col :span="2">数量</a-col>
+                  <a-col :span="2">金额</a-col>
+                  <a-col :span="5">退件时间</a-col>
+                  <a-col :span="4">状态</a-col>
+                  <a-col><a @click="agreeReturn(item1)">同意退件</a></a-col>
                 </a-row>
-                <a-row v-for="(part, index) in item1.returnParts" :key="index" class="rowActive">
-                  <a-col :span="6">{{ part.returnName }}</a-col>
-                  <a-col :span="4">{{ part.unitPrice }}</a-col>
-                  <a-col :span="4">{{ part.returnNum }}</a-col>
-                  <a-col :span="4">{{ part.totalPrice }}</a-col>
-                  <a-col :span="6">{{ part.returnTime | moment }}</a-col>
-                </a-row>
+                <a-checkbox-group @change="changeReturn" style="width:100%;">
+                  <a-row v-for="(part, index) in item1.returnParts" :key="index" class="rowActive">
+                    <a-col :span="5">{{ part.returnName }}</a-col>
+                    <a-col :span="2">{{ part.unitPrice }}</a-col>
+                    <a-col :span="2">{{ part.returnNum }}</a-col>
+                    <a-col :span="2">{{ part.totalPrice }}</a-col>
+                    <a-col :span="5">{{ part.returnTime | moment }}</a-col>
+                    <a-col :span="4" v-if="part.returnStatus==='APPROVED'"><a>审批通过</a></a-col>
+                    <a-col :span="4" v-else>待审批</a-col>
+                    <a-checkbox :value="part" :disabled="part.returnStatus==='APPROVED'"></a-checkbox>
+                  </a-row>
+                </a-checkbox-group>
               </a-descriptions-item>
               <a-descriptions-item label="选择退款退件数量" :span="2">
                 <div v-if="item1.afterSaleExpresses.length>0">
@@ -112,15 +119,18 @@
                   </div>
                   <div v-for="total in totalRefund" :key="total.id">
                     <span v-if="total.id===item1.id" style="color:red;padding-top: 20px;">
-                      <span v-if="item1.discount">折扣：{{ item1.discount }}折 <span style="margin-left:100px;">本次预计退款：￥{{ total.totalNum * item1.discount / 10 }}</span></span>
-                      <span v-else>本次预计退款：￥{{ total.totalNum }}</span>
+                      <span v-if="item1.discount && item1.pays.length>0">
+                        折扣：{{ item1.discount }}折
+                        <span style="margin-left:100px;">本次预计退款：￥{{ total.totalNum * item1.discount / 10 }}</span>
+                      </span>
+                      <span v-else-if="item1.pays.length>0">本次预计退款：￥{{ total.totalNum }}</span>
                     </span>
                   </div>
                 </div>
                 <a v-else>无寄件信息</a>
               </a-descriptions-item>
-              <a-descriptions-item label="操作">
-                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件{{ item1.pays.length>0?'退款':'' }}</a-button>
+              <a-descriptions-item label="申请操作">
+                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件{{ item1.pays.length>0?'退款':'' }}申请</a-button>
                 <!-- <a-button v-if="item1.pays.length>0" :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button> -->
               </a-descriptions-item>
             </a-descriptions>
@@ -140,6 +150,12 @@ export default {
       type: Boolean,
       default: false
     },
+    returnPartData: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
     saleId: {
       type: Number,
       default: 0
@@ -151,10 +167,52 @@ export default {
       drawbackData: [], // 当前订单数据
       totalRefund: [],
       returnNo: '',
-      returnParts: []
+      returnParts: [],
+      returnList: [] // 选中同意退件的退件
     }
   },
   methods: {
+    async agreeReturn (item1) {
+      if (this.returnList.length === 0) {
+        this.$message.warning('未选择任何退件')
+        return
+      }
+      const payLoad = {}
+      payLoad.returnParts = []
+      item1.returnParts.map(item => {
+        if (this.returnList.includes(item)) {
+          payLoad.returnParts.push({ ...item, returnStatus: 'APPROVED' })
+        } else {
+          payLoad.returnParts.push(item)
+        }
+      })
+      // payLoad.returnParts = this.returnList.map(item => {
+      //   return { ...item, returnStatus: 'WAIT_APPROVAL' }
+      // })
+      if (item1.pays.length > 0) {
+        this.$confirm({
+          title: '该订单需要退款审批，是否同意？',
+          content: (
+            <div style="margin: 20px 10px;">
+              <div style="margin-bottom: 12px;">请输入密码验证身份</div>
+              <a-input-password placeholder="请输入密码" />
+            </div>
+          ),
+          onOk: () => {
+            this.updateProcess(this.saleId, item1.id, payLoad)
+            this.handRefund(this.saleId, item1, this.returnList)
+          },
+          onCancel () {
+            console.log('Cancel')
+          }
+        })
+      } else {
+        this.updateProcess(this.saleId, item1.id, payLoad)
+      }
+    },
+    changeReturn (e) {
+      this.returnList = e
+    },
     handleCancel () {
       this.$emit('closeDrawback')
     },
@@ -180,8 +238,8 @@ export default {
       payLoad.returnParts = returnParts.filter(part => { return part.num > 0 })
       .map(item => {
         // console.log('item', item)
-        const totalPrice = item1.discount ? item.num * item.piecePrice * item1.discount * 0.1 : item.num * item.piecePrice
-        return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date(), unitPrice: item.piecePrice, totalPrice }
+        const totalPrice = item1.discount ? item.num * item.piecePrice * item1.discount / 10 : item.num * item.piecePrice * 10 / 10
+        return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date(), unitPrice: item.piecePrice, totalPrice, returnStatus: 'WAIT_APPROVAL' }
       }).concat(unadorned)
       let shouldUpdate = true
       item1.afterSaleExpresses.map(sendItem => {
@@ -197,36 +255,57 @@ export default {
         }
       })
       if (shouldUpdate) {
-        const res = await updateProcess(this.saleId, item1.id, payLoad)
-        if (res.status === 200) {
-          this.$message.success('退件成功')
-          this.getSaleDate()
-          this.handRefund(item1)
+        const restlt = await this.handReturnNo()
+        if (restlt !== 'error') {
+          const res = await updateProcess(this.saleId, item1.id, payLoad)
+          if (res.status === 200) {
+            this.$message.success('退件成功')
+            this.getSaleDate()
+            // this.handRefund(item1)
+          }
         }
       }
       console.log('退件payLoad', payLoad, item1.afterSaleExpresses)
     },
-    handRefund (item1) {
-      if (item1.afterSaleExpresses.length < 1) {
-        this.$message.warning('请先退件再退款')
+    async updateProcess (saleId, processId, payLoad) {
+      const res = await updateProcess(saleId, processId, payLoad)
+      if (res.status === 200) {
+        this.$message.success('审核成功')
+        this.getSaleDate()
+      }
+    },
+    handRefund (saleId, item1, agreeReturnParts) {
+      if (item1.pays.length === 0) {
         return
       }
+      // if (item1.afterSaleExpresses.length < 1) {
+      //   this.$message.warning('请先退件再退款')
+      //   return
+      // }
       const myDate = Date.parse(new Date())
       // const myYear = myDate.getFullYear()
       // const myMonth = myDate.getMonth() + 1 < 10 ? '0' + (myDate.getMonth() + 1) : myDate.getMonth() + 1
       // const myToday = myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate()
       // const myHour = myDate.getHours()
-      const outRefundNo = 'TK' + myDate + this.drawbackData.id + item1.id
-      const refundFee = this.totalRefund.filter(item => {
-        return item.id === item1.id
+      const outRefundNo = 'TK' + myDate + saleId + item1.id
+      // 退款金额
+      // const refundFee = this.totalRefund.filter(item => {
+      //   return item.id === item1.id
+      // })
+      var refundFee = 0
+      agreeReturnParts.map(item => {
+        refundFee = refundFee + item.totalPrice
       })
       var refundReason = ''
-      this.accessories.map(item => {
-        if (item.processId === item1.id) {
-          item.parts.map(part => {
-            refundReason = refundReason + part.accessoryName + '(' + part.num + '件)；'
-          })
-        }
+      // this.accessories.map(item => {
+      //   if (item.processId === item1.id) {
+      //     item.parts.map(part => {
+      //       refundReason = refundReason + part.accessoryName + '(' + part.num + '件)；'
+      //     })
+      //   }
+      // })
+      agreeReturnParts.map(item => {
+        refundReason = refundReason + item.returnName + '(' + item.returnNum + '件)；'
       })
       var outTradeNo = ''
       item1.pays.map(item => {
@@ -245,7 +324,8 @@ export default {
         outRefundNo: outRefundNo,
         notifyUrl: 'https://dev.hms.yootane.com/afterSale/saleRepair', // 微信支付结果通知的回调地址
         totalFee: item1.pays[0].actualAmount * 100, // 订单金额  item1.pays[0].actualAmount
-        refundFee: item1.discount ? refundFee[0].totalNum * item1.discount / 10 * 100 : refundFee[0].totalNum * 100,
+        // refundFee: item1.discount ? refundFee[0].totalNum * item1.discount / 10 * 100 : refundFee[0].totalNum * 100,
+        refundFee: refundFee * 100,
         refundDesc: refundReason // 退款描述
       }
       this.refund(payLoad, item1.id, refundReason)
@@ -309,9 +389,6 @@ export default {
         console.log('单个数据详情', res)
         this.drawbackData = res.data
       }
-      this.accessories = this.drawbackData.processes.map(item => {
-        return { processId: item.id, parts: [] }
-      })
     },
     async handReturnNo () {
       if (this.returnNo) {
@@ -325,13 +402,25 @@ export default {
         }
       } else {
         this.$message.warning('请填写退件单号')
+        return 'error'
       }
     }
   },
   created () {
   },
   mounted () {
-    this.getSaleDate()
+    console.log('挂载时')
+    // this.getSaleDate()
+  },
+  watch: {
+    drawbackVisible (newVal, oldVal) {
+      if (newVal) {
+        this.drawbackData = this.returnPartData
+        this.accessories = this.returnPartData.processes.map(item => {
+          return { processId: item.id, parts: [] }
+        })
+      }
+    }
   }
 }
 </script>

@@ -12,16 +12,16 @@
           </a-select>
           <!-- <a-button @click="onSearch(null)">筛选</a-button> -->
         </a-col>
-        <a-col :span="7">
+        <a-col :span="6">
           <a-range-picker
-            style="width: 100%;"
+            style="width: 96%;"
             :show-time="{ format: 'HH:mm' }"
             format="YYYY-MM-DD HH:mm"
             :placeholder="['开始时间', '结束时间']"
             @change="changeTime"
           />
         </a-col>
-        <a-col :span="4">
+        <a-col :span="5">
           <a-input-search
             placeholder="请输入关键字"
             enter-button="查询"
@@ -32,6 +32,7 @@
           <a-switch checked-children="仅看自己" un-checked-children="全部数据" default-checked v-model="filterMe" @change="changeFilterMe"/>
           <!-- <a-switch v-if="MyInfo.roleName === 'After-salesAsst'"/> -->
         </a-col>
+        <a-col :span="2" v-else><a-button style="margin-left:20px;" type="dashed" @click="agreeAll">一键审批</a-button></a-col>
         <a-col style="text-align: right;float: right;" :span="8">
           <a-button style="margin-right: 10px;" type="dashed" @click="openAddRepair">新增维修单</a-button>
           <a-button @click="exportData"><a-icon type="pay-circle" />导出对账单</a-button>
@@ -106,7 +107,8 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">填单</a>
+                <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">填单</a>
+                <a v-else>--</a>
               </span>
             </a-table>
           </a-tab-pane>
@@ -125,7 +127,8 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)">填单</a>
+                <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">填单</a>
+                <a v-else>--</a>
               </span>
             </a-table>
           </a-tab-pane>
@@ -150,6 +153,7 @@
           </a-tab-pane>
           <a-tab-pane key="6" tab="已解决">
             <a-table
+              :row-selection="{ selectedRowKeys: selectedAgreeRowKeys, onChange: onSelectChangeAgree }"
               :columns="solveColumns"
               :rowKey="(record, index) => index"
               :data-source="solveData"
@@ -215,7 +219,7 @@
       </a-row>
       <a-row style="color:#888;margin-top:4px;">
         <a-col :offset="2" v-if="topTitle==='info'"><a-icon type="info-circle"/> 将导出【创建时间】在此范围内的订单</a-col>
-        <a-col :offset="2" v-else><a-icon type="info-circle"/> 将导出【寄件时间、退款时间】在此范围内的订单</a-col>
+        <a-col :offset="2" v-else><a-icon type="info-circle"/> 将导出【寄件时间、退件时间】在此范围内的订单</a-col>
       </a-row>
       <a-row style="margin-top:30px">
         <a-col :span="4" :offset="2">筛选品牌：
@@ -273,10 +277,11 @@
       @closeAddRepair="closeAddRepair"
     />
     <saleRepairDrawback
-      v-if="drawbackVisible"
       :saleId="saleId"
+      :returnPartData="returnPartData"
       :drawbackVisible="drawbackVisible"
       @closeDrawback="closeDrawback"
+      ref="returnPartChild"
     />
   </div>
 </template>
@@ -286,7 +291,7 @@ import moment from 'moment'
 import saleRepairModal from './saleRepairModal.vue'
 import saleRepairAdd from './saleRepairAdd.vue'
 import saleRepairDrawback from './drawbackModal.vue'
-import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale, updateStatus } from '@/api/afterSale'
+import { getAfterSale as apiGetAfterSale, searchAfterSale as apiSearchAfterSale, addAfterSale, delAfterSale as apiDelAfterSale, updateStatus, updateProcess } from '@/api/afterSale'
 import { export_json_to_excel as exportExcel } from '../../utils/excel/Export2Excel'
 import { getUserInfo } from '@/api/login'
 import { getUserList } from '@/api/manage'
@@ -328,6 +333,8 @@ export default {
   data () {
     return {
       selectedRowKeys: [],
+      selectedAgreeRowKeys: [],
+      selectedAgreeList: [],
       selectedRows: [],
       receiveList: [],
       MyInfo: {},
@@ -651,10 +658,89 @@ export default {
       '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
       },
       topTitle: '',
-      filterMe: true
+      filterMe: true,
+      returnPartData: {}
     }
   },
   methods: {
+    agreeAll () {
+      if (this.selectedAgreeList.length === 0) {
+        this.$message.warning('请选择需要审批的订单')
+        return
+      }
+      var totalPrice = 0
+      var totalParts = 0
+      this.selectedAgreeList.map(form => {
+        form.processes.map(process => {
+          if (process.returnParts.length > 0) {
+            // 用于退款
+            const agreeReturnParts = process.returnParts.filter(returnPart => {
+              return returnPart.returnStatus === 'WAIT_APPROVAL'
+            })
+            if (agreeReturnParts.length > 0) {
+              agreeReturnParts.map(item => {
+                totalParts = totalParts + item.returnNum
+                console.log('totalParts', totalParts)
+                if (process.pays.length > 0) {
+                  totalPrice = totalPrice + item.totalPrice
+                }
+              })
+            }
+          }
+        })
+      })
+      this.$confirm({
+        title: '确定审批通过吗',
+        content: (
+          <div style="margin: 20px 10px;">
+            <div style="margin-bottom: 12px;">本次审批订单共计：{this.selectedAgreeList.length} 个</div>
+            <div style="margin-bottom: 12px;">本次退件数量共计：<span style="color:red;font-size:20px;">{totalParts}</span> 个</div>
+            <div style="margin-bottom: 12px;">本次审批预计退款：<span style="color:red;font-size:20px;">{totalPrice.toFixed(2)}</span> 元</div>
+          </div>
+        ),
+        okText: '确定',
+        okType: 'danger',
+        cancelText: '取消',
+        okButtonProps: {
+          props: { disabled: !(totalParts > 0) }
+        },
+        onOk: () => {
+          this.selectedAgreeList.map(form => {
+            form.processes.map(process => {
+              if (process.returnParts.length > 0) {
+                // 用于退款
+                const agreeReturnParts = process.returnParts.filter(returnPart => {
+                  return returnPart.returnStatus === 'WAIT_APPROVAL'
+                })
+                // 用于退件
+                const allReturnParts = process.returnParts.map(item => {
+                  return { ...item, returnStatus: 'APPROVED' }
+                })
+                if (agreeReturnParts.length > 0) {
+                  const payLoad = {}
+                  payLoad.returnParts = allReturnParts
+                  // 更新操作 form.id,  process.id
+                  this.updateProcess(form.id, process.id, payLoad)
+                  this.$refs.returnPartChild.handRefund(form.id, process, agreeReturnParts)
+                } else {
+                  console.log('111')
+                }
+              }
+            })
+          })
+        },
+        onCancel () {
+          console.log('Cancel')
+        }
+      })
+      console.log('this.selectedAgreeList', this.selectedAgreeList)
+    },
+    async updateProcess (formId, processId, payLoad) {
+      const res = await updateProcess(formId, processId, payLoad)
+      if (res.status === 200) {
+        this.$message.success('审核退件成功')
+      }
+    },
     changeFilterMe (e) {
       this.filterViewMyData()
     },
@@ -676,6 +762,10 @@ export default {
     onSelectChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
       this.selectedRows = selectedRows
+    },
+    onSelectChangeAgree (selectedAgreeRowKeys, selectedAgreeRows) {
+      this.selectedAgreeRowKeys = selectedAgreeRowKeys
+      this.selectedAgreeList = selectedAgreeRows
     },
     sendOrders () {
       console.log('开始排单', this.selectedRows)
@@ -764,6 +854,7 @@ export default {
             receiveAddress: reader[i]['收货地址'],
             serviceAddress: reader[i]['上门地址'],
             remark: reader[i]['备注'],
+            afterSaleType: 'WEB',
             purchaseDate: moment(new Date(parseInt(date.setTime(Math.round(reader[i]['购买日期'] * 24 * 60 * 60 * 1000) + Date.parse('1899-12-30')).toString())))
           }
           this.importDataList.push(sheetData)
@@ -897,14 +988,17 @@ export default {
       //   onCancel () {}
       // })
     },
-    filterExcelData (v, j, process, returnPart) {
+    filterExcelData (v, j, process, returnPart, express) {
       if (j === 'id') {
         return v[j]
       }
-      if (j === 'createdAt' || j === 'purchaseDate') {
+      if (j === 'purchaseDate') {
+        return moment(v.customerInfo[j]).format('YYYY-MM-DD')
+      }
+      if (j === 'createdAt') {
         return moment(v[j]).format('YYYY-MM-DD')
       } else if (j === 'serviceAddress') {
-        if (v.customerInfo[j] !== '') {
+        if (v.customerInfo[j] !== '' && v.customerInfo[j] !== null) {
           return v.customerInfo[j]
         } else {
           return v.customerInfo['receiveAddress']
@@ -954,11 +1048,17 @@ export default {
         } else if (v[j] === 'SOLVED') {
           return '已解决'
         } else if (v[j] === 'CANCEL') { return '已废弃' }
-      } else if (j === 'pieceName') {
-        if (process.afterSaleExpresses.length > 0 && returnPart === 'send') {
-          return process['afterSaleExpresses'].map(piece => {
-            return piece.pieceName + '_' + piece.pieceNum + '个'
-          })
+      } else if (j === 'discount') {
+        return process[j] ? process[j] + '折' : '-'
+      } else if (j === 'pieceName' || j === 'pieceNum' || j === 'piecePrice') {
+        if (returnPart === 'send') {
+          return express[j]
+        } else {
+          return '-'
+        }
+      } else if (j === 'expressPrice') {
+        if (returnPart === 'send') {
+          return process['discount'] ? express.pieceNum * express.piecePrice * process['discount'] * 0.1 : express.pieceNum * express.piecePrice
         } else {
           return '-'
         }
@@ -982,6 +1082,14 @@ export default {
         if (returnPart !== 'send') {
           return moment(returnPart?.returnTime).format('YYYY-MM-DD') || '-'
         } else { return '-' }
+      } else if (j === 'express') {
+        var expressText = ''
+        v.processes.map(item => {
+          if (item.needPieceSend && item.sendTime) {
+            expressText = expressText + '【' + item.pieceDeliveryNo + '_' + item.expressBrand + '】'
+          }
+        })
+        return expressText
       } else {
         return v.customerInfo[j]
       }
@@ -1013,13 +1121,15 @@ export default {
       const name = this.MyInfo.nickname
       if (this.topTitle === 'info') {
         const tHeader = [
-          '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
-          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保修期内', '状态'
+          '订单编号', '报修日期', '客户名', '客户手机', '收货地址', '上门地址', '购买时间', '品牌', '型号',
+          '产品编号', '客户提交问题', '售后评估问题', '是否月结单', '是否保修期内', '状态', '寄件单号与品牌'
         ]
         const filterVal = [
+          'id',
           'createdAt',
           'customerName',
           'customerPhone',
+          'receiveAddress',
           'serviceAddress',
           'purchaseDate',
           'brand',
@@ -1027,11 +1137,10 @@ export default {
           'productNo',
           'problemCategory',
           'problems',
-          'needVisit',
-          'needPieceSend',
           'monthlyStatement',
           'isOverWarranty',
-          'status'
+          'status',
+          'express'
         ]
         const res = this.exportfilterData.map((v) => filterVal.map((j) => {
           return this.filterExcelData(v, j)
@@ -1040,7 +1149,7 @@ export default {
       } else if (this.topTitle === 'account') {
         const tHeader = [
         '订单编号', '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
-          '产品编号', '售后问题', '售后解决', '是否上门', '是否寄件', '是否月结单', '是否保修期内', '状态', '寄件', '寄件单号', '寄件时间', '退件名称', '退件数量', '退件单价', '退件金额', '退件时间'
+          '产品编号', '客户提交问题', '售后评估问题', '是否上门', '是否寄件', '是否月结单', '是否保修期内', '状态', '折扣', '寄件名称', '寄件数量', '寄件单价', '寄件金额', '寄件单号', '寄件时间', '退件名称', '退件数量', '退件单价', '退件金额', '退件时间'
         ]
         const filterVal = [
           'id',
@@ -1059,7 +1168,11 @@ export default {
           'monthlyStatement',
           'isOverWarranty',
           'status',
+          'discount',
           'pieceName',
+          'pieceNum',
+          'piecePrice',
+          'expressPrice',
           'pieceDeliveryNo',
           'sendTime',
           'returnName',
@@ -1086,10 +1199,12 @@ export default {
           newArr.map(process => {
             const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
             if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
-              const temp = filterVal.map((j) => {
-                return this.filterExcelData(obj, j, process, 'send')
+              process.afterSaleExpresses.map(express => {
+                const temp = filterVal.map((j) => {
+                  return this.filterExcelData(obj, j, process, 'send', express)
+                })
+                resultData.push(temp)
               })
-              resultData.push(temp)
             }
           })
           newArr.map(process => {
@@ -1156,6 +1271,7 @@ export default {
     },
     closeDrawback () {
       this.drawbackVisible = false
+      this.getAfterSaleData()
     },
     getAfterSaleData () {
       apiGetAfterSale().then(res => {
@@ -1249,6 +1365,7 @@ export default {
     openDrawbackModal (data) {
       // console.log(data, '打开退款')
       this.saleId = data.id
+      this.returnPartData = data
       this.drawbackVisible = true
       // console.log('打开退款获取id', this.saleId)
     },

@@ -59,11 +59,11 @@
           @confirm="statusDisable(record)"
         >
           <a >禁用</a>
-          |
+          <span v-if="!domin.includes('aftersale')"> | </span>
         </a-popconfirm>
         <a v-else>---</a>
 
-        <a @click="openDuty(record)">家庭分配</a>
+        <a @click="openDuty(record)" v-if="!domin.includes('aftersale')">家庭分配</a>
       </span>
     </a-table>
 
