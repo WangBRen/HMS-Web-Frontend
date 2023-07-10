@@ -93,7 +93,8 @@ export default {
             if (res.status === 200) {
               const changeData = {
                 unresolvedName: res.data.userInfo.name,
-                unresolvedReason: this.text
+                unresolvedReason: this.text,
+                feedbackTime: new Date()
               }
               // console.log(id, processId, changeData)
               // 改变流程里的状态
@@ -106,6 +107,7 @@ export default {
                     if (res.status === 200) {
                       this.$message.success('成功')
                       this.handleCancel()
+                      this.$parent.getParentSaleData()
                       this.$parent.closeRepairModals()
                     } else {
                       this.$message.error(res.message)

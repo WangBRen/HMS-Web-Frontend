@@ -728,8 +728,6 @@
                     <a-input-number placeholder="请输入师傅成本" style="width: 100%;" v-model="sendForm.technicalCost" id="inputNumber" :min="0"/>
                   </a-form-model-item>
                 </a-col>
-              </a-row>
-              <a-row>
                 <a-col :span="12">
                   <a-form-model-item label="上门时间" prop="visitTime">
                     <a-date-picker
@@ -1478,15 +1476,24 @@ export default {
         this.priceSum = this.priceSum * this.discount * 0.1
       }
     },
+    getParentSaleData () {
+      this.$parent.getAfterSaleData()
+    },
     repairSucceeded () {
       const id = this.repairData.id
+      const processId = this.repairData.processes[this.repairData.processes.length - 1].id
+      const apiData = { feedbackTime: new Date() }
       const changeStatus = { status: 'SOLVED' }
       apiUpdateStatus(id, changeStatus).then(res => {
         if (res.status === 200) {
-          this.$message.success('状态改变成功')
-          // console.log('状态改变成功')
-          this.closeRepairModals()
-          this.$parent.getAfterSaleData()
+          this.$message.success('问题已解决')
+          apiUpdateProcess(id, processId, apiData).then(res => {
+            if (res.status === 200) {
+              console.log('增加解决时间')
+              this.closeRepairModals()
+              this.$parent.getAfterSaleData()
+            }
+          })
         } else {
           this.$message.error(res.message)
         }
