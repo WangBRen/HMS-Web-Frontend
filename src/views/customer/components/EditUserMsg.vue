@@ -159,12 +159,15 @@
                   </a-select>
                 </div>
                 <div v-if="form.isDisease">
-                  <a-row v-for="(item,index) in form.diseaseSelect" :key="index">
-                    <a-col :span="4"><a-tag>{{ item.name }}</a-tag></a-col>
-                    <a-col :span="10"><a-month-picker v-model="item.time" placeholder="选择确诊日期" size="small"/></a-col>
-                    <a-col :span="10" v-if="item.name==='其他法定传染病' || item.name==='职业病' || item.name==='其他'">
-                      <a-input v-model="item.specificName" :placeholder="`请输入,例如${item.name==='其他法定传染病'?'艾滋病':(item.name==='职业病'?'尘肺':'梅毒')}...`"/>
-                    </a-col>
+                  <a-row v-for="(item,index) in form.diseaseSelect" :key="index" style="width:100%">
+                    <a-col :span="6"><a-tag>{{ item.name }}</a-tag></a-col>
+                    <span v-if="item.name==='其他法定传染病' || item.name==='职业病' || item.name==='其他'">
+                      <a-col :span="10"><a-month-picker v-model="item.time" placeholder="选择确诊日期" size="small"/></a-col>
+                      <a-col :span="8">
+                        <a-input v-model="item.specificName" :placeholder="`请输入,例如${item.name==='其他法定传染病'?'艾滋病':(item.name==='职业病'?'尘肺':'梅毒')}...`"/>
+                      </a-col>
+                    </span>
+                    <a-col :span="18" v-else><a-month-picker v-model="item.time" placeholder="选择确诊日期" size="small"/></a-col>
                   </a-row>
                 </div>
               </div>

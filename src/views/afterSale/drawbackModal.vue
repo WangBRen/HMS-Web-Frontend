@@ -86,7 +86,7 @@
                   <a-col :span="2">金额</a-col>
                   <a-col :span="5">退件时间</a-col>
                   <a-col :span="4">状态</a-col>
-                  <a-col><a @click="agreeReturn(item1)">同意退件</a></a-col>
+                  <a-col v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'"><a @click="agreeReturn(item1)">同意退件</a></a-col>
                 </a-row>
                 <a-checkbox-group @change="changeReturn" style="width:100%;">
                   <a-row v-for="(part, index) in item1.returnParts" :key="index" class="rowActive">
@@ -97,7 +97,7 @@
                     <a-col :span="5">{{ part.returnTime | moment }}</a-col>
                     <a-col :span="4" v-if="part.returnStatus==='APPROVED'"><a>审批通过</a></a-col>
                     <a-col :span="4" v-else>待审批</a-col>
-                    <a-checkbox :value="part" :disabled="part.returnStatus==='APPROVED'"></a-checkbox>
+                    <a-checkbox v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'" :value="part" :disabled="part.returnStatus==='APPROVED'"></a-checkbox>
                   </a-row>
                 </a-checkbox-group>
               </a-descriptions-item>
@@ -168,7 +168,8 @@ export default {
       totalRefund: [],
       returnNo: '',
       returnParts: [],
-      returnList: [] // 选中同意退件的退件
+      returnList: [], // 选中同意退件的退件
+      MyInfo: {}
     }
   },
   methods: {
@@ -416,6 +417,7 @@ export default {
     drawbackVisible (newVal, oldVal) {
       if (newVal) {
         this.drawbackData = this.returnPartData
+        this.MyInfo = JSON.parse(localStorage.getItem('MyInfo'))
         this.accessories = this.returnPartData.processes.map(item => {
           return { processId: item.id, parts: [] }
         })

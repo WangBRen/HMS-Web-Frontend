@@ -136,10 +136,13 @@ export default {
     }
   },
   methods: {
-   async onSearch (value) {
-    const pages = {
+    async onSearch (value) {
+      const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
+      }
+      if (value) {
+        pages.page = 1
       }
       const res = await apiAdd(value, pages)
       if (res.status === 200) {

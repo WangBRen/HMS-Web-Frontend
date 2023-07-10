@@ -818,6 +818,7 @@ export default {
     async getMe () {
       const res = await getUserInfo()
       this.MyInfo = res.data
+      localStorage.setItem('MyInfo', JSON.stringify(res.data))
     },
     saveImport () {
       this.visible = false

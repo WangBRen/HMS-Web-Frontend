@@ -216,7 +216,7 @@
                 <span >暴露史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index" v-for="(item,index) in healthHistoryData.exposureHistory" :key="index">【{{ item.species }}】{{ item.specificName }}、</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.exposureHistory" :key="index">【{{ item.species }}】{{ item.specificName }}；</span>
               </a-col>
             </a-row>
             <a-row style="height: 30px;">
@@ -237,7 +237,7 @@
               </a-col>
               <a-col :span="20">
                 <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.operationHistory" :key="index">
-                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}
+                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}；
                 </span>
               </a-col>
             </a-row>
@@ -247,7 +247,7 @@
               </a-col>
               <a-col :span="20">
                 <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.traumaHistory" :key="index">
-                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}
+                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}；
                 </span>
               </a-col>
             </a-row>
@@ -267,7 +267,7 @@
               </a-col>
               <a-col :span="20">
                 <span class="info_index" v-for="(item,index) in healthHistoryData.familyHistory" :key="index">
-                  {{ item.relation }} <a-tag color="blue" v-for="(item2,index2) in item.content" :key="index2">{{ item2 }}</a-tag>、
+                  {{ item.relation }} <a-tag color="blue" v-for="(item2,index2) in item.content" :key="index2">{{ item2 }}</a-tag>；
                 </span>
               </a-col>
             </a-row>
@@ -295,7 +295,7 @@
                 <span >医疗支付方式：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index" v-for="(item,index) in healthHistoryData.paymentMethod" :key="index">{{ item }}、</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.paymentMethod" :key="index">{{ item }}；</span>
                 <span>{{ healthHistoryData.otherPayMethod }}</span>
               </a-col>
             </a-row>
