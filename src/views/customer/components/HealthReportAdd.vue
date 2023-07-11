@@ -3,11 +3,20 @@
     <a-modal
       forceRender
       v-model="addReportVisible"
-      title="健康信息"
-      @ok="handleOk"
-      @cancel="closeAddModal"
+      title="新增健康报告"
       :width="1150"
     >
+      <template slot="footer">
+        <a-button @click="closeAddModal">
+          取消
+        </a-button>
+        <a-button @click="handleOk('preview')">
+          预览
+        </a-button>
+        <a-button type="primary" @click="handleOk('create')">
+          确认
+        </a-button>
+      </template>
       <div v-for="items in formData.indexArr" :key="items.id">
         <div v-if="items.indexId !== '用户症状信息' && items.indexId !== '用户诊断信息' ">
           <a-row>
@@ -285,6 +294,7 @@
         </a-row>
       </div>
     </a-modal>
+    <HealthReportSee ref="seeReport" />
   </div>
 </template>
 <script>
@@ -292,11 +302,13 @@ import { getHealthIndex, addHealthReport, analysisChronicDisease as apiAnalysisC
 // import { getHealthIndex } from '@/api/health'
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
 import Symptom from '@/components/DiaMsg/UserSymptom.vue'
+import HealthReportSee from './HealthReportSee.vue'
 // import symptom from '@/components/DiaMsg/symptom.json'
 export default {
     components: {
         CheckDia,
-        Symptom
+        Symptom,
+        HealthReportSee
     },
     filters: {
         getRange: function (value) {
@@ -350,7 +362,7 @@ export default {
         })
     },
     methods: {
-        handleOk () {
+        handleOk (param) {
             var apiData = this.apiData
             // const apiData = { projects: [] }
             const formData = this.formData
@@ -379,7 +391,7 @@ export default {
                             apiData.projects.push(x)
                             indexItem = indexItem + 1
                         } else {
-                            that.$message.error(val.indexId + '检测时间未填写')
+                            that.$message.error('【' + val.indexId + '】检测时间未填写')
                         }
                     }
                 })
@@ -417,24 +429,29 @@ export default {
                 // console.log(indexItem, 'apiData', apiData)
                 if (indexItem === formData.indexArr.length) {
                   // console.log('apiData', apiData, 'formData', formData)
-                  // 调接口创建报告单
-                  addHealthReport(customerId, apiData).then(res => {
-                    if (res.status === 201) {
-                      apiAnalysisChronicDisease(customerId).then(res => {
-                        if (res.status === 200) {
-                          this.$message.info('判断慢病成功')
-                          // console.log('111')
-                        } else {
-                          this.$message.error(res.message)
-                        }
-                      })
-                      this.$message.info('成功新建报告单')
-                      this.addReportVisible = false
-                      this.$emit('successCreatReport')
-                    } else {
-                      this.$message.error(res.message)
-                    }
-                  })
+                  if (param === 'create') {
+                    // 调接口创建报告单
+                    addHealthReport(customerId, apiData).then(res => {
+                      if (res.status === 201) {
+                        apiAnalysisChronicDisease(customerId).then(res => {
+                          if (res.status === 200) {
+                            this.$message.info('判断慢病成功')
+                            // console.log('111')
+                          } else {
+                            this.$message.error(res.message)
+                          }
+                        })
+                        this.$message.info('成功新建报告单')
+                        this.addReportVisible = false
+                        this.$emit('successCreatReport')
+                      } else {
+                        this.$message.error(res.message)
+                      }
+                    })
+                  } else if (param === 'preview') {
+                    this.$refs.seeReport.openSeeModal()
+                    this.$refs.seeReport.seeReportCom(apiData, 'preview')
+                  }
                 }
                 // console.log('apiData', apiData, 'formData', formData)
             } else {
