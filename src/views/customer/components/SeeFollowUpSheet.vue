@@ -184,7 +184,7 @@ const columns = [
   },
   {
     title: '备注',
-    dataIndex: 'remark',
+    dataIndex: 'indexItem.remark',
     align: 'center'
   }
 ]
