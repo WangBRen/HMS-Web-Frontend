@@ -55,6 +55,7 @@
               :rowKey="(record, index) => index"
               :data-source="estimateData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -79,6 +80,7 @@
               :rowKey="(record, index) => index"
               :data-source="estimateOkData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
@@ -98,6 +100,7 @@
               :rowKey="(record, index) => index"
               :data-source="payData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="monthlyStatement" slot-scope="record">
                 {{ record.monthlyStatement | filterBoolean }}
@@ -118,6 +121,7 @@
               :rowKey="(record, index) => index"
               :data-source="sendData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="monthlyStatement" slot-scope="record">
                 {{ record.monthlyStatement | filterBoolean }}
@@ -138,6 +142,7 @@
               :rowKey="(record, index) => index"
               :data-source="comeData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="monthlyStatement" slot-scope="record">
                 {{ record.monthlyStatement | filterBoolean }}
@@ -158,6 +163,7 @@
               :rowKey="(record, index) => index"
               :data-source="solveData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="monthlyStatement" slot-scope="record">
                 {{ record.monthlyStatement | filterBoolean }}
@@ -181,6 +187,7 @@
               :rowKey="(record, index) => index"
               :data-source="voidData"
               :pagination="false"
+              :scroll="{ y: 600 }"
             >
               <span slot="processes" slot-scope="record">
                 {{ record.processes.length }}
