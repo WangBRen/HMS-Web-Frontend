@@ -140,7 +140,7 @@ export default {
       console.log(e)
       this.form.productModel = undefined
       const models = new Set(this.products.filter(item => {
-        return item.productBrand === e
+        return item.productBrand.trim() === e
       }).map(product => { return product.productModel }))
       this.models = [...models]
       this.brandName = this.products.filter(item => {
@@ -157,7 +157,7 @@ export default {
       const res = await getProducts(pages)
       this.products = res.data.content
       const brands = new Set(this.products.map(item => {
-        return item.productBrand
+        return item.productBrand.trim()
       }))
       this.brands = [...brands]
     },

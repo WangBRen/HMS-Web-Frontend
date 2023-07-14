@@ -11,6 +11,7 @@
         :rowKey="(record, index) => index"
         :data-source="modelData"
         :pagination="false"
+        :scroll="{ y: 600 }"
       >
         <span slot="action" slot-scope="text,record">
           <a @click="openEditModal('edit', record)">编辑 </a>
@@ -30,7 +31,7 @@
 </template>
 <script>
 import productModelModal from './productModelModal.vue'
-import { getProducts } from '@/api/product'
+import { getProducts, delProduct } from '@/api/product'
 export default {
   components: {
     productModelModal
@@ -118,8 +119,12 @@ export default {
       this.getModel()
     },
     delProduct (data) {
-      console.log('删除', data)
-      this.getModel()
+      delProduct(data.id).then(res => {
+        if (res.status === 200) {
+          this.$message.success('删除成功')
+          this.getModel()
+        }
+      })
     }
   },
   created () {
