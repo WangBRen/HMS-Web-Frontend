@@ -90,7 +90,13 @@ export default {
   },
   methods: {
     async getModel () {
-      const res = await getProducts()
+      const pages = {
+        page: 0,
+        size: 1
+      }
+      const resp = await getProducts(pages)
+      pages.size = resp.data.totalElements || 1
+      const res = await getProducts(pages)
       if (res.status === 200) {
         this.modelData = res.data.content
       }

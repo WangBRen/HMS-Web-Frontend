@@ -40,7 +40,12 @@
           </a-radio-group>
         </a-col>
       </a-row>
-      <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index"/>
+      <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index">
+        <span slot="result" slot-scope="text,scope">
+          <a v-if="scope.productId">校验成功</a>
+          <a v-else style="color:red;">该品牌型号的产品不存在</a>
+        </span>
+      </a-table>
     </a-modal>
     <outRegistration
       v-if="outModelvisible"
@@ -70,8 +75,9 @@ import xlsx from 'xlsx'
 import outRegistration from './outRegistration.vue'
 import deviceLife from './deviceLife.vue'
 import addProduct from './addProduct.vue'
-import { getDevices, creatDevice } from '@/api/product'
+import { getDevices, creatDevice, getProducts } from '@/api/product'
 import moment from 'moment'
+import { getUserInfo } from '@/api/login'
 
 const columns = [
   {
@@ -176,13 +182,20 @@ export default {
           dataIndex: 'productModel',
           key: 'productModel',
           align: 'center'
+        },
+        {
+          title: '设备校验',
+          dataIndex: 'productId',
+          key: 'productId',
+          scopedSlots: { customRender: 'result' }
         }
       ],
       importDataList: [],
       deviceStatus: '',
       visible: false,
       deviceVisible: false,
-      deviceData: {}
+      deviceData: {},
+      operator: ''
     }
   },
   computed: {
@@ -209,8 +222,29 @@ export default {
   },
   mounted () {
     this.getDevices()
+    getUserInfo().then(res => {
+      this.operator = res.data.nickname
+    })
   },
   methods: {
+    async getProducts () {
+      const pages = {
+        page: 0,
+        size: 1
+      }
+      const resp = await getProducts(pages)
+      pages.size = resp.data.totalElements || 1
+      getProducts(pages).then(res => {
+        if (res.status === 200) {
+          const productList = res.data.content
+          this.importDataList = this.importDataList.map(item => {
+            const product = productList.filter(product => { return product.productModel === item.productModel && product.productBrand === item.brand })
+            return { ...item, productId: product[0]?.id }
+          })
+          console.log('111', this.importDataList)
+        }
+      })
+    },
     viewDeviceLife (item) {
       this.deviceVisible = true
       this.deviceData = item
@@ -222,11 +256,24 @@ export default {
       this.visible = false
     },
     saveImport () {
+      const filterDevice = this.importDataList.filter(item => { return !item.productId })
+      if (filterDevice.length > 0) {
+        this.$message.warning(filterDevice.length + '个设备校验失败，请检查后重试')
+        return
+      }
       if (this.deviceStatus === '') {
         this.$message.warning('请先选择设备状态')
       } else {
         this.importDataList.map(item => {
           const payLoad = {}
+          payLoad.serialNumber = item.productNo
+          payLoad.productId = item.productId
+          payLoad.status = this.deviceStatus
+          payLoad.operator = this.operator
+          if (this.deviceStatus === 'OUT') {
+            payLoad.deliveryPeople = this.operator
+            payLoad.deliveryDate = new Date()
+          }
           this.excelCreatDevice(payLoad)
         })
       }
@@ -234,10 +281,12 @@ export default {
     async excelCreatDevice (payLoad) {
       const res = await creatDevice(payLoad)
       if (res.status === 200) {
+        this.$message.success('设备创建成功')
         this.visible = false
         this.$emit('successProductAdd')
+      } else if (res.status === 400) {
+        this.$message.warning('设备已存在')
       }
-      console.log('创建设备', res)
     },
     importData (file) {
       this.importDataList = []
@@ -258,6 +307,7 @@ export default {
           this.importDataList.push(sheetData)
         }
         this.visible = true
+        this.getProducts()
         console.log(this.importDataList, '导入的数据是---')
       }
     },

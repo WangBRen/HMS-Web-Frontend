@@ -18,10 +18,14 @@ export function addProduct (parameter) {
 }
 
 // 查询产品
-export function getProducts () {
+export function getProducts (pages) {
   return request({
     url: api.addProduct,
-    method: 'get'
+    method: 'get',
+    params: {
+      page: pages.page || 0,
+      size: pages.size || 10
+    }
   })
 }
 
