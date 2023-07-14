@@ -28,6 +28,13 @@ export function getProducts (pages) {
     }
   })
 }
+// 删除产品
+export function delProduct (id) {
+  return request({
+    url: api.updateProduct(id),
+    method: 'delete'
+  })
+}
 
 // 创建设备
 export function creatDevice (parameter) {
