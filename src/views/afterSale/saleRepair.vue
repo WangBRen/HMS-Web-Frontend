@@ -28,9 +28,9 @@
             @search="onSearch"
           />
         </a-col>
-        <a-col :span="2" style="display:flex;align-items:center;justify-content: center;height:auto" v-if="MyInfo.roleName === 'After-salesAsst' || MyInfo.roleName === 'After_salesTechnology'">
+        <a-col :span="2" style="display:flex;align-items:center;justify-content: center;height:auto" v-if="MyInfo.roleName === 'After_salesAsst' || MyInfo.roleName === 'After_salesTechnology'">
           <a-switch checked-children="仅看自己" un-checked-children="全部数据" default-checked v-model="filterMe" @change="changeFilterMe"/>
-          <!-- <a-switch v-if="MyInfo.roleName === 'After-salesAsst'"/> -->
+          <!-- <a-switch v-if="MyInfo.roleName === 'After_salesAsst'"/> -->
         </a-col>
         <a-col :span="2" v-else><a-button style="margin-left:20px;" type="dashed" @click="agreeAll">一键审批</a-button></a-col>
         <a-col style="text-align: right;float: right;" :span="8">
@@ -66,7 +66,7 @@
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
                 <a @click="openRepairModal(record)" v-if="record.customerService === '' || record.customerService === null">评估</a>
-                <a v-else-if="(MyInfo.roleName === 'After_salesTechnology' || MyInfo.roleName === 'After-salesAsst') && MyInfo.userInfo.name !== record.customerService">--</a>
+                <a v-else-if="(MyInfo.roleName === 'After_salesTechnology' || MyInfo.roleName === 'After_salesAsst') && MyInfo.userInfo.name !== record.customerService">--</a>
                 <a @click="openRepairModal(record)" v-else>评估</a>
                 <a-popconfirm title="确定删除？" @confirm="delRepair(record)">
                   <a v-if="record.monthlyStatement"> | 删除</a>
@@ -760,7 +760,7 @@ export default {
       if (res.status === 200) {
         const resp = await getUserList({ page: 1, size: res.data.totalElements })
         this.receiveList = resp.data.content.filter(item => {
-          return (item.roleName === 'After-salesAsst' || item.roleName === 'After_salesTechnology') && item.status === 'active'
+          return (item.roleName === 'After_salesAsst' || item.roleName === 'After_salesTechnology') && item.status === 'active'
         })
         console.log(resp)
       }
@@ -1338,7 +1338,7 @@ export default {
       const roleName = this.MyInfo.roleName
       this.estimateData = this.salesData.filter(item => {
         if (item.status === 'WAIT_EVALUATE') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
@@ -1347,7 +1347,7 @@ export default {
       })
       this.voidData = this.salesData.filter(item => {
         if (item.status === 'CANCEL') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
@@ -1356,7 +1356,7 @@ export default {
       })
       this.estimateOkData = this.salesData.filter(item => {
         if (item.status === 'EVALUATED') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
@@ -1365,7 +1365,7 @@ export default {
       })
       this.payData = this.salesData.filter(item => {
         if (item.status === 'PAID') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
@@ -1374,7 +1374,7 @@ export default {
       })
       this.sendData = this.salesData.filter(item => {
         if (item.status === 'SEND') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
@@ -1383,7 +1383,7 @@ export default {
       })
       this.comeData = this.salesData.filter(item => {
         if (item.status === 'WAIT_VISIT') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
@@ -1392,7 +1392,7 @@ export default {
       })
       this.solveData = this.salesData.filter(item => {
         if (item.status === 'SOLVED') {
-          if (roleName === 'After-salesAsst' && this.filterMe) {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
             return item.customerService === this.MyInfo.userInfo.name
           } else {
             return item
