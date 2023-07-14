@@ -42,8 +42,9 @@
       </a-row>
       <a-table :data-source="importDataList" :columns="importColumns" :rowKey="(record, index) => index">
         <span slot="result" slot-scope="text,scope">
-          <a v-if="scope.productId">校验成功</a>
-          <a v-else style="color:red;">该品牌型号的产品不存在</a>
+          <a v-if="scope.exist" style="color:red;">设备已存在，请勿重复导入</a>
+          <a v-else-if="scope.productId">校验成功</a>
+          <a v-else style="color:orange;">该品牌型号的产品不存在</a>
         </span>
       </a-table>
     </a-modal>
@@ -239,9 +240,13 @@ export default {
           const productList = res.data.content
           this.importDataList = this.importDataList.map(item => {
             const product = productList.filter(product => { return product.productModel === item.productModel && product.productBrand === item.brand })
-            return { ...item, productId: product[0]?.id }
+            const isStringIncluded = this.dataSource.some(obj => obj.serialNumber === item.productNo)
+            if (isStringIncluded) {
+              return { ...item, productId: product[0]?.id, exist: true }
+            } else {
+              return { ...item, productId: product[0]?.id }
+            }
           })
-          console.log('111', this.importDataList)
         }
       })
     },
