@@ -79,6 +79,7 @@ import { GetPermissionRoles, GetPermissionPermissions, EditRole, AddRole, Delete
 export default {
   data () {
     return {
+      domin: '',
       modalVisible: false,
       deleteVisible: false,
       data: [],
@@ -160,6 +161,7 @@ export default {
     }
   },
   mounted () {
+    this.domin = window.location.host
     // 获取表格初始数据
     this.loadPage()
   },
@@ -167,7 +169,7 @@ export default {
     this.$setPageDataLoader(this.loadPage)
   },
   methods: {
-    fillValues (role, permissionList) { // {}
+    fillValues (role, permissionList, model) { // {}
       const defaultObject = function (permission, name, describe) {
         return { permission, name, describe, canCreate: false, canDelete: false, canEdit: false, canView: false }
       }
@@ -204,6 +206,17 @@ export default {
               const permissionList = res2.data || []
               this.permissionList = permissionList
               this.data = roleList.map(role => this.fillValues(role, permissionList))
+              this.data = this.data.filter(item => {
+                if (this.domin.includes('aftersale')) {
+                  if (item.displayName.includes('售后')) {
+                    return item
+                  }
+                } else {
+                  if (item.displayName.includes('健康')) {
+                    return item
+                  }
+                }
+              })
             }
           })
         }
@@ -225,7 +238,7 @@ export default {
           description: '',
           permissions: []
         }
-        const modalValues = { ...this.fillValues(defaultRole, this.permissionList), mode }
+        const modalValues = { ...this.fillValues(defaultRole, this.permissionList, 'model'), mode }
         this.current = JSON.parse(JSON.stringify(modalValues))
       } else if (mode === 'edit') {
         this.modalVisible = true

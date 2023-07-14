@@ -1,0 +1,128 @@
+<template>
+  <div>
+    <a-card>
+      <a-row>
+        <a-col :span="3">
+          <a-button @click="openEditModal('add')" type="primary">新建产品型号</a-button>
+        </a-col>
+      </a-row>
+      <a-table
+        :columns="modelColumns"
+        :rowKey="(record, index) => index"
+        :data-source="modelData"
+        :pagination="false"
+      >
+        <span slot="action" slot-scope="text,record">
+          <a @click="openEditModal('edit', record)">编辑 </a>
+          <a-popconfirm title="确定删除？" @confirm="delProduct(record)">
+            <a>| 删除</a>
+          </a-popconfirm>
+        </span>
+      </a-table>
+    </a-card>
+    <productModelModal
+      :modalData="modalData"
+      :modalVisible="modalVisible"
+      @closeEditModal="closeEditModal"
+      :modalIndex="modalIndex"
+    />
+  </div>
+</template>
+<script>
+import productModelModal from './productModelModal.vue'
+import { getProducts } from '@/api/product'
+export default {
+  components: {
+    productModelModal
+  },
+  data () {
+    return {
+      modelColumns: [
+        {
+          title: '产品号',
+          dataIndex: 'productNumber',
+          key: 'productNumber',
+          align: 'center'
+        },
+        {
+          title: '产品型号',
+          dataIndex: 'productModel',
+          key: 'productModel',
+          align: 'center'
+        },
+        {
+          title: '品牌',
+          dataIndex: 'productBrand',
+          key: 'productBrand',
+          align: 'center'
+        },
+        {
+          title: '品牌简称',
+          dataIndex: 'name',
+          key: 'name',
+          align: 'center'
+        },
+        {
+          title: '出厂价格',
+          dataIndex: 'productPrice',
+          key: 'productPrice',
+          align: 'center'
+        },
+        {
+          title: '控制方案',
+          dataIndex: 'productControlPlan',
+          key: 'productControlPlan',
+          align: 'center'
+        },
+        {
+          title: '操作',
+          width: '100px',
+          dataIndex: 'action',
+          scopedSlots: { customRender: 'action' },
+          align: 'center'
+        }
+      ],
+      modelData: [],
+      modalVisible: false,
+      modalIndex: 1,
+      modalData: {}
+    }
+  },
+  methods: {
+    async getModel () {
+      const res = await getProducts()
+      if (res.status === 200) {
+        this.modelData = res.data.content
+      }
+      console.log('产品型号库', res)
+    },
+    openEditModal (index, record) {
+      // console.log(record)
+      if (index === 'add') {
+        this.modalIndex = 1
+        this.modalData = {}
+      } else if (index === 'edit') {
+        this.modalIndex = 2
+        this.modalData = JSON.parse(JSON.stringify(record))
+      }
+      this.modalVisible = true
+    },
+    closeEditModal () {
+      this.modalVisible = false
+      this.getModel()
+    },
+    delProduct (data) {
+      console.log('删除', data)
+      this.getModel()
+    }
+  },
+  created () {
+  },
+  mounted () {
+    this.getModel()
+  }
+}
+</script>
+<style lang="scss">
+
+</style>

@@ -113,8 +113,8 @@
           <a-tag v-else-if="!record.disabled">{{ text | fliterIndexType }}</a-tag>
           <a-tag v-else class="disabled-text">{{ text | fliterIndexType }}</a-tag>
         </span>
-        <span slot="remark" slot-scope="text, record">
-          <a-textarea :disabled="record.disabled" :defaultValue="record.remark" placeholder="请输入备注" auto-size v-model="record.remark"/>
+        <span slot="meaning" slot-scope="text, record">
+          <a-textarea :disabled="record.disabled" :defaultValue="record.meaning" placeholder="请输入指标意义" auto-size v-model="record.meaning"/>
         </span>
         <span slot="operation" slot-scope="text, record">
           <a @click="handleOnDisableClicked(record, !record.disabled)">
@@ -223,9 +223,9 @@ const columns = [
   },
   {
     title: '备注',
-    dataIndex: 'remark',
+    dataIndex: 'meaning',
     align: 'center',
-    scopedSlots: { customRender: 'remark' }
+    scopedSlots: { customRender: 'meaning' }
   },
   {
     title: '操作',
@@ -438,7 +438,7 @@ export default {
           indexId: index.id,
           isIndex: true,
           name: index.name,
-          remark: index.remark,
+          meaning: index.meaning,
           unit: index.unit,
           isChecked: false,
           type: parseIndexType(index.type),
@@ -486,7 +486,7 @@ export default {
         indexId: null,
         isIndex: false,
         name: '',
-        remark: '',
+        meaning: '',
         unit: '',
         isChecked: false,
         type: 'input',
@@ -536,7 +536,7 @@ export default {
                 name: itemVal.name,
                 type: itemVal.type,
                 unit: itemVal.unit,
-                remark: itemVal.remark,
+                remark: itemVal.meaning,
                 options: [],
                 disabled: itemVal.disabled
               }

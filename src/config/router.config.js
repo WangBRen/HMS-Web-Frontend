@@ -34,17 +34,17 @@ if (domain.includes('aftersale')) {
                 keepAlive: true,
                 permission: ['after_sales_repair']
               }
-            },
-            {
-              path: '/afterSale/saleInstall',
-              name: 'manage',
-              component: () => import('@/views/afterSale/saleInstall'),
-              meta: {
-                title: 'menu.afterSale.install',
-                keepAlive: true,
-                permission: ['after_sales_install']
-              }
             }
+            // {
+            //   path: '/afterSale/saleInstall',
+            //   name: 'manage',
+            //   component: () => import('@/views/afterSale/saleInstall'),
+            //   meta: {
+            //     title: 'menu.afterSale.install',
+            //     keepAlive: true,
+            //     permission: ['after_sales_install']
+            //   }
+            // }
           ]
         },
         {
@@ -74,6 +74,67 @@ if (domain.includes('aftersale')) {
                 keepAlive: true,
                 permission: ['after_sales_guide']
               }
+            }
+          ]
+        },
+        {
+          path: '/productIn',
+          component: RouteView,
+          redirect: '/productIn/products',
+          name: 'products',
+          meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          },
+          children: [
+            {
+              path: '/productIn/products',
+              name: 'products',
+              component: () => import('@/views/product/productManage'),
+              meta: {
+                title: '设备生产',
+                keepAlive: true,
+                permission: ['after_sales_part']
+              }
+            },
+            {
+              path: '/productIn/productModel',
+              name: 'productModel',
+              component: () => import('@/views/product/productModel '),
+              meta: {
+                title: '产品型号库',
+                keepAlive: true,
+                permission: ['after_sales_repair']
+              }
+            }
+          ]
+        },
+        {
+          path: '/product',
+          component: RouteView,
+          redirect: '/product/productOut',
+          name: 'productOut',
+          meta: { title: '出库管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          },
+          children: [
+            {
+              path: '/product/productOut',
+              name: 'productOut',
+              component: () => import('@/views/product/productOut'),
+              meta: {
+                title: '出库订单',
+                keepAlive: true,
+                permission: ['after_sales_part']
+              }
+            },
+            {
+              path: '/product/productManage',
+              name: 'productManage',
+              component: () => import('@/views/product/productManage'),
+              meta: {
+                title: '设备运营',
+                keepAlive: true,
+                permission: ['after_sales_part']
+              },
+              props: true
             }
           ]
         },
@@ -374,7 +435,7 @@ if (domain.includes('aftersale')) {
           hidden: true,
           path: '/afterSale',
           component: RouteView,
-          redirect: '/afterSale/saleInstall',
+          redirect: '/afterSale/saleRepair',
           name: 'afterSale',
           meta: { title: 'menu.afterSale', icon: 'schedule', keepAlive: true, permission: ['after_sales_manage']
           },
@@ -388,17 +449,17 @@ if (domain.includes('aftersale')) {
                 keepAlive: true,
                 permission: ['after_sales_repair']
               }
-            },
-            {
-              path: '/afterSale/saleInstall',
-              name: 'manage',
-              component: () => import('@/views/afterSale/saleInstall'),
-              meta: {
-                title: 'menu.afterSale.install',
-                keepAlive: true,
-                permission: ['after_sales_install']
-              }
             }
+            // {
+            //   path: '/afterSale/saleInstall',
+            //   name: 'manage',
+            //   component: () => import('@/views/afterSale/saleInstall'),
+            //   meta: {
+            //     title: 'menu.afterSale.install',
+            //     keepAlive: true,
+            //     permission: ['after_sales_install']
+            //   }
+            // }
           ]
         },
         {

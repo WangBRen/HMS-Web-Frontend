@@ -216,7 +216,7 @@
                 <span >暴露史：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index" v-for="(item,index) in healthHistoryData.exposureHistory" :key="index">【{{ item.species }}】{{ item.specificName }}、</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.exposureHistory" :key="index">【{{ item.species }}】{{ item.specificName }}；</span>
               </a-col>
             </a-row>
             <a-row style="height: 30px;">
@@ -237,7 +237,7 @@
               </a-col>
               <a-col :span="20">
                 <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.operationHistory" :key="index">
-                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}
+                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}；
                 </span>
               </a-col>
             </a-row>
@@ -247,7 +247,7 @@
               </a-col>
               <a-col :span="20">
                 <span class="info_index" v-for="(item,index) in healthHistoryData.pastHistory.traumaHistory" :key="index">
-                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}
+                  <a-tag>{{ item.name }}</a-tag>{{ item.time | moment('YYYY年MM月') }}；
                 </span>
               </a-col>
             </a-row>
@@ -267,7 +267,7 @@
               </a-col>
               <a-col :span="20">
                 <span class="info_index" v-for="(item,index) in healthHistoryData.familyHistory" :key="index">
-                  {{ item.relation }} <a-tag color="blue" v-for="(item2,index2) in item.content" :key="index2">{{ item2 }}</a-tag>、
+                  {{ item.relation }} <a-tag color="blue" v-for="(item2,index2) in item.content" :key="index2">{{ item2 }}</a-tag>；
                 </span>
               </a-col>
             </a-row>
@@ -295,7 +295,7 @@
                 <span >医疗支付方式：</span>
               </a-col>
               <a-col :span="20">
-                <span class="info_index" v-for="(item,index) in healthHistoryData.paymentMethod" :key="index">{{ item }}、</span>
+                <span class="info_index" v-for="(item,index) in healthHistoryData.paymentMethod" :key="index">{{ item }}；</span>
                 <span>{{ healthHistoryData.otherPayMethod }}</span>
               </a-col>
             </a-row>
@@ -311,14 +311,14 @@ import { getHealthHistory } from '@/api/customer'
 export default {
     props: {
       seeVisible: {
-          type: Boolean,
-          default: false
+        type: Boolean,
+        default: false
       },
       seeData: {
-          type: Object,
-          default: function () {
+        type: Object,
+        default: function () {
           return {}
-          }
+        }
       },
       customerId: {
         type: Number,
@@ -327,36 +327,36 @@ export default {
     },
     filters: {
     filterBirth: function (value) {
-        const data = new Date(value)
-        const year = data.getFullYear()
-        const month = data.getMonth() + 1
-        const day = data.getDay()
-    //   console.log(year + '年' + month + '月' + day + '日')
-        return year + '年' + month + '月' + day + '日'
+      const data = new Date(value)
+      const year = data.getFullYear()
+      const month = data.getMonth() + 1
+      const day = data.getDate()
+      // console.log(year + '年' + month + '月' + day + '日')
+      return year + '年' + month + '月' + day + '日'
     },
     filterAge: function (value) {
-        const userYear = new Date(value).getFullYear()
-        const userMonth = new Date(value).getMonth() + 1
-        const userDay = new Date(value).getDay()
-        const nowDate = new Date()
-        const nowMonth = nowDate.getMonth() + 1
-        const nowDay = nowDate.getDate
-        let age = nowDate.getFullYear() - userYear
-        if (nowMonth < userMonth || (userMonth === nowMonth && nowDay < userDay)) {
+      const userYear = new Date(value).getFullYear()
+      const userMonth = new Date(value).getMonth() + 1
+      const userDay = new Date(value).getDay()
+      const nowDate = new Date()
+      const nowMonth = nowDate.getMonth() + 1
+      const nowDay = nowDate.getDate
+      let age = nowDate.getFullYear() - userYear
+      if (nowMonth < userMonth || (userMonth === nowMonth && nowDay < userDay)) {
         return age--
-        } else {
+      } else {
         return age
-        }
+      }
     }
     },
     data () {
     return {
-        labelCol: { span: 6 },
-        wrapperCol: { span: 16 },
-        healthHistoryData: {
-          drugAllergyHistory: []
-        },
-        showHistory: false
+      labelCol: { span: 6 },
+      wrapperCol: { span: 16 },
+      healthHistoryData: {
+        drugAllergyHistory: []
+      },
+      showHistory: false
     }
     },
     methods: {

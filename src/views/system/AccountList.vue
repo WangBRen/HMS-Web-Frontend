@@ -59,11 +59,11 @@
           @confirm="statusDisable(record)"
         >
           <a >禁用</a>
-          |
+          <span v-if="!domin.includes('aftersale')"> | </span>
         </a-popconfirm>
         <a v-else>---</a>
 
-        <a @click="openDuty(record)">家庭分配</a>
+        <a @click="openDuty(record)" v-if="!domin.includes('aftersale')">家庭分配</a>
       </span>
     </a-table>
 
@@ -125,8 +125,12 @@ const columns = [
   },
   {
     title: '用户名',
-    dataIndex: 'userInfo.name',
+    dataIndex: 'nickname',
     scopedSlots: { customRender: 'nickname' }
+  },
+  {
+    title: '姓名',
+    dataIndex: 'userInfo.name'
   },
   {
     title: '用户角色',
@@ -212,22 +216,36 @@ export default {
       selectedRowKeys: [],
       selectedRows: [],
       dutyVisible: false,
-      accountCheckData: {}
+      accountCheckData: {},
+      domin: ''
     }
   },
   filters: {
   },
   mounted () {
+    this.domin = window.location.host
     this.getAccount()
   },
   created () {
     getRoleList().then(res => {
       this.roles = res.data || []
-      this.role.list = (res.data || []).filter(role => role.name !== 'root')
+      this.role.list = (res.data || []).filter(role => {
+        if (role.name !== 'root') {
+          if (this.domin.includes('aftersale')) {
+            if (role.displayName.includes('售后')) {
+              return role
+            }
+          } else {
+            if (role.displayName.indexOf('售后') === -1) {
+              return role
+            }
+          }
+        }
+      })
       if (this.role.list.length > 0) {
         this.role.initialValue = this.role.list[0].id
       }
-      // console.log('getRoleList.call()', res.data)
+      console.log('getRoleList.call()', res.data)
     })
     this.$setPageDataLoader(this.getAccount)
   },
@@ -300,9 +318,26 @@ export default {
       }
       getUserList(pages).then(res => {
         if (res.status === 200) {
-          // console.log(res.data)
-          this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-          this.pagination.total = res.data.totalElements
+          const size = res.data.totalElements > 0 ? res.data.totalElements : 1
+          const status = this.checkState === 'all' ? null : this.checkState
+          const name = this.checkName !== '' ? this.checkName : null
+          getUserList({ page: 1, size: size, status: status, name: name }).then(res => {
+            // console.log(res.data)
+            this.accountData = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+            this.accountData = this.accountData.filter(item => {
+              if (this.domin.includes('aftersale')) {
+                if (item.roleName.includes('After_sales')) {
+                  return item
+                }
+              } else {
+                if (item.roleName.indexOf('After_sales') === -1) {
+                  return item
+                }
+              }
+            })
+            console.log('this.accountData', this.accountData)
+            this.pagination.total = this.accountData.length
+          })
         } else {
           this.$message.error('搜索失败' + res.message)
         }

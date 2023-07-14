@@ -50,7 +50,7 @@
         </div>
         <div v-show="current === 1">
           <div style="width:100%;height:800px;overflow-y:auto">
-            <div style="height:1000px;pointer-events: none;">
+            <div style="height:3000px;pointer-events: none;overflow-y: hidden;">
               <object type="text/html" :data="previewUrl" width="100%" height="100%" scroll="none"></object>
             </div>
           </div>

@@ -2,75 +2,80 @@
   <div>
     <a-modal
       :visible="coachingVisible"
-      :title="`健康指导${chronicName}`"
+      :title="`健康指导${chronicName}${level?level+'级':''}`"
       :ok-button-props="{ props: { disabled: disabled } }"
       @cancel="closeCoachingModel"
-      :width="900"
+      :width="1200"
       centered
       @ok="handleOk"
     >
-      <a-card title="基础信息" :loading="loading" class="card">
-        <a-row :gutter="24">
-          <a-col :span="8">
-            <span class="basic-info-label">姓名：</span>
-            <span class="basic-info-value">{{ baseInfo.name }}</span>
-          </a-col>
-          <a-col :span="8">
-            <span class="basic-info-label">性别：</span>
-            <span class="basic-info-value">{{ baseInfo.gender }}</span>
-          </a-col>
-          <a-col :span="8">
-            <span class="basic-info-label">年龄：</span>
-            <span class="basic-info-value">{{ userAge }}</span>
-          </a-col>
-          <a-col :span="8">
-            <span class="basic-info-label">血型：</span>
-            <span class="basic-info-value">{{ baseInfo.aboBloodType }}</span>
-          </a-col>
-          <a-col :span="8">
-            <span class="basic-info-label">本人电话：</span>
-            <span class="basic-info-value">{{ baseInfo.phoneNumber }}</span>
-          </a-col>
-          <a-col :span="8">
-            <span class="basic-info-label">家人电话：</span>
-            <span class="basic-info-value">{{ baseInfo.contactNumber }}</span>
-          </a-col>
-        </a-row>
-      </a-card>
-      <div style="margin: 24px 0"></div>
-      <!-- <div v-if="diseaseId < 0">
-        <span>选择需要指导的慢病：</span>
-        <a-select
-          show-search
-          placeholder="请选择"
-          :value="selectedData"
-          option-filter-prop="children"
-          style="width: 200px"
-          :filter-option="filterOption"
-          @select="handleChange"
-        >
-          <a-select-option v-for="item in chronicSelectData" :key="item">{{ item }}</a-select-option>
-        </a-select>
-      </div> -->
-      <div style="margin: 24px 0"></div>
-      <a-textarea
-        v-model="lifeTemplate"
-        :loading="loading"
-        placeholder="请输入生活指导..."
-        :auto-size="{ minRows: 6, maxRows: 20 }"
-      />
-      <a-textarea
-        v-model="sportTemplate"
-        :loading="loading"
-        placeholder="请输入运动指导..."
-        :auto-size="{ minRows: 6, maxRows: 20 }"
-      />
-      <a-textarea
-        v-model="dietTemplate"
-        :loading="loading"
-        placeholder="请输入饮食指导..."
-        :auto-size="{ minRows: 6, maxRows: 20 }"
-      />
+      <div style="padding: 10px 50px;">
+        <a-card title="基础信息" :loading="loading" class="card">
+          <a-row :gutter="24">
+            <a-col :span="8">
+              <span class="basic-info-label">姓名：</span>
+              <span class="basic-info-value">{{ baseInfo.name }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">性别：</span>
+              <span class="basic-info-value">{{ baseInfo.gender }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">年龄：</span>
+              <span class="basic-info-value">{{ userAge }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">血型：</span>
+              <span class="basic-info-value">{{ baseInfo.aboBloodType }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">本人电话：</span>
+              <span class="basic-info-value">{{ baseInfo.phoneNumber }}</span>
+            </a-col>
+            <a-col :span="8">
+              <span class="basic-info-label">家人电话：</span>
+              <span class="basic-info-value">{{ baseInfo.contactNumber }}</span>
+            </a-col>
+          </a-row>
+        </a-card>
+        <div style="margin: 24px 0"></div>
+        <!-- <div v-if="diseaseId < 0">
+          <span>选择需要指导的慢病：</span>
+          <a-select
+            show-search
+            placeholder="请选择"
+            :value="selectedData"
+            option-filter-prop="children"
+            style="width: 200px"
+            :filter-option="filterOption"
+            @select="handleChange"
+          >
+            <a-select-option v-for="item in chronicSelectData" :key="item">{{ item }}</a-select-option>
+          </a-select>
+        </div> -->
+        <div style="margin: 24px 0"></div>
+        <div class="title">生活指导</div>
+        <a-textarea
+          v-model="lifeTemplate"
+          :loading="loading"
+          placeholder="请输入生活指导..."
+          :auto-size="{ minRows: 6, maxRows: 20 }"
+        />
+        <div class="title">运动指导</div>
+        <a-textarea
+          v-model="sportTemplate"
+          :loading="loading"
+          placeholder="请输入运动指导..."
+          :auto-size="{ minRows: 6, maxRows: 20 }"
+        />
+        <div class="title">饮食指导</div>
+        <a-textarea
+          v-model="dietTemplate"
+          :loading="loading"
+          placeholder="请输入饮食指导..."
+          :auto-size="{ minRows: 6, maxRows: 20 }"
+        />
+      </div>
     </a-modal>
     <HealthCoachingSend
       v-if="sendVisible"
@@ -130,6 +135,7 @@ export default {
       sportTemplate: '',
       dietTemplate: '',
       chronicName: '',
+      level: null,
       chronicSelectData: [],
       payload: {
         myToken: '',
@@ -166,8 +172,13 @@ export default {
       // 请求话术模板
       const resp = await apiGuidanceTemplates(this.customerId, this.chronicId)
       if (resp.status === 200) {
-        console.log('data', resp)
-        this.templateData = resp.data
+        // console.log('data1', resp.data)
+        // console.log('data2', JSON.parse(resp.data))
+        const filrerData = JSON.parse(resp.data)
+        this.lifeTemplate = filrerData.lifeTemplate
+        this.dietTemplate = filrerData.dietTemplate
+        this.sportTemplate = filrerData.sportTemplate
+        // this.templateData = resp.data
       } else {
         this.disabled = true
         this.$notification.info({
@@ -178,15 +189,19 @@ export default {
       // 获取慢病名称
       const res = await apiChronicDetail(this.customerId, this.chronicId)
       if (res.status === 200) {
+        console.log(res)
         this.chronicName = '【' + res.data.chronicDisease.name + '】'
+        this.level = res.data.level.level
       } else {
         this.$message.error('慢病名称获取失败')
       }
     },
     loadData () {
       this.chronicName = ''
-      // this.selectedData = ''
-      this.templateData = ''
+      this.level = ''
+      this.lifeTemplate = ''
+      this.dietTemplate = ''
+      this.sportTemplate = ''
       if (this.diseaseId > 0) {
         this.chronicId = this.diseaseId
         this.doRequest()
@@ -282,5 +297,12 @@ export default {
   width: 80px;
   font-weight: 500;
   margin-bottom: 12px;
+}
+.title {
+  color: rgba(0,0,0,.85);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 2;
+  margin-top: 20px;
 }
 </style>

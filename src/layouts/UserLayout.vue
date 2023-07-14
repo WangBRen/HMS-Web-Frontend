@@ -9,7 +9,7 @@
         <div class="top">
           <div class="header">
             <a href="/">
-              <span class="title" v-if="domin.includes('aftersale')">智能马桶信息管理</span>
+              <span class="title" v-if="domin.includes('aftersale')">攸太售后管理系统</span>
               <img v-else src="~@/assets/logo.svg" class="logo" alt="logo"></img>
             </a>
           </div>

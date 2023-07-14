@@ -80,7 +80,7 @@ export default {
   },
   data () {
     return {
-      product: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5'],
+      product: ['全类目', 'A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5'],
       labelCol: { span: 5 },
       wrapperCol: { span: 17 },
       form: {
@@ -103,7 +103,8 @@ export default {
         elseBelongPart: [{ required: true, message: '请输入要添加的类名', trigger: 'blur' }],
         belongProduct: [{ required: true, message: '请输入所属型号', trigger: 'change' }],
         price: [{ required: true, message: '请输入报价', trigger: 'blur' }]
-      }
+      },
+      categoryList: []
     }
   },
   mounted () {
@@ -112,7 +113,9 @@ export default {
       this.form = this.partData
       this.partId = this.partData.id
     }
-    this.categorys.push('添加其他类')
+    if (!this.categorys.includes('添加其他类')) {
+      this.categorys.push('添加其他类')
+    }
   },
   methods: {
     handleCancel () {
@@ -167,6 +170,8 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.ant-input-number{
+  width: 100%;
+}
 </style>

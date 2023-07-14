@@ -1,6 +1,7 @@
 <template>
   <div>
     <a-modal
+      title="新建维修工单"
       :width="1000"
       :visible="repairAddVisible"
       v-if="repairAddVisible"
@@ -96,8 +97,8 @@
               <div>
                 <span>
                   <a-radio-group name="radioGroup" v-model="infoForm.monthlyStatement">
-                    <a-radio :value="true">是</a-radio>
-                    <a-radio :value="false">否</a-radio>
+                    <a-radio @click.native.prevent="onStatement(true)" :value="true">是</a-radio>
+                    <a-radio @click.native.prevent="onStatement(false)" :value="false">否</a-radio>
                   </a-radio-group>
                 </span>
                 <span style="color: red;">（慎重选择）</span>
@@ -161,6 +162,7 @@
 </template>
 <script>
 import { addAfterSale as apiAddAfterSale, getGuide as apiGetGuide } from '@/api/afterSale'
+import { brandData } from './saleRepairData'
 import moment from 'moment'
 
 export default {
@@ -173,7 +175,7 @@ export default {
   data () {
     return {
       addressIndex: 2,
-      labelCol: { span: 7 },
+      labelCol: { span: 8 },
       wrapperCol: { span: 16 },
       infoForm: {
         customerName: '', // 客户名称
@@ -223,127 +225,16 @@ export default {
         ]
       },
       // 品牌库
-      brandArrs: [
-        {
-          name: '杜马',
-          modelArr: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'T1', 'T5']
-        },
-        {
-          name: '德希顿',
-          modelArr: ['A4', 'A5', 'A6', '202', 'U5-03', 'U6-03', 'U7', 'K4', 'K5', 'K6', '1012', '2023']
-        },
-        {
-          name: '攸太',
-          modelArr: ['A4', 'A5', 'A6', 'A6+', '202', 'U1', 'U1-A', 'U1-b', 'U2', 'U3', 'U5-03', 'U6-A', 'U6-b', 'U6-03', 'U7', 'U8', 'K3', 'K4', 'K5', 'K6', '1012', '2023', 'IUW', 'T1', 'T5']
-        },
-        {
-          name: '摩琥',
-          modelArr: ['A4', 'A5', 'A6', '202', 'K4', 'K5']
-        },
-        {
-          name: '北控',
-          modelArr: ['A4', 'A5', 'A6']
-        },
-        {
-          name: '法仕德',
-          modelArr: ['A4', 'A5', 'A6', 'U1', 'U2', 'U6-03', 'K4']
-        },
-        {
-          name: '徳斯图',
-          modelArr: ['A4', 'A5', 'A6', 'K5']
-        },
-        {
-          name: '舒艾莎',
-          modelArr: ['A4', 'A5', 'A6', 'U1', 'U2', 'U6-03']
-        },
-        {
-          name: '北极熊',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7']
-        },
-        {
-          name: '芙林',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7']
-        },
-        {
-          name: '麦特拉赫',
-          modelArr: ['U1', 'U2', 'U3', 'U7']
-        },
-        {
-          name: '嘉饰缇娜',
-          modelArr: ['U1', 'U2', 'U3']
-        },
-        {
-          name: '有质',
-          modelArr: ['U1', 'U2', 'U3', 'K5']
-        },
-        {
-          name: '一米',
-          modelArr: ['U1', 'U2', 'U3', 'U6-03', 'K4', 'K5']
-        },
-        {
-          name: '德爽康',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03']
-        },
-        {
-          name: '哈雅',
-          modelArr: ['U1', 'U2', 'U6-03', 'U7', 'K4']
-        },
-        {
-          name: '史密斯',
-          modelArr: ['U1', 'U2', 'U6-03', 'U7']
-        },
-        {
-          name: '犀鸟',
-          modelArr: ['U1', 'U2', 'U3', 'U5-03', 'U6-03', 'U7', 'K4', 'K5']
-        },
-        {
-          name: '摩柏',
-          modelArr: ['U1', 'U2', 'K4', 'K5']
-        },
-        {
-          name: '梵云优尚',
-          modelArr: ['U2', 'U3', 'K5']
-        },
-        {
-          name: '事达',
-          modelArr: ['U2', 'U3', 'U5-03', 'U6-03', 'K5']
-        },
-        {
-          name: '亨本',
-          modelArr: ['U2', 'K4']
-        },
-        {
-          name: '法兰多',
-          modelArr: ['U3', 'U5-03']
-        },
-        {
-          name: '德朗斯汀',
-          modelArr: ['U6-03', 'K4', 'K5']
-        },
-        {
-          name: '博蒙',
-          modelArr: ['K4', 'K5']
-        },
-        {
-          name: '德斯图',
-          modelArr: ['K4']
-        },
-        {
-          name: '蒙娜丽莎',
-          modelArr: ['K4', 'K5']
-        },
-        {
-          name: '卡恩诺',
-          modelArr: ['K4', 'K5']
-        }
-      ],
+      brandArrs: brandData,
       // 产品库
       modelArr: []
     }
   },
   methods: {
     handleCancel () {
+      this.addressIndex = 2
       this.$refs.infoForm.resetFields()
+      this.infoForm.serviceAddress = ''
       this.infoForm.uploadImage = []
       this.$emit('closeAddRepair')
     },
@@ -405,6 +296,13 @@ export default {
     },
     disabledDate (current) {
       return current && current > moment().endOf('day')
+    },
+    onStatement (data) {
+      if (data === this.infoForm.monthlyStatement) {
+        this.infoForm.monthlyStatement = null
+      } else {
+        this.infoForm.monthlyStatement = data
+      }
     }
   },
   created () {
@@ -417,10 +315,12 @@ export default {
         // console.log('res', res.data)
       }
     })
+    // console.log('111')
+    // console.log(this.$data)
+    // console.log(this.$options.data())
   },
   watch: {
     'infoForm.receiveAddress' (newData, oldData) {
-    //   console.log(newData, oldData)
       if (this.addressIndex === 1) {
         this.infoForm.serviceAddress = newData
       }

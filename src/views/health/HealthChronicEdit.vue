@@ -98,7 +98,9 @@
         </a-row>
         <a-row v-if="newIndex.length">
           <a-col :span="4" :push="10">
-            <a-button @click="okIndex">确定</a-button>
+            <a-popconfirm title="确定增加该指标吗？" @confirm="okIndex">
+              <a-button>确定</a-button>
+            </a-popconfirm>
           </a-col>
         </a-row>
         <a-row v-if="!newIndex.length">
@@ -113,7 +115,7 @@
   </div>
 </template>
 <script>
-import { getHealthIndex } from '@/api/health'
+// import { getHealthIndex } from '@/api/health'
 import { editChronic as apiEditChronic, editChronicIndex as apiEditChronicIndex } from '@/api/chronic'
 // import { editChronicIndex as apiEditChronicIndex } from '@/api/chronic'
 
@@ -128,6 +130,11 @@ export default {
       default: function () {
         return {}
       }
+    },
+    // 总的指标数组
+    indexArr: {
+      type: Array,
+      required: true
     }
   },
   filters: {
@@ -149,8 +156,7 @@ export default {
   },
   data () {
     return {
-      // editVisible: false,
-      indexArr: [],
+      // indexArr: [],
       labelCol: { span: 4 },
       wrapperCol: { span: 16 },
       loadList: [],
@@ -159,32 +165,32 @@ export default {
     }
   },
   mounted () {
-    // console.log('进入编辑')
-    getHealthIndex().then(res => {
-      if (res.status === 200) {
-        const resData = res.data
-        // console.log('接口数据', resData)
-        for (var i = 0; i < resData.length; i++) {
-          if (resData[i].items) {
-            // console.log('指标', resData[i].items)
-            for (var j = 0; j < resData[i].items.length; j++) {
-              // console.log('指标', resData[i].items[j].name)
-              const firstIndex = resData[i]
-              const secondIndex = resData[i].items[j]
-              this.indexArr.push({
-                category: firstIndex.name,
-                id: secondIndex.id,
-                name: secondIndex.name,
-                result: secondIndex.result,
-                type: secondIndex.type,
-                unit: secondIndex.unit
-              })
-            }
-          }
-        }
-      //   console.log('指标', this.indexArr)
-      }
-    })
+    // getHealthIndex().then(res => {
+    //   if (res.status === 200) {
+    //     console.log('111')
+    //     const resData = res.data
+    //     // console.log('接口数据', resData)
+    //     for (var i = 0; i < resData.length; i++) {
+    //       if (resData[i].items) {
+    //         // console.log('指标', resData[i].items)
+    //         for (var j = 0; j < resData[i].items.length; j++) {
+    //           // console.log('指标', resData[i].items[j].name)
+    //           const firstIndex = resData[i]
+    //           const secondIndex = resData[i].items[j]
+    //           this.indexArr.push({
+    //             category: firstIndex.name,
+    //             id: secondIndex.id,
+    //             name: secondIndex.name,
+    //             result: secondIndex.result,
+    //             type: secondIndex.type,
+    //             unit: secondIndex.unit
+    //           })
+    //         }
+    //       }
+    //     }
+    //   //   console.log('指标', this.indexArr)
+    //   }
+    // })
   },
   methods: {
     handleOk () {
@@ -200,11 +206,10 @@ export default {
         if (res.status === 200) {
           // console.log('编辑成功')
           this.$message.info('成功编辑慢病')
-          this.$parent.getChronic() // 编辑后触发父组件刷新
+          this.$parent.getChronic2() // 编辑后触发父组件刷新
           // this.$parent.closeEditModal()
           this.loadList = []
           this.$emit('closeEditModal')
-          // this.editVisible = false
         } else {
           this.$message.error(res.message)
         }
@@ -213,10 +218,8 @@ export default {
       // console.log('确定', this.newIndex)
     },
     handleCancel () {
-      // this.editVisible = false
       this.loadList = []
       this.$emit('closeEditModal')
-      // console.log('取消')
     },
     // 将输入的内容与显示的内容进行匹配
     filterOption (value, option) {
@@ -259,7 +262,7 @@ export default {
         if (res.status === 201) {
           this.$message.info('编辑慢病指标成功')
           this.newIndex.length = 0
-          this.$parent.getChronic() // 编辑后触发父组件刷新
+          this.$parent.getChronic2() // 编辑后触发父组件刷新
           this.$parent.refEditDate(this.editData)
           // console.log('数据', this.editData)
         } else {

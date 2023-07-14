@@ -1,12 +1,12 @@
 <template>
   <div>
     <a-card>
-      <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'first')">新建问题标题</a-button>
+      <a-button style="margin-right: 10px;" type="primary" @click="editQusetion('', 'add')">新建【{{ getFirstName() }}】问题</a-button>
       <a-button style="margin-right: 10px;" @click="openModal('edit', 'first')">编辑【{{ getFirstName() }}】名称</a-button>
-      <a-button style="float: right;" type="primary" @click="editQusetion('', 'add')">【{{ getFirstName() }}】新建问题</a-button>
       <a-popconfirm title="确定删除？" @confirm="delFirst()">
         <a-button>删除【{{ getFirstName() }}】</a-button>
       </a-popconfirm>
+      <a-button style="float: right;" type="primary" @click="openModal('add', 'first')">新建售后问题分类</a-button>
       <a-tabs v-model="firstTabKey">
         <a-tab-pane v-for="tab in questData" :key="tab.id" :tab="tab.name">
           <!-- <a-button style="margin-right: 10px;" type="primary" @click="openModal('add', 'second')">新建异常现象二级</a-button>
@@ -53,13 +53,13 @@
     >
       <a-row>
         <a-col v-if="transferData.type === 'first'" :span="4" style="text-align: right;line-height: 30px;">
-          异常现象:&nbsp;
+          问题分类:&nbsp;
         </a-col>
         <a-col v-else :span="4" style="text-align: right;line-height: 30px;">
           二级异常现象:&nbsp;
         </a-col>
         <a-col :span="20">
-          <a-input v-model="transferData.name" placeholder="输入异常现象" ></a-input>
+          <a-input v-model="transferData.name" placeholder="输入问题分类" ></a-input>
         </a-col>
       </a-row>
     </a-modal>
@@ -88,77 +88,7 @@ export default {
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
       },
-      questData: [
-        {
-          id: 1,
-          name: '漏水1',
-          children: [
-            {
-              id: 2,
-              name: '漏水11',
-              guides: [
-                {
-                  id: 3,
-                  name: '漏水111',
-                  locationWay: '定位方法',
-                  solution: '解决方案',
-                  remark: '备注',
-                  description: '描述',
-                  files: [
-                    {
-                      url: 'string'
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              id: 7,
-              name: '漏水12',
-              guides: [
-                {
-                  id: 8,
-                  name: '漏水112',
-                  locationWay: '定位方法',
-                  solution: '解决方案',
-                  remark: '备注',
-                  description: '描述',
-                  files: [
-                    {
-                      url: 'string'
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 4,
-          name: '漏水2',
-          children: [
-            {
-              id: 5,
-              name: '漏水21',
-              guides: [
-                {
-                  id: 6,
-                  name: '漏水211',
-                  locationWay: '定位方法',
-                  solution: '解决方案',
-                  remark: '备注',
-                  description: '描述',
-                  files: [
-                    {
-                      url: 'string'
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ],
+      questData: [],
       columns: [
         {
           title: '问题详细',
@@ -218,20 +148,20 @@ export default {
         return ''
       }
     },
-    getSecondName () {
-      let testData = []
-      this.questData.filter(item => {
-        if (item.id === this.firstTabKey) {
-          testData = item.children
-        }
-      })
-      const project = (testData || []).find(tab => tab.id === this.secondTabKey)
-      if (project) {
-        return project.name
-      } else {
-        return ''
-      }
-    },
+    // getSecondName () {
+    //   let testData = []
+    //   this.questData.filter(item => {
+    //     if (item.id === this.firstTabKey) {
+    //       testData = item.children
+    //     }
+    //   })
+    //   const project = (testData || []).find(tab => tab.id === this.secondTabKey)
+    //   if (project) {
+    //     return project.name
+    //   } else {
+    //     return ''
+    //   }
+    // },
     delQuestion (data) {
       // console.log(data)
       const id = data.id
@@ -275,6 +205,7 @@ export default {
       this.editVisible = false
     },
     openModal (index, type) {
+      // console.log(this.transferData)
       switch (index) {
         case 'add':
           this.transferData.name = ''
@@ -363,12 +294,12 @@ export default {
     getGuide () {
       apiGetGuide().then(res => {
         if (res.status === 200) {
-          console.log(res.data)
+          // console.log(res.data)
           this.questData = res.data
           if (this.questData.length !== 0) {
             this.firstTabKey = this.questData[0].id
-            if (this.questData[0].children.length !== 0) {
-              this.secondTabKey = this.questData[0].children[0].id
+            if (this.questData[0].guides.length !== 0) {
+              this.secondTabKey = this.questData[0].guides[0].id
             }
           }
         }
@@ -386,7 +317,7 @@ export default {
     delFirst () {
       for (let i = 0; i < this.questData.length; i++) {
         if (this.questData[i].id === this.firstTabKey) {
-          if (this.questData[i].children.length === 0) {
+          if (this.questData[i].guides.length === 0) {
             this.$message.info('可以删除')
             apiDelGuideLevel(this.firstTabKey).then(res => {
               if (res.status === 200) {
@@ -395,52 +326,53 @@ export default {
               }
             })
           } else {
-            this.$message.info('无法删除，该现象下数据不为空')
-          }
-        }
-      }
-    },
-    delSecond () {
-      let test = 0
-      for (let i = 0; i < this.questData.length; i++) {
-        if (this.questData[i].id === this.firstTabKey) {
-          for (let j = 0; j < this.questData[i].children.length; j++) {
-            if (this.questData[i].children[j].id === this.secondTabKey) {
-              test = this.questData[i].children[j].guides.length
-              if (test) {
-                this.$message.info('无法删除，该现象下数据不为空')
-              } else {
-                this.$message.info('可以删除')
-                apiDelGuideLevel(this.secondTabKey).then(res => {
-                  if (res.status === 200) {
-                    this.$message.success('删除成功')
-                    this.moveGetGuide()
-                  }
-                })
-              }
-            }
+            this.$message.info('无法删除，该类下问题不为空')
           }
         }
       }
     }
+    // delSecond () {
+    //   let test = 0
+    //   for (let i = 0; i < this.questData.length; i++) {
+    //     if (this.questData[i].id === this.firstTabKey) {
+    //       for (let j = 0; j < this.questData[i].children.length; j++) {
+    //         if (this.questData[i].children[j].id === this.secondTabKey) {
+    //           test = this.questData[i].children[j].guides.length
+    //           if (test) {
+    //             this.$message.info('无法删除，该现象下数据不为空')
+    //           } else {
+    //             this.$message.info('可以删除')
+    //             apiDelGuideLevel(this.secondTabKey).then(res => {
+    //               if (res.status === 200) {
+    //                 this.$message.success('删除成功')
+    //                 this.moveGetGuide()
+    //               }
+    //             })
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   },
   created () {
+    this.$setPageDataLoader(this.getGuide)
   },
   mounted () {
     this.getGuide()
   },
   watch: {
-    firstTabKey (newData, oldData) {
-      let testData = []
-      this.questData.filter(item => {
-        if (item.id === newData) {
-          testData = item.children
-          if (testData.length !== 0) {
-            this.secondTabKey = testData[0].id
-          }
-        }
-      })
-    }
+    // firstTabKey (newData, oldData) {
+    //   let testData = []
+    //   this.questData.filter(item => {
+    //     if (item.id === newData) {
+    //       testData = item.children
+    //       if (testData.length !== 0) {
+    //         this.secondTabKey = testData[0].id
+    //       }
+    //     }
+    //   })
+    // }
   }
 }
 </script>

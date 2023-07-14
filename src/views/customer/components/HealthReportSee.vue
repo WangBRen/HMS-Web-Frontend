@@ -4,10 +4,10 @@
       forceRender
       class="modal"
       v-model="seeReportVisible"
-      title="健康信息"
+      :title="`健康信息${param==='preview'?'预览':'查看'}`"
       :footer="null"
       @cancel="closeSeeModal"
-      :width="1150"
+      :width="1200"
     >
       <!-- <template slot="footer">
         <a-button @click="closeSeeModal">取消</a-button>
@@ -41,9 +41,16 @@
               <a-row>
                 <a-col class="project-header">
                   <a :id="item.indexProjectName" class="project-title">{{ item.indexProjectName }}</a>
+                  <span v-if="param==='preview'">
+                    <span v-for="project in formData.projects" :key="project.index">
+                      <span v-if="project.indexProjectName === item.indexProjectName">
+                        已填{{ project.items.length }}项 / 共{{ item.items.length }}项
+                      </span>
+                    </span>
+                  </span>
                 </a-col>
               </a-row>
-              <div style="padding: 0 10px">
+              <div style="padding: 0 10px 12px 10px">
                 <a-row>
                   <div class="index-title">
                     <a-col :span="7"><span>指标名称</span></a-col>
@@ -56,7 +63,7 @@
                 <!-- 指标 -->
                 <a-row>
                   <a-col class="rightBody" :span="24" v-for="items in item.items" :key="items.id">
-                    <a-row class="index-item">
+                    <a-row class="index-item" v-if="items.value || items.endResult">
                       <a-col :span="7">
                         <div class="index-item-title-wrapper">
                           <span> {{ items.name }} </span>
@@ -112,7 +119,7 @@
                 </a-row>
                 <!-- 诊断时间 -->
                 <a-row style="margin: 28px 0;">
-                  <a-col :span="6" :offset="18">
+                  <a-col :span="5" :offset="19">
                     <span>检测时间：</span>
                     <div style="float: right; margin-right: 12px;">{{ item.testAt | getMoment }}</div>
                   </a-col>
@@ -133,7 +140,7 @@
                   </div>
                   <div v-else>
                     <div v-for="i in items.result" :key="i.id">
-                      <div v-if="i.name ===items.endResult && i.remark !== ''" style="padding:5px 10px;">
+                      <div v-if="i.name ===items.endResult && i.remark" style="padding:5px 10px;">
                         <a-col :span="5" style="color:#00A3DB;padding: 10px;">
                           {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
                         </a-col>
@@ -178,7 +185,7 @@
                       </a-col>
                     </a-row>
                     <a-row style="margin: 28px 0;">
-                      <a-col :span="6" :offset="18">
+                      <a-col :span="5" :offset="19">
                         <span>检测时间：</span>
                         <div style="float: right; margin-right: 12px;">{{ formData.diseaseAt | getMoment }}</div>
                       </a-col>
@@ -209,7 +216,7 @@
                       </a-col>
                     </a-row>
                     <a-row style="margin: 28px 0;">
-                      <a-col :span="6" :offset="18">
+                      <a-col :span="5" :offset="19">
                         <span>检测时间：</span>
                         <div style="float: right; margin-right: 12px;">{{ formData.symptomAt | getMoment }}</div>
                       </a-col>
@@ -241,7 +248,8 @@ export default {
     return {
       seeReportVisible: false,
       formData: {},
-      healthIndex: []
+      healthIndex: [],
+      param: ''
     }
   },
   mounted () {
@@ -253,7 +261,9 @@ export default {
     })
   },
   methods: {
-    seeReportCom (data) {
+    seeReportCom (data, param) {
+      this.param = param
+      console.log('data', data)
       this.formData = {}
       this.formData = data
       this.formData.testData = []
@@ -269,7 +279,7 @@ export default {
               items: healthData[j].items
             }
             this.formData.testData.push(aa)
-            console.log('this.formData.testData', this.formData.testData)
+            // console.log('this.formData.testData', this.formData.testData)
           }
         }
       }
@@ -286,14 +296,23 @@ export default {
           for (var m = 0; m < this.formData.testData.length; m++) {
             for (var n = 0; n < this.formData.testData[m].items.length; n++) {
               // console.log(this.formData.testData[m].items[n].id)
-              if (arrData[k].items[l].healthIndexItem.id === this.formData.testData[m].items[n].id) {
+              var indexItemId = ''
+              if (param === 'preview') {
+                indexItemId = arrData[k].items[l].indexId
+                if (indexItemId === this.formData.testData[m].items[n].id) {
+                this.formData.testData[m].items[n].value = arrData[k].items[l].value
+                this.formData.testData[m].items[n].endResult = arrData[k].items[l].result
+              }
+              } else {
+                indexItemId = arrData[k].items[l].healthIndexItem.id
+                if (indexItemId === this.formData.testData[m].items[n].id) {
                 if (arrData[k].items[l].healthIndexItem.type === 'Report') {
                   this.formData.testData[m].items[n].value = JSON.parse(arrData[k].items[l].value)
                 } else {
                   this.formData.testData[m].items[n].value = arrData[k].items[l].value
                 }
-                // console.log('value', arrData[k].items[l])
                 this.formData.testData[m].items[n].endResult = arrData[k].items[l].result
+              }
               }
             }
           }
@@ -362,6 +381,9 @@ export default {
   color: white;
   border-radius: 2px;
   border-color: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .project-title{
   font-size: 18px;
@@ -406,10 +428,5 @@ export default {
   padding: 0 12px;
   line-height: 40px;
   margin-top: 10px;
-}
-.index-item-title-sider {
-  width: 8px;
-  height: 24px;
-  background: #00a0e9;
 }
 </style>

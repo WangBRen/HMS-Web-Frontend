@@ -9,7 +9,8 @@
                 placeholder="请输入关键字"
                 enter-button="查询"
                 :loading="loadingShow"
-                @search="onSearch"
+                @search="onQuery"
+                v-model="queryData"
               />
             </a-col>
             <a-col :span="4" style="line-height:32px;">
@@ -34,6 +35,13 @@
         :pagination="pagination"
         expandRowByClick
       >
+        <span slot="createdBy" slot-scope="record">
+          <span v-if="record.createdBy">
+            <span v-if="record.createdBy.userInfo">{{ record.createdBy.userInfo.name }}</span>
+            <span v-else>{{ record.createdBy.nickname }}</span>
+          </span>
+          <span v-else>---</span>
+        </span>
         <span slot="action" slot-scope="text, grecord">
           <a @click="handleAdd(grecord)">新增成员</a>
           <a-divider type="vertical" />
@@ -173,8 +181,11 @@ const columns = [
   { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
   {
     title: '创建者',
-    dataIndex: 'createdBy.nickname',
-    key: 'createdBy.nickname',
+    // dataIndex: 'createdBy.nickname',
+    // key: 'createdBy.nickname',
+    // dataIndex: 'createdBy.userInfo.name',
+    // key: 'createdBy.userInfo.name',
+    scopedSlots: { customRender: 'createdBy' },
     align: 'center'
   },
   { title: '成员数', dataIndex: 'members.length', key: 'members.length', align: 'center', width: 100, sorter: (a, b) => a.members.length - b.members.length },
@@ -284,7 +295,8 @@ export default {
         visible: false
       },
       dutyIndex: false,
-      loginName: null
+      loginName: null,
+      queryData: ''
     }
   },
   created () {
@@ -300,12 +312,12 @@ export default {
     },
     onPageChange (page, pageSize) {
       this.pagination.current = page
-       this.onSearch()
+      this.onSearch()
     },
     onSizeChange (current, pageSize) {
-        this.pagination.current = 1
-        this.pagination.pageSize = pageSize
-        this.onSearch()
+      this.pagination.current = 1
+      this.pagination.pageSize = pageSize
+      this.onSearch()
     },
     handleHealthData (record) {
       this.currentCustomerId = record.member.id
@@ -364,42 +376,37 @@ export default {
       // console.log('???', JSON.parse(JSON.stringify(grecord)))
     },
     onSearch (value) {
-      // console.log('value', value)
       // 判断是否属于自己管理
-      if (this.dutyIndex) {
-        const pages = {
-          page: this.pagination.current,
-          size: this.pagination.pageSize,
-          createdBy: this.loginName
-        }
-        apiCustomerSearch(value, pages).then(res => {
-          if (res.status === 200) {
-            this.loadingShow = false
-            this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-            this.pagination.total = res.data.totalElements
-            this.$message.success('数据加载成功')
-          } else {
-            this.$message.error('加载失败')
-          }
-        })
-        // console.log(pages, '展示自己管理的', this.loginName)
-      } else {
-        const pages = {
-          page: this.pagination.current,
-          size: this.pagination.pageSize,
-          createdBy: ''
-        }
-        apiCustomerSearch(value, pages).then(res => {
-          if (res.status === 200) {
-            this.loadingShow = false
-            this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
-            this.pagination.total = res.data.totalElements
-            this.$message.success('数据加载成功')
-          } else {
-            this.$message.error('加载失败')
-          }
-        })
+      const pages = {
+        page: this.pagination.current,
+        size: this.pagination.pageSize
       }
+      if (this.dutyIndex) {
+        pages.createdBy = this.loginName
+      } else {
+        pages.createdBy = ''
+      }
+      // 判断是否搜索
+      if (this.queryData) {
+        value = this.queryData
+      } else {
+        value = null
+      }
+      // console.log(pages)
+      apiCustomerSearch(value, pages).then(res => {
+        if (res.status === 200) {
+          this.loadingShow = false
+          this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })
+          this.pagination.total = res.data.totalElements
+          this.$message.success('数据加载成功')
+        } else {
+          this.$message.error('加载失败')
+        }
+      })
+    },
+    onQuery (value) {
+      this.pagination.current = 1
+      this.onSearch(value)
     },
     selectGroup (expanded, record) {
       this.selectGroupId = record.id

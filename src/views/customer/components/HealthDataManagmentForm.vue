@@ -504,7 +504,7 @@ export default {
       selectReport: []
     }
   },
-  created () {
+  mounted () {
     if (this.custId) {
       this.findCustomerHealthReports()
     }
@@ -594,7 +594,7 @@ export default {
       // 获取登陆账号，定义打印健康师
       getUserInfo().then(res => {
         if (res.status === 200) {
-          console.log('loginname', res.data.nickname)
+          // console.log('loginname', res.data.nickname)
           this.printdata.printName = res.data.nickname
           this.$forceUpdate() // 强刷，没这行代码，打印用户症状和用户诊断时不显示打印健康师
         }
@@ -678,11 +678,13 @@ export default {
       const disData = midData.map((item) => {
         if (item.dis) {
           let Files = ''
-          for (let i = 0; i < item.dis.diseaseFiles.length; i++) {
-            if (i + 1 === item.dis.diseaseFiles.length) {
-              Files += item.dis.diseaseFiles[i].fileName
-            } else {
-              Files += item.dis.diseaseFiles[i].fileName + '、'
+          if (item.dis.diseaseFiles !== null) {
+            for (let i = 0; i < item.dis.diseaseFiles.length; i++) {
+              if (i + 1 === item.dis.diseaseFiles.length) {
+                Files += item.dis.diseaseFiles[i].fileName
+              } else {
+                Files += item.dis.diseaseFiles[i].fileName + '、'
+              }
             }
           }
           const dis = {
@@ -690,11 +692,12 @@ export default {
             disTitle: item.dis.disease.title,
             diseaseAt: item.dis.diseaseAt,
             // disFiles: item.dis.diseaseFiles
-            disFiles: Files
+            disFiles: Files || '---'
             // disFiles: item.diseaseFiles.map((item) => {
             //   Files += item.fileName
             // })
           }
+          // console.log(dis)
           return dis
         }
       }).filter(item2 => item2 !== undefined)
@@ -841,6 +844,14 @@ export default {
           }
         })
       }
+    }
+  },
+  watch: {
+    openHealthvisible (newVal, oldVal) {
+      if (oldVal) {
+        this.pagination.current = 1
+      }
+      // console.log('newVal, oldVal', newVal, oldVal)
     }
   }
 }

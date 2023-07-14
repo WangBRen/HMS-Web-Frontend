@@ -20,7 +20,7 @@
           我们推荐使用这种方式进行 LOGO 和 title 自定义
     -->
     <template v-slot:menuHeaderRender>
-      <h1 v-if="domin.includes('aftersale')">智能马桶信息管理</h1>
+      <h1 v-if="domin.includes('aftersale')">攸太售后管理系统</h1>
       <div v-else>
         <logo-svg />
         <h1>{{ title }}</h1>

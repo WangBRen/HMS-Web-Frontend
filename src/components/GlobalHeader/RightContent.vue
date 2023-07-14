@@ -51,15 +51,12 @@ export default {
     setTimeout(() => {
       const userInfo = this.$store.getters.userInfo || {}
       // console.log('userInfo', userInfo)
-      if (userInfo.userInfo !== null) {
-        this.currentUser = { name: userInfo.userInfo.name }
-      } else {
-        this.currentUser = { name: userInfo.account }
-      }
-      // this.currentUser = {
-      //   // name: userInfo.nickname || userInfo.account
-      //   name: userInfo.userInfo.name || userInfo.account
+      // if (userInfo.userInfo !== null) {
+      //   this.currentUser = { name: userInfo.userInfo.name }
+      // } else {
+      //   this.currentUser = { name: userInfo.account }
       // }
+      this.currentUser = userInfo
     }, 1500)
   }
 }

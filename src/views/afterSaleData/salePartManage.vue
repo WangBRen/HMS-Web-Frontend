@@ -26,7 +26,7 @@
           </a-col>
         </a-row>
       </div>
-      <a-tabs default-active-key="1" @change="callback" >
+      <a-tabs @change="callback" :activeKey="category">
         <a-tab-pane v-for="item in categorys" :key="item" :tab="`${item}`">
           <!-- 表格数据 -->
           <a-table :columns="columns" :data-source="filterDataSource" :rowKey="(record, index) => { return index }" :pagination="false" size="small">
@@ -131,33 +131,33 @@ export default {
     }
   },
   methods: {
-    onSizeChange (current, pageSize) {
-      this.pagination.current = 1
-      this.pagination.pageSize = pageSize
-      // this.getAccount()
-    },
-    onPageChange (page, pageSize) {
-      this.pagination.current = page
-      this.getAccount()
-    },
+    // onSizeChange (current, pageSize) {
+    //   this.pagination.current = 1
+    //   this.pagination.pageSize = pageSize
+    //   // this.getAccount()
+    // },
+    // onPageChange (page, pageSize) {
+    //   this.pagination.current = page
+    //   this.getAccount()
+    // },
     handAddNewPart () {
       this.mode = 'creat'
       this.partModelVisible = true
     },
     closePartModel () {
       this.partModelVisible = false
-      this.getpartList()
     },
     getpartList (keyObj) {
       const obj = { page: 0, size: 1 }
       if (keyObj) {
         const newObj = Object.assign(obj, keyObj)
-        this.getParts(newObj)
+        this.getParts(newObj, 'search')
       } else {
         this.getParts(obj)
       }
     },
-    async getParts (obj) {
+    async getParts (obj, ifFirst) {
+      console.log('obj', obj, ifFirst)
       const res = await getParts(obj)
       if (res.status === 200) {
         if (res.data.totalElements === 0) {
@@ -172,9 +172,25 @@ export default {
               return item.belongPart
             })
             this.categorys = [...new Set(set)]
-            this.filterDataSource = this.dataSource.filter(item => {
-              return item.belongPart === this.category
-            })
+            if (ifFirst === 'search') {
+              if (this.categorys.includes(this.category)) {
+                this.filterDataSource = this.dataSource
+                .filter(item => {
+                  return item.belongPart === this.category
+                })
+              } else {
+                this.filterDataSource = this.dataSource.filter(item => {
+                  return item.belongPart === this.categorys[0]
+                })
+                this.callback(this.categorys[0])
+              }
+            } else {
+              this.category = this.categorys[0]
+              this.filterDataSource = this.dataSource
+              .filter(item => {
+                return item.belongPart === this.category
+              })
+            }
           }
         }
       }
@@ -218,21 +234,14 @@ export default {
       this.selectKey = e
     },
     reset () {
-      this.getParts({ page: 0, size: 10 })
+      this.getParts({ page: 0, size: 1 })
     }
   },
   created () {
-    this.$setPageDataLoader(this.getpartList)
+    // this.$setPageDataLoader(this.getpartList)
   },
   mounted () {
-    this.getpartList()
-    setTimeout(() => {
-      this.category = this.categorys[0]
-      this.filterDataSource = this.dataSource.filter(item => {
-        console.log('获取配件数据', this.dataSource, item.belongPart, this.category)
-        return item.belongPart === this.category
-      })
-    }, 1000)
+    this.getParts({ page: 0, size: 10 }, 'getFirst')
   }
 }
 </script>
