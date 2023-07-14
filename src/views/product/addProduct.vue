@@ -148,7 +148,13 @@ export default {
       })[0].name
     },
     async getProducts () {
-      const res = await getProducts()
+      const pages = {
+        page: 0,
+        size: 1
+      }
+      const resp = await getProducts(pages)
+      pages.size = resp.data.totalElements || 1
+      const res = await getProducts(pages)
       this.products = res.data.content
       const brands = new Set(this.products.map(item => {
         return item.productBrand
