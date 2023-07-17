@@ -1,17 +1,19 @@
 <template>
   <div>
-    <a-card>
-      <a-button style="margin: 0 0 16px 20px;" :disabled="!hasSelected" @click="batchOutProdect">批量出库</a-button>
-      <span style="float:right;">
-        <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false" style="margin:0 16px 0 0">
-          <a-button> <a-icon type="upload" />excel导入设备</a-button>
-        </a-upload>
-        <a-button type="primary" @click="handAddProduct">新增设备</a-button>
-      </span>
-      <span style="margin-left: 8px">
-        <template v-if="hasSelected">
-          {{ `选中 ${selectedRowKeys.length} 项` }}
-        </template>
+    <a-card :loading="loading">
+      <span slot="title">
+        <a-button :disabled="!hasSelected" @click="batchOutProdect">批量出库</a-button>
+        <span style="float:right;">
+          <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false" style="margin:0 16px 0 0">
+            <a-button> <a-icon type="upload" />excel导入设备</a-button>
+          </a-upload>
+          <a-button type="primary" @click="handAddProduct">新增设备</a-button>
+        </span>
+        <span style="margin-left: 8px">
+          <template v-if="hasSelected">
+            {{ `选中 ${selectedRowKeys.length} 项` }}
+          </template>
+        </span>
       </span>
       <a-table :columns="columns" :data-source="dataSource" :row-selection="rowSelection" :rowKey="(record, index) => record.id">
         <span slot="operation" slot-scope="text,scope">
@@ -196,7 +198,8 @@ export default {
       visible: false,
       deviceVisible: false,
       deviceData: {},
-      operator: ''
+      operator: '',
+      loading: true
     }
   },
   computed: {
@@ -379,12 +382,14 @@ export default {
       this.getDevices()
     },
     async getDevices () {
+      this.loading = true
       const resp = await getDevices({ page: 0, size: 1 })
       const pages = {
         page: 0,
-        size: resp.data.totalElements
+        size: resp.data.totalElements || 1
       }
       const res = await getDevices(pages)
+      this.loading = false
       if (res.status === 200) {
         if (this.type === 'productManage') {
           this.dataSource = res.data.content.filter(item => {
