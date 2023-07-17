@@ -1,13 +1,15 @@
 <template>
   <div>
-    <a-card>
-      <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false">
-        <a-button><a-icon type="export" />excel出库</a-button>
-      </a-upload>
-      <span style="margin-left: 8px">
-        <template v-if="hasSelected">
-          {{ `选中 ${selectedRowKeys.length} 项` }}
-        </template>
+    <a-card :loading="loading">
+      <span slot="title">
+        <a-upload name="file" accept=".xls,xlsx" :customRequest="importData" :showUploadList="false">
+          <a-button><a-icon type="export" />excel出库</a-button>
+        </a-upload>
+        <span style="margin-left: 8px">
+          <template v-if="hasSelected">
+            {{ `选中 ${selectedRowKeys.length} 项` }}
+          </template>
+        </span>
       </span>
       <a-table :columns="columns" :data-source="dataSource" :pagination="pagination">
         <span slot="operation" slot-scope="text,scope">
@@ -93,7 +95,8 @@ export default {
         showTotal: total => `共 ${total} 个订单`, // 显示总数
         onShowSizeChange: (current, pageSize) => this.onSizeChange(current, pageSize), // 改变每页数量时更新显示
         onChange: (page, pageSize) => this.onPageChange(page, pageSize) // 点击页码事件
-      }
+      },
+      loading: true
     }
   },
   computed: {
@@ -115,11 +118,13 @@ export default {
       this.getOrders()
     },
     async getOrders () {
+      this.loading = true
       const pages = {
         page: this.pagination.current - 1,
         size: this.pagination.pageSize
       }
       const res = await getOrders(pages)
+      this.loading = false
       if (res.status === 200) {
         this.dataSource = res.data.content
       }

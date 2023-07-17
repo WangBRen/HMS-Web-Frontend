@@ -1,11 +1,13 @@
 <template>
   <div>
-    <a-card>
-      <a-row>
+    <a-card :loading="loading">
+      <span slot="title">
+        <a-button @click="openEditModal('add')" type="primary">新建产品型号</a-button>
+      </span>
+      <!-- <a-row>
         <a-col :span="3">
-          <a-button @click="openEditModal('add')" type="primary">新建产品型号</a-button>
         </a-col>
-      </a-row>
+      </a-row> -->
       <a-table
         :columns="modelColumns"
         :rowKey="(record, index) => index"
@@ -25,6 +27,7 @@
       :modalData="modalData"
       :modalVisible="modalVisible"
       @closeEditModal="closeEditModal"
+      @successEdit="successEdit"
       :modalIndex="modalIndex"
     />
   </div>
@@ -86,11 +89,13 @@ export default {
       modelData: [],
       modalVisible: false,
       modalIndex: 1,
-      modalData: {}
+      modalData: {},
+      loading: true
     }
   },
   methods: {
     async getModel () {
+      this.loading = true
       const pages = {
         page: 0,
         size: 1
@@ -98,6 +103,7 @@ export default {
       const resp = await getProducts(pages)
       pages.size = resp.data.totalElements || 1
       const res = await getProducts(pages)
+      this.loading = false
       if (res.status === 200) {
         this.modelData = res.data.content
       }
@@ -115,6 +121,9 @@ export default {
       this.modalVisible = true
     },
     closeEditModal () {
+      this.modalVisible = false
+    },
+    successEdit () {
       this.modalVisible = false
       this.getModel()
     },

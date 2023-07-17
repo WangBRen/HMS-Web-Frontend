@@ -221,14 +221,14 @@ export default {
       const res = await updateProduct(this.modalData.id, payLoad)
       if (res.status === 200) {
         this.$message.success('修改成功')
-        this.$emit('closeEditModal')
+        this.$emit('successEdit')
       }
     },
     async creatProduct (payLoad) {
       const res = await addProduct(payLoad)
       if (res.status === 200) {
         this.$message.success('添加成功')
-        this.$emit('closeEditModal')
+        this.$emit('successEdit')
       }
       console.log('提交表单', res)
     },
