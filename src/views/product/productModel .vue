@@ -27,6 +27,7 @@
       :modalData="modalData"
       :modalVisible="modalVisible"
       @closeEditModal="closeEditModal"
+      @successEdit="successEdit"
       :modalIndex="modalIndex"
     />
   </div>
@@ -120,6 +121,9 @@ export default {
       this.modalVisible = true
     },
     closeEditModal () {
+      this.modalVisible = false
+    },
+    successEdit () {
       this.modalVisible = false
       this.getModel()
     },
