@@ -82,7 +82,7 @@ if (domain.includes('aftersale')) {
           component: RouteView,
           redirect: '/productIn/products',
           name: 'products',
-          meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          meta: { title: '生产管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_factory']
           },
           children: [
             {
@@ -92,7 +92,7 @@ if (domain.includes('aftersale')) {
               meta: {
                 title: '设备生产',
                 keepAlive: true,
-                permission: ['after_sales_part']
+                permission: ['after_sales_product']
               }
             },
             {
@@ -102,7 +102,7 @@ if (domain.includes('aftersale')) {
               meta: {
                 title: '产品型号库',
                 keepAlive: true,
-                permission: ['after_sales_repair']
+                permission: ['after_sales_device']
               }
             }
           ]
@@ -112,7 +112,7 @@ if (domain.includes('aftersale')) {
           component: RouteView,
           redirect: '/product/productOut',
           name: 'productOut',
-          meta: { title: '出库管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_information']
+          meta: { title: '出库管理', icon: 'file-search', keepAlive: true, permission: ['after_sales_factoryOut']
           },
           children: [
             {
@@ -122,7 +122,7 @@ if (domain.includes('aftersale')) {
               meta: {
                 title: '出库订单',
                 keepAlive: true,
-                permission: ['after_sales_part']
+                permission: ['after_sales_order']
               }
             },
             {
@@ -132,7 +132,7 @@ if (domain.includes('aftersale')) {
               meta: {
                 title: '设备运营',
                 keepAlive: true,
-                permission: ['after_sales_part']
+                permission: ['after_sales_productRun']
               },
               props: true
             }

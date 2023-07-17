@@ -239,7 +239,7 @@ export default {
         if (res.status === 200) {
           const productList = res.data.content
           this.importDataList = this.importDataList.map(item => {
-            const product = productList.filter(product => { return product.productModel === item.productModel && product.productBrand === item.brand })
+            const product = productList.filter(product => { return product.productModel.trim() === item.productModel.trim() && product.productBrand.trim() === item.brand.trim() })
             const isStringIncluded = this.dataSource.some(obj => obj.serialNumber === item.productNo)
             if (isStringIncluded) {
               return { ...item, productId: product[0]?.id, exist: true }
@@ -261,7 +261,7 @@ export default {
       this.visible = false
     },
     saveImport () {
-      const filterDevice = this.importDataList.filter(item => { return !item.productId })
+      const filterDevice = this.importDataList.filter(item => { return !item.productId || item.exist })
       if (filterDevice.length > 0) {
         this.$message.warning(filterDevice.length + '个设备校验失败，请检查后重试')
         return
@@ -288,7 +288,7 @@ export default {
       if (res.status === 200) {
         this.$message.success('设备创建成功')
         this.visible = false
-        this.$emit('successProductAdd')
+        this.getDevices()
       } else if (res.status === 400) {
         this.$message.warning('设备已存在')
       }
