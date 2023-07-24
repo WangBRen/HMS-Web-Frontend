@@ -638,10 +638,12 @@
               <a-popconfirm style="margin: 0 20px;" title="确定再评估？" @confirm="openModal('1')">
                 <a-button type="primary">再评估</a-button>
               </a-popconfirm>
-              <a-popconfirm style="margin: 0 20px;" v-if="repairData.monthlyStatement!==null" title="确定进行0元支付？" @confirm="changeZeroPay">
-                <a-button type="primary" v-if="repairData.processes[repairData.processes.length-1].customerPay === 0">0元支付</a-button>
+              <block v-if="repairData.monthlyStatement!==null" style="margin: 0 20px;">
+                <a-popconfirm v-if="repairData.processes[repairData.processes.length-1].customerPay === 0" title="确定进行0元支付？" @confirm="changeZeroPay">
+                  <a-button type="primary">0元支付</a-button>
+                </a-popconfirm>
                 <a-button v-else @click="getPayCode">生成支付二维码</a-button>
-              </a-popconfirm>
+              </block>
             </div>
           </div>
         </div>
