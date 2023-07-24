@@ -45,23 +45,27 @@
           <a-select-option value="C">玫瑰金 - C</a-select-option>
           <a-select-option value="A">红色 - A</a-select-option>
           <a-select-option value="J">黑色 - J</a-select-option>
-          <a-select-option value="0">白色 - 0</a-select-option>
+          <a-select-option value="0">白色/银色 - 0</a-select-option>
         </a-select>
       </a-form-model-item>
       <a-form-model-item ref="definition" label="功能含义" prop="definition">
         <a-select v-model="form.definition" placeholder="请选择功能含义">
           <a-select-option value="0">
-            欧枫加器
+            欧枫加器_0
           </a-select-option>
           <a-select-option value="T">
-            泡沫盾+语音
+            泡沫盾+语音_T
           </a-select-option>
         </a-select>
       </a-form-model-item>
       <a-form-model-item ref="controlMode" label="控制方式" prop="controlMode">
         <a-select v-model="form.controlMode" placeholder="请选择控制方式">
           <a-select-option value="1">蓝牙_1</a-select-option>
-          <a-select-option value="0">射频_2</a-select-option>
+          <a-select-option value="0">射频_0</a-select-option>
+          <a-select-option value="P">蓝牙款8个按键(pl)遥控器_P</a-select-option>
+          <a-select-option value="8">蓝牙款8个按键(老款钮扣电池)遥控器_8</a-select-option>
+          <a-select-option value="0">不是蓝牙款(是20个按键的遥控器) _0</a-select-option>
+          <a-select-option value="1">东宝加热器(U5U6绿色遥控器带显示屏)_1</a-select-option>
         </a-select>
       </a-form-model-item>
       <a-form-model-item ref="ceramicPitSpacing" label="陶瓷坑距" prop="ceramicPitSpacing">
@@ -72,6 +76,9 @@
       </a-form-model-item>
       <a-form-model-item ref="num" label="台数" prop="num">
         <a-input-number v-model="form.num" :min="1" :max="999" :formatter="formatNumber"/>
+        <span style="margin-left:20px;">
+          编号预览：{{ brandName }}{{ form.productModel }}{{ form.ceramicPitSpacing }}{{ form.color }}{{ form.definition }}{{ form.controlMode }}{{ form.ceramicPitSpacing==='M'?'3':form.ceramicPitSpacing==='L'?'4':'' }}{{ myDate }}
+        </span>
       </a-form-model-item>
     </a-form-model>
   </a-modal>
@@ -93,7 +100,7 @@ export default {
   data () {
     return {
       form: {
-        productId: undefined,
+        // productId: undefined,
         brand: undefined,
         productModel: undefined,
         color: undefined,
@@ -132,7 +139,8 @@ export default {
       products: [],
       brands: [],
       models: [],
-      brandName: ''
+      brandName: '-',
+      myDate: ''
     }
   },
   methods: {
@@ -175,15 +183,21 @@ export default {
     handleOk (e) {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
-          const today = new Date()
-          const year = today.getFullYear()
-          const month = String(today.getMonth() + 1).padStart(2, '0')
-          const day = String(today.getDate()).padStart(2, '0')
+          // const today = new Date()
+          // const year = today.getFullYear() % 100
+          // const month = String(today.getMonth() + 1).padStart(2, '0')
+          // const day = String(today.getDate()).padStart(2, '0')
           const form = this.form
           const product = this.products.filter(item => {
             return item.productBrand === form.brand && item.productModel === form.productModel
           })[0]
-          const serialNumber = this.brandName + form.productModel + form.color + form.definition + form.ceramicPitSpacing + day + month + year // 产品编号前缀
+          var Spacing
+          if (form.ceramicPitSpacing === 'M') {
+            Spacing = '3'
+          } else if (form.ceramicPitSpacing === 'L') {
+            Spacing = '4'
+          }
+          const serialNumber = this.brandName + form.productModel + form.ceramicPitSpacing + form.color + form.definition + form.controlMode + Spacing + this.myDate // 产品编号前缀
           const payLoad = {}
           payLoad.productId = product.id
           payLoad.status = 'NOT_OUT'
@@ -225,6 +239,11 @@ export default {
     }
   },
   mounted () {
+    const today = new Date()
+    const year = today.getFullYear() % 100
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    this.myDate = day + month + year
     this.getProducts()
     this.getTodayNum()
     getUserInfo().then(res => {
