@@ -54,7 +54,7 @@
         <div class="card-row" v-for="item in tableData" :key="item.id">
           <div @click="cardShow(item)">
             <a-row class="card-title" :style="`cursor: pointer; border-bottom: ${item.showIndex ? '1px solid #61affe' : 'none'}`">
-              <a-col :span="23">
+              <a-col :span="20">
                 <span class="all-tags">
                   <!-- <a-tag style="width:80px;" :color="item.status === 'diagnosed' ? 'red' : (item.status === 'exception' ? '' : 'orange')">
                     {{ item.status | filterChronicStatus }}
@@ -72,6 +72,8 @@
                 </span>
                 <span style="font-size: 16px;color: inherit;margin:0 10px;">{{ item.chronicDisease.name }}</span>
               </a-col>
+              <a-col :span="3" v-if="item.nextCheckAt">复查剩余时间：{{ getRemaining(item.nextCheckAt) }}</a-col>
+              <a-col :span="3" v-else></a-col>
               <a-col :span="1">
                 <a style="font-size: 20px;color: inherit;float: right;">
                   <a-icon v-if="item.showIndex===false" type="right"/>
@@ -81,6 +83,11 @@
             </a-row>
           </div>
           <a-row v-show="item.showIndex" :id="item.id" class="card-body">
+            <div style="display:flex;justify-content: space-between;">
+              确诊时间：{{ item.diseaseAt | moment }}
+              <span>确诊文件：<a v-for="file in item.diseaseFiles" :key="file.index" :href="file.url" target="_blank">{{ file.fileName }}；</a></span>
+              确诊健康师：{{ item.diseasedBy.nickname }}
+            </div>
             <a-card style="margin-top: 12px;" :loading="loading">
               <template #title>
                 <span>指标项</span>
@@ -382,6 +389,7 @@ export default {
                       this.getDateTime(futureTime)
                     }, 1000)
                   } else {
+                    this.receiveDate = null
                     this.dateTime = '--'
                     this.timeRemaining = ''
                   }
@@ -398,6 +406,7 @@ export default {
                   this.getDateTime(futureTime)
                 }, 1000)
               } else {
+                this.receiveDate = null
                 this.dateTime = '--'
                 this.timeRemaining = ''
               }
@@ -479,7 +488,7 @@ export default {
     saveReviewTime (diseaseId) {
       this.reviewTime = !this.reviewTime
       const payLoad = {}
-      const nextCheckAt = this.receiveDate + 24 * this.interval * 60 * 60 * 1000
+      const nextCheckAt = this.receiveDate ? this.receiveDate + 24 * this.interval * 60 * 60 * 1000 : null
       payLoad.remarkInterval = this.interval
       payLoad.nextCheckAt = nextCheckAt
       setIntervalTime(this.custId, diseaseId, payLoad).then(res => {
@@ -495,6 +504,17 @@ export default {
           // this.getDateTime(futureTime)
         }
       })
+    },
+    getRemaining (nextCheckAt) {
+      // console.log('nextCheckAt', nextCheckAt)
+      const futureTime = new Date(nextCheckAt)
+      // 当前日期
+      const currentDate = new Date()
+      // 计算时间差
+      const timeDiff = futureTime.getTime() - currentDate.getTime()
+      // 将时间差转换为天数
+      const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24))
+      return daysDiff + '天'
     },
     getDateTime (futureTime) {
       if (futureTime > this.nowTime) {
@@ -528,6 +548,8 @@ export default {
   /* margin: 3px 0; */
   /* height: 50px; */
   padding: 6px 10px;
+  display: flex;
+  align-items: center;
 }
 .card-body {
   // border: 1px #eee solid;

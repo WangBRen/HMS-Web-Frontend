@@ -9,6 +9,9 @@ const api = {
   updateStatus: id => { return 'after-sale/' + id },
   updateProcess: (id, processId) => { return 'after-sale/' + id + '/process/' + processId },
   saleRefund: 'pay/refund',
+  paymentCode: 'pay/unifiedOrder',
+  getIp: 'pay/getIp',
+  getQrCode: 'pay/createScanPayQrcodeMode2',
   processPay: (processId) => { return `after-sale/${processId}/pay` },
   getGuide: 'after-sale/guideLevelGroup',
   addGuideLevel: 'after-sale/guideLevel',
@@ -84,6 +87,30 @@ export function saleRefund (parameter) {
     data: parameter
   })
 }
+export function getIp () {
+  return request({
+    url: api.getIp,
+    method: 'get'
+  })
+}
+
+// 生成支付码
+export function paymentCode (parameter) {
+  return request({
+    url: api.paymentCode,
+    method: 'post',
+    data: parameter
+  })
+}
+// 生成支付码
+export function getQrCode (parameter) {
+  return request({
+    url: api.getQrCode,
+    method: 'get',
+    data: parameter
+  })
+}
+
 export function processPay (processId, parameter) {
   return request({
     url: api.processPay(processId),

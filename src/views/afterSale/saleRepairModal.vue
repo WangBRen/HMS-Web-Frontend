@@ -641,6 +641,7 @@
               <a-popconfirm style="margin: 0 20px;" v-if="repairData.processes[repairData.processes.length-1].customerPay === 0 && repairData.monthlyStatement!==null" title="确定进行0元支付？" @confirm="changeZeroPay">
                 <a-button type="primary">0元支付</a-button>
               </a-popconfirm>
+              <a-button v-else @click="getPayCode">生成支付二维码</a-button>
             </div>
           </div>
         </div>
@@ -803,16 +804,39 @@
       :transferData="repairData"
       :modalIndex="modalIndex"
     />
+    <a-modal
+      v-if="payCodeVisible"
+      title="支付二维码"
+      :visible="payCodeVisible"
+      :footer="null"
+      @cancel="closePayCode"
+      width="800px"
+    >
+      <div class="topCode">
+        <img class="" style="width:140px;" src="http://hms-web.oss-cn-shenzhen.aliyuncs.com/image/wx/WePayLogo.png" mode="aspectFit" />
+        <div>支付金额：<span style="color: orange;font-size:26px;">{{ payNum }}</span>元</div>
+      </div>
+      <div style="display:flex;" v-if="codePayResult">
+        <div class="qrcode">
+          <div ref="qrcode" id="qrcode"></div>
+          <div style="margin-top:5px;">使用微信扫码付款</div>
+        </div>
+        <p style="margin-top:20px;">支付链接：{{ codeURL }}</p>
+      </div>
+      <div v-else class="codePayResult">该订单已支付，请刷新页面！</div>
+    </a-modal>
   </div>
 </template>
 
 <script>
-import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess, getGuide as apiGetGuide, getParts as apiGetParts, updateCustomerInfo } from '@/api/afterSale'
+import { addProcess as apiAddProcess, updateStatus as apiUpdateStatus, updateProcess as apiUpdateProcess, getGuide as apiGetGuide, getParts as apiGetParts, updateCustomerInfo, paymentCode, getIp, processPay, getSaleRepair } from '@/api/afterSale'
 import { getUserInfo as apiGetUserInfo } from '@/api/login'
 import { getUserList as apiGetUserList } from '@/api/manage'
 import saleRepairModalEstimate from './saleRepairModalAgainEstimate.vue'
 import moment from 'moment'
 import { brandData } from './saleRepairData'
+import md5 from '../../utils/md5'
+import QRCode from 'qrcodejs2'
 
 export default {
   props: {
@@ -978,10 +1002,128 @@ export default {
         // technicianPhone: null, // 技术人员电话
         technicianPhoneList: [] // 技术人员电话组
       },
-      MyInfo: {}
+      MyInfo: {},
+      payCodeVisible: false,
+      codeURL: '',
+      payNum: 0,
+      codePayResult: false,
+      repairId: null
     }
   },
   methods: {
+    async getSaleRepair (repairId) {
+      const res = await getSaleRepair(repairId)
+      if (res.status === 200) {
+        this.repairData = res.data
+        this.$message.success('刷新成功')
+      }
+      console.log(res)
+    },
+    getPayCode () {
+      this.payCodeVisible = true
+      this.unifiedOrder()
+    },
+    nonceStr () {
+      const t = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
+      var n = ''
+      for (var i = 0; i < 32; i++) {
+        n += t.charAt(Math.floor(Math.random() * 32))
+      }
+      return n
+    },
+    sign () {
+      const stringA = `appid=wxc849c3cfa10ea1d2&body=test&device_info=1000&mch_id=1635883921&nonce_str=${this.nonceStr()}`
+      const stringSignTemp = stringA + '&key=yt191017yt191017yt191017yt191017'
+      return md5(stringSignTemp)
+    },
+    async unifiedOrder () {
+      const processId = Math.max.apply(Math, this.repairData.processes.map(item => { return item.id }))
+      const payProcesses = this.repairData.processes.filter(item => { return item.id === processId })
+      const payNum = payProcesses[0].customerPay
+      this.payNum = payNum
+      const myDate = new Date()
+      const myYear = myDate.getFullYear()
+      const myMonth = myDate.getMonth() + 1 < 10 ? '0' + (myDate.getMonth() + 1) : myDate.getMonth() + 1
+      const myToday = myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate()
+      const outTradeNo = 'SH' + myYear + myMonth + myToday + this.repairData.id + processId
+      const ip = await getIp()
+      const payLoad = {
+        appid: 'wx60c0211b98af5b12',
+        mchId: '1635883921',
+        nonceStr: this.nonceStr(), // 32位随机字符串
+        sign: this.sign(), // 签名
+        signType: 'MD5',
+        body: '智能马桶售后中心',
+        outTradeNo: outTradeNo,
+        totalFee: payNum * 1000 / 10,
+        spbillCreateIp: ip,
+        notifyUrl: 'https://dev.hms.yootane.com/api/pay/notify/order', // 结果通知的回调地址
+        tradeType: 'NATIVE',
+        productId: this.repairData.id
+      }
+      paymentCode(payLoad).then(res => {
+        if (res.resultCode === 'SUCCESS') {
+          if (payProcesses[0].pays.length === 0) {
+            // 创建支付pay
+            const requestBody = {
+              submitType: 'PAY',
+              outTradeNo: outTradeNo,
+              // "transactionId": "string",
+              initTime: new Date(), // 付款发起时间
+              payTime: '',
+              payStatus: 'PROCESSING',
+              totalAmount: payProcesses[0].customerPay, // 应该支付
+              actualAmount: 0, // 实际支付
+              customerId: null,
+              payMethod: 'WECHAT_PAY',
+              tradeType: 'NATIVE_PAY',
+              notifyUrl: 'https://dev.hms.yootane.com/api/pay/notify/order'
+            }
+            this.processPay(processId, requestBody, this.repairData.id)
+          }
+          this.codePayResult = true
+          this.codeURL = res.codeURL
+          // 创建QRCode实例
+          var that = this
+          setTimeout(() => {
+            var qrcode = new QRCode(that.$refs.qrcode, {
+                text: res.codeURL, // 需要转换为二维码的内容
+                width: 140,
+                height: 140,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            })
+            console.log(qrcode)
+          }, 0)
+          // console.log(qrcode)
+        }
+      }, error => {
+        // 请求失败时执行的代码
+        console.log(error)
+        this.codePayResult = false
+        console.log('订单已支付')
+        this.$message.warning('订单已支付,请刷新页面')
+      })
+      // .catch(res => {
+      //   this.codePayResult = false
+      //   console.log('订单已支付')
+      //   this.$message.warning('订单已支付,请刷新页面')
+      // })
+    },
+    async processPay (processId, requestBody, repairId) {
+      const res = await processPay(processId, requestBody)
+      if (res.status === 200) {
+        this.getSaleRepair(repairId)
+      }
+    },
+    closePayCode () {
+      this.payCodeVisible = false
+      const qrcode = document.getElementById('qrcode')
+      if (qrcode) {
+        qrcode.innerHTML = ''
+      }
+    },
     async getMe () {
       const res = await apiGetUserInfo()
       this.MyInfo = res.data
@@ -2104,5 +2246,23 @@ export default {
 /deep/.visitDes .ant-form-item-control {
   margin-top: 24px;
 }
-
+.qrcode{
+  width: 160px;
+  border: 1px solid #adadad;
+  padding: 10px;
+  text-align: center;
+  margin: 20px 30px;
+}
+.topCode{
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #eee;
+  padding: 10px;
+  margin-bottom: 20px;
+  margin: 0px 30px;
+}
+.codePayResult{
+  margin: 20px 30px;
+  font-size: 20px;
+}
 </style>

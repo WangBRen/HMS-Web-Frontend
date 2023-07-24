@@ -108,8 +108,10 @@ export default {
       this.buttonDisabled = true
     },
     handleOk () {
-      const files = this.uploadData.response.data
-      apiMakeDiagnosed(this.customerId, this.diseaseId, files).then(res => {
+      const payLoad = {}
+      payLoad.files = this.uploadData
+      payLoad.diseaseAt = new Date()
+      apiMakeDiagnosed(this.customerId, this.diseaseId, payLoad).then(res => {
         if (res.status === 200) {
           this.$message.success('修改慢病状态成功')
           // this.firstFollowUpVisible = true
@@ -143,9 +145,9 @@ export default {
         if (status === 'done') {
           this.buttonDisabled = false
           this.buttonLoad = false
-          this.$message.success(`${info.file.name} 文件上传成功`)
-          this.uploadData = info.fileList[0]
-          // console.log(info.fileList[0], 'url', info.fileList[0].response.data.url)
+          // this.$message.success(`${info.file.name} 文件上传成功`)
+          this.uploadData = info.fileList.map(item => { return item.response.data })
+          console.log(info.fileList[0], 'url', this.uploadData)
         // 上传失败
         } else if (status === 'error') {
           this.buttonDisabled = true
