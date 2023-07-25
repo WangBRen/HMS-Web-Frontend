@@ -638,12 +638,12 @@
               <a-popconfirm style="margin: 0 20px;" title="确定再评估？" @confirm="openModal('1')">
                 <a-button type="primary">再评估</a-button>
               </a-popconfirm>
-              <block v-if="repairData.monthlyStatement!==null" style="margin: 0 20px;">
+              <span v-if="repairData.monthlyStatement!==null" style="margin: 0 20px;">
                 <a-popconfirm v-if="repairData.processes[repairData.processes.length-1].customerPay === 0" title="确定进行0元支付？" @confirm="changeZeroPay">
                   <a-button type="primary">0元支付</a-button>
                 </a-popconfirm>
                 <a-button v-else @click="getPayCode">生成支付二维码</a-button>
-              </block>
+              </span>
             </div>
           </div>
         </div>
@@ -825,7 +825,7 @@
         </div>
         <p style="margin-top:20px;">支付链接：{{ codeURL }}</p>
       </div>
-      <div v-else class="codePayResult">该订单已支付，请刷新页面！</div>
+      <div v-else-if="codePayResult===false" class="codePayResult">该订单已支付，请刷新页面！</div>
     </a-modal>
   </div>
 </template>
@@ -1008,7 +1008,7 @@ export default {
       payCodeVisible: false,
       codeURL: '',
       payNum: 0,
-      codePayResult: false,
+      codePayResult: null,
       repairId: null
     }
   },
@@ -1107,11 +1107,6 @@ export default {
         console.log('订单已支付')
         this.$message.warning('订单已支付,请刷新页面')
       })
-      // .catch(res => {
-      //   this.codePayResult = false
-      //   console.log('订单已支付')
-      //   this.$message.warning('订单已支付,请刷新页面')
-      // })
     },
     async processPay (processId, requestBody, repairId) {
       const res = await processPay(processId, requestBody)
@@ -1129,6 +1124,7 @@ export default {
     async getMe () {
       const res = await apiGetUserInfo()
       this.MyInfo = res.data
+      console.log('this.MyInfo', this.MyInfo)
     },
     cancelOrder () {
       const id = this.repairData.id
@@ -1463,7 +1459,7 @@ export default {
         let isGuarantee = true
         if (this.guaranteeIndex === null) {
           isGuarantee = false
-          this.$message.error('请选择保质期')
+          this.$message.error('请选择保修期')
         }
         // 判断上门
         let isVisit = true
@@ -1506,38 +1502,26 @@ export default {
            // 评估
           apiAddProcess(id, apiData).then(res => {
             if (res.status === 200) {
-              // this.$message.success('评估成功')
-              // 获取登陆账户 - 客服
-              apiGetUserInfo().then(res => {
+              this.$message.success('评估成功')
+              const changeStatus = {
+                status: 'EVALUATED',
+                customerService: this.MyInfo.userInfo?.name || this.MyInfo.nickname
+              }
+              if (this.statementIndex === true) {
+                changeStatus.status = 'PAID'
+              }
+              if (this.statementIndex) {
+                changeStatus.monthlyStatement = this.statementIndex // 月结单
+              } else {
+                changeStatus.monthlyStatement = null // 月结单
+              }
+              // 改变状态
+              apiUpdateStatus(id, changeStatus).then(res => {
                 if (res.status === 200) {
-                  const changeStatus = {
-                    status: 'EVALUATED',
-                    customerService: res.data.userInfo.name
-                  }
-                  if (this.statementIndex === true) {
-                    changeStatus.status = 'PAID'
-                  }
-                  // if (this.statementIndex) {
-                  //   changeStatus.monthlyStatement = true // 月结单
-                  // } else {
-                  //   changeStatus.monthlyStatement = false // 月结单
-                  // }
-                  if (this.statementIndex) {
-                    changeStatus.monthlyStatement = this.statementIndex // 月结单
-                  } else {
-                    changeStatus.monthlyStatement = null // 月结单
-                  }
-                  // 改变状态
-                  apiUpdateStatus(id, changeStatus).then(res => {
-                    if (res.status === 200) {
-                      this.$message.success('评估成功')
-                      // console.log('状态改变成功')
-                      this.closeRepairModals()
-                      this.$parent.getAfterSaleData()
-                    } else {
-                      this.$message.error(res.message)
-                    }
-                  })
+                  // this.$message.success('评估成功')
+                  // console.log('状态改变成功')
+                  this.closeRepairModals()
+                  this.$parent.getAfterSaleData()
                 } else {
                   this.$message.error(res.message)
                 }
