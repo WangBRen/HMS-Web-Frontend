@@ -100,15 +100,17 @@
           <span v-if="!record.isIndex && !record.disabled">
             <a-select v-model="record.type" :options="itemTypeOptions" style="width: 130px" @change="handleChange"/>
             <a-select
-              v-model="record.options"
               v-if="record.type === 'options'"
               mode="tags"
               style="width: 150px;margin-top: 10px;"
               :token-separators="[' ']"
               placeholder="请输入选项按空格"
-              :options="record.defineOptions"
-              :open="false"
-            ></a-select>
+              v-model="record.options"
+            >
+              <a-select-option v-for="i in record.options" :key="i.index" :value="i">
+                {{ i }}
+              </a-select-option>
+            </a-select>
           </span>
           <a-tag v-else-if="!record.disabled">{{ text | fliterIndexType }}</a-tag>
           <a-tag v-else class="disabled-text">{{ text | fliterIndexType }}</a-tag>
@@ -442,7 +444,8 @@ export default {
           unit: index.unit,
           isChecked: false,
           type: parseIndexType(index.type),
-          disabled: false
+          disabled: false,
+          options: []
         }
       }).reduce((array, current) => {
         for (const item of array) {
@@ -537,7 +540,7 @@ export default {
                 type: itemVal.type,
                 unit: itemVal.unit,
                 remark: itemVal.meaning,
-                options: [],
+                options: itemVal.options,
                 disabled: itemVal.disabled
               }
               if (itemVal.name !== '' && itemVal.type !== '') {
@@ -655,5 +658,6 @@ export default {
 }
 .disabled-text {
   text-decoration: line-through;
+  color: #ccc;
 }
 </style>
