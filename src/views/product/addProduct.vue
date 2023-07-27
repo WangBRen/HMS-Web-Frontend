@@ -60,12 +60,12 @@
       </a-form-model-item>
       <a-form-model-item ref="controlMode" label="控制方式" prop="controlMode">
         <a-select v-model="form.controlMode" placeholder="请选择控制方式">
-          <a-select-option value="1">蓝牙_1</a-select-option>
-          <a-select-option value="0">射频_0</a-select-option>
+          <!-- <a-select-option value="1">蓝牙_1</a-select-option> -->
+          <!-- <a-select-option value="0">射频_0</a-select-option> -->
           <a-select-option value="P">蓝牙款8个按键(pl)遥控器_P</a-select-option>
           <a-select-option value="8">蓝牙款8个按键(老款钮扣电池)遥控器_8</a-select-option>
-          <a-select-option value="0">不是蓝牙款(是20个按键的遥控器) _0</a-select-option>
-          <a-select-option value="1">东宝加热器(U5U6绿色遥控器带显示屏)_1</a-select-option>
+          <a-select-option value="0">不是蓝牙款(是20个按键的遥控器) / 射频  _0</a-select-option>
+          <a-select-option value="1">东宝加热器(U5U6绿色遥控器带显示屏) / 蓝牙 _1</a-select-option>
         </a-select>
       </a-form-model-item>
       <a-form-model-item ref="ceramicPitSpacing" label="陶瓷坑距" prop="ceramicPitSpacing">

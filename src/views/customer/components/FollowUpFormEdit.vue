@@ -368,11 +368,7 @@ export default {
     }
   },
   mounted () {
-    // getToken().then(res => {
-    //     if (res.status === 200) {
-    //         this.payload.myToken = res.data
-    //     }
-    // })
+    this.getHealthIndex()
     this.loadData()
   },
   methods: {
@@ -491,6 +487,7 @@ export default {
         name: '',
         meaning: '',
         unit: '',
+        options: [],
         isChecked: false,
         type: 'input',
         disabled: false

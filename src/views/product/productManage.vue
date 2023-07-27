@@ -242,7 +242,8 @@ export default {
         if (res.status === 200) {
           const productList = res.data.content
           this.importDataList = this.importDataList.map(item => {
-            const product = productList.filter(product => { return product.productModel.trim() === item.productModel.trim() && product.productBrand.trim() === item.brand.trim() })
+            const product = productList.filter(product => { return product.productModel.replace(/\s*/g, '') === item.productModel.replace(/\s*/g, '') && product.productBrand.trim() === item.brand.trim() })
+            console.log('product', product)
             const isStringIncluded = this.dataSource.some(obj => obj.serialNumber === item.productNo)
             if (isStringIncluded) {
               return { ...item, productId: product[0]?.id, exist: true }
