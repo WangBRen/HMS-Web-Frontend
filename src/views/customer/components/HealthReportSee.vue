@@ -97,7 +97,7 @@
                       <a-col :span="5">
                         <div class="index-item-title-wrapper">
                           <!-- <a class="exTitle">检测结果:</a> -->
-                          {{ items.endResult || '无' }}
+                          {{ items.endResult || getResult(items) }}
                         </div>
                       </a-col>
                       <!-- <a-col :span="4">
@@ -127,20 +127,22 @@
                 <div style="font-size:16px;font-weight:600;color:#888;padding:10px;">异常指标小结：</div>
                 <a-row v-for="items in item.items" :key="items.id" style="background:#F4F8FA;">
                   <div v-if="items.type === 'Report'">
-                    <a-col :span="5" style="color:#00A3DB;padding: 10px;">
-                      {{ items.name }}【{{ items.endResult }}】
-                    </a-col>
-                    <a-col :span="19" style="padding: 5px 0 0 0;">
-                      <div v-for="i in items.result" :key="i.id">
-                        <div v-if="i.name ===items.endResult" style="padding:5px 10px;">
-                          {{ i.remark }}
+                    <div v-if="items.endResult">
+                      <a-col :span="5" style="color:#00A3DB;padding: 10px;">
+                        {{ items.name }}【{{ items.endResult }}】
+                      </a-col>
+                      <a-col :span="19" style="padding: 5px 0 0 0;">
+                        <div v-for="i in items.result" :key="i.id">
+                          <div v-if="i.name ===items.endResult" style="padding:5px 10px;">
+                            {{ i.remark }}
+                          </div>
                         </div>
-                      </div>
-                    </a-col>
+                      </a-col>
+                    </div>
                   </div>
                   <div v-else>
                     <div v-for="i in items.result" :key="i.id">
-                      <div v-if="i.name ===items.endResult && i.remark" style="padding:5px 10px;">
+                      <div v-if="(i.name ===items.endResult || i.name ===getResult (items)) && i.remark" style="padding:5px 10px;">
                         <a-col :span="5" style="color:#00A3DB;padding: 10px;">
                           {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
                         </a-col>
@@ -237,12 +239,16 @@ import { getHealthIndex } from '@/api/health'
 export default {
   filters: {
     getMoment: function (value) {
-        if (value === null) {
-          return ''
-        } else {
-          return moment(value).format('YYYY-MM-DD HH:mm')
-        }
+      if (value === null) {
+        return ''
+      } else {
+        return moment(value).format('YYYY-MM-DD HH:mm')
       }
+    },
+    numFilter (value) {
+      // 截取当前数据到小数点后两位
+      return parseFloat(value).toFixed(2)
+    }
   },
   data () {
     return {
@@ -261,6 +267,23 @@ export default {
     })
   },
   methods: {
+    getResult (items) {
+      var result = '-'
+      items.result.map(item => {
+        const start = item.start
+        const end = item.end
+        const name = item.name
+        const value = items.value
+        if ((start == null || start === '') && parseInt(value) < parseInt(end)) {
+          result = name
+        } else if (parseInt(value) >= parseInt(start) && parseInt(value) < parseInt(end)) {
+          result = name
+        } else if ((end == null || end === '') && parseInt(value) >= parseInt(start)) {
+          result = name
+        }
+      })
+      return result
+    },
     seeReportCom (data, param) {
       this.param = param
       console.log('data', data)

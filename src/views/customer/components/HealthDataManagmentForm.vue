@@ -334,7 +334,7 @@ export default {
           align: 'center',
           width: 260,
           customRender: (text, record) => {
-            return record.createdBy ? record.createdBy.nickname : ''
+            return record.createdBy ? record.createdBy.nickname : '用户提交'
           }
         },
         {
