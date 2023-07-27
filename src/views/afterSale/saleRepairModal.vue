@@ -1059,7 +1059,7 @@ export default {
         outTradeNo: outTradeNo,
         totalFee: payNum * 1000 / 10,
         spbillCreateIp: ip,
-        notifyUrl: 'https://dev.hms.yootane.com/api/pay/notify/order', // 结果通知的回调地址
+        notifyUrl: 'https://hms.yootane.com/api/pay/notify/order', // 结果通知的回调地址
         tradeType: 'NATIVE',
         productId: this.repairData.id
       }
@@ -1079,7 +1079,7 @@ export default {
               customerId: null,
               payMethod: 'WECHAT_PAY',
               tradeType: 'NATIVE_PAY',
-              notifyUrl: 'https://dev.hms.yootane.com/api/pay/notify/order'
+              notifyUrl: 'https://hms.yootane.com/api/pay/notify/order'
             }
             this.processPay(processId, requestBody, this.repairData.id)
           }
