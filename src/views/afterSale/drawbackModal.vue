@@ -323,7 +323,7 @@ export default {
         signType: 'MD5',
         outTradeNo: outTradeNo, // 订单号
         outRefundNo: outRefundNo,
-        notifyUrl: 'https://dev.hms.yootane.com/afterSale/saleRepair', // 微信支付结果通知的回调地址
+        notifyUrl: 'https://hms.yootane.com/api/pay/notify/order', // 微信支付结果通知的回调地址
         totalFee: item1.pays[0].actualAmount * 100, // 订单金额  item1.pays[0].actualAmount
         // refundFee: item1.discount ? refundFee[0].totalNum * item1.discount / 10 * 100 : refundFee[0].totalNum * 100,
         refundFee: refundFee * 100,
