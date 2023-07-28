@@ -43,18 +43,6 @@ export default {
     return {
       modelColumns: [
         {
-          title: '产品号',
-          dataIndex: 'productNumber',
-          key: 'productNumber',
-          align: 'center'
-        },
-        {
-          title: '产品型号',
-          dataIndex: 'productModel',
-          key: 'productModel',
-          align: 'center'
-        },
-        {
           title: '品牌',
           dataIndex: 'productBrand',
           key: 'productBrand',
@@ -67,6 +55,24 @@ export default {
           align: 'center'
         },
         {
+          title: '产品型号',
+          dataIndex: 'productModel',
+          key: 'productModel',
+          align: 'center'
+        },
+        {
+          title: '原始型号',
+          dataIndex: 'originModel',
+          key: 'originModel',
+          align: 'center'
+        },
+        {
+          title: '产品系列',
+          dataIndex: 'productSerial',
+          key: 'productSerial',
+          align: 'center'
+        },
+        {
           title: '出厂价格',
           dataIndex: 'productPrice',
           key: 'productPrice',
@@ -76,6 +82,12 @@ export default {
           title: '控制方案',
           dataIndex: 'productControlPlan',
           key: 'productControlPlan',
+          align: 'center'
+        },
+        {
+          title: '备注',
+          dataIndex: 'remark',
+          key: 'remark',
           align: 'center'
         },
         {
