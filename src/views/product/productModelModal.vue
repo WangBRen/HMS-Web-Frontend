@@ -24,13 +24,6 @@
         </a-row> -->
         <a-row>
           <a-col>
-            <a-form-model-item label="产品型号" prop="productModel">
-              <a-input placeholder="请输入产品型号" v-model="productForm.productModel"></a-input>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row>
-          <a-col>
             <a-form-model-item label="品牌" prop="productBrand">
               <a-input placeholder="请输入品牌中文名" v-model="productForm.productBrand"></a-input>
             </a-form-model-item>
@@ -45,8 +38,22 @@
         </a-row>
         <a-row>
           <a-col>
-            <a-form-model-item label="产品序列" prop="productSerial">
-              <a-input placeholder="请输入产品序列" v-model="productForm.productSerial"></a-input>
+            <a-form-model-item label="产品型号" prop="productModel">
+              <a-input placeholder="请输入产品型号，该型号将应用于设备编号" v-model="productForm.productModel"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
+            <a-form-model-item label="原始型号">
+              <a-input placeholder="请输入原来的产品型号" v-model="productForm.originModel"></a-input>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
+            <a-form-model-item label="产品系列" prop="productSerial">
+              <a-input placeholder="请输入产品系列，如K系列" v-model="productForm.productSerial"></a-input>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -104,6 +111,13 @@
         </a-row>
         <a-row>
           <a-col>
+            <a-form-model-item label="备注">
+              <a-textarea placeholder="请输入产品备注" v-model="productForm.remark"></a-textarea>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row>
+          <a-col>
             <a-form-model-item label="出厂价格" prop="productPrice">
               <a-input-number placeholder="请输入出厂价格" :min="1" v-model="productForm.productPrice"></a-input-number>
             </a-form-model-item>
@@ -151,13 +165,15 @@ export default {
       productForm: {
         productNumber: undefined,
         productModel: undefined,
+        originModel: undefined,
         productSerial: undefined,
         productFunction: [],
         productParts: [],
         productControlPlan: undefined,
         productPrice: undefined,
         productBrand: undefined,
-        name: undefined
+        name: undefined,
+        remark: ''
       },
       modelRules: {
         productModel: [
@@ -202,6 +218,8 @@ export default {
           payLoad.name = this.productForm.name
           payLoad.productNumber = this.productForm.productNumber
           payLoad.productModel = this.productForm.productModel
+          payLoad.originModel = this.productForm.originModel
+          payLoad.remark = this.productForm.remark
           payLoad.productSerial = this.productForm.productSerial
           payLoad.productFunction = this.productForm.productFunction
           payLoad.productPartsId = this.productForm.productParts.map(item => { return item.id })

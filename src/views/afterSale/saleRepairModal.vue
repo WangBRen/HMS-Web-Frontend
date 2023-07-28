@@ -1074,8 +1074,8 @@ export default {
               initTime: new Date(), // 付款发起时间
               payTime: '',
               payStatus: 'PROCESSING',
-              totalAmount: payProcesses[0].customerPay, // 应该支付
-              actualAmount: 0, // 实际支付
+              totalAmount: payProcesses[0].totalCost, // 总金额
+              actualAmount: payProcesses[0].customerPay, // 客户实际支付
               customerId: null,
               payMethod: 'WECHAT_PAY',
               tradeType: 'NATIVE_PAY',
