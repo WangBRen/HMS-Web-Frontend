@@ -573,7 +573,7 @@
                     </span>
                   </a-row>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="1.5">
+                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="1">
                   <span v-if="!mailingCostIndex">
                     <a-input-number :min="0" v-model="mailingCost"></a-input-number>
                     <a-button style="line-height: 29px;" @click="okMailing" type="primary">确认</a-button>
@@ -582,21 +582,21 @@
                     ￥{{ mailingCost }}
                   </span>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="partArr.length" label="配件总价" :span="1.5">
+                <a-descriptions-item v-if="partArr.length" label="配件总价" :span="1">
                   ￥{{ countPart(partArr) }}
                 </a-descriptions-item>
-                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="1.5">
+                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="1">
                   ￥{{ checkG }}
                 </a-descriptions-item>
-                <a-descriptions-item label="订单总价" :span="3">
+                <a-descriptions-item label="订单总价" :span="1">
                   ￥{{ totalCost }}
                 </a-descriptions-item>
-                <a-descriptions-item v-if="totalCost" label="优惠折扣" :span="3">
+                <a-descriptions-item v-if="totalCost" label="优惠折扣" :span="1">
                   <div>
                     输入折扣：<a-input-number style="width: 60px;" :min="1" :max="10" v-model="discount"></a-input-number> 折 (需要则填写)
                   </div>
                   <div v-show="discount">
-                    <span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input>
+                    <span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 300px;"></a-input>
                   </div>
                 </a-descriptions-item>
                 <a-descriptions-item label="客户实际应付" :span="1">
@@ -604,12 +604,12 @@
                 </a-descriptions-item>
               </a-descriptions>
             </div>
-            <div style="margin-top: 10px;">
-              <a-popconfirm title="确定评估？" @confirm="checkOk">
-                <a-button type="primary">评估</a-button>
-              </a-popconfirm>
+            <div style="margin: 50px 10px;">
               <a-popconfirm title="确定作废订单吗？" @confirm="cancelOrder" v-if="MyInfo.roleName==='After_salesDirector'">
-                <a-button type="danger" style="float: right;" ghost>订单作废</a-button>
+                <a-button type="danger" ghost>订单作废</a-button>
+              </a-popconfirm>
+              <a-popconfirm title="确定评估？" @confirm="checkOk">
+                <a-button type="primary" style="float:right;">评估</a-button>
               </a-popconfirm>
             </div>
           </div>
@@ -1408,8 +1408,8 @@ export default {
       this.totalCost = 0
       this.totalCost += this.checkG
       this.totalCost += this.mailingCost
-      if (!this.guaranteeIndex) {
-        this.priceSum += this.checkG
+      if (!this.guaranteeIndex) { // 不在保修期内
+        // this.priceSum += this.checkG
         this.priceSum += this.mailingCost
         this.partArr.map(item => {
           this.priceSum += item.piecePrice * item.pieceNum
@@ -1417,7 +1417,9 @@ export default {
         })
         if (this.discount) {
           // console.log('??')
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       } else {
         this.partArr.map(item => {
@@ -1594,14 +1596,16 @@ export default {
           this.priceSum += item.piecePrice * item.pieceNum
           this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
-        this.priceSum += this.checkG // 师傅
+        // this.priceSum += this.checkG // 师傅
         this.totalCost += this.checkG // 师傅
         this.priceSum += this.mailingCost // 快递
         this.totalCost += this.mailingCost // 快递
       }
       if (this.discount) {
         // console.log('??')
-        this.priceSum = this.priceSum * this.discount * 0.1
+        this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+      } else {
+        this.priceSum = this.priceSum + this.checkG
       }
     },
     getParentSaleData () {
@@ -2047,10 +2051,12 @@ export default {
           this.partArr.map(item => {
             this.priceSum += item.piecePrice * item.pieceNum
           }) // 配件
-          this.priceSum += this.checkG // 师傅
+          // this.priceSum += this.checkG // 师傅
         }
         if (this.discount) {
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       },
       deep: true
@@ -2068,11 +2074,12 @@ export default {
           // this.mailingCostIndex = false
           this.priceSum += item.piecePrice * item.pieceNum
         }) // 配件
-        this.priceSum += this.checkG // 师傅
+        // this.priceSum += this.checkG // 师傅
         this.priceSum += this.mailingCost // 快递
         if (this.discount) {
-          // console.log('??')
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       }
     },
@@ -2090,8 +2097,12 @@ export default {
           this.priceSum += item.piecePrice * item.pieceNum
           this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
+        // if (this.discount) {
+        //   this.priceSum = this.priceSum * this.discount * 0.1
         if (this.discount) {
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       }
     },
@@ -2102,14 +2113,16 @@ export default {
       this.totalCost = 0
       this.priceSum += this.mailingCost // 快递
       this.totalCost += this.mailingCost // 快递
-      this.priceSum += this.checkG // 师傅
+      // this.priceSum += this.checkG // 师傅
       this.totalCost += this.checkG // 师傅
       this.partArr.map(item => {
         this.priceSum += item.piecePrice * item.pieceNum
         this.totalCost += item.piecePrice * item.pieceNum
       }) // 配件
       if (this.discount) {
-        this.priceSum = this.priceSum * this.discount * 0.1
+        this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+      } else {
+        this.priceSum = this.priceSum + this.checkG
       }
       if (this.guaranteeIndex) {
         this.priceSum = 0
