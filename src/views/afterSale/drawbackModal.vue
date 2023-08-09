@@ -117,6 +117,18 @@
                       <a-col :span="6"><a-input-number :min="0" :max="item2.pieceNum" @change="value => accessoriesChange(item1.id,item2,value)"/></a-col>
                     </a-row>
                   </div>
+                  <div v-if="item1.needVisit">
+                    <a-row>
+                      <a-col :span="8">师傅上门费</a-col>
+                      <a-col :span="4">{{ item1.afterSaleVisit.technicalPrice }}</a-col>
+                      <a-col :span="6">1</a-col>
+                      <a-col :span="6">
+                        <a-checkbox v-model="accessories.filter(i => i.processId === item1.id)[0].isVisit" :disabled="item1.returnParts.some(i => i.returnName === '师傅上门费')">
+                          <!-- {{ accessories.filter(i => i.processId === item1.id)[0].isVisit }} -->
+                        </a-checkbox>
+                      </a-col>
+                    </a-row>
+                  </div>
                   <div v-for="total in totalRefund" :key="total.id">
                     <span v-if="total.id===item1.id" style="color:red;padding-top: 20px;">
                       <span v-if="item1.discount && item1.pays.length>0">
@@ -130,7 +142,10 @@
                 <a v-else>无寄件信息</a>
               </a-descriptions-item>
               <a-descriptions-item label="申请操作">
-                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">退件{{ item1.pays.length>0?'退款':'' }}申请</a-button>
+                <a-button :disabled="item1.afterSaleExpresses.length>0?false:true" @click="returnPart(item1)">
+                  <!-- 退件{{ item1.pays.length>0?'退款':'' }}申请 -->
+                  提交申请
+                </a-button>
                 <!-- <a-button v-if="item1.pays.length>0" :disabled="item1.pays[0].actualAmount===0?true:false" @click="handRefund(item1)">退款</a-button> -->
               </a-descriptions-item>
             </a-descriptions>
@@ -231,18 +246,46 @@ export default {
       return md5(stringSignTemp)
     },
     async returnPart (item1) {
-      console.log('item1', item1)
+      console.log('this.accessories', this.accessories)
+      const payLoad = {
+        returnParts: item1.returnParts
+      }
+      let shouldUpdate = true
       const unadorned = item1.returnParts
-      console.log(item1, this.returnParts)
-      const returnParts = this.returnParts.filter(item => { return item.processId === item1.id })[0].parts
-      const payLoad = {}
-      payLoad.returnParts = returnParts.filter(part => { return part.num > 0 })
-      .map(item => {
-        // console.log('item', item)
+      // 如果有师傅上门费则先申请师傅上门
+      const isVisit = this.accessories.filter(i => i.processId === item1.id)[0].isVisit
+      if (isVisit) {
+        unadorned.map(item => {
+          if (item.returnName === '师傅上门费') {
+            this.$message.warning('请勿重复提交师傅上门费')
+            shouldUpdate = false
+          }
+        })
+        if (shouldUpdate) {
+          payLoad.returnParts.push({
+            returnName: '师傅上门费', returnNum: 1, returnTime: new Date(), unitPrice: item1.afterSaleVisit.technicalPrice, totalPrice: item1.afterSaleVisit.technicalPrice, returnStatus: 'WAIT_APPROVAL'
+          })
+          const res = await updateProcess(this.saleId, item1.id, payLoad)
+          if (res.status === 200) {
+            this.$message.success('师傅费用申请成功')
+            this.accessories = this.accessories.map(item => {
+              return { ...item, isVisit: false }
+            })
+            this.getSaleDate()
+            // this.handRefund(item1)
+          }
+        }
+        return
+      }
+      const returnParts = this.returnParts.filter(item => { return item.processId === item1.id })[0]?.parts.filter(part => { return part.num > 0 })
+      if (returnParts.length === 0 && !isVisit) {
+        this.$message.warning('退件数不可为空')
+        return
+      }
+      payLoad.returnParts = returnParts.map(item => {
         const totalPrice = item1.discount ? item.num * item.piecePrice * item1.discount / 10 : item.num * item.piecePrice * 10 / 10
         return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date(), unitPrice: item.piecePrice, totalPrice, returnStatus: 'WAIT_APPROVAL' }
       }).concat(unadorned)
-      let shouldUpdate = true
       item1.afterSaleExpresses.map(sendItem => {
         var num = 0
         payLoad.returnParts.map(item => {
@@ -419,7 +462,8 @@ export default {
         this.drawbackData = this.returnPartData
         this.MyInfo = JSON.parse(localStorage.getItem('MyInfo'))
         this.accessories = this.returnPartData.processes.map(item => {
-          return { processId: item.id, parts: [] }
+          // const isVisit = item.returnParts.some(i => i.returnName === '师傅上门费')
+          return { processId: item.id, parts: [], isVisit: false }
         })
       }
     }
