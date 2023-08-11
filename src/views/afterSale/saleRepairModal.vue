@@ -10,10 +10,10 @@
     >
       <span>订单号: {{ repairData.id }}</span>
       <div class="form">
-        <a-steps :current="current" v-if="current<6">
+        <a-steps :current="current" v-if="current<7">
           <a-step v-for="item in steps" :key="item.title" :title="item.title" />
         </a-steps>
-        <a-steps :current="1" v-if="current===6">
+        <a-steps :current="1" v-if="current===7">
           <a-step title="订单已作废" />
         </a-steps>
         <!-- 客户信息 -->
@@ -688,8 +688,14 @@
             </div>
           </a-form-model>
         </div>
-        <!-- 已寄件 -->
-        <div class="form_send" v-if="current===3">
+        <!-- 已寄件待确认收货 -->
+        <div style="display: flex;" v-if="current===3">
+          <a-popconfirm title="确定已收件吗？" @confirm="receiveSubmit">
+            <a-button style="margin: 20px auto;" type="primary">确认收货</a-button>
+          </a-popconfirm>
+        </div>
+        <!-- 已收件待派工 -->
+        <div class="form_send" v-if="current===4">
           <div class="form_pay_title">填单</div>
           <a-form-model
             ref="sendForm"
@@ -781,7 +787,7 @@
           </a-form-model>
         </div>
         <!-- 待上门 -->
-        <div class="form_come" v-if="current===4">
+        <div class="form_come" v-if="current===5">
           <div style="margin-top: 20px;text-align: center;">
             <a-popconfirm title="确定售后问题解决？" @confirm="repairSucceeded">
               <a-button style="margin-right:20px;" type="primary">问题解决</a-button>
@@ -793,7 +799,7 @@
           </div>
         </div>
         <!-- 已解决 -->
-        <div class="form_solve" v-if="current===5">
+        <div class="form_solve" v-if="current===6">
           <div style="font-size: 24px;text-align: center;">
             已解决
           </div>
@@ -899,6 +905,7 @@ export default {
         { title: '已评估' },
         { title: '已支付' },
         { title: '已寄件' },
+        { title: '已收件' },
         { title: '待上门' },
         { title: '已解决' }
       ],
@@ -1013,6 +1020,26 @@ export default {
     }
   },
   methods: {
+    receiveSubmit () {
+      const id = this.repairData.id
+      var changeStatus = {
+        status: 'RECEIVED'
+      }
+      if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
+        changeStatus = { status: 'WAIT_VISIT' }
+      }
+      // 改变状态
+      apiUpdateStatus(id, changeStatus).then(res => {
+        if (res.status === 200) {
+          this.$message.success('提交成功')
+          // console.log('状态改变成功')
+          this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    },
     async getSaleRepair (repairId) {
       const res = await getSaleRepair(repairId)
       if (res.status === 200) {
@@ -1232,7 +1259,7 @@ export default {
         this.$refs.payForm.resetFields()
       }
       // 上门信息刷新
-      if (this.current === 3) {
+      if (this.current === 4) {
         this.$refs.sendForm.resetFields()
         // this.sendForm.technicianList = []
         // this.sendForm.technicianPhoneList = []
@@ -1669,14 +1696,18 @@ export default {
               apiGetUserInfo().then(res => {
                 if (res.status === 200) {
                   let changeStatus = {}
-                  if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
-                    changeStatus = { status: 'WAIT_VISIT' }
-                  } else if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === true) {
-                    changeStatus = {
-                      status: 'SEND',
-                      managerName: res.data.userInfo.name
-                    }
+                  changeStatus = {
+                    status: 'SEND',
+                    managerName: res.data.userInfo.name
                   }
+                  // if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
+                  //   changeStatus = { status: 'WAIT_VISIT' }
+                  // } else if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === true) {
+                  //   changeStatus = {
+                  //     status: 'SEND',
+                  //     managerName: res.data.userInfo.name
+                  //   }
+                  // }
                   if (this.payForm.pieceDeliveryNo !== null) {
                     changeStatus.send = 'EXECUTED'
                   }

@@ -131,6 +131,26 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
+                <a @click="openRepairModal(record)">确认收货</a>
+              </span>
+            </a-table>
+          </a-tab-pane>
+          <a-tab-pane key="5" tab="已收件">
+            <a-table
+              :columns="sendColumns"
+              :rowKey="(record, index) => index"
+              :data-source="receiveData"
+              :pagination="false"
+              :scroll="{ y: 600 }"
+            >
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.monthlyStatement | filterBoolean }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
+              </span>
+              <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
+              <span slot="action" slot-scope="text,record">
                 <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">派工</a>
                 <a v-else>--</a>
                 <a-divider type="vertical" />
@@ -138,7 +158,7 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="5" tab="待上门">
+          <a-tab-pane key="6" tab="待上门">
             <a-table
               :columns="comeColumns"
               :rowKey="(record, index) => index"
@@ -158,7 +178,7 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="6" tab="已解决">
+          <a-tab-pane key="7" tab="已解决">
             <a-table
               :row-selection="{ selectedRowKeys: selectedAgreeRowKeys, onChange: onSelectChangeAgree }"
               :columns="solveColumns"
@@ -180,7 +200,7 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="7">
+          <a-tab-pane key="8">
             <span slot="tab">
               <a-icon type="delete" />已作废
             </span>
@@ -323,6 +343,8 @@ export default {
           return '已支付'
         case 'SEND':
           return '已寄件'
+        case 'RECEIVED':
+          return '已收件'
         case 'WAIT_VISIT':
           return '待上门'
         case 'SOLVED':
@@ -636,6 +658,7 @@ export default {
       payData: [],
       sendColumns: [],
       sendData: [],
+      receiveData: [],
       comeColumns: [],
       comeData: [],
       solveColumns: [],
@@ -1056,7 +1079,11 @@ export default {
           return '待支付'
         } else if (v[j] === 'PAID') {
           return '待寄件'
-        } else if (v[j] === 'WAIT_VISIT' || v[j] === 'SEND') {
+        } else if (v[j] === 'SEND') {
+          return '待收件'
+        } else if (v[j] === 'RECEIVED') {
+          return '待派工'
+        } else if (v[j] === 'WAIT_VISIT') {
           return '待上门'
         } else if (v[j] === 'SOLVED') {
           return '已解决'
@@ -1322,7 +1349,7 @@ export default {
       })
     },
     openRepairModal (data) {
-      // console.log(data)
+      console.log(data)
       this.repairVisible = true
       switch (data.status) {
         case 'WAIT_EVALUATE':
@@ -1331,20 +1358,26 @@ export default {
         case 'EVALUATED':
           this.current = 1
           break
+        case 'WAIT_PAY':
+          this.current = 1
+          break
         case 'PAID':
           this.current = 2
           break
         case 'SEND':
           this.current = 3
           break
-        case 'WAIT_VISIT':
+        case 'RECEIVED':
           this.current = 4
           break
-        case 'SOLVED':
+        case 'WAIT_VISIT':
           this.current = 5
           break
-        case 'CANCEL':
+        case 'SOLVED':
           this.current = 6
+          break
+        case 'CANCEL':
+          this.current = 7
           break
       }
       const testData = data.processes.sort((a, b) => {
@@ -1433,6 +1466,15 @@ export default {
           }
         }
       })
+      this.receiveData = this.salesData.filter(item => {
+        if (item.status === 'RECEIVED') {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
       this.comeData = this.salesData.filter(item => {
         if (item.status === 'WAIT_VISIT') {
           if (roleName === 'After_salesAsst' && this.filterMe) {
@@ -1510,6 +1552,9 @@ export default {
             case 'SEND':
               this.sendData = res.data
               break
+            case 'RECEIVED':
+              this.receiveData = res.data
+              break
             case 'WAIT_VISIT':
               this.comeData = res.data
               break
@@ -1551,9 +1596,12 @@ export default {
           this.changeStatus = 'SEND'
           break
         case '5':
-          this.changeStatus = 'WAIT_VISIT'
+          this.changeStatus = 'RECEIVED'
           break
         case '6':
+          this.changeStatus = 'WAIT_VISIT'
+          break
+        case '7':
           this.changeStatus = 'SOLVED'
           break
       }
