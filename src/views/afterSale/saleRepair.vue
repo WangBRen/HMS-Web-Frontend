@@ -252,14 +252,14 @@
       </a-row>
       <a-row style="margin-top:30px">
         <a-col :span="4" :offset="2">筛选品牌：
-          <a-select placeholder="请选择产品品牌" v-model="filterBrand" style="width: 130px" @change="handleChangeBrand">
+          <a-select allowClear placeholder="请选择产品品牌" v-model="filterBrand" style="width: 130px" @change="handleChangeBrand">
             <a-select-option v-for="(item) in brandArrs" :key="item.name">
               {{ item.name }}
             </a-select-option>
           </a-select>
         </a-col>
         <a-col :span="4" :offset="8">筛选型号：
-          <a-select placeholder="请选择产品型号" v-model="selectModel" style="width: 130px" @change="handleChangeModel">
+          <a-select allowClear placeholder="请选择产品型号" v-model="selectModel" style="width: 130px" @change="handleChangeModel">
             <a-select-option v-for="(item) in modelArr" :key="item">
               {{ item }}
             </a-select-option>
@@ -964,10 +964,15 @@ export default {
       this.disableMonth = false
       this.selectMonthly = 'all'
       this.filterBrand = value
+      var filterData
+      if (!value) {
+        filterData = this.salesData
+      } else {
+        filterData = this.salesData.filter(item => {
+          return item.customerInfo.brand === value
+        })
+      }
       this.selectModel = ''
-      const filterData = this.salesData.filter(item => {
-        return item.customerInfo.brand === value
-      })
       this.filterTime(filterData)
       this.brandArrs.filter(item => {
         if (item.name === this.filterBrand) {
@@ -979,13 +984,24 @@ export default {
       this.disableMonth = false
       this.selectMonthly = 'all'
       this.selectModel = value
-      const filterData = this.salesData.filter(item => {
-        if (this.filterBrand !== '') {
-          return item.customerInfo.productModel === value && item.customerInfo.brand === this.filterBrand
-        } else {
-          return item.customerInfo.productModel === value
-        }
-      })
+      var filterData
+      if (!value) {
+        filterData = this.salesData.filter(item => {
+          if (this.filterBrand) {
+            return item.customerInfo.brand === this.filterBrand
+          } else {
+            return item
+          }
+        })
+      } else {
+        filterData = this.salesData.filter(item => {
+          if (this.filterBrand) {
+            return item.customerInfo.productModel === value && item.customerInfo.brand === this.filterBrand
+          } else {
+            return item.customerInfo.productModel === value
+          }
+        })
+      }
       this.filterTime(filterData)
     },
     exportData () {
@@ -1324,11 +1340,13 @@ export default {
         solution = solution + '【' + item.solution + '】'
       })
       this.$info({
-        title: '用户信息及服务描述',
+        title: '用户信息',
         width: '800px',
         content: (
           <div>
+            <h2></h2>
             <h3>{record.customerInfo.customerName}，{record.customerInfo.customerPhone}，{record.customerInfo.serviceAddress}</h3><br/>
+            <h2>服务描述</h2>
             <p>麻烦师傅上门带上万用表！</p>
             <p>如师傅不与客户联系私定上门时间，或机子有故障不联系技术，不予结单！！！</p>
             <h3>配件清单如下：</h3>

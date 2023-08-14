@@ -1261,8 +1261,6 @@ export default {
       // 上门信息刷新
       if (this.current === 4) {
         this.$refs.sendForm.resetFields()
-        // this.sendForm.technicianList = []
-        // this.sendForm.technicianPhoneList = []
       }
       this.editVisitIndex = false
       this.$emit('closeRepairModal')
@@ -1740,7 +1738,6 @@ export default {
     onSendSubmit () {
       const id = this.repairData.id
       const processId = this.repairData.processes[this.repairData.processes.length - 1].id
-      // console.log(id, processId, this.sendForm)
       this.$refs.sendForm.validate(vaild => {
         if (vaild) {
           const apiData = {
@@ -2161,6 +2158,7 @@ export default {
     },
     // 动态规则
     repairData (newData, oldData) {
+      this.sendForm = newData.processes[newData.processes.length - 1].afterSaleVisit
       // console.log('repairData', newData, oldData)
 
       // 保存月结状态
