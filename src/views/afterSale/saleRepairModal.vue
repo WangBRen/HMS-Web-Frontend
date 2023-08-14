@@ -538,7 +538,12 @@
               <div>
                 <span style="color: #f5222d;">* </span>
                 <span>配件选择：</span>
-                <a-select @change="checkFirstPart" style="width: 200px" v-model="checkC">
+                <a-select show-search style="width: 350px" v-model="checkD">
+                  <a-select-option v-for="item in partData" :key="item.name">
+                    {{ item.belongPart + ' / ' + item.name }}
+                  </a-select-option>
+                </a-select>
+                <!-- <a-select @change="checkFirstPart" style="width: 200px" v-model="checkC">
                   <a-select-option v-for="item in partData" :key="item">
                     {{ item }}
                   </a-select-option>
@@ -547,7 +552,7 @@
                   <a-select-option v-for="item in secondPart" :key="item.pieceName">
                     {{ item.pieceName }}
                   </a-select-option>
-                </a-select>
+                </a-select> -->
                 <span> 数量：</span>
                 <a-input-number :disabled="!checkD" v-model="checkE" id="inputNumber" :min="1"/>
                 <a-button style="line-height: 30px;" :disabled="!checkE" @click="addPart" type="primary">添加</a-button>
@@ -1367,18 +1372,16 @@ export default {
     },
     // 添加配件
     addPart () {
-      // console.log(this.checkD)
       const partAdd = {}
-      this.secondPart.filter(item => {
-        if (item.pieceName === this.checkD) {
-          // console.log('item', item)
-          partAdd.pieceName = item.pieceName
-          partAdd.piecePrice = item.piecePrice
-          partAdd.pieceCost = item.pieceCost
-          partAdd.pieceStock = item.pieceStock
+      this.partData.filter(item => {
+        if (item.name === this.checkD) {
+          partAdd.pieceName = item.name
+          partAdd.piecePrice = item.price
+          partAdd.pieceCost = item.cost
+          partAdd.pieceStock = item.stock
           partAdd.pieceNum = this.checkE
-          partAdd.pieceId = item.pieceId
-          partAdd.pieceNumber = item.pieceNumber
+          partAdd.pieceId = item.id
+          partAdd.pieceNumber = item.serialNumber
         }
       })
       if (this.partArr.length !== 0) {
@@ -2007,12 +2010,10 @@ export default {
     apiGetParts(pages).then(res => {
       if (res.status === 200) {
         // this.$message.success('配件查询成功')
-        // console.log('部分', res.data)
         pages.size = res.data.totalElements
         apiGetParts(pages).then(res => {
           if (res.status === 200) {
             const partTest = res.data.content
-            // console.log('全部', partTest)
             this.part = partTest
             let aPart = []
             // 存储一级配件类名
@@ -2020,12 +2021,11 @@ export default {
               aPart.push(item.belongPart)
             })
             aPart = Array.from(new Set(aPart))
-            // console.log('aPart', aPart)
             this.technicalData = aPart.filter(data => {
               return data === '师傅上门报价'
             })
-            this.partData = aPart.filter(data => {
-              return data !== '师傅上门报价'
+            this.partData = partTest.filter(data => {
+              return data.belongPart !== '师傅上门报价'
             })
           }
         })
@@ -2158,7 +2158,7 @@ export default {
     },
     // 动态规则
     repairData (newData, oldData) {
-      this.sendForm = newData.processes[newData.processes.length - 1].afterSaleVisit
+      this.sendForm = newData.processes[newData.processes.length - 1]?.afterSaleVisit
       // console.log('repairData', newData, oldData)
 
       // 保存月结状态
