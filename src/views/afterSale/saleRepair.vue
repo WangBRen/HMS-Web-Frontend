@@ -1345,7 +1345,7 @@ export default {
         content: (
           <div>
             <h2></h2>
-            <h3>{record.customerInfo.customerName}，{record.customerInfo.customerPhone}，{record.customerInfo.isSameAddress ? record.customerInfo.receiveAddress : record.customerInfo.serviceAddress}</h3><br/>
+            <h3>{record.customerInfo.customerName}，{record.customerInfo.customerPhone}，{record.customerInfo.serviceAddress ? record.customerInfo.serviceAddress : record.customerInfo.receiveAddress}</h3><br/>
             <h2>服务描述</h2>
             <p>麻烦师傅上门带上万用表！</p>
             <h3>配件清单如下：</h3>
