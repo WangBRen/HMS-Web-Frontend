@@ -465,6 +465,7 @@ export default {
           // const isVisit = item.returnParts.some(i => i.returnName === '师傅上门费')
           return { processId: item.id, parts: [], isVisit: false }
         })
+        this.returnList = []
       }
     }
   }
