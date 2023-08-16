@@ -1345,19 +1345,18 @@ export default {
         content: (
           <div>
             <h2></h2>
-            <h3>{record.customerInfo.customerName}，{record.customerInfo.customerPhone}，{record.customerInfo.serviceAddress}</h3><br/>
+            <h3>{record.customerInfo.customerName}，{record.customerInfo.customerPhone}，{record.customerInfo.isSameAddress ? record.customerInfo.receiveAddress : record.customerInfo.serviceAddress}</h3><br/>
             <h2>服务描述</h2>
             <p>麻烦师傅上门带上万用表！</p>
-            <p>如师傅不与客户联系私定上门时间，或机子有故障不联系技术，不予结单！！！</p>
             <h3>配件清单如下：</h3>
             <p>{express}</p>
-            <p>维修前先联系技术，提供更换视频。</p>
-            <p>技术电话：</p>
-            <p>问题汇总：{problems}</p>
+            <p>维修前先联系技术：19906826552 18157617329</p>
+            {/* <p>问题汇总：{problems}</p>
             <p>定位方法：{definitionMethod}</p>
-            <p>解决方案：{solution}</p>
-            <p>维修完成后请客户现场试机，若机子仍有故障，请一定再次联系技术。</p>
-            <p>修好后麻烦师傅把配件和客户手中的回执单一起寄回公司，谢谢。</p>
+            <p>解决方案：{solution}</p> */}
+            <p>提供更换视频， 维修完成后请客户现场试机 若机子仍有故障请一定再次联系技术。</p>
+            <p>【 私定上门时间, 或机子有故障不联系技术，皆不予结单 】</p>
+            <p>修好后麻烦师傅把配件和客户手上一张回执单一起寄回公司，谢谢</p>
           </div>
         ),
         okText: '关闭',

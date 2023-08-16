@@ -989,7 +989,8 @@ export default {
         technicalPhone: null, // 师傅手机号
         visitTime: null, // 上门时间
         technicianList: [], // 技术人员
-        // technicianPhone: null, // 技术人员电话
+        technicalPrice: '',
+        technician: null,
         technicianPhoneList: [] // 技术人员电话组
       },
       technologyArr: [],
@@ -2156,42 +2157,19 @@ export default {
         this.priceSum = 0
       }
     },
-    // 动态规则
-    repairData (newData, oldData) {
-      this.sendForm = newData.processes[newData.processes.length - 1]?.afterSaleVisit
-      // console.log('repairData', newData, oldData)
-
-      // 保存月结状态
-      this.statementIndex = this.transferData
-
-      // 已寄件和待上门状态获取上门信息
-      let formName = null
-      switch (this.current) {
-        case 3:
-          formName = this.sendForm
-          break
-        case 4:
-          formName = this.editVisitForm
-          break
-      }
-      if (formName !== null) {
-        const arr = this.repairData.processes[this.repairData.processes.length - 1].afterSaleVisit
-        formName.technicalCost = arr.technicalCost
-        formName.technicalName = arr.technicalName
-        formName.technicalPhone = arr.technicalPhone
-        formName.technicalPlatform = arr.technicalPlatform
-        formName.technicalServiceNo = arr.technicalServiceNo
-        formName.visitTime = arr.visitTime
-        if (arr.technicianList !== null) {
-          formName.technicianList = arr.technicianList
-        } else {
-          formName.technicianList = []
+    repairVisible (newData, oldData) {
+      if (newData) {
+        const sendForm = this.repairData.processes[this.repairData.processes.length - 1].afterSaleVisit
+        this.sendForm.technicalPlatform = sendForm.technicalPlatform
+        this.sendForm.technicalServiceNo = sendForm.technicalServiceNo
+        this.sendForm.technicalName = sendForm.technicalName
+        this.sendForm.technicalCost = sendForm.technicalCost
+        this.sendForm.technicalPhone = sendForm.technicalPhone
+        this.sendForm.visitTime = sendForm.visitTime
+        if (sendForm.technicianPhoneList) {
+          this.sendForm.technicianPhoneList = sendForm.technicianPhoneList
         }
-        if (arr.technicianPhoneList !== null) {
-          formName.technicianPhoneList = arr.technicianPhoneList
-        } else {
-          formName.technicianPhoneList = []
-        }
+        this.sendForm.technicalPrice = sendForm.technicalPrice
       }
     },
     'editForm.brand' (newData, oldData) {
