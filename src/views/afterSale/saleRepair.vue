@@ -110,7 +110,7 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">填单</a>
+                <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">寄件</a>
                 <a v-else>--</a>
               </span>
             </a-table>
@@ -131,12 +131,34 @@
               </span>
               <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
               <span slot="action" slot-scope="text,record">
-                <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">填单</a>
-                <a v-else>--</a>
+                <a @click="openRepairModal(record)">确认收货</a>
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="5" tab="待上门">
+          <a-tab-pane key="5" tab="已收件">
+            <a-table
+              :columns="sendColumns"
+              :rowKey="(record, index) => index"
+              :data-source="receiveData"
+              :pagination="false"
+              :scroll="{ y: 600 }"
+            >
+              <span slot="monthlyStatement" slot-scope="record">
+                {{ record.monthlyStatement | filterBoolean }}
+              </span>
+              <span slot="processes" slot-scope="record">
+                {{ record.processes.length }}
+              </span>
+              <span slot="createTime" slot-scope="text">{{ text | moment }}</span>
+              <span slot="action" slot-scope="text,record">
+                <a @click="openRepairModal(record)" v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'">派工</a>
+                <a v-else>--</a>
+                <a-divider type="vertical" />
+                <a @click="serviceDesc(record)">话术</a>
+              </span>
+            </a-table>
+          </a-tab-pane>
+          <a-tab-pane key="6" tab="待上门">
             <a-table
               :columns="comeColumns"
               :rowKey="(record, index) => index"
@@ -156,7 +178,7 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="6" tab="已解决">
+          <a-tab-pane key="7" tab="已解决">
             <a-table
               :row-selection="{ selectedRowKeys: selectedAgreeRowKeys, onChange: onSelectChangeAgree }"
               :columns="solveColumns"
@@ -178,7 +200,7 @@
               </span>
             </a-table>
           </a-tab-pane>
-          <a-tab-pane key="7">
+          <a-tab-pane key="8">
             <span slot="tab">
               <a-icon type="delete" />已作废
             </span>
@@ -230,14 +252,14 @@
       </a-row>
       <a-row style="margin-top:30px">
         <a-col :span="4" :offset="2">筛选品牌：
-          <a-select placeholder="请选择产品品牌" v-model="filterBrand" style="width: 130px" @change="handleChangeBrand">
+          <a-select allowClear placeholder="请选择产品品牌" v-model="filterBrand" style="width: 130px" @change="handleChangeBrand">
             <a-select-option v-for="(item) in brandArrs" :key="item.name">
               {{ item.name }}
             </a-select-option>
           </a-select>
         </a-col>
         <a-col :span="4" :offset="8">筛选型号：
-          <a-select placeholder="请选择产品型号" v-model="selectModel" style="width: 130px" @change="handleChangeModel">
+          <a-select allowClear placeholder="请选择产品型号" v-model="selectModel" style="width: 130px" @change="handleChangeModel">
             <a-select-option v-for="(item) in modelArr" :key="item">
               {{ item }}
             </a-select-option>
@@ -321,6 +343,8 @@ export default {
           return '已支付'
         case 'SEND':
           return '已寄件'
+        case 'RECEIVED':
+          return '已收件'
         case 'WAIT_VISIT':
           return '待上门'
         case 'SOLVED':
@@ -634,6 +658,7 @@ export default {
       payData: [],
       sendColumns: [],
       sendData: [],
+      receiveData: [],
       comeColumns: [],
       comeData: [],
       solveColumns: [],
@@ -939,10 +964,15 @@ export default {
       this.disableMonth = false
       this.selectMonthly = 'all'
       this.filterBrand = value
+      var filterData
+      if (!value) {
+        filterData = this.salesData
+      } else {
+        filterData = this.salesData.filter(item => {
+          return item.customerInfo.brand === value
+        })
+      }
       this.selectModel = ''
-      const filterData = this.salesData.filter(item => {
-        return item.customerInfo.brand === value
-      })
       this.filterTime(filterData)
       this.brandArrs.filter(item => {
         if (item.name === this.filterBrand) {
@@ -954,13 +984,24 @@ export default {
       this.disableMonth = false
       this.selectMonthly = 'all'
       this.selectModel = value
-      const filterData = this.salesData.filter(item => {
-        if (this.filterBrand !== '') {
-          return item.customerInfo.productModel === value && item.customerInfo.brand === this.filterBrand
-        } else {
-          return item.customerInfo.productModel === value
-        }
-      })
+      var filterData
+      if (!value) {
+        filterData = this.salesData.filter(item => {
+          if (this.filterBrand) {
+            return item.customerInfo.brand === this.filterBrand
+          } else {
+            return item
+          }
+        })
+      } else {
+        filterData = this.salesData.filter(item => {
+          if (this.filterBrand) {
+            return item.customerInfo.productModel === value && item.customerInfo.brand === this.filterBrand
+          } else {
+            return item.customerInfo.productModel === value
+          }
+        })
+      }
       this.filterTime(filterData)
     },
     exportData () {
@@ -1054,14 +1095,18 @@ export default {
           return '待支付'
         } else if (v[j] === 'PAID') {
           return '待寄件'
-        } else if (v[j] === 'WAIT_VISIT' || v[j] === 'SEND') {
+        } else if (v[j] === 'SEND') {
+          return '待收件'
+        } else if (v[j] === 'RECEIVED') {
+          return '待派工'
+        } else if (v[j] === 'WAIT_VISIT') {
           return '待上门'
         } else if (v[j] === 'SOLVED') {
           return '已解决'
         } else if (v[j] === 'CANCEL') { return '已废弃' }
       } else if (j === 'discount') {
         return process[j] ? process[j] + '折' : '-'
-      } else if (j === 'pieceName' || j === 'pieceNum' || j === 'piecePrice') {
+      } else if (j === 'pieceName' || j === 'pieceNum' || j === 'piecePrice' || j === 'pieceNumber') {
         if (type === 'send') {
           return express[j]
         } else {
@@ -1083,6 +1128,14 @@ export default {
         } else { return '-' }
       } else if (j === 'returnName') {
         return express?.returnName || '-'
+      } else if (j === 'returnNumber') {
+        const number = process.afterSaleExpresses.filter(item => item.pieceName === express?.returnName)
+        if (number.length > 0) {
+          return number[0].pieceNumber
+        } else {
+          return '-'
+        }
+        // return express?.returnName || '-'
       } else if (j === 'returnNum') {
         return express?.returnNum || '-'
       } else if (j === 'unitPrice') {
@@ -1171,7 +1224,7 @@ export default {
         const tHeader = [
           '订单编号', '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
           '产品编号', '客户提交问题', '售后评估问题', '是否上门', '是否寄件', '是否月结单', '是否保修期内',
-          '状态', '上门费用', '上门反馈时间', '折扣', '寄件名称', '寄件数量', '寄件单价', '寄件金额', '寄件单号', '寄件时间', '退件名称', '退件数量', '退件单价', '退件金额', '退件时间'
+          '状态', '上门费用', '上门反馈时间', '折扣', '寄件名称', '配件编码', '寄件数量', '寄件单价', '寄件金额', '寄件单号', '寄件时间', '退件名称', '配件编码', '退件数量', '退件单价', '退件金额', '退件时间'
         ]
         const filterVal = [
           'id',
@@ -1194,12 +1247,14 @@ export default {
           'feedbackTime',
           'discount',
           'pieceName',
+          'pieceNumber',
           'pieceNum',
           'piecePrice',
           'expressPrice',
           'pieceDeliveryNo',
           'sendTime',
           'returnName',
+          'returnNumber',
           'returnNum',
           'unitPrice',
           'totalPrice',
@@ -1269,8 +1324,50 @@ export default {
     handleCancel () {
       this.exportVisible = false
     },
+    serviceDesc (record) {
+      console.log('record', record)
+      var express = ''
+      record.processes[record.processes.length - 1].afterSaleExpresses.map(item => {
+        express = express + item.pieceName + '（' + item.pieceNum + '件）;'
+      })
+      const problem = record.processes[record.processes.length - 1].problems
+      var problems = ''
+      var definitionMethod = ''
+      var solution = ''
+      problem.map(item => {
+        problems = problems + '【' + item.problemJudge.firstPro + item.problemJudge.secondPro + '】'
+        definitionMethod = definitionMethod + '【' + item.definitionMethod + '】'
+        solution = solution + '【' + item.solution + '】'
+      })
+      this.$info({
+        title: '用户信息',
+        width: '800px',
+        content: (
+          <div>
+            <h2></h2>
+            <h3>{record.customerInfo.customerName}，{record.customerInfo.customerPhone}，{record.customerInfo.serviceAddress}</h3><br/>
+            <h2>服务描述</h2>
+            <p>麻烦师傅上门带上万用表！</p>
+            <p>如师傅不与客户联系私定上门时间，或机子有故障不联系技术，不予结单！！！</p>
+            <h3>配件清单如下：</h3>
+            <p>{express}</p>
+            <p>维修前先联系技术，提供更换视频。</p>
+            <p>技术电话：</p>
+            <p>问题汇总：{problems}</p>
+            <p>定位方法：{definitionMethod}</p>
+            <p>解决方案：{solution}</p>
+            <p>维修完成后请客户现场试机，若机子仍有故障，请一定再次联系技术。</p>
+            <p>修好后麻烦师傅把配件和客户手中的回执单一起寄回公司，谢谢。</p>
+          </div>
+        ),
+        okText: '关闭',
+        onOk () {
+          console.log('OK')
+        }
+      })
+    },
     openRepairModal (data) {
-      // console.log(data)
+      console.log(data)
       this.repairVisible = true
       switch (data.status) {
         case 'WAIT_EVALUATE':
@@ -1279,20 +1376,26 @@ export default {
         case 'EVALUATED':
           this.current = 1
           break
+        case 'WAIT_PAY':
+          this.current = 1
+          break
         case 'PAID':
           this.current = 2
           break
         case 'SEND':
           this.current = 3
           break
-        case 'WAIT_VISIT':
+        case 'RECEIVED':
           this.current = 4
           break
-        case 'SOLVED':
+        case 'WAIT_VISIT':
           this.current = 5
           break
-        case 'CANCEL':
+        case 'SOLVED':
           this.current = 6
+          break
+        case 'CANCEL':
+          this.current = 7
           break
       }
       const testData = data.processes.sort((a, b) => {
@@ -1381,6 +1484,15 @@ export default {
           }
         }
       })
+      this.receiveData = this.salesData.filter(item => {
+        if (item.status === 'RECEIVED') {
+          if (roleName === 'After_salesAsst' && this.filterMe) {
+            return item.customerService === this.MyInfo.userInfo.name
+          } else {
+            return item
+          }
+        }
+      })
       this.comeData = this.salesData.filter(item => {
         if (item.status === 'WAIT_VISIT') {
           if (roleName === 'After_salesAsst' && this.filterMe) {
@@ -1458,6 +1570,9 @@ export default {
             case 'SEND':
               this.sendData = res.data
               break
+            case 'RECEIVED':
+              this.receiveData = res.data
+              break
             case 'WAIT_VISIT':
               this.comeData = res.data
               break
@@ -1499,9 +1614,12 @@ export default {
           this.changeStatus = 'SEND'
           break
         case '5':
-          this.changeStatus = 'WAIT_VISIT'
+          this.changeStatus = 'RECEIVED'
           break
         case '6':
+          this.changeStatus = 'WAIT_VISIT'
+          break
+        case '7':
           this.changeStatus = 'SOLVED'
           break
       }

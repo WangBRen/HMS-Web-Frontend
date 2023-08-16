@@ -10,10 +10,10 @@
     >
       <span>订单号: {{ repairData.id }}</span>
       <div class="form">
-        <a-steps :current="current" v-if="current<6">
+        <a-steps :current="current" v-if="current<7">
           <a-step v-for="item in steps" :key="item.title" :title="item.title" />
         </a-steps>
-        <a-steps :current="1" v-if="current===6">
+        <a-steps :current="1" v-if="current===7">
           <a-step title="订单已作废" />
         </a-steps>
         <!-- 客户信息 -->
@@ -538,7 +538,12 @@
               <div>
                 <span style="color: #f5222d;">* </span>
                 <span>配件选择：</span>
-                <a-select @change="checkFirstPart" style="width: 200px" v-model="checkC">
+                <a-select show-search style="width: 350px" v-model="checkD">
+                  <a-select-option v-for="item in partData" :key="item.name">
+                    {{ item.belongPart + ' / ' + item.name }}
+                  </a-select-option>
+                </a-select>
+                <!-- <a-select @change="checkFirstPart" style="width: 200px" v-model="checkC">
                   <a-select-option v-for="item in partData" :key="item">
                     {{ item }}
                   </a-select-option>
@@ -547,7 +552,7 @@
                   <a-select-option v-for="item in secondPart" :key="item.pieceName">
                     {{ item.pieceName }}
                   </a-select-option>
-                </a-select>
+                </a-select> -->
                 <span> 数量：</span>
                 <a-input-number :disabled="!checkD" v-model="checkE" id="inputNumber" :min="1"/>
                 <a-button style="line-height: 30px;" :disabled="!checkE" @click="addPart" type="primary">添加</a-button>
@@ -573,7 +578,7 @@
                     </span>
                   </a-row>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="1.5">
+                <a-descriptions-item v-if="partArr.length" label="快递费用" :span="1">
                   <span v-if="!mailingCostIndex">
                     <a-input-number :min="0" v-model="mailingCost"></a-input-number>
                     <a-button style="line-height: 29px;" @click="okMailing" type="primary">确认</a-button>
@@ -582,21 +587,21 @@
                     ￥{{ mailingCost }}
                   </span>
                 </a-descriptions-item>
-                <a-descriptions-item v-if="partArr.length" label="配件总价" :span="1.5">
+                <a-descriptions-item v-if="partArr.length" label="配件总价" :span="1">
                   ￥{{ countPart(partArr) }}
                 </a-descriptions-item>
-                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="1.5">
+                <a-descriptions-item v-if="visitIndex" label="师傅价格" :span="1">
                   ￥{{ checkG }}
                 </a-descriptions-item>
-                <a-descriptions-item label="订单总价" :span="3">
+                <a-descriptions-item label="订单总价" :span="1">
                   ￥{{ totalCost }}
                 </a-descriptions-item>
-                <a-descriptions-item v-if="totalCost" label="优惠折扣" :span="3">
+                <a-descriptions-item v-if="totalCost" label="优惠折扣" :span="1">
                   <div>
                     输入折扣：<a-input-number style="width: 60px;" :min="1" :max="10" v-model="discount"></a-input-number> 折 (需要则填写)
                   </div>
                   <div v-show="discount">
-                    <span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 400px;"></a-input>
+                    <span style="color: #f5222d;">* </span>折扣理由：<a-input v-model="discountData" style="width: 300px;"></a-input>
                   </div>
                 </a-descriptions-item>
                 <a-descriptions-item label="客户实际应付" :span="1">
@@ -604,12 +609,12 @@
                 </a-descriptions-item>
               </a-descriptions>
             </div>
-            <div style="margin-top: 10px;">
-              <a-popconfirm title="确定评估？" @confirm="checkOk">
-                <a-button type="primary">评估</a-button>
-              </a-popconfirm>
+            <div style="margin: 50px 10px;">
               <a-popconfirm title="确定作废订单吗？" @confirm="cancelOrder" v-if="MyInfo.roleName==='After_salesDirector'">
-                <a-button type="danger" style="float: right;" ghost>订单作废</a-button>
+                <a-button type="danger" ghost>订单作废</a-button>
+              </a-popconfirm>
+              <a-popconfirm title="确定评估？" @confirm="checkOk">
+                <a-button type="primary" style="float:right;">评估</a-button>
               </a-popconfirm>
             </div>
           </div>
@@ -688,8 +693,14 @@
             </div>
           </a-form-model>
         </div>
-        <!-- 已寄件 -->
-        <div class="form_send" v-if="current===3">
+        <!-- 已寄件待确认收货 -->
+        <div style="display: flex;" v-if="current===3">
+          <a-popconfirm title="确定已收件吗？" @confirm="receiveSubmit">
+            <a-button style="margin: 20px auto;" type="primary">确认收货</a-button>
+          </a-popconfirm>
+        </div>
+        <!-- 已收件待派工 -->
+        <div class="form_send" v-if="current===4">
           <div class="form_pay_title">填单</div>
           <a-form-model
             ref="sendForm"
@@ -781,7 +792,7 @@
           </a-form-model>
         </div>
         <!-- 待上门 -->
-        <div class="form_come" v-if="current===4">
+        <div class="form_come" v-if="current===5">
           <div style="margin-top: 20px;text-align: center;">
             <a-popconfirm title="确定售后问题解决？" @confirm="repairSucceeded">
               <a-button style="margin-right:20px;" type="primary">问题解决</a-button>
@@ -793,7 +804,7 @@
           </div>
         </div>
         <!-- 已解决 -->
-        <div class="form_solve" v-if="current===5">
+        <div class="form_solve" v-if="current===6">
           <div style="font-size: 24px;text-align: center;">
             已解决
           </div>
@@ -899,6 +910,7 @@ export default {
         { title: '已评估' },
         { title: '已支付' },
         { title: '已寄件' },
+        { title: '已收件' },
         { title: '待上门' },
         { title: '已解决' }
       ],
@@ -1013,6 +1025,26 @@ export default {
     }
   },
   methods: {
+    receiveSubmit () {
+      const id = this.repairData.id
+      var changeStatus = {
+        status: 'RECEIVED'
+      }
+      if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
+        changeStatus = { status: 'WAIT_VISIT' }
+      }
+      // 改变状态
+      apiUpdateStatus(id, changeStatus).then(res => {
+        if (res.status === 200) {
+          this.$message.success('提交成功')
+          // console.log('状态改变成功')
+          this.closeRepairModals()
+          this.$parent.getAfterSaleData()
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    },
     async getSaleRepair (repairId) {
       const res = await getSaleRepair(repairId)
       if (res.status === 200) {
@@ -1232,10 +1264,8 @@ export default {
         this.$refs.payForm.resetFields()
       }
       // 上门信息刷新
-      if (this.current === 3) {
+      if (this.current === 4) {
         this.$refs.sendForm.resetFields()
-        // this.sendForm.technicianList = []
-        // this.sendForm.technicianPhoneList = []
       }
       this.editVisitIndex = false
       this.$emit('closeRepairModal')
@@ -1342,18 +1372,16 @@ export default {
     },
     // 添加配件
     addPart () {
-      // console.log(this.checkD)
       const partAdd = {}
-      this.secondPart.filter(item => {
-        if (item.pieceName === this.checkD) {
-          // console.log('item', item)
-          partAdd.pieceName = item.pieceName
-          partAdd.piecePrice = item.piecePrice
-          partAdd.pieceCost = item.pieceCost
-          partAdd.pieceStock = item.pieceStock
+      this.partData.filter(item => {
+        if (item.name === this.checkD) {
+          partAdd.pieceName = item.name
+          partAdd.piecePrice = item.price
+          partAdd.pieceCost = item.cost
+          partAdd.pieceStock = item.stock
           partAdd.pieceNum = this.checkE
-          partAdd.pieceId = item.pieceId
-          partAdd.pieceNumber = item.pieceNumber
+          partAdd.pieceId = item.id
+          partAdd.pieceNumber = item.serialNumber
         }
       })
       if (this.partArr.length !== 0) {
@@ -1408,8 +1436,8 @@ export default {
       this.totalCost = 0
       this.totalCost += this.checkG
       this.totalCost += this.mailingCost
-      if (!this.guaranteeIndex) {
-        this.priceSum += this.checkG
+      if (!this.guaranteeIndex) { // 不在保修期内
+        // this.priceSum += this.checkG
         this.priceSum += this.mailingCost
         this.partArr.map(item => {
           this.priceSum += item.piecePrice * item.pieceNum
@@ -1417,7 +1445,9 @@ export default {
         })
         if (this.discount) {
           // console.log('??')
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       } else {
         this.partArr.map(item => {
@@ -1594,14 +1624,16 @@ export default {
           this.priceSum += item.piecePrice * item.pieceNum
           this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
-        this.priceSum += this.checkG // 师傅
+        // this.priceSum += this.checkG // 师傅
         this.totalCost += this.checkG // 师傅
         this.priceSum += this.mailingCost // 快递
         this.totalCost += this.mailingCost // 快递
       }
       if (this.discount) {
         // console.log('??')
-        this.priceSum = this.priceSum * this.discount * 0.1
+        this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+      } else {
+        this.priceSum = this.priceSum + this.checkG
       }
     },
     getParentSaleData () {
@@ -1665,14 +1697,18 @@ export default {
               apiGetUserInfo().then(res => {
                 if (res.status === 200) {
                   let changeStatus = {}
-                  if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
-                    changeStatus = { status: 'WAIT_VISIT' }
-                  } else if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === true) {
-                    changeStatus = {
-                      status: 'SEND',
-                      managerName: res.data.userInfo.name
-                    }
+                  changeStatus = {
+                    status: 'SEND',
+                    managerName: res.data.userInfo.name
                   }
+                  // if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === false) {
+                  //   changeStatus = { status: 'WAIT_VISIT' }
+                  // } else if (this.repairData.processes[this.repairData.processes.length - 1].needVisit === true) {
+                  //   changeStatus = {
+                  //     status: 'SEND',
+                  //     managerName: res.data.userInfo.name
+                  //   }
+                  // }
                   if (this.payForm.pieceDeliveryNo !== null) {
                     changeStatus.send = 'EXECUTED'
                   }
@@ -1705,7 +1741,6 @@ export default {
     onSendSubmit () {
       const id = this.repairData.id
       const processId = this.repairData.processes[this.repairData.processes.length - 1].id
-      // console.log(id, processId, this.sendForm)
       this.$refs.sendForm.validate(vaild => {
         if (vaild) {
           const apiData = {
@@ -1975,12 +2010,10 @@ export default {
     apiGetParts(pages).then(res => {
       if (res.status === 200) {
         // this.$message.success('配件查询成功')
-        // console.log('部分', res.data)
         pages.size = res.data.totalElements
         apiGetParts(pages).then(res => {
           if (res.status === 200) {
             const partTest = res.data.content
-            // console.log('全部', partTest)
             this.part = partTest
             let aPart = []
             // 存储一级配件类名
@@ -1988,12 +2021,11 @@ export default {
               aPart.push(item.belongPart)
             })
             aPart = Array.from(new Set(aPart))
-            // console.log('aPart', aPart)
             this.technicalData = aPart.filter(data => {
               return data === '师傅上门报价'
             })
-            this.partData = aPart.filter(data => {
-              return data !== '师傅上门报价'
+            this.partData = partTest.filter(data => {
+              return data.belongPart !== '师傅上门报价'
             })
           }
         })
@@ -2047,10 +2079,12 @@ export default {
           this.partArr.map(item => {
             this.priceSum += item.piecePrice * item.pieceNum
           }) // 配件
-          this.priceSum += this.checkG // 师傅
+          // this.priceSum += this.checkG // 师傅
         }
         if (this.discount) {
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       },
       deep: true
@@ -2068,11 +2102,12 @@ export default {
           // this.mailingCostIndex = false
           this.priceSum += item.piecePrice * item.pieceNum
         }) // 配件
-        this.priceSum += this.checkG // 师傅
+        // this.priceSum += this.checkG // 师傅
         this.priceSum += this.mailingCost // 快递
         if (this.discount) {
-          // console.log('??')
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       }
     },
@@ -2090,8 +2125,12 @@ export default {
           this.priceSum += item.piecePrice * item.pieceNum
           this.totalCost += item.piecePrice * item.pieceNum
         }) // 配件
+        // if (this.discount) {
+        //   this.priceSum = this.priceSum * this.discount * 0.1
         if (this.discount) {
-          this.priceSum = this.priceSum * this.discount * 0.1
+          this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+        } else {
+          this.priceSum = this.priceSum + this.checkG
         }
       }
     },
@@ -2102,14 +2141,16 @@ export default {
       this.totalCost = 0
       this.priceSum += this.mailingCost // 快递
       this.totalCost += this.mailingCost // 快递
-      this.priceSum += this.checkG // 师傅
+      // this.priceSum += this.checkG // 师傅
       this.totalCost += this.checkG // 师傅
       this.partArr.map(item => {
         this.priceSum += item.piecePrice * item.pieceNum
         this.totalCost += item.piecePrice * item.pieceNum
       }) // 配件
       if (this.discount) {
-        this.priceSum = this.priceSum * this.discount * 0.1
+        this.priceSum = this.priceSum * this.discount * 0.1 + this.checkG
+      } else {
+        this.priceSum = this.priceSum + this.checkG
       }
       if (this.guaranteeIndex) {
         this.priceSum = 0
@@ -2117,6 +2158,7 @@ export default {
     },
     // 动态规则
     repairData (newData, oldData) {
+      this.sendForm = newData.processes[newData.processes.length - 1]?.afterSaleVisit
       // console.log('repairData', newData, oldData)
 
       // 保存月结状态
