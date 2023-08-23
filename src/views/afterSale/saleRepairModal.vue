@@ -1475,7 +1475,8 @@ export default {
         discountReason: this.discountData, // 折扣理由
         afterSaleVisit: {
           technicalPrice: this.checkG
-        }
+        },
+        evaluateTime: new Date()
       }
       // console.log('apiData', apiData)
       this.$refs.extraForm.validate(valid => {
@@ -2158,7 +2159,7 @@ export default {
       }
     },
     repairVisible (newData, oldData) {
-      if (newData) {
+      if (newData && this.repairData.processes.length > 0) {
         const sendForm = this.repairData.processes[this.repairData.processes.length - 1].afterSaleVisit
         this.sendForm.technicalPlatform = sendForm.technicalPlatform
         this.sendForm.technicalServiceNo = sendForm.technicalServiceNo
