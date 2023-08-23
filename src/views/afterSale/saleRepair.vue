@@ -928,7 +928,7 @@ export default {
             // 过滤寄件时间和退件时间在范围内的订单
             for (const process of item.processes) {
               const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
-              const feedbackTime = moment(process.feedbackTime).format('YYYY-MM-DD')
+              const evaluateTime = moment(process.evaluateTime).format('YYYY-MM-DD')
               if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
                 return true
               } else if (process.returnParts.length > 0) {
@@ -938,7 +938,7 @@ export default {
                     return true
                   }
                 }
-              } else if (feedbackTime >= this.exportStart && feedbackTime <= this.exportEnd) {
+              } else if (evaluateTime >= this.exportStart && evaluateTime <= this.exportEnd) {
                 if (process.needVisit) {
                   return true
                 }
@@ -1128,16 +1128,17 @@ export default {
         } else { return '-' }
       } else if (j === 'returnName') {
         return express?.returnName || '-'
-      } else if (j === 'returnNumber') {
+      } else if (j === 'pieceNumber') {
         const number = process.afterSaleExpresses.filter(item => item.pieceName === express?.returnName)
         if (number.length > 0) {
           return number[0].pieceNumber
         } else {
           return '-'
         }
-        // return express?.returnName || '-'
       } else if (j === 'returnNum') {
         return express?.returnNum || '-'
+      } else if (j === 'returnNumber') {
+        return express?.returnNumber || '-'
       } else if (j === 'unitPrice') {
         return express?.unitPrice || '-'
       } else if (j === 'totalPrice') {
@@ -1146,23 +1147,31 @@ export default {
         if (type === 'returnPart') {
           return moment(express?.returnTime).format('YYYY-MM-DD') || '-'
         } else { return '-' }
-      } else if (j === 'express') {
+      } else if (j === 'expressBrand') {
         var expressText = ''
-        v.processes.map(item => {
-          if (item.needPieceSend && item.sendTime) {
-            expressText = expressText + '【' + item.pieceDeliveryNo + '_' + item.expressBrand + '】'
-          }
-        })
-        return expressText === '' ? '-' : expressText
-      } else if (j === 'technicalCost') {
+        if (process) {
+          expressText = '【' + process.pieceDeliveryNo + '_' + process.expressBrand + '】'
+        }
+        return expressText
+        // v.processes.map(item => {
+        //   if (item.needPieceSend && item.sendTime) {
+        //     expressText = expressText + '【' + item.pieceDeliveryNo + '_' + item.expressBrand + '】'
+        //   }
+        // })
+        // return expressText === '' ? '-' : expressText
+      } else if (j === 'technicalPrice') {
         if (type === 'visit') {
-          return process.afterSaleVisit.technicalCost
+          return process.afterSaleVisit.technicalPrice
         } else {
           return '-'
         }
-      } else if (j === 'feedbackTime') {
+      } else if (j === 'evaluateTime') {
         if (type === 'visit') {
-          return moment(process?.feedbackTime).format('YYYY-MM-DD') || '-'
+          if (process.feedbackTime) {
+            return moment(process?.feedbackTime).format('YYYY-MM-DD')
+          } else {
+            return '-'
+          }
         } else { return '-' }
       } else {
         return v.customerInfo[j]
@@ -1195,11 +1204,15 @@ export default {
       const name = this.MyInfo.nickname
       if (this.topTitle === 'info') {
         const tHeader = [
-          '订单编号', '报修日期', '客户名', '客户手机', '收货地址', '上门地址', '购买时间', '品牌', '型号',
-          '产品编号', '客户提交问题', '售后评估问题', '是否月结单', '是否保修期内', '状态', '寄件单号与品牌'
+          // '订单编号',
+          '报修日期', '客户名', '客户手机', '收货地址', '上门地址', '购买时间', '品牌', '型号',
+          '产品编号', '客户提交问题',
+          // '售后评估问题',
+          '是否月结单', '是否保修期内', '状态', '寄件单号与品牌',
+          '寄件名称', '寄件单价'
         ]
         const filterVal = [
-          'id',
+          // 'id',
           'createdAt',
           'customerName',
           'customerPhone',
@@ -1210,24 +1223,66 @@ export default {
           'productModel',
           'productNo',
           'problemCategory',
-          'problems',
+          // 'problems',
           'monthlyStatement',
           'isOverWarranty',
           'status',
-          'express'
+          'expressBrand',
+          'pieceName',
+          'piecePrice'
         ]
-        const res = this.exportfilterData.map((v) => filterVal.map((j) => {
-          return this.filterExcelData(v, j)
-        }))
+        // const res = this.exportfilterData.map((v) => filterVal.map((j) => {
+        //   return this.filterExcelData(v, j)
+        // }))
+        const res = []
+        this.exportfilterData.map((obj) => {
+          if (obj.processes.length > 0) {
+            obj.processes.map(process => {
+              if (process.afterSaleExpresses.length > 0) {
+                process.afterSaleExpresses.map(express => {
+                  const temp = filterVal.map((j) => {
+                    return this.filterExcelData(obj, j, process, 'send', express)
+                  })
+                  res.push(temp)
+                })
+              } else {
+                const temp = filterVal.map((j) => {
+                  return this.filterExcelData(obj, j)
+                })
+                res.push(temp)
+              }
+            })
+          } else {
+            const temp = filterVal.map((j) => {
+              return this.filterExcelData(obj, j)
+            })
+            res.push(temp)
+          }
+        })
         exportExcel(tHeader, res, this.filterBrand + '信息单' + today + name)
       } else if (this.topTitle === 'account') {
         const tHeader = [
-          '订单编号', '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
-          '产品编号', '客户提交问题', '售后评估问题', '是否上门', '是否寄件', '是否月结单', '是否保修期内',
-          '状态', '上门费用', '上门反馈时间', '折扣', '寄件名称', '配件编码', '寄件数量', '寄件单价', '寄件金额', '寄件单号', '寄件时间', '退件名称', '配件编码', '退件数量', '退件单价', '退件金额', '退件时间'
+          // '订单编号',
+          '报修日期', '客户名', '客户手机', '客户上门地址', '购买时间', '品牌', '型号',
+          '产品编号', '客户提交问题',
+          // '售后评估问题',
+          '是否上门',
+          // '是否寄件',
+          '是否月结单',
+          // '是否保修期内',
+          '状态', '上门费用', '上门反馈时间',
+          // '折扣',
+          '寄件名称',
+          // '配件编码',
+          '寄件数量', '寄件单价',
+          '寄件金额', '寄件单号', '寄件时间',
+          '退件名称',
+          // '配件编码',
+          '退件数量', '退件单价', '退件金额', '退件时间',
+          '退件单号'
         ]
         const filterVal = [
-          'id',
+          // 'id',
           'createdAt',
           'customerName',
           'customerPhone',
@@ -1237,28 +1292,29 @@ export default {
           'productModel',
           'productNo',
           'problemCategory',
-          'problems',
+          // 'problems',
           'needVisit',
-          'needPieceSend',
+          // 'needPieceSend',
           'monthlyStatement',
-          'isOverWarranty',
+          // 'isOverWarranty',
           'status',
-          'technicalCost',
-          'feedbackTime',
-          'discount',
+          'technicalPrice',
+          'evaluateTime',
+          // 'discount',
           'pieceName',
-          'pieceNumber',
+          // 'pieceNumber',
           'pieceNum',
           'piecePrice',
           'expressPrice',
           'pieceDeliveryNo',
           'sendTime',
           'returnName',
-          'returnNumber',
+          // 'returnNumber',
           'returnNum',
           'unitPrice',
           'totalPrice',
-          'returnTime'
+          'returnTime',
+          'returnNumber'
         ]
         if (this.exportStart === '' && this.exportEnd === '') {
           this.$message.warning('对账单必须选时间范围')
@@ -1268,7 +1324,7 @@ export default {
         this.exportfilterData.map((obj) => {
           const newArr = obj.processes.filter((process) => {
             const sendTime = moment(process.sendTime).format('YYYY-MM-DD')
-            const feedbackTime = moment(process.feedbackTime).format('YYYY-MM-DD')
+            const evaluateTime = moment(process.evaluateTime).format('YYYY-MM-DD')
             if (sendTime >= this.exportStart && sendTime <= this.exportEnd) {
               return true
             } else if (process.returnParts.length > 0) {
@@ -1278,7 +1334,7 @@ export default {
                   return true
                 }
               }
-            } else if (feedbackTime >= this.exportStart && feedbackTime <= this.exportEnd) {
+            } else if (evaluateTime >= this.exportStart && evaluateTime <= this.exportEnd) {
               if (process.needVisit) {
                 return true
               }
@@ -1307,10 +1363,10 @@ export default {
             })
           })
           newArr.map(process => {
-            const feedbackTime = moment(process.feedbackTime).format('YYYY-MM-DD')
-            if (feedbackTime >= this.exportStart && feedbackTime <= this.exportEnd && process.needVisit) {
+            const evaluateTime = moment(process.evaluateTime).format('YYYY-MM-DD')
+            if (evaluateTime >= this.exportStart && evaluateTime <= this.exportEnd && process.needVisit) {
               // return true
-              console.log('123', feedbackTime)
+              console.log('123', evaluateTime)
               const visitData = filterVal.map((j) => {
                 return this.filterExcelData(obj, j, process, 'visit')
               })

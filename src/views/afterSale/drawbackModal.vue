@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-modal
-      :width="1200"
+      :width="1300"
       :visible="drawbackVisible"
       @cancel="handleCancel"
       :footer="null"
@@ -84,8 +84,9 @@
                   <a-col :span="2">单价</a-col>
                   <a-col :span="2">数量</a-col>
                   <a-col :span="2">金额</a-col>
-                  <a-col :span="5">退件时间</a-col>
-                  <a-col :span="4">状态</a-col>
+                  <a-col :span="4">退件时间</a-col>
+                  <a-col :span="4">退件单号</a-col>
+                  <a-col :span="3">状态</a-col>
                   <a-col v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'"><a @click="agreeReturn(item1)">同意退件</a></a-col>
                 </a-row>
                 <a-checkbox-group @change="changeReturn" style="width:100%;">
@@ -94,9 +95,10 @@
                     <a-col :span="2">{{ part.unitPrice }}</a-col>
                     <a-col :span="2">{{ part.returnNum }}</a-col>
                     <a-col :span="2">{{ part.totalPrice }}</a-col>
-                    <a-col :span="5">{{ part.returnTime | moment }}</a-col>
-                    <a-col :span="4" v-if="part.returnStatus==='APPROVED'"><a>审批通过</a></a-col>
-                    <a-col :span="4" v-else>待审批</a-col>
+                    <a-col :span="4">{{ part.returnTime | moment }}</a-col>
+                    <a-col :span="4">{{ part.returnNumber }}</a-col>
+                    <a-col :span="3" v-if="part.returnStatus==='APPROVED'"><a>审批通过</a></a-col>
+                    <a-col :span="3" v-else>待审批</a-col>
                     <a-checkbox v-if="MyInfo.roleName === 'After_salesDirector' || MyInfo.roleName === 'After_salesManager'" :value="part" :disabled="part.returnStatus==='APPROVED'"></a-checkbox>
                   </a-row>
                 </a-checkbox-group>
@@ -284,7 +286,7 @@ export default {
       }
       payLoad.returnParts = returnParts.map(item => {
         const totalPrice = item1.discount ? item.num * item.piecePrice * item1.discount / 10 : item.num * item.piecePrice * 10 / 10
-        return { returnName: item.accessoryName, returnNum: item.num, returnTime: new Date(), unitPrice: item.piecePrice, totalPrice, returnStatus: 'WAIT_APPROVAL' }
+        return { returnNumber: this.returnNo, returnName: item.accessoryName, returnNum: item.num, returnTime: new Date(), unitPrice: item.piecePrice, totalPrice, returnStatus: 'WAIT_APPROVAL' }
       }).concat(unadorned)
       item1.afterSaleExpresses.map(sendItem => {
         var num = 0
@@ -466,6 +468,7 @@ export default {
           return { processId: item.id, parts: [], isVisit: false }
         })
         this.returnList = []
+        this.returnNo = ''
       }
     }
   }
