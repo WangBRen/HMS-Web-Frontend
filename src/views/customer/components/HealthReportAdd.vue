@@ -1,10 +1,10 @@
 <template>
   <div>
     <a-modal
-      forceRender
-      v-model="addReportVisible"
+      :visible="addReportVisible"
       title="新增健康报告"
       :width="1150"
+      @cancel="closeAddModal"
     >
       <template slot="footer">
         <a-button @click="closeAddModal">
@@ -61,7 +61,7 @@
                           </a-col>
                           <a-col :span="2" :offset="2"><span>诊断结果:</span></a-col>
                           <a-col :span="8">
-                            <a-textarea placeholder="请输入诊断结果" :auto-size="{ minRows: 2, maxRows: 6 }" v-if="(item.result.length === 0)"/>
+                            <a-textarea placeholder="请输入诊断结果" :auto-size="{ minRows: 2, maxRows: 6 }" v-model="item.diaResult" v-if="(item.result.length === 0)"/>
                             <a-select v-else @change="changeResult" v-model="item.diaResult">
                               <a-select-option v-for="result in item.result" :key="result.id" :value="result.name">
                                 {{ result.name }}
@@ -298,8 +298,7 @@
   </div>
 </template>
 <script>
-import { getHealthIndex, addHealthReport, analysisChronicDisease as apiAnalysisChronicDisease } from '@/api/health'
-// import { getHealthIndex } from '@/api/health'
+import { addHealthReport, analysisChronicDisease as apiAnalysisChronicDisease } from '@/api/health'
 import CheckDia from '@/components/DiaMsg/CheckDia.vue'
 import Symptom from '@/components/DiaMsg/UserSymptom.vue'
 import HealthReportSee from './HealthReportSee.vue'
@@ -322,9 +321,30 @@ export default {
             }
         }
     },
+    props: {
+      healthIndex: {
+        type: Array,
+        default: () => {
+          return []
+        }
+      },
+      addReportVisible: {
+        type: Boolean,
+        default: false
+      },
+      customerId: {
+        type: Number,
+        default: -1
+      },
+      userInfo: {
+        type: Object,
+        default: () => {
+          return {}
+        }
+      }
+    },
     data () {
         return {
-            userInfo: [],
             healthIndexData: [], // 保存所有的指标项
             filterHealthIndexData: [], // 过滤选择后的所有指标项
             formData: {
@@ -337,8 +357,6 @@ export default {
             apiData: {
                 projects: []
             },
-            customerId: null,
-            addReportVisible: false,
             addIndexVisible: false,
             labelCol: { span: 4 },
             wrapperCol: { span: 16 },
@@ -347,19 +365,16 @@ export default {
         }
     },
     mounted () {
-        // 初始化时，获取所有的指标项
-        getHealthIndex().then(res => {
-            if (res.status === 200) {
-                const healthIndexData = res.data
-                // 添加两个独立的指标项目
-                const x = { name: '用户诊断信息', items: [] }
-                const y = { name: '用户症状信息', items: [] }
-                healthIndexData.push(x, y)
-                this.healthIndexData = JSON.parse(JSON.stringify(healthIndexData))
-                this.filterHealthIndexData = JSON.parse(JSON.stringify(healthIndexData))
-                // console.log('所有的指标', this.healthIndexData)
-            }
-        })
+        this.formData = {
+          indexArr: []
+        }
+        const healthIndexData = this.healthIndex
+        // 添加两个独立的指标项目
+        const x = { name: '用户诊断信息', items: [] }
+        const y = { name: '用户症状信息', items: [] }
+        healthIndexData.push(x, y)
+        this.healthIndexData = JSON.parse(JSON.stringify(healthIndexData))
+        this.filterHealthIndexData = JSON.parse(JSON.stringify(healthIndexData))
     },
     methods: {
         handleOk (param) {
@@ -382,10 +397,10 @@ export default {
                             x.testAt = val.testAt
                             val.indexArr.forEach(function (val2) {
                                 if (val.testAt != null) {
-                                    if (val2.value != null && val2.value !== '') {
+                                    // if (val2.value || val2.endResult) {
                                         const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
                                         x.items.push(y)
-                                    }
+                                    // }
                                 }
                             })
                             apiData.projects.push(x)
@@ -442,7 +457,6 @@ export default {
                           }
                         })
                         this.$message.info('成功新建报告单')
-                        this.addReportVisible = false
                         this.$emit('successCreatReport')
                       } else {
                         this.$message.error(res.message)
@@ -458,27 +472,12 @@ export default {
                 this.$message.error('请添加指标')
             }
         },
-        openAddModal (userInfo) {
-            this.addReportVisible = true
-            this.userInfo = userInfo.member.baseInfo
-            // this.formData.indexArr.length = 0
-            this.formData = {
-              indexArr: []
-            }
-            // this.formData.diagnosisData = null
-            // this.formData.diagnosisTime = null
-            // this.formData.symptomData = null
-            // this.formData.symptomTime = null
-            // this.$nextTick(() => {
-            //     this.$refs.childDia.clearDia()
-            // })
-        },
-        openADDmodalCustId (cusmId) {
-            this.customerId = cusmId
-            // console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
-        },
+        // openADDmodalCustId (cusmId) {
+        //     this.customerId = cusmId
+        //     // console.log(cusmId, '我是点击新建触发的时间,传入custmoerId')
+        // },
         closeAddModal () {
-            this.addReportVisible = false
+          this.$emit('closeAddModal')
         },
         filterOption (value, option) {
             return option.componentOptions.children[0].text.indexOf(value) >= 0

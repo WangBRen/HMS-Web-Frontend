@@ -235,7 +235,7 @@
 </template>
 <script>
 import moment from 'moment'
-import { getHealthIndex } from '@/api/health'
+// import { getHealthIndex } from '@/api/health'
 export default {
   filters: {
     getMoment: function (value) {
@@ -250,21 +250,28 @@ export default {
       return parseFloat(value).toFixed(2)
     }
   },
+  props: {
+    healthIndex: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    }
+  },
   data () {
     return {
       seeReportVisible: false,
       formData: {},
-      healthIndex: [],
       param: ''
     }
   },
   mounted () {
-    getHealthIndex().then(res => {
-      if (res.status === 200) {
-        this.healthIndex = res.data
-        // console.log('总指标', this.healthIndex)
-      }
-    })
+    // getHealthIndex().then(res => {
+    //   if (res.status === 200) {
+    //     this.healthIndex = res.data
+    //     // console.log('总指标', this.healthIndex)
+    //   }
+    // })
   },
   methods: {
     getResult (items) {

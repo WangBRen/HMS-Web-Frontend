@@ -1,8 +1,6 @@
 <template>
   <div>
     <a-modal
-      :maskClosable="false"
-      :title="title"
       :visible="isVisible"
       :confirm-loading="confirmLoading"
       @ok="handleOk"
@@ -32,6 +30,7 @@
         :columns="columns"
         :data-source="data"
         :pagination="pagination"
+        :loading="loadingData"
       >
         <span slot="pic" slot-scope="text, record">
           <a-avatar icon="user" :src="record.avatar" />
@@ -55,7 +54,7 @@ const columns = [
     dataIndex: 'baseInfo.name',
     key: 'baseInfo.name',
     align: 'center',
-    customRender: (text, record) => record.baseInfo ? record.baseInfo.name : record.nickname
+    customRender: (text, record) => record.baseInfo.name || record.nickname
   },
   {
     title: '性别',
@@ -83,10 +82,6 @@ const columns = [
 // }
 export default {
   props: {
-    title: {
-      type: String,
-      default: null
-    },
     visible: {
       type: Boolean,
       default: false
@@ -111,6 +106,7 @@ export default {
       customersId: [],
       selectedRowKeys: this.checkedRowKeys, // 选中的key
       loading: false,
+      loadingData: false,
       closeRefresh: true,
       pagination: {
         total: 0,
@@ -144,7 +140,9 @@ export default {
       if (value) {
         pages.page = 1
       }
+      this.loadingData = true
       const res = await apiAdd(value, pages)
+      this.loadingData = false
       if (res.status === 200) {
         this.loadingShow = false
         this.data = (res.data.content || []).map(record => { return { ...record, key: record.id } })

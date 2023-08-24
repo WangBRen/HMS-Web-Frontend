@@ -1,12 +1,10 @@
 <template>
   <div>
     <a-modal
-      forceRender
       destroyOnClose
       :width="1200"
       :footer="null"
       :visible="openHealthvisible"
-      :confirm-loading="confirmLoading"
       @cancel="handleCancel"
       :ok-button-props="{ style: { display: 'none' } }"
       :scroll="{ x: true }"
@@ -19,7 +17,7 @@
                 <a-input-search
                   placeholder="请输入关键字"
                   enter-button="查询"
-                  :loading="confirmLoading"
+                  :loading="loadingShow"
                   v-model="wordValue"
                   @search="findCustomerHealthReports"
                 />
@@ -40,6 +38,7 @@
         :dataSource="dataSource"
         :rowKey="(record,index)=> record.id"
         :row-selection="rowSelection"
+        :loading="loadingShow"
         :pagination="pagination">
         <!-- <a slot="name" slot-scope="text">{{ text }}</a> -->
         <span slot="action" slot-scope="text, record">
@@ -270,8 +269,15 @@
         <!-- <button v-print="print">打印</button> -->
       </template>
     </a-modal>
-    <HealthReportSee ref="seeReport" />
-    <HealthReportAdd ref="addReport" @successCreatReport="RefreshReport"/>
+    <HealthReportSee ref="seeReport" :healthIndex="healthIndex"/>
+    <HealthReportAdd
+      :healthIndex="healthIndexes"
+      v-if="addReportVisible"
+      :customerId="customerId"
+      :userInfo="userInfo"
+      :addReportVisible="addReportVisible"
+      @successCreatReport="RefreshReport"
+      @closeAddModal="closeAddModal"/>
   </div>
 </template>
 <script>
@@ -281,7 +287,6 @@ import HealthReportAdd from './HealthReportAdd.vue'
 import { getHealthReport as apiGetHealthReports, getHealthCustomerReport } from '@/api/health'
 import { getUserInfo } from '@/api/login'
 // import { calcAge } from '@/utils/age'
-// import { getIndexColumns as apiGetIndexColumns } from '@/api/healthIndexes'
 
 const dataSource = []
 
@@ -291,9 +296,21 @@ export default {
     HealthReportAdd
   },
   props: {
+    healthIndex: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    },
     openHealthvisible: {
       type: Boolean,
       default: false
+    },
+    userInfo: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     },
     customerId: {
       type: Number,
@@ -311,8 +328,9 @@ export default {
   },
   data () {
     return {
-      custId: '',
-      userInfo: [], // 保存用户信息
+      healthIndexes: [],
+      addReportVisible: false,
+      loadingShow: false,
       reportId: '',
       // eslint-disable-next-line no-undef
       dataSource,
@@ -505,7 +523,7 @@ export default {
     }
   },
   mounted () {
-    if (this.custId) {
+    if (this.customerId) {
       this.findCustomerHealthReports()
     }
   },
@@ -525,10 +543,6 @@ export default {
       }
     },
     moment,
-    setCustomerId (customersId, userInfo) {
-      this.custId = customersId
-      this.userInfo = userInfo
-    },
     /**
      * 查找用户自己的指标
      */
@@ -539,7 +553,7 @@ export default {
         page: this.pagination.current,
         size: this.pagination.pageSize
       }
-      apiGetHealthReports(this.custId, value, pages).then(res => {
+      apiGetHealthReports(this.customerId, value, pages).then(res => {
       if (res.status === 200) {
         this.loadingShow = false
         this.dataSource = res.data.content || []
@@ -567,18 +581,13 @@ export default {
     },
     // 新建报告单
     handOpenHealthAdd () {
-      // 在这传custmoerId
-      const cusmId = this.custId
-      const userInfo = this.userInfo
-      this.$refs.addReport.openAddModal(userInfo)
-      this.$refs.addReport.openADDmodalCustId(cusmId)
+      this.healthIndexes = JSON.parse(JSON.stringify(this.healthIndex))
+      this.addReportVisible = true
     },
     // 查看报告单
     handleViewingTheTeportForm (data) {
-      const cusmId = this.custId // 存customerId
+      const cusmId = this.customerId // 存customerId
       const reportId = data.id // 存reportId
-      // console.log('cusmId', cusmId)
-      // console.log('报告单', reportId)
       getHealthCustomerReport(cusmId, reportId).then((res) => {
         if (res.status === 200) {
           // console.log('接口查报告单', res.data)
@@ -618,7 +627,7 @@ export default {
         if (item.projects.length) {
           hhh.index = {
             id: item.id,
-            indexRecorder: item.createdBy.nickname
+            indexRecorder: item.createdBy?.nickname
           }
         } else {
           hhh.index = null
@@ -791,7 +800,11 @@ export default {
     },
     // 创建报告单成功后刷新
     RefreshReport () {
+      this.addReportVisible = false
       this.findCustomerHealthReports()
+    },
+    closeAddModal () {
+      this.addReportVisible = false
     },
     // 单选触发
     onSelect (record, selected, selectedRows, nativeEvent) {
@@ -845,15 +858,15 @@ export default {
         })
       }
     }
-  },
-  watch: {
-    openHealthvisible (newVal, oldVal) {
-      if (oldVal) {
-        this.pagination.current = 1
-      }
-      // console.log('newVal, oldVal', newVal, oldVal)
-    }
   }
+  // watch: {
+  //   openHealthvisible (newVal, oldVal) {
+  //     if (oldVal) {
+  //       this.pagination.current = 1
+  //     }
+  //     // console.log('newVal, oldVal', newVal, oldVal)
+  //   }
+  // }
 }
 </script>
 <style lang="less" scoped>
