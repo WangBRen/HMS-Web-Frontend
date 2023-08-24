@@ -689,7 +689,7 @@ export default {
         // result:
         const resultOptions = (data.result || [])
         const resultType = ((options) => {
-          if (options.length === 0) return 'range'
+          if (options.length === 0) return 'text'
           return options[0].type || 'range'
         })(resultOptions)
         const result = {
@@ -941,10 +941,9 @@ export default {
           })
           return { ...payload, result }
         } else {
-          return payload
+          return { ...payload, result: [] }
         }
       }
-      console.log('this.currentthis.current', this.current)
       const payload = reform(this.current || {})
       const projectName = this.currentProjectName() // this.data[this.currentTabKey - 1].name
       // valid payload
