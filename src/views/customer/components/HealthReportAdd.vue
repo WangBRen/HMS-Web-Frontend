@@ -294,7 +294,7 @@
         </a-row>
       </div>
     </a-modal>
-    <HealthReportSee ref="seeReport" />
+    <HealthReportSee ref="seeReport" :healthIndex="healthIndex"/>
   </div>
 </template>
 <script>
@@ -397,10 +397,10 @@ export default {
                             x.testAt = val.testAt
                             val.indexArr.forEach(function (val2) {
                                 if (val.testAt != null) {
-                                    // if (val2.value || val2.endResult) {
+                                    if (val2.value || val2.diaResult) {
                                         const y = { indexId: val2.id, value: val2.value, result: val2.diaResult }
                                         x.items.push(y)
-                                    // }
+                                    }
                                 }
                             })
                             apiData.projects.push(x)
@@ -450,13 +450,12 @@ export default {
                       if (res.status === 201) {
                         apiAnalysisChronicDisease(customerId).then(res => {
                           if (res.status === 200) {
-                            this.$message.info('判断慢病成功')
-                            // console.log('111')
+                            // this.$message.info('判断慢病成功')
                           } else {
                             this.$message.error(res.message)
                           }
                         })
-                        this.$message.info('成功新建报告单')
+                        this.$message.success('成功新建报告单')
                         this.$emit('successCreatReport')
                       } else {
                         this.$message.error(res.message)
