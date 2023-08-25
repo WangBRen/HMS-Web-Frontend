@@ -180,7 +180,19 @@ export default {
     async handlePreview () {
       this.$refs.FollowUpForm.doRequest()
       if (this.apiPayload) {
-        const resp = await apiCreateFollowUpForm(this.customerId, this.apiPayload)
+        const items = this.apiPayload.items.filter(item => {
+          if (!item.disabled) {
+            return true
+          }
+        })
+        const payLoad = {
+          hints: this.apiPayload.hints,
+          items,
+          medicines: this.apiPayload.medicines,
+          projects: this.apiPayload.projects,
+          token: this.apiPayload.token
+        }
+        const resp = await apiCreateFollowUpForm(this.customerId, payLoad)
         this.current = 1
         if (resp.status === 201) {
           this.formId = resp.data.id

@@ -5,7 +5,7 @@
       :title="`慢病管理${baseInfo?'【'+baseInfo.name+'】': ''}`"
       :footer="null"
       @cancel="closeChronicInfo"
-      :width="1200"
+      :width="1300"
       :dialog-style="{ top: '50px' }"
     >
       <div class="card">
@@ -96,7 +96,7 @@
                     <a-tooltip>
                       <template slot="title">
                         <span v-for="tip in items.indexItem.result" :key="tip.id">
-                          {{ tip | filterTip }}
+                          {{ tip | filterTip }}<br/>
                         </span>
                       </template>
                       <a-tag>{{ items.indexItem.name }}</a-tag>
