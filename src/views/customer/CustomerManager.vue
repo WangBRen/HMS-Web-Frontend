@@ -121,17 +121,18 @@
       @onSearch="onSearch"
       @handleCancel="handleCancel"
       :visible="visible"
+      v-if="visible"
       :checkedRowKeys="checkedRowKeys"
-      :title="title"
       :selectId="selectId"
-      ref="addUserRef"
     />
     <!-- 查看健康信息 -->
     <HealthDataManagmentFormVue
+      v-if="openHealthvisible"
+      :healthIndex="healthIndex"
+      :userInfo="currentuserInfo"
       :openHealthvisible="openHealthvisible"
       @handleCancel="handleCancel"
       :customerId="currentCustomerId"
-      ref="healthDataManagmentRef"
     />
     <!-- 新的慢病 -->
     <ChronicInformation
@@ -152,7 +153,7 @@
 <script>
 import { searchCustomerUnderGroup as apiCustomerSearch, removeCustomerGroup as apiRemoveCustomerGroup } from '@/api/customer'
 import { getUserInfo as apiGetUserInfo } from '@/api/login'
-
+import { getHealthIndex } from '@/api/health'
 import moment from 'moment'
 import ChronicInformation from './components/ChronicInformation.vue'
 import CustomerInfoForm from './components/CustomerInfoForm.vue'
@@ -181,10 +182,6 @@ const columns = [
   { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
   {
     title: '创建者',
-    // dataIndex: 'createdBy.nickname',
-    // key: 'createdBy.nickname',
-    // dataIndex: 'createdBy.userInfo.name',
-    // key: 'createdBy.userInfo.name',
     scopedSlots: { customRender: 'createdBy' },
     align: 'center'
   },
@@ -261,6 +258,7 @@ export default {
   },
   data () {
     return {
+      currentuserInfo: {},
       seeData: null,
       seeVisible: false,
       dataTypes: {},
@@ -270,7 +268,6 @@ export default {
       innerColumns,
       visible: false,
       pages: {},
-      title: '',
       selectId: -1,
       selectGroupId: '',
       checkedRowKeys: [],
@@ -296,12 +293,19 @@ export default {
       },
       dutyIndex: false,
       loginName: null,
-      queryData: ''
+      queryData: '',
+      healthIndex: []
     }
   },
   created () {
     this.$setPageDataLoader(this.onSearch)
     this.onSearch()
+    getHealthIndex().then(res => {
+      if (res.status === 200) {
+        this.healthIndex = res.data
+        // console.log('总指标', this.healthIndex)
+      }
+    })
   },
   methods: {
     editUser (inner, userData) {
@@ -321,9 +325,8 @@ export default {
     },
     handleHealthData (record) {
       this.currentCustomerId = record.member.id
+      this.currentuserInfo = record.member
       this.openHealthvisible = true
-      this.$refs.healthDataManagmentRef.setCustomerId(record.member.id, record)
-      this.$refs.healthDataManagmentRef.findCustomerHealthReports()
     },
     rowClick (record) {
       return {
@@ -364,8 +367,6 @@ export default {
     handleEdit (record, value) {
       this.selectId = record.id
       this.visible = true
-      this.addtitle = '添加用户'
-      this.$refs.addUserRef.onSearch()
       this.openKey++
       this.checkedRowKeys = []
     },

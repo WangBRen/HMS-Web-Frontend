@@ -142,11 +142,12 @@
                   </div>
                   <div v-else>
                     <div v-for="i in items.result" :key="i.id">
-                      <div v-if="(i.name ===items.endResult || i.name ===getResult (items)) && i.remark" style="padding:5px 10px;">
+                      <div v-if="(i.name ===items.endResult || (!items.endResult && i.name ===getResult (items))) && i.remark" style="padding:5px 10px;">
                         <a-col :span="5" style="color:#00A3DB;padding: 10px;">
-                          {{ items.name }} 【{{ items.value || '--' }} {{ items.unit }}】
+                          {{ items.name }} 【{{ items.value || '--' }}
+                          <span v-if="items.type === 'Integer' || items.type === 'Float'">{{ items.unit }}</span>】
                         </a-col>
-                        <a-col :span="19" style="padding: 5px 0 0 0;">
+                        <a-col :span="19" style="padding: 10px 0 0 0;">
                           {{ i.remark }}
                         </a-col>
                       </div>
@@ -235,7 +236,7 @@
 </template>
 <script>
 import moment from 'moment'
-import { getHealthIndex } from '@/api/health'
+// import { getHealthIndex } from '@/api/health'
 export default {
   filters: {
     getMoment: function (value) {
@@ -250,21 +251,28 @@ export default {
       return parseFloat(value).toFixed(2)
     }
   },
+  props: {
+    healthIndex: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    }
+  },
   data () {
     return {
       seeReportVisible: false,
       formData: {},
-      healthIndex: [],
       param: ''
     }
   },
   mounted () {
-    getHealthIndex().then(res => {
-      if (res.status === 200) {
-        this.healthIndex = res.data
-        // console.log('总指标', this.healthIndex)
-      }
-    })
+    // getHealthIndex().then(res => {
+    //   if (res.status === 200) {
+    //     this.healthIndex = res.data
+    //     // console.log('总指标', this.healthIndex)
+    //   }
+    // })
   },
   methods: {
     getResult (items) {
