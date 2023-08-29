@@ -170,8 +170,8 @@ const columns = [
     dataIndex: 'name',
     key: 'name',
     align: 'center',
-    customRender: (record) => {
-      return record || '---'
+    customRender: (text, record) => {
+      return text || record.manager.telephone + ' 的家庭'
     },
     sorter: (a, b) => {
       if (a.name === null || b.name === null) {
@@ -179,7 +179,7 @@ const columns = [
       } else a.name.localeCompare(b.name)
     }
   },
-  { title: '管理员', dataIndex: 'manager.nickname', key: 'manager.nickname', align: 'center' },
+  { title: '管理员', dataIndex: 'manager.userInfo.name', key: 'manager.userInfo.name', align: 'center' },
   {
     title: '创建者',
     scopedSlots: { customRender: 'createdBy' },

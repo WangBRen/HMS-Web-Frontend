@@ -190,7 +190,8 @@ export default {
           items,
           medicines: this.apiPayload.medicines,
           projects: this.apiPayload.projects,
-          token: this.apiPayload.token
+          token: this.apiPayload.token,
+          diseaseIds: this.apiPayload.diseaseIds
         }
         const resp = await apiCreateFollowUpForm(this.customerId, payLoad)
         this.current = 1

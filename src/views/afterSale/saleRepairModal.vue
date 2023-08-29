@@ -539,7 +539,7 @@
                 <span style="color: #f5222d;">* </span>
                 <span>配件选择：</span>
                 <a-select show-search style="width: 350px" v-model="checkD">
-                  <a-select-option v-for="item in partData" :key="item.name">
+                  <a-select-option v-for="item in partData" :key="item.name + item.id">
                     {{ item.belongPart + ' / ' + item.name }}
                   </a-select-option>
                 </a-select>
@@ -609,7 +609,7 @@
                 </a-descriptions-item>
               </a-descriptions>
             </div>
-            <div style="margin: 50px 10px;">
+            <div style="padding: 30px 10px;">
               <a-popconfirm title="确定作废订单吗？" @confirm="cancelOrder" v-if="MyInfo.roleName==='After_salesDirector'">
                 <a-button type="danger" ghost>订单作废</a-button>
               </a-popconfirm>
