@@ -171,7 +171,7 @@ const columns = [
     key: 'name',
     align: 'center',
     customRender: (text, record) => {
-      return text || record.manager.telephone + ' 的家庭'
+      return text || record.manager.nickname + '的家庭'
     },
     sorter: (a, b) => {
       if (a.name === null || b.name === null) {

@@ -18,7 +18,7 @@
         </a-steps>
         <!-- 客户信息 -->
         <div class="customDes" v-if="current>-1">
-          <div class="big_title">客户信息
+          <div class="big_title">客户信息<a-tag>{{ repairData.customerInfo.afterSaleType || '导入' }}</a-tag>
             <div v-if="current===0" style="float:right;">
               <span @click="startClick" v-if="!editCustomer"><a-icon type="edit"/>修改信息</span>
               <a-button v-if="editCustomer" @click="saveCustomer" type="primary">保存</a-button>
@@ -687,6 +687,9 @@
                   </a-popconfirm>
                   <a-popconfirm title="确定重置信息？" @confirm="resetPayForm">
                     <a-button style="margin: 0 20px;">重置</a-button>
+                  </a-popconfirm>
+                  <a-popconfirm style="margin: 0 20px;" title="确定再评估？" @confirm="openModal('1')">
+                    <a-button type="dashed">再评估</a-button>
                   </a-popconfirm>
                 </a-col>
               </a-row>
