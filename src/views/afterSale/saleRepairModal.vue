@@ -539,7 +539,7 @@
                 <span style="color: #f5222d;">* </span>
                 <span>配件选择：</span>
                 <a-select show-search style="width: 350px" v-model="checkD">
-                  <a-select-option v-for="item in partData" :key="item.name + item.id">
+                  <a-select-option v-for="item in partData" :key="item.name + '_' + item.id">
                     {{ item.belongPart + ' / ' + item.name }}
                   </a-select-option>
                 </a-select>
@@ -1374,8 +1374,9 @@ export default {
     // 添加配件
     addPart () {
       const partAdd = {}
+      const part = this.checkD.split('_')
       this.partData.filter(item => {
-        if (item.name === this.checkD) {
+        if (item.name === part[0]) {
           partAdd.pieceName = item.name
           partAdd.piecePrice = item.price
           partAdd.pieceCost = item.cost
