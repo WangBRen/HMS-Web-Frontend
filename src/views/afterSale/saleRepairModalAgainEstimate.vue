@@ -16,7 +16,7 @@
           placeholder="请输入原因"
           :auto-size="{ minRows: 3, maxRows: 5 }"
         />
-        <a-popconfirm title="确定售后问题没有解决？" @confirm="handleOk">
+        <a-popconfirm :title="`${modalIndex==='3' ? '确定用户已支付？':'确定售后问题没有解决？'}`" @confirm="handleOk">
           <a-button style="margin-top: 10px;" type="primary">确定</a-button>
         </a-popconfirm>
       </div>
@@ -54,7 +54,8 @@ export default {
       if (this.text) {
         // console.log(this.modalIndex, this.text, this.transferData)
         const id = this.transferData.id
-        const processId = this.transferData.processes[this.transferData.processes.length - 1].id
+        const process = this.transferData.processes[this.transferData.processes.length - 1]
+        const processId = process.id
         if (this.modalIndex === '1') {
           // console.log('再评估')
           // 获取登录用户
@@ -119,6 +120,40 @@ export default {
               })
             }
           })
+        } else if (this.modalIndex === '3') {
+              const changeData = {
+                otherPayReason: this.text,
+                payResult: true
+              }
+              apiUpdateProcess(id, processId, changeData).then(res => {
+                if (res.status === 200) {
+                  // this.$message.success('状态改变成功')
+                  let changeStatus = {}
+                  // 判断是否需要寄件
+                  if (process.needPieceSend === false && process.needVisit === false) {
+                    // 不需寄件 不需上门
+                    changeStatus = { status: 'WAIT_VISIT' }
+                  } else if (process.needPieceSend === false && process.needVisit === true) {
+                    // 不需寄件 需上门
+                    changeStatus = { status: 'RECEIVED' }
+                  } else if (process.needPieceSend === true) {
+                    // 需寄件
+                    changeStatus = { status: 'PAID' }
+                  }
+                  apiUpdateStatus(id, changeStatus).then(res => {
+                    if (res.status === 200) {
+                      this.$message.success('成功')
+                      this.handleCancel()
+                      this.$parent.getParentSaleData()
+                      this.$parent.closeRepairModals()
+                    } else {
+                      this.$message.error(res.message)
+                    }
+                  })
+                } else {
+                  this.$message.error(res.message)
+                }
+              })
         }
       } else {
         this.$message.error('请填写原因')
