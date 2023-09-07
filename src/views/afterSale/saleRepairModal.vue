@@ -149,11 +149,14 @@
                 <a-descriptions-item label="总价" :span="2">
                   {{ item4.totalCost }}
                 </a-descriptions-item>
-                <a-descriptions-item v-if="item4.pays.length" label="支付时间" :span="4">
-                  {{ item4.pays[0].payTime | getTime }}
+                <a-descriptions-item label="客户应付" :span="4">
+                  <div style="display: flex;align-items: baseline;">
+                    <a-statistic :precision="2" :value="item4.monthlyStatement?'￥0':'￥'+item4.customerPay" />
+                    <span v-if="item4.otherPayReason">【{{ item4.otherPayReason }}】</span>
+                  </div>
                 </a-descriptions-item>
-                <a-descriptions-item label="客户应付">
-                  <a-statistic :precision="2" :value="item4.monthlyStatement?'￥0':'￥'+item4.customerPay" />
+                <a-descriptions-item v-if="item4.pays.length" label="支付时间">
+                  {{ item4.pays[0].payTime | getTime }}
                 </a-descriptions-item>
               </a-descriptions>
               <!-- 寄件汇总 -->
@@ -642,6 +645,9 @@
               <!-- <a-popconfirm style="margin: 0 20px;" title="确定再评估？" @confirm="changepProcesses"> -->
               <a-popconfirm style="margin: 0 20px;" title="确定再评估？" @confirm="openModal('1')">
                 <a-button type="primary">再评估</a-button>
+              </a-popconfirm>
+              <a-popconfirm v-if="MyInfo.roleName==='After_salesDirector'" style="margin: 0 20px;" title="确定客户已支付？" @confirm="openModal('3')">
+                <a-button type="danger" ghost>其他方式支付</a-button>
               </a-popconfirm>
               <span v-if="repairData.monthlyStatement!==null" style="margin: 0 20px;">
                 <a-popconfirm v-if="repairData.processes[repairData.processes.length-1].customerPay === 0" title="确定进行0元支付？" @confirm="changeZeroPay">
