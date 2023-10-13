@@ -402,6 +402,9 @@
             <a-form-item label="备注">
               <a-input type="textarea" v-model="current.remark"/>
             </a-form-item>
+            <a-form-item label="排序">
+              <a-input-number type="textarea" v-model="current.orderSeq"/>
+            </a-form-item>
           </a-col>
         </a-row>
       </a-form>
@@ -533,6 +536,11 @@ const columns = [
     title: '备注',
     dataIndex: 'remark',
     width: 100
+  },
+  {
+    title: '排序',
+    dataIndex: 'orderSeq',
+    width: 80
   },
   {
     title: '创建时间',
