@@ -401,6 +401,30 @@ if (domain.includes('aftersale')) {
             }
           ]
         },
+        // 慢病管理
+        {
+          path: '/detection',
+          component: RouteView,
+          redirect: '/detection/devices',
+          name: 'devices',
+          meta: { title: '健康检测', icon: 'schedule', keepAlive: true, permission: ['test_device'] },
+          children: [
+            {
+              path: '/detection/devices',
+              name: 'devices',
+              component: () => import('@/views/detection/Devices'),
+              // meta: { title: '慢病管理' }
+              meta: { title: '设备管理', keepAlive: true, permission: ['test_device'] }
+            },
+            {
+              path: '/detection/device-report',
+              name: 'device-report',
+              component: () => import('@/views/detection/DeviceReport'),
+              // meta: { title: '慢病管理' }
+              meta: { title: '检测记录', keepAlive: true, permission: ['test_record'] }
+            }
+          ]
+        },
         {
           path: '/system',
           name: 'systemPage',
