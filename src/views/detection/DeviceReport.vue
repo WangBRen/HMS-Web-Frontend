@@ -114,7 +114,6 @@ export default {
       console.log(res.data.content)
     },
     seeDetail (record) {
-      console.log('record', record)
       this.detailVisible = true
       this.reportId = record.id
     },
