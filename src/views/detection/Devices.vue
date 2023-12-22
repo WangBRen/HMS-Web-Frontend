@@ -8,11 +8,11 @@
     >
       <a-tab-pane v-for="i in productList" :key="i.id" :tab="`${i.name}`">
         <a-table :columns="columns" :data-source="deviceList" :rowKey="(record,index)=>{return index}" :pagination="pagination" style="background:#fff;padding: 0 10px">
-          <a slot="workingStatus" slot-scope="text">
+          <span slot="workingStatus" slot-scope="text">
             <span v-if="text==='offline'">离线</span>
-            <span v-if="text==='online'">在线</span>
-            <span v-if="text==='running'">使用中</span>
-          </a>
+            <a v-if="text==='online'">在线</a>
+            <a v-if="text==='running'">使用中</a>
+          </span>
           <span slot="bind" slot-scope="text">
             <a-tag color="blue" v-if="text">已绑定</a-tag>
             <a-tag v-if="!text">未绑定</a-tag>
