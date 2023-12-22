@@ -171,9 +171,10 @@ export default {
       for (let i = 0; i < subArray.length; i += 3) {
         verticalLinesArr.push(subArray[i])
       }
+      var newArr = dataArr.slice(0, -1)
       // 提取 x 值和 r 值
-      const xData = dataArr.map(obj => obj.x)
-      const rData = dataArr.map(obj => obj.r)
+      const xData = newArr.map(obj => obj.x)
+      const rData = newArr.map(obj => obj.r)
 
       var chartDom = document.getElementById('urineEcharts')
       var myChart = echarts.init(chartDom)
