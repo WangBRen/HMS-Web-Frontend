@@ -168,10 +168,11 @@ export default {
 
       // 提取每三个数字中的第一个数字组成新数组
       const verticalLinesArr = []
-      for (let i = 0; i < subArray.length; i += 3) {
+      for (let i = 0; i < subArray?.length; i += 3) {
         verticalLinesArr.push(subArray[i])
       }
-      var newArr = dataArr.slice(0, -1)
+      const lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999)
+      const newArr = dataArr.slice(lastIndex + 1, dataArr.length - 1)
       // 提取 x 值和 r 值
       const xData = newArr.map(obj => obj.x)
       const rData = newArr.map(obj => obj.r)
