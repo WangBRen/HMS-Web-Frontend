@@ -201,7 +201,7 @@ export default {
               symbol: 'none',
               lineStyle: {
                 type: 'dashed',
-                color: 'red'
+                color: 'blue'
               },
               data: verticalLinesArr.map(value => ({
                 xAxis: value
