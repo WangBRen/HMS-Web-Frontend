@@ -185,8 +185,7 @@ export default {
     drawChart (dataArr, results) {
       // const verticalLinesArr = [23, 50, 80, 100, 140, 300]
       // 截取后42位
-      const subArray = results?.slice(-42)
-
+      const subArray = results?.slice(42)
       // 提取每三个数字中的第一个数字组成新数组
       const verticalLinesArr = []
       for (let i = 0; i < subArray?.length; i += 3) {
