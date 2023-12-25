@@ -41,7 +41,7 @@
     </div>
     <!-- 尿检 -->
     <div v-else style="margin: 0 10px;">
-      <a-row :gutter="100">
+      <a-row :gutter="20">
         <a-col :span="12">
           <a-table :columns="rgbColumns" :data-source="newArray" :pagination="false" size="small" :rowKey="(record, index) => index">
             <div slot="color" slot-scope="text, record">
@@ -69,7 +69,7 @@
 import { reportDetail } from '@/api/device'
 import * as echarts from 'echarts'
 const errorArr = ['正常窦性心律', '停搏', '室颤或室速', 'R on T', '连续室性早搏', '二连发室早', '单个室早', '室早二联律', '室早三联律', '室速', '室缓', '起搏器未俘获', '起搏器未起搏', '漏搏', '正在学习', '', '过载信号', '信号幅度过小（信号弱）']
-const indexes = ['白细胞', '尿胆原', '微量白蛋白', '蛋白质', '胆红素', '葡萄糖', '抗坏血酸', '比重', '酮体', '亚硝酸盐', '肌酐', 'PH值', '隐血', '尿钙']
+const indexes = ['葡萄糖', '肌酐', '酮体', 'VC', '白细胞', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '隐血', '比重']
 const rgbColumns = [
   {
     title: 'r位置',
@@ -169,7 +169,8 @@ export default {
         ],
         graphic: [] // 用于存储纵向虚线的数据
       },
-      verticalLines: [] // 纵向虚线的数据
+      verticalLines: [], // 纵向虚线的数据
+      newArray: []
     }
   },
   mounted () {
@@ -235,16 +236,27 @@ export default {
         this.title = '心电报告详情'
       } else {
         const originData = res.data.data.originData
-        const maxValue = Math.max(...originData)
+        const { maxR, maxG, maxB } = originData.reduce((acc, data) => {
+          if (data.hasOwnProperty('r') && data.r > acc.maxR) {
+            acc.maxR = data.r
+          }
+          if (data.hasOwnProperty('g') && data.g > acc.maxG) {
+            acc.maxG = data.g
+          }
+          if (data.hasOwnProperty('b') && data.b > acc.maxB) {
+            acc.maxB = data.b
+          }
+          return acc
+        }, { maxR: Number.NEGATIVE_INFINITY, maxG: Number.NEGATIVE_INFINITY, maxB: Number.NEGATIVE_INFINITY })
         const results = res.data.data.fullResults?.rgbResults
         this.drawChart(originData, results)
         this.title = '尿检报告详情'
         const newArray = []
         for (let i = 0; i < 14; i++) {
           const index = i * 3
-          const R = results[index] * 255 / maxValue
-          const G = results[index + 1] * 255 / maxValue
-          const B = results[index + 2] * 255 / maxValue
+          const R = results[index] * 255 / maxR
+          const G = results[index + 1] * 255 / maxG
+          const B = results[index + 2] * 255 / maxB
           newArray.push({
             r: results[index],
             rPosition: results[index + 42],
@@ -281,7 +293,7 @@ export default {
 
 <style>
   .color-block{
-    height: 36px;
-    width: 36px;
+    height: 20px;
+    width: 20px;
   }
 </style>
