@@ -41,8 +41,8 @@
     </div>
     <!-- 尿检 -->
     <div v-else style="margin: 0 10px;">
-      <a-row :gutter="20">
-        <a-col :span="12">
+      <a-row :gutter="30">
+        <a-col :span="14">
           <a-table :columns="rgbColumns" :data-source="newArray" :pagination="false" size="small" :rowKey="(record, index) => index">
             <div slot="color" slot-scope="text, record">
               <div class="color-block" :style="{ backgroundColor: `rgb(${record.R},${record.G},${record.B})` }">
@@ -50,7 +50,7 @@
             </div>
           </a-table>
         </a-col>
-        <a-col :span="12">
+        <a-col :span="10">
           <a-table :columns="columns" :data-source="urineArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
         </a-col>
       </a-row>
@@ -71,6 +71,11 @@ import * as echarts from 'echarts'
 const errorArr = ['正常窦性心律', '停搏', '室颤或室速', 'R on T', '连续室性早搏', '二连发室早', '单个室早', '室早二联律', '室早三联律', '室速', '室缓', '起搏器未俘获', '起搏器未起搏', '漏搏', '正在学习', '', '过载信号', '信号幅度过小（信号弱）']
 const indexes = ['葡萄糖', '肌酐', '酮体', 'VC', '白细胞', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '隐血', '比重']
 const rgbColumns = [
+  {
+    title: '序号',
+    dataIndex: 'index',
+    key: 'index'
+  },
   {
     title: 'r位置',
     dataIndex: 'rPosition',
@@ -258,6 +263,7 @@ export default {
           const G = results[index + 1] * 255 / maxG
           const B = results[index + 2] * 255 / maxB
           newArray.push({
+            index: i + 1,
             r: results[index],
             rPosition: results[index + 42],
             g: results[index + 1],
