@@ -43,7 +43,7 @@
     <div v-else style="margin: 0 10px;">
       <a-row :gutter="100">
         <a-col :span="12">
-          <a-table :columns="rgbColumns" :data-source="newArray" size="small" :rowKey="(record, index) => index">
+          <a-table :columns="rgbColumns" :data-source="newArray" :pagination="false" size="small" :rowKey="(record, index) => index">
             <div slot="color" slot-scope="text, record">
               <div class="color-block" :style="{ backgroundColor: `rgb(${record.R},${record.G},${record.B})` }">
               </div>
