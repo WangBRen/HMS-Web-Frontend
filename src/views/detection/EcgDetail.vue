@@ -256,23 +256,25 @@ export default {
         this.drawChart(originData, results)
         this.title = '尿检报告详情'
         const newArray = []
-        for (let i = 0; i < 14; i++) {
-          const index = i * 3
-          const R = results[index] * 255 / maxR
-          const G = results[index + 1] * 255 / maxG
-          const B = results[index + 2] * 255 / maxB
-          newArray.push({
-            index: i + 1,
-            r: results[index],
-            rPosition: results[index + 42],
-            g: results[index + 1],
-            gPosition: results[index + 43],
-            b: results[index + 2],
-            bPosition: results[index + 44],
-            R,
-            G,
-            B
-          })
+        if (results.length > 0) {
+          for (let i = 0; i < 14; i++) {
+            const index = i * 3
+            const R = results[index] * 255 / maxR
+            const G = results[index + 1] * 255 / maxG
+            const B = results[index + 2] * 255 / maxB
+            newArray.push({
+              index: i + 1,
+              r: results[index],
+              rPosition: results[index + 42],
+              g: results[index + 1],
+              gPosition: results[index + 43],
+              b: results[index + 2],
+              bPosition: results[index + 44],
+              R,
+              G,
+              B
+            })
+          }
         }
         this.newArray = newArray
         const data = this.reportPro.data.fullResults
