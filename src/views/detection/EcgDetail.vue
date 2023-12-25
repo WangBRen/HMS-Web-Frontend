@@ -43,9 +43,9 @@
     <div v-else style="margin: 0 10px;">
       <a-row :gutter="100">
         <a-col :span="12">
-          <a-table :columns="rgbColumns" :data-source="reportPro.data?.originData" size="small" :rowKey="(record, index) => index">
+          <a-table :columns="rgbColumns" :data-source="newArray" size="small" :rowKey="(record, index) => index">
             <div slot="color" slot-scope="text, record">
-              <div class="color-block" :style="{ backgroundColor: `rgb(${record.r},${record.g},${record.b})` }">
+              <div class="color-block" :style="{ backgroundColor: `rgb(${record.R},${record.G},${record.B})` }">
               </div>
             </div>
           </a-table>
@@ -72,17 +72,32 @@ const errorArr = ['正常窦性心律', '停搏', '室颤或室速', 'R on T', '
 const indexes = ['白细胞', '尿胆原', '微量白蛋白', '蛋白质', '胆红素', '葡萄糖', '抗坏血酸', '比重', '酮体', '亚硝酸盐', '肌酐', 'PH值', '隐血', '尿钙']
 const rgbColumns = [
   {
-    title: 'r',
+    title: 'r位置',
+    dataIndex: 'rPosition',
+    key: 'rPosition'
+  },
+  {
+    title: 'r值',
     dataIndex: 'r',
     key: 'r'
   },
   {
-    title: 'g',
+    title: 'g位置',
+    dataIndex: 'gPosition',
+    key: 'gPosition'
+  },
+  {
+    title: 'g值',
     dataIndex: 'g',
     key: 'g'
   },
   {
-    title: 'b',
+    title: 'b位置',
+    dataIndex: 'bPosition',
+    key: 'bPosition'
+  },
+  {
+    title: 'b值',
     dataIndex: 'b',
     key: 'b'
   },
@@ -219,9 +234,30 @@ export default {
       if (res.data.reportType === 'ecg') {
         this.title = '心电报告详情'
       } else {
+        const originData = res.data.data.originData
+        const maxValue = Math.max(...originData)
         const results = res.data.data.fullResults?.rgbResults
-        this.drawChart(res.data.data.originData, results)
+        this.drawChart(originData, results)
         this.title = '尿检报告详情'
+        const newArray = []
+        for (let i = 0; i < 42; i++) {
+          const index = i * 3
+          const R = results[index] * 255 / maxValue
+          const G = results[index + 1] * 255 / maxValue
+          const B = results[index + 2] * 255 / maxValue
+          newArray.push({
+            r: results[index],
+            rPosition: results[index + 42],
+            g: results[index + 1],
+            gPosition: results[index + 43],
+            b: results[index + 2],
+            bPosition: results[index + 44],
+            R,
+            G,
+            B
+          })
+        }
+        this.newArray = newArray
         const data = this.reportPro.data.fullResults
         const urineArr = []
         data.classes.map((item, index) => {
