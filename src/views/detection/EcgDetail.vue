@@ -240,7 +240,7 @@ export default {
         this.drawChart(originData, results)
         this.title = '尿检报告详情'
         const newArray = []
-        for (let i = 0; i < 42; i++) {
+        for (let i = 0; i < 14; i++) {
           const index = i * 3
           const R = results[index] * 255 / maxValue
           const G = results[index + 1] * 255 / maxValue
