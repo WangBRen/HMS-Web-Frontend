@@ -310,10 +310,10 @@ export default {
               rOriginal: results[index + 84],
               g: results[index + 1],
               gPosition: results[index + 43],
-              gOriginal: results[index + 84],
+              gOriginal: results[index + 85],
               b: results[index + 2],
               bPosition: results[index + 44],
-              bOriginal: results[index + 84],
+              bOriginal: results[index + 86],
               R,
               G,
               B
@@ -324,7 +324,7 @@ export default {
         this.addArr = []
         const constant = [831, 1024, 1034]
         const lastThree = results.slice(-3)
-        // const lastThree = [831, 1024, 1034]
+        console.log('最后三个', lastThree, results)
         this.addArr.push({
           R: parseFloat(lastThree[0] / constant[0].toFixed(3)),
           Vr: lastThree[0],
