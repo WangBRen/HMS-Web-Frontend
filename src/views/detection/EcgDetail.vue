@@ -61,9 +61,17 @@
       </a-row>
       <a-row :gutter="100">
         <a-col :span="24">
-          <!-- 尿检rgb趋势图 -->
-          <!-- <v-chart :options="chartOptions" style="height: 400px;"></v-chart> -->
           <div id="urineEcharts" style="width: 100%; height: 300px;"></div>
+        </a-col>
+      </a-row>
+      <a-row :gutter="100">
+        <a-col :span="24">
+          <div id="gEcharts" style="width: 100%; height: 300px;"></div>
+        </a-col>
+      </a-row>
+      <a-row :gutter="100">
+        <a-col :span="24">
+          <div id="bEcharts" style="width: 100%; height: 300px;"></div>
         </a-col>
       </a-row>
     </div>
@@ -228,17 +236,41 @@ export default {
       // 截取后42位
       const subArray = results?.slice(42, 84)
       // 提取每三个数字中的第一个数字组成新数组
-      const verticalLinesArr = []
+      const rLinesArr = []
+      const gLinesArr = []
+      const bLinesArr = []
       for (let i = 0; i < subArray?.length; i += 3) {
-        verticalLinesArr.push(subArray[i])
+        rLinesArr.push(subArray[i])
+        gLinesArr.push(subArray[i + 1])
+        bLinesArr.push(subArray[i + 2])
       }
-      const lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999) + 1
-      const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
-      // 提取 x 值和 r 值
-      const xData = newArr.map(obj => obj.x - lastIndex)
-      const rData = newArr.map(obj => obj.r)
-
-      var chartDom = document.getElementById('urineEcharts')
+      this.draw(rLinesArr, dataArr, 'r')
+      this.draw(gLinesArr, dataArr, 'g')
+      this.draw(bLinesArr, dataArr, 'b')
+    },
+    draw (linesArr, dataArr, type) {
+      var lastIndex, rData, xData, chartDom
+      if (type === 'r') {
+        lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999) + 1
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
+        xData = newArr.map(obj => obj.x - lastIndex)
+        rData = newArr.map(obj => obj.r)
+        chartDom = document.getElementById('urineEcharts')
+      }
+      if (type === 'g') {
+        lastIndex = dataArr.map(obj => obj.g).lastIndexOf(9999) + 1
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
+        xData = newArr.map(obj => obj.x - lastIndex)
+        rData = newArr.map(obj => obj.g)
+        chartDom = document.getElementById('gEcharts')
+      }
+      if (type === 'b') {
+        lastIndex = dataArr.map(obj => obj.b).lastIndexOf(9999) + 1
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
+        xData = newArr.map(obj => obj.x - lastIndex)
+        rData = newArr.map(obj => obj.b)
+        chartDom = document.getElementById('bEcharts')
+      }
       var myChart = echarts.init(chartDom)
       var option
 
@@ -264,7 +296,7 @@ export default {
                 type: 'dashed',
                 color: 'blue'
               },
-              data: verticalLinesArr.map(value => ({
+              data: linesArr.map(value => ({
                 xAxis: value
               }))
             }
