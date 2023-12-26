@@ -54,6 +54,11 @@
           <a-table :columns="columns" :data-source="urineArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
         </a-col>
       </a-row>
+      <a-row>
+        <a-col :span="10">
+          <a-table :columns="columns2" :data-source="addArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
+        </a-col>
+      </a-row>
       <a-row :gutter="100">
         <a-col :span="24">
           <!-- 尿检rgb趋势图 -->
@@ -87,6 +92,11 @@ const rgbColumns = [
     key: 'r'
   },
   {
+    title: '原始r',
+    dataIndex: 'rOriginal',
+    key: 'rOriginal'
+  },
+  {
     title: 'g位置',
     dataIndex: 'gPosition',
     key: 'gPosition'
@@ -97,6 +107,11 @@ const rgbColumns = [
     key: 'g'
   },
   {
+    title: '原始g',
+    dataIndex: 'gOriginal',
+    key: 'gOriginal'
+  },
+  {
     title: 'b位置',
     dataIndex: 'bPosition',
     key: 'bPosition'
@@ -105,6 +120,11 @@ const rgbColumns = [
     title: 'b值',
     dataIndex: 'b',
     key: 'b'
+  },
+  {
+    title: '原始b',
+    dataIndex: 'bOriginal',
+    key: 'bOriginal'
   },
   {
     title: '色块',
@@ -154,6 +174,26 @@ export default {
       urineArr: [],
       rgbColumns,
       columns,
+      columns2: [
+      {
+        title: 'R（Sr=831）',
+        dataIndex: 'R',
+        key: 'R',
+        customRender: (text) => 'Vr/Sr = ' + text
+      },
+      {
+        title: 'G（Sg=1024）',
+        dataIndex: 'G',
+        key: 'G',
+        customRender: (text) => 'Vg/Sg = ' + text
+      },
+      {
+        title: 'B（Sb=1034）',
+        dataIndex: 'B',
+        key: 'B',
+        customRender: (text) => 'Vb/Sb = ' + text
+      }
+      ],
       errorArr,
       title: '报告详情',
       reportPro: {},
@@ -175,7 +215,8 @@ export default {
         graphic: [] // 用于存储纵向虚线的数据
       },
       verticalLines: [], // 纵向虚线的数据
-      newArray: []
+      newArray: [],
+      addArr: []
     }
   },
   mounted () {
@@ -185,14 +226,14 @@ export default {
     drawChart (dataArr, results) {
       // const verticalLinesArr = [23, 50, 80, 100, 140, 300]
       // 截取后42位
-      const subArray = results?.slice(42)
+      const subArray = results?.slice(42, 84)
       // 提取每三个数字中的第一个数字组成新数组
       const verticalLinesArr = []
       for (let i = 0; i < subArray?.length; i += 3) {
         verticalLinesArr.push(subArray[i])
       }
       const lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999) + 1
-      const newArr = dataArr.slice(lastIndex, dataArr.length - 1)
+      const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
       // 提取 x 值和 r 值
       const xData = newArr.map(obj => obj.x - lastIndex)
       const rData = newArr.map(obj => obj.r)
@@ -252,7 +293,7 @@ export default {
           }
           return acc
         }, { maxR: Number.NEGATIVE_INFINITY, maxG: Number.NEGATIVE_INFINITY, maxB: Number.NEGATIVE_INFINITY })
-        const results = res.data.data.fullResults?.rgbResults
+        const results = res.data.data.fullResults?.rgbResults || []
         this.drawChart(originData, results)
         this.title = '尿检报告详情'
         const newArray = []
@@ -266,10 +307,13 @@ export default {
               index: i + 1,
               r: results[index],
               rPosition: results[index + 42],
+              rOriginal: results[index + 84],
               g: results[index + 1],
               gPosition: results[index + 43],
+              gOriginal: results[index + 84],
               b: results[index + 2],
               bPosition: results[index + 44],
+              bOriginal: results[index + 84],
               R,
               G,
               B
@@ -277,6 +321,16 @@ export default {
           }
         }
         this.newArray = newArray
+        this.addArr = []
+        const constant = [831, 1024, 1034]
+        const lastThree = results.slice(-3)
+        // const lastThree = [831, 1024, 1034]
+        this.addArr.push({
+          R: lastThree[0] / constant[0],
+          G: lastThree[1] / constant[1],
+          B: lastThree[2] / constant[2]
+        })
+        console.log('this.addArr', this.addArr)
         const data = this.reportPro.data.fullResults
         const urineArr = []
         data.classes.map((item, index) => {
