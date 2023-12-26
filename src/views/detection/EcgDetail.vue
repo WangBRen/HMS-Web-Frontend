@@ -54,8 +54,8 @@
           <a-table :columns="columns" :data-source="urineArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
         </a-col>
       </a-row>
-      <a-row style="margin-top: 20px;">
-        <a-col :span="14">
+      <a-row :gutter="100" style="margin-top: 20px;">
+        <a-col :span="24">
           <a-table :columns="columns2" :data-source="addArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
         </a-col>
       </a-row>
@@ -327,8 +327,11 @@ export default {
         // const lastThree = [831, 1024, 1034]
         this.addArr.push({
           R: parseFloat(lastThree[0] / constant[0].toFixed(3)),
+          Vr: lastThree[0],
           G: parseFloat(lastThree[1] / constant[1].toFixed(3)),
-          B: parseFloat(lastThree[2] / constant[2].toFixed(3))
+          Vg: lastThree[1],
+          B: parseFloat(lastThree[2] / constant[2].toFixed(3)),
+          Vb: lastThree[2]
         })
         console.log('this.addArr', this.addArr)
         const data = this.reportPro.data.fullResults
