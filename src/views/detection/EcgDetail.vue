@@ -179,19 +179,19 @@ export default {
         title: 'R（Sr=831）',
         dataIndex: 'R',
         key: 'R',
-        customRender: (text) => 'Vr/Sr = ' + text
+        customRender: (text, record) => record.Vr + '/Sr = ' + record.R
       },
       {
         title: 'G（Sg=1024）',
         dataIndex: 'G',
         key: 'G',
-        customRender: (text) => 'Vg/Sg = ' + text
+        customRender: (text, record) => record.Vg + '/Sg = ' + record.G
       },
       {
         title: 'B（Sb=1034）',
         dataIndex: 'B',
         key: 'B',
-        customRender: (text) => 'Vb/Sb = ' + text
+        customRender: (text, record) => record.Vb + '/Sb = ' + record.B
       }
       ],
       errorArr,
