@@ -184,19 +184,19 @@ export default {
       columns,
       columns2: [
       {
-        title: 'R（Sr=831）',
+        title: 'R（Sr=850）',
         dataIndex: 'R',
         key: 'R',
         customRender: (text, record) => record.Vr + '/Sr = ' + record.R
       },
       {
-        title: 'G（Sg=1024）',
+        title: 'G（Sg=1020）',
         dataIndex: 'G',
         key: 'G',
         customRender: (text, record) => record.Vg + '/Sg = ' + record.G
       },
       {
-        title: 'B（Sb=1034）',
+        title: 'B（Sb=989.4）',
         dataIndex: 'B',
         key: 'B',
         customRender: (text, record) => record.Vb + '/Sb = ' + record.B
@@ -354,7 +354,7 @@ export default {
         }
         this.newArray = newArray
         this.addArr = []
-        const constant = [831, 1024, 1034]
+        const constant = [850, 1020, 989.4]
         const lastThree = results.slice(-3)
         console.log('最后三个', lastThree, results)
         this.addArr.push({
