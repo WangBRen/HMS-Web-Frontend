@@ -7,6 +7,25 @@
       @nextClick="callback"
     >
       <a-tab-pane v-for="i in productList" :key="i.id" :tab="`${i.name}`">
+        <a-form layout="inline">
+          <a-row>
+            <a-col :xl="5" :sm="10">
+              <a-form-item label="uuid">
+                <a-input v-model="uuid" placeholder="请输入设备uuid"/>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="5" :sm="10">
+              <a-form-item label="设备名">
+                <a-input v-model="deviceName" placeholder="请输入设备名"/>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="5" :sm="10">
+              <span class="table-page-search-submitButtons">
+                <a-button @click="searchDevice" type="primary">查询</a-button>
+              </span>
+            </a-col>
+          </a-row>
+        </a-form>
         <a-table :columns="columns" :data-source="deviceList" :rowKey="(record,index)=>{return index}" :pagination="pagination" style="background:#fff;padding: 0 10px">
           <span slot="workingStatus" slot-scope="text">
             <span v-if="text==='offline'">离线</span>
@@ -17,6 +36,17 @@
             <a-tag color="blue" v-if="text">已绑定</a-tag>
             <a-tag v-if="!text">未绑定</a-tag>
           </span>
+          <span slot="action" slot-scope="text, record">
+            <a-popconfirm
+              v-if="record.bind"
+              title="你确定解绑设备吗?"
+              ok-text="Yes"
+              cancel-text="No"
+              @confirm="unBind(record)"
+            >
+              <a>解绑</a>
+            </a-popconfirm>
+          </span>
         </a-table>
       </a-tab-pane>
     </a-tabs>
@@ -24,9 +54,19 @@
 </template>
 
 <script>
-import { getProducts, getDevice } from '@/api/device'
+import { getProducts, getDevice, unBindDevice } from '@/api/device'
 import moment from 'moment'
 const columns = [
+  {
+    title: '设备ID',
+    dataIndex: 'id',
+    key: 'id'
+  },
+  {
+    title: '设备uuid',
+    dataIndex: 'uuid',
+    key: 'uuid'
+  },
   {
     title: '设备名称',
     dataIndex: 'name',
@@ -39,6 +79,10 @@ const columns = [
     scopedSlots: { customRender: 'bind' }
   },
   {
+    title: '设备管理员',
+    customRender: (text, record) => record.deviceManager ? record.deviceManager.nickname : ''
+  },
+  {
     title: '工作状态',
     dataIndex: 'workingStatus',
     key: 'workingStatus',
@@ -49,6 +93,10 @@ const columns = [
     dataIndex: 'createdAt',
     key: 'createdAt',
     customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+  },
+  {
+    title: '操作',
+    scopedSlots: { customRender: 'action' }
   }
 ]
 export default {
@@ -58,6 +106,9 @@ export default {
       deviceList: [],
       productList: [],
       columns,
+      productId: null,
+      uuid: '',
+      deviceName: '',
       pagination: {
         total: 0,
         current: 1,
@@ -74,19 +125,30 @@ export default {
     this.getProduct()
   },
   methods: {
+    searchDevice () {
+      this.pagination.current = 1
+      this.getDevice()
+    },
+    async unBind (record) {
+      const res = await unBindDevice(record.id)
+      if (res.status === 200) {
+        this.$message.success('解绑成功')
+        this.getDevice()
+      }
+      console.log('record', record, res)
+    },
     onPageChange (page, pageSize) {
       this.pagination.current = page
-      this.getDevice(this.productId)
+      this.getDevice()
     },
     onSizeChange (current, pageSize) {
       this.pagination.current = 1
       this.pagination.pageSize = pageSize
-      this.getDevice(this.productId)
+      this.getDevice()
     },
     callback (val) {
-      this.getDevice(val)
       this.productId = val
-      console.log('123', val)
+      this.getDevice()
     },
     async getProduct () {
       const pages = {
@@ -96,15 +158,15 @@ export default {
       const res = await getProducts(pages)
       this.productList = res.data.content
       this.productId = this.productList[0].id
-      this.getDevice(this.productId)
+      this.getDevice()
       console.log(res.data.content)
     },
-    async getDevice (productId) {
+    async getDevice () {
       const pages = {
-        page: this.pagination.current,
+        page: this.pagination.current - 1,
         size: this.pagination.pageSize
       }
-      const res = await getDevice(pages, productId)
+      const res = await getDevice(pages, this.productId, this.uuid, this.name)
       this.deviceList = res.data.content
       this.pagination.total = res.data.totalElements
       console.log(res.data.content)
