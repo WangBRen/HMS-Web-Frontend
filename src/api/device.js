@@ -44,7 +44,7 @@ export function getDevice (pages, productId, uuid, name) {
     url: api.getDevice(productId),
     method: 'get',
     params: {
-      page: pages.page || 1,
+      page: pages.page || 0,
       size: pages.size || 10,
       uuid,
       name
