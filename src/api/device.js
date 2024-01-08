@@ -4,7 +4,8 @@ const api = {
   deviceReport: 'device-reports/-1/all',
   reportDetail: (reportId) => `device-reports/-1/${reportId}`,
   getProducts: 'products',
-  getDevice: (productId) => `products/${productId}/devices`
+  getDevice: (productId) => `products/${productId}/devices`,
+  unbindDevice: (deviceId) => `products/${deviceId}`
 }
 
 export function getDeviceReport (pages, mode, type) {
@@ -52,7 +53,7 @@ export function getDevice (pages, productId, uuid, name) {
 }
 export function unBindDevice (deviceId) {
   return request({
-    url: api.getDevice(deviceId),
+    url: api.unbindDevice(deviceId),
     method: 'delete'
   })
 }
