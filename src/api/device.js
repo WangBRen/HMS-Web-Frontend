@@ -38,13 +38,21 @@ export function getProducts (pages) {
   })
 }
 
-export function getDevice (pages, productId) {
+export function getDevice (pages, productId, uuid, name) {
   return request({
     url: api.getDevice(productId),
     method: 'get',
     params: {
       page: pages.page || 1,
-      size: pages.size || 10
+      size: pages.size || 10,
+      uuid,
+      name
     }
+  })
+}
+export function unBindDevice (deviceId) {
+  return request({
+    url: api.getDevice(deviceId),
+    method: 'delete'
   })
 }
