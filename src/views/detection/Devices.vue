@@ -166,7 +166,7 @@ export default {
         page: this.pagination.current - 1,
         size: this.pagination.pageSize
       }
-      const res = await getDevice(pages, this.productId, this.uuid, this.name)
+      const res = await getDevice(pages, this.productId, this.uuid, this.deviceName)
       this.deviceList = res.data.content
       this.pagination.total = res.data.totalElements
       console.log(res.data.content)
