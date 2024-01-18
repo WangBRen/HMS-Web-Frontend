@@ -38,6 +38,9 @@
           {{ reportPro.data?.fullResult?.classificationProbabilities[0] }}
         </a-descriptions-item>
       </a-descriptions>
+      <a-button type="primary">
+        <a :href="pdfUrl" target="_blank">打开PDF</a>
+      </a-button>
     </div>
     <!-- 尿检 -->
     <div v-else style="margin: 0 10px;">
@@ -224,7 +227,8 @@ export default {
       },
       verticalLines: [], // 纵向虚线的数据
       newArray: [],
-      addArr: []
+      addArr: [],
+      pdfUrl: ''
     }
   },
   mounted () {
@@ -311,6 +315,7 @@ export default {
       this.reportPro = res.data
       if (res.data.reportType === 'ecg') {
         this.title = '心电报告详情'
+        this.pdfUrl = `https://dev.hms.yootane.com/api/wechat/home/%7BgroupId%7D/device-reports/ecg/${res.data.id}/ecg.pdf`
       } else {
         const originData = res.data.data.originData
         const { maxR, maxG, maxB } = originData.reduce((acc, data) => {
