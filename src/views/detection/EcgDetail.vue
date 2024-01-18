@@ -315,7 +315,9 @@ export default {
       this.reportPro = res.data
       if (res.data.reportType === 'ecg') {
         this.title = '心电报告详情'
-        this.pdfUrl = `https://dev.hms.yootane.com/api/wechat/home/%7BgroupId%7D/device-reports/ecg/${res.data.id}/ecg.pdf`
+        const domain = window.location.hostname
+        console.log(domain)
+        this.pdfUrl = `https://${domain}/api/wechat/home/%7BgroupId%7D/device-reports/ecg/${res.data.id}/ecg.pdf`
       } else {
         const originData = res.data.data.originData
         const { maxR, maxG, maxB } = originData.reduce((acc, data) => {
