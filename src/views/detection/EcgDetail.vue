@@ -6,13 +6,13 @@
     @cancel="handleCancel"
     :footer="false"
   >
+    <a-collapse>
+      <a-collapse-panel key="1" :header="'原始数据：'+ (reportPro.reportType==='ecg' ? reportPro.data?.ecgList.length : originData.length) +'个'">
+        <div>{{ reportPro.reportType==='ecg' ? reportPro.data?.ecgList : originData }}</div>
+      </a-collapse-panel>
+    </a-collapse>
     <!-- 心电 -->
     <div v-if="reportPro.reportType==='ecg'">
-      <a-collapse>
-        <a-collapse-panel key="1" :header="'原始数据：'+reportPro.data?.ecgList.length+'个'">
-          <div>{{ reportPro.data?.ecgList }}</div>
-        </a-collapse-panel>
-      </a-collapse>
       <a-descriptions title="检测结果" style="margin:30px 10px;">
         <a-descriptions-item label="心率（深麦）">
           {{ reportPro.data?.realHr }} 次/分钟
@@ -208,6 +208,7 @@ export default {
       errorArr,
       title: '报告详情',
       reportPro: {},
+      originData: [],
       chartOptions: {
         xAxis: {
           type: 'category',
@@ -320,6 +321,7 @@ export default {
         this.pdfUrl = `https://${domain}/api/wechat/home/%7BgroupId%7D/device-reports/ecg/${res.data.id}/ecg.pdf`
       } else {
         const originData = res.data.data.originData
+        this.originData = originData
         const { maxR, maxG, maxB } = originData.reduce((acc, data) => {
           if (data.hasOwnProperty('r') && data.r > acc.maxR) {
             acc.maxR = data.r
