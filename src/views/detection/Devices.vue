@@ -37,6 +37,14 @@
             <a-tag v-if="!text">未绑定</a-tag>
           </span>
           <span slot="action" slot-scope="text, record">
+            <a-popover title="修改试纸数" trigger="click">
+              <a slot="content">
+                <a-input-number v-model="shizhiNum" :min="1" :max="10" />
+                <a-button @click="onChangeNum(record)">确定</a-button>
+              </a>
+              <a>试纸数</a>
+            </a-popover>
+            <a-divider v-if="record.bind" type="vertical" />
             <a-popconfirm
               v-if="record.bind"
               title="你确定解绑设备吗?"
@@ -46,15 +54,6 @@
             >
               <a>解绑</a>
             </a-popconfirm>
-            <a-popover title="修改试纸数" trigger="click">
-              <a slot="content">
-                <a-input-number v-model="shizhiNum" :min="1" :max="10" />
-                <a-button @click="onChangeNum(record)">确定</a-button>
-              </a>
-              <a-button>
-                试纸数
-              </a-button>
-            </a-popover>
           </span>
         </a-table>
       </a-tab-pane>
