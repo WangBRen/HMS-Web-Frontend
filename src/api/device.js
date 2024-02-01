@@ -6,7 +6,7 @@ const api = {
   getProducts: 'products',
   getDevice: (productId) => `products/${productId}/devices`,
   unbindDevice: (deviceId) => `products/${deviceId}`,
-  changeshizhiNum: (deviceId, shizhinum) => `wechat/home/{groupId}/devices/${deviceId}/set?set=shizhiNum,${shizhinum}`
+  changeshizhiNum: (deviceId, shizhinum) => `wechat/home/{groupId}/devices/${deviceId}/set?set=shizhinum,${shizhinum}`
 }
 
 export function getDeviceReport (pages, mode, type) {
