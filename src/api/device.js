@@ -5,7 +5,8 @@ const api = {
   reportDetail: (reportId) => `device-reports/-1/${reportId}`,
   getProducts: 'products',
   getDevice: (productId) => `products/${productId}/devices`,
-  unbindDevice: (deviceId) => `products/${deviceId}`
+  unbindDevice: (deviceId) => `products/${deviceId}`,
+  changeshizhiNum: (deviceId) => `wechat/home/{groupId}/devices/${deviceId}/set?set=shizhiNum`
 }
 
 export function getDeviceReport (pages, mode, type) {
@@ -55,5 +56,14 @@ export function unBindDevice (deviceId) {
   return request({
     url: api.unbindDevice(deviceId),
     method: 'delete'
+  })
+}
+export function changeshizhiNum (deviceId, shizhinum) {
+  return request({
+    url: api.changeshizhiNum(deviceId),
+    method: 'put',
+    params: {
+      shizhinum
+    }
   })
 }

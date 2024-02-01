@@ -46,6 +46,15 @@
             >
               <a>解绑</a>
             </a-popconfirm>
+            <a-popover title="修改试纸数" trigger="click">
+              <a slot="content">
+                <a-input-number v-model="shizhiNum" :min="1" :max="10" />
+                <a-button @click="onChangeNum(record)">确定</a-button>
+              </a>
+              <a-button>
+                试纸数
+              </a-button>
+            </a-popover>
           </span>
         </a-table>
       </a-tab-pane>
@@ -54,7 +63,7 @@
 </template>
 
 <script>
-import { getProducts, getDevice, unBindDevice } from '@/api/device'
+import { getProducts, getDevice, unBindDevice, changeshizhiNum } from '@/api/device'
 import moment from 'moment'
 const columns = [
   {
@@ -109,6 +118,7 @@ export default {
       productId: null,
       uuid: '',
       deviceName: '',
+      shizhiNum: 0,
       pagination: {
         total: 0,
         current: 1,
@@ -125,6 +135,12 @@ export default {
     this.getProduct()
   },
   methods: {
+    async onChangeNum (record) {
+      const res = await changeshizhiNum(record.id, this.shizhiNum)
+      if (res.status === 200) {
+        this.$message.success('试纸数修改成功')
+      }
+    },
     searchDevice () {
       this.pagination.current = 1
       this.getDevice()
