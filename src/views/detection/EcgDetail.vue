@@ -257,21 +257,21 @@ export default {
       var lastIndex, rData, xData, chartDom
       if (type === 'r') {
         lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1 - 4)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.r)
         chartDom = document.getElementById('urineEcharts')
       }
       if (type === 'g') {
         lastIndex = dataArr.map(obj => obj.g).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - 5)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.g)
         chartDom = document.getElementById('gEcharts')
       }
       if (type === 'b') {
         lastIndex = dataArr.map(obj => obj.b).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - 5)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.b)
         chartDom = document.getElementById('bEcharts')
