@@ -86,6 +86,7 @@ import { reportDetail } from '@/api/device'
 import * as echarts from 'echarts'
 const errorArr = ['正常窦性心律', '停搏', '室颤或室速', 'R on T', '连续室性早搏', '二连发室早', '单个室早', '室早二联律', '室早三联律', '室速', '室缓', '起搏器未俘获', '起搏器未起搏', '漏搏', '正在学习', '', '过载信号', '信号幅度过小（信号弱）']
 const indexes = ['葡萄糖', '肌酐', '酮体', 'VC', '白细胞', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '隐血', '比重']
+const indexes11 = ['葡萄糖', '酮体', 'VC', '白细胞', 'PH', '亚硝酸盐', '尿胆原', '蛋白质', '胆红素', '隐血', '比重']
 const rgbColumns = [
   {
     title: '序号',
@@ -147,7 +148,7 @@ const columns = [
     title: '指标名',
     dataIndex: 'class',
     key: 'class',
-    customRender: (text) => text ? indexes[text - 1] : '-'
+    customRender: (text, record, index) => text.length === 11 ? indexes11[index] : indexes[index]
   },
   {
     title: '级别',
