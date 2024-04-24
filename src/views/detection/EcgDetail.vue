@@ -147,8 +147,7 @@ const columns = [
   {
     title: '指标名',
     dataIndex: 'class',
-    key: 'class',
-    customRender: (text, record, index) => text.length === 11 ? indexes11[index] : indexes[index]
+    key: 'class'
   },
   {
     title: '级别',
@@ -380,7 +379,7 @@ export default {
         const urineArr = []
         data.classes.map((item, index) => {
           urineArr.push({
-            class: data.classes[index],
+            class: data.classes.length === 11 ? indexes11[index] : indexes[index],
             level: data.levels[index],
             result: data.results[index],
             find: data.findings[index]
