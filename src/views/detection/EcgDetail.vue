@@ -339,26 +339,50 @@ export default {
         this.title = '尿检报告详情'
         const newArray = []
         if (results.length > 0) {
-          for (let i = 0; i < 14; i++) {
-            const index = i * 3
-            const R = results[index] * 255 / maxR
-            const G = results[index + 1] * 255 / maxG
-            const B = results[index + 2] * 255 / maxB
-            newArray.push({
-              index: i + 1,
-              r: results[index],
-              rPosition: results[index + 42],
-              rOriginal: results[index + 84],
-              g: results[index + 1],
-              gPosition: results[index + 43],
-              gOriginal: results[index + 85],
-              b: results[index + 2],
-              bPosition: results[index + 44],
-              bOriginal: results[index + 86],
-              R,
-              G,
-              B
-            })
+          if (results.length % 14 === 0) {
+            for (let i = 0; i < 14; i++) {
+              const index = i * 3
+              const R = results[index] * 255 / maxR
+              const G = results[index + 1] * 255 / maxG
+              const B = results[index + 2] * 255 / maxB
+              newArray.push({
+                index: i + 1,
+                r: results[index],
+                rPosition: results[index + 42],
+                rOriginal: results[index + 84],
+                g: results[index + 1],
+                gPosition: results[index + 43],
+                gOriginal: results[index + 85],
+                b: results[index + 2],
+                bPosition: results[index + 44],
+                bOriginal: results[index + 86],
+                R,
+                G,
+                B
+              })
+            }
+          } else {
+            for (let i = 0; i < 11; i++) {
+              const index = i * 3
+              const R = results[index] * 255 / maxR
+              const G = results[index + 1] * 255 / maxG
+              const B = results[index + 2] * 255 / maxB
+              newArray.push({
+                index: i + 1,
+                r: results[index],
+                rPosition: results[index + 33],
+                rOriginal: results[index + 66],
+                g: results[index + 1],
+                gPosition: results[index + 34],
+                gOriginal: results[index + 67],
+                b: results[index + 2],
+                bPosition: results[index + 35],
+                bOriginal: results[index + 68],
+                R,
+                G,
+                B
+              })
+            }
           }
         }
         this.newArray = newArray
