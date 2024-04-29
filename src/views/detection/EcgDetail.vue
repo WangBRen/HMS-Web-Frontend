@@ -59,7 +59,14 @@
       </a-row>
       <a-row :gutter="100" style="margin-top: 20px;">
         <a-col :span="24">
-          <a-table :columns="columns2" :data-source="addArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
+          <a-table :columns="columns2" :data-source="addArr" :pagination="false" size="small" :rowKey="(record, index) => index">
+            <span slot="R" v-if="originData[originData.length-1]?.r===1102">R（Sr=1097）</span>
+            <span slot="R" v-else>R（Sr=850）</span>
+            <span slot="G" v-if="originData[originData.length-1]?.r===1102">G（Sg=1332）</span>
+            <span slot="G" v-else>G（Sg=1020）</span>
+            <span slot="B" v-if="originData[originData.length-1]?.r===1102">B（Sb=1242）</span>
+            <span slot="B" v-else>B（Sb=989.4）</span>
+          </a-table>
         </a-col>
       </a-row>
       <a-row :gutter="100">
@@ -187,19 +194,28 @@ export default {
       columns,
       columns2: [
       {
-        title: 'R（Sr=850）',
+        // title: 'R（Sr=850）',
+        scopedSlots: {
+          title: 'R'
+        },
         dataIndex: 'R',
         key: 'R',
         customRender: (text, record) => record.Vr + '/Sr = ' + record.R
       },
       {
-        title: 'G（Sg=1020）',
+        // title: 'G（Sg=1020）',
+        scopedSlots: {
+          title: 'G'
+        },
         dataIndex: 'G',
         key: 'G',
         customRender: (text, record) => record.Vg + '/Sg = ' + record.G
       },
       {
-        title: 'B（Sb=989.4）',
+        // title: 'B（Sb=989.4）',
+        scopedSlots: {
+          title: 'B'
+        },
         dataIndex: 'B',
         key: 'B',
         customRender: (text, record) => record.Vb + '/Sb = ' + record.B
@@ -394,7 +410,12 @@ export default {
         }
         this.newArray = newArray
         this.addArr = []
-        const constant = [850, 1020, 989.4]
+        var constant
+        if (originData[originData.length - 1]?.r === 1102) {
+          constant = [1097, 1332, 1242]
+        } else {
+          constant = [850, 1020, 989.4]
+        }
         const lastThree = results.slice(-3)
         console.log('最后三个', lastThree, results)
         this.addArr.push({
