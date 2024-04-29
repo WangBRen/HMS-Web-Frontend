@@ -92,7 +92,7 @@
 import { reportDetail } from '@/api/device'
 import * as echarts from 'echarts'
 const errorArr = ['正常窦性心律', '停搏', '室颤或室速', 'R on T', '连续室性早搏', '二连发室早', '单个室早', '室早二联律', '室早三联律', '室速', '室缓', '起搏器未俘获', '起搏器未起搏', '漏搏', '正在学习', '', '过载信号', '信号幅度过小（信号弱）']
-const indexes = ['葡萄糖', '肌酐', '酮体', 'VC', '白细胞', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '隐血', '比重']
+const indexes = ['VC', '葡萄糖', '酮体', '隐血', '肌酐', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '比重', '白细胞']
 const indexes11 = ['VC', '葡萄糖', '酮体', '隐血', 'PH', '亚硝酸盐', '尿胆原', '蛋白质', '胆红素', '比重', '白细胞']
 const rgbColumns = [
   {
@@ -256,11 +256,13 @@ export default {
       // const verticalLinesArr = [23, 50, 80, 100, 140, 300]
       // 截取后42位
       console.log('dataArr, results', dataArr, results)
-      var subArray
+      var subArray, num // 需要去除后面的位数
       if (len === 11) {
         subArray = results?.slice(33, 66)
+        num = 4
       } else {
         subArray = results?.slice(42, 84)
+        num = 7
       }
       // 提取每三个数字中的第一个数字组成新数组
       const rLinesArr = []
@@ -271,29 +273,29 @@ export default {
         gLinesArr.push(subArray[i + 1])
         bLinesArr.push(subArray[i + 2])
       }
-      this.draw(rLinesArr, dataArr, 'r')
-      this.draw(gLinesArr, dataArr, 'g')
-      this.draw(bLinesArr, dataArr, 'b')
+      this.draw(rLinesArr, dataArr, 'r', num)
+      this.draw(gLinesArr, dataArr, 'g', num)
+      this.draw(bLinesArr, dataArr, 'b', num)
     },
-    draw (linesArr, dataArr, type) {
+    draw (linesArr, dataArr, type, num) {
       var lastIndex, rData, xData, chartDom
       if (type === 'r') {
         lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1 - 4)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - num)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.r)
         chartDom = document.getElementById('urineEcharts')
       }
       if (type === 'g') {
         lastIndex = dataArr.map(obj => obj.g).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 5)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - num)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.g)
         chartDom = document.getElementById('gEcharts')
       }
       if (type === 'b') {
         lastIndex = dataArr.map(obj => obj.b).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 5)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - num)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.b)
         chartDom = document.getElementById('bEcharts')
@@ -362,7 +364,7 @@ export default {
         this.title = '尿检报告详情'
         const newArray = []
         if (results.length > 0) {
-          if (results.length % 14 === 0) {
+          if ((results.length - 3) % 14 === 0) {
             for (let i = 0; i < 14; i++) {
               const index = i * 3
               const R = results[index] * 255 / maxR
