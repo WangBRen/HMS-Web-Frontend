@@ -236,10 +236,16 @@ export default {
     this.getDevice()
   },
   methods: {
-    drawChart (dataArr, results) {
+    drawChart (dataArr, results, len) {
       // const verticalLinesArr = [23, 50, 80, 100, 140, 300]
       // 截取后42位
-      const subArray = results?.slice(42, 84)
+      console.log('dataArr, results', dataArr, results)
+      var subArray
+      if (len === 11) {
+        subArray = results?.slice(33, 66)
+      } else {
+        subArray = results?.slice(42, 84)
+      }
       // 提取每三个数字中的第一个数字组成新数组
       const rLinesArr = []
       const gLinesArr = []
@@ -335,7 +341,8 @@ export default {
           return acc
         }, { maxR: Number.NEGATIVE_INFINITY, maxG: Number.NEGATIVE_INFINITY, maxB: Number.NEGATIVE_INFINITY })
         const results = res.data.data.fullResults?.rgbResults || []
-        this.drawChart(originData, results)
+        const len = res.data.data?.fullResults?.classes.length
+        this.drawChart(originData, results, len)
         this.title = '尿检报告详情'
         const newArray = []
         if (results.length > 0) {
