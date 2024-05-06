@@ -259,7 +259,7 @@ export default {
       var subArray, num // 需要去除后面的位数
       if (len === 11) {
         subArray = results?.slice(33, 66)
-        num = 4
+        num = 7
       } else {
         subArray = results?.slice(42, 84)
         num = 7
