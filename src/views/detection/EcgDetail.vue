@@ -59,7 +59,14 @@
       </a-row>
       <a-row :gutter="100" style="margin-top: 20px;">
         <a-col :span="24">
-          <a-table :columns="columns2" :data-source="addArr" :pagination="false" size="small" :rowKey="(record, index) => index"></a-table>
+          <a-table :columns="columns2" :data-source="addArr" :pagination="false" size="small" :rowKey="(record, index) => index">
+            <span slot="R" v-if="originData[originData.length-1]?.r===1102">R（Sr=1097）</span>
+            <span slot="R" v-else>R（Sr=850）</span>
+            <span slot="G" v-if="originData[originData.length-1]?.r===1102">G（Sg=1332）</span>
+            <span slot="G" v-else>G（Sg=1020）</span>
+            <span slot="B" v-if="originData[originData.length-1]?.r===1102">B（Sb=1242）</span>
+            <span slot="B" v-else>B（Sb=989.4）</span>
+          </a-table>
         </a-col>
       </a-row>
       <a-row :gutter="100">
@@ -85,7 +92,8 @@
 import { reportDetail } from '@/api/device'
 import * as echarts from 'echarts'
 const errorArr = ['正常窦性心律', '停搏', '室颤或室速', 'R on T', '连续室性早搏', '二连发室早', '单个室早', '室早二联律', '室早三联律', '室速', '室缓', '起搏器未俘获', '起搏器未起搏', '漏搏', '正在学习', '', '过载信号', '信号幅度过小（信号弱）']
-const indexes = ['葡萄糖', '肌酐', '酮体', 'VC', '白细胞', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '隐血', '比重']
+const indexes = ['VC', '葡萄糖', '酮体', '隐血', '肌酐', 'PH', '亚硝酸盐', '尿钙', '微量白蛋白', '尿胆原', '蛋白质', '胆红素', '比重', '白细胞']
+const indexes11 = ['VC', '葡萄糖', '酮体', '隐血', 'PH', '亚硝酸盐', '尿胆原', '蛋白质', '胆红素', '比重', '白细胞']
 const rgbColumns = [
   {
     title: '序号',
@@ -146,8 +154,7 @@ const columns = [
   {
     title: '指标名',
     dataIndex: 'class',
-    key: 'class',
-    customRender: (text) => text ? indexes[text - 1] : '-'
+    key: 'class'
   },
   {
     title: '级别',
@@ -187,19 +194,28 @@ export default {
       columns,
       columns2: [
       {
-        title: 'R（Sr=850）',
+        // title: 'R（Sr=850）',
+        scopedSlots: {
+          title: 'R'
+        },
         dataIndex: 'R',
         key: 'R',
         customRender: (text, record) => record.Vr + '/Sr = ' + record.R
       },
       {
-        title: 'G（Sg=1020）',
+        // title: 'G（Sg=1020）',
+        scopedSlots: {
+          title: 'G'
+        },
         dataIndex: 'G',
         key: 'G',
         customRender: (text, record) => record.Vg + '/Sg = ' + record.G
       },
       {
-        title: 'B（Sb=989.4）',
+        // title: 'B（Sb=989.4）',
+        scopedSlots: {
+          title: 'B'
+        },
         dataIndex: 'B',
         key: 'B',
         customRender: (text, record) => record.Vb + '/Sb = ' + record.B
@@ -236,10 +252,18 @@ export default {
     this.getDevice()
   },
   methods: {
-    drawChart (dataArr, results) {
+    drawChart (dataArr, results, len) {
       // const verticalLinesArr = [23, 50, 80, 100, 140, 300]
       // 截取后42位
-      const subArray = results?.slice(42, 84)
+      console.log('dataArr, results', dataArr, results)
+      var subArray, num // 需要去除后面的位数
+      if (len === 11) {
+        subArray = results?.slice(33, 66)
+        num = 7
+      } else {
+        subArray = results?.slice(42, 84)
+        num = 7
+      }
       // 提取每三个数字中的第一个数字组成新数组
       const rLinesArr = []
       const gLinesArr = []
@@ -249,29 +273,29 @@ export default {
         gLinesArr.push(subArray[i + 1])
         bLinesArr.push(subArray[i + 2])
       }
-      this.draw(rLinesArr, dataArr, 'r')
-      this.draw(gLinesArr, dataArr, 'g')
-      this.draw(bLinesArr, dataArr, 'b')
+      this.draw(rLinesArr, dataArr, 'r', num)
+      this.draw(gLinesArr, dataArr, 'g', num)
+      this.draw(bLinesArr, dataArr, 'b', num)
     },
-    draw (linesArr, dataArr, type) {
+    draw (linesArr, dataArr, type, num) {
       var lastIndex, rData, xData, chartDom
       if (type === 'r') {
         lastIndex = dataArr.map(obj => obj.r).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 1 - 4)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - num)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.r)
         chartDom = document.getElementById('urineEcharts')
       }
       if (type === 'g') {
         lastIndex = dataArr.map(obj => obj.g).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 5)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - num)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.g)
         chartDom = document.getElementById('gEcharts')
       }
       if (type === 'b') {
         lastIndex = dataArr.map(obj => obj.b).lastIndexOf(9999) + 1
-        const newArr = dataArr.slice(lastIndex, dataArr?.length - 5)
+        const newArr = dataArr.slice(lastIndex, dataArr?.length - num)
         xData = newArr.map(obj => obj.x - lastIndex)
         rData = newArr.map(obj => obj.b)
         chartDom = document.getElementById('bEcharts')
@@ -335,35 +359,65 @@ export default {
           return acc
         }, { maxR: Number.NEGATIVE_INFINITY, maxG: Number.NEGATIVE_INFINITY, maxB: Number.NEGATIVE_INFINITY })
         const results = res.data.data.fullResults?.rgbResults || []
-        this.drawChart(originData, results)
+        const len = res.data.data?.fullResults?.classes.length
+        this.drawChart(originData, results, len)
         this.title = '尿检报告详情'
         const newArray = []
         if (results.length > 0) {
-          for (let i = 0; i < 14; i++) {
-            const index = i * 3
-            const R = results[index] * 255 / maxR
-            const G = results[index + 1] * 255 / maxG
-            const B = results[index + 2] * 255 / maxB
-            newArray.push({
-              index: i + 1,
-              r: results[index],
-              rPosition: results[index + 42],
-              rOriginal: results[index + 84],
-              g: results[index + 1],
-              gPosition: results[index + 43],
-              gOriginal: results[index + 85],
-              b: results[index + 2],
-              bPosition: results[index + 44],
-              bOriginal: results[index + 86],
-              R,
-              G,
-              B
-            })
+          if ((results.length - 3) % 14 === 0) {
+            for (let i = 0; i < 14; i++) {
+              const index = i * 3
+              const R = results[index] * 255 / maxR
+              const G = results[index + 1] * 255 / maxG
+              const B = results[index + 2] * 255 / maxB
+              newArray.push({
+                index: i + 1,
+                r: results[index],
+                rPosition: results[index + 42],
+                rOriginal: results[index + 84],
+                g: results[index + 1],
+                gPosition: results[index + 43],
+                gOriginal: results[index + 85],
+                b: results[index + 2],
+                bPosition: results[index + 44],
+                bOriginal: results[index + 86],
+                R,
+                G,
+                B
+              })
+            }
+          } else {
+            for (let i = 0; i < 11; i++) {
+              const index = i * 3
+              const R = results[index] * 255 / maxR
+              const G = results[index + 1] * 255 / maxG
+              const B = results[index + 2] * 255 / maxB
+              newArray.push({
+                index: i + 1,
+                r: results[index],
+                rPosition: results[index + 33],
+                rOriginal: results[index + 66],
+                g: results[index + 1],
+                gPosition: results[index + 34],
+                gOriginal: results[index + 67],
+                b: results[index + 2],
+                bPosition: results[index + 35],
+                bOriginal: results[index + 68],
+                R,
+                G,
+                B
+              })
+            }
           }
         }
         this.newArray = newArray
         this.addArr = []
-        const constant = [850, 1020, 989.4]
+        var constant
+        if (originData[originData.length - 1]?.r === 1102) {
+          constant = [1097, 1332, 1242]
+        } else {
+          constant = [850, 1020, 989.4]
+        }
         const lastThree = results.slice(-3)
         console.log('最后三个', lastThree, results)
         this.addArr.push({
@@ -379,7 +433,7 @@ export default {
         const urineArr = []
         data.classes.map((item, index) => {
           urineArr.push({
-            class: data.classes[index],
+            class: data.classes.length === 11 ? indexes11[index] : indexes[index],
             level: data.levels[index],
             result: data.results[index],
             find: data.findings[index]
