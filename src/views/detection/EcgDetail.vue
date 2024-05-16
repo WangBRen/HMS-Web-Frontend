@@ -418,7 +418,12 @@ export default {
         } else {
           constant = [850, 1020, 989.4]
         }
-        const lastThree = results.slice(-3)
+        var lastThree = []
+        if (len !== 11) {
+          lastThree = results.slice(-3)
+        } else {
+          lastThree = results.slice(-4, -1)
+        }
         console.log('最后三个', lastThree, results)
         this.addArr.push({
           R: parseFloat(lastThree[0] / constant[0].toFixed(3)),
