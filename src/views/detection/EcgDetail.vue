@@ -364,7 +364,8 @@ export default {
         this.title = '尿检报告详情'
         const newArray = []
         if (results.length > 0) {
-          if ((results.length - 3) % 14 === 0) {
+          // if ((results.length - 3) % 14 === 0) {
+          if (results.length > 110) {
             for (let i = 0; i < 14; i++) {
               const index = i * 3
               const R = results[index] * 255 / maxR
