@@ -1,6 +1,15 @@
 <template>
   <div>
-    <a-card :bordered="false">
+    <a-card v-if="groupId" :title="'家庭设备【' + groupDevices.length + '台】'">
+      <a-table :columns="devicecolumns" :data-source="groupDevices" :rowKey="(record,index)=>{return index}">
+        <span slot="workingStatus" slot-scope="text">
+          <span v-if="text==='offline'">离线</span>
+          <a v-if="text==='online'">在线</a>
+          <a v-if="text==='running'">使用中</a>
+        </span>
+      </a-table>
+    </a-card>
+    <a-card :bordered="false" :title="groupId ? '家庭报告【共' + pagination.total + '个】' : ''">
       <!-- <a slot="extra" href="#">more</a> -->
       <div>
         <a-select default-value="--" style="width: 120px" v-model="type">
@@ -25,6 +34,8 @@
             未领取
           </a-select-option>
         </a-select>
+        家庭id：<a-input-number v-model="groupId" :min="1" />
+        设备id：<a-input-number v-model="deviceId" :min="1" />
         <a-button type="primary " style="margin-left: 8px;float: right;" @click="handleSearch">查询</a-button>
       </div>
       <a-table :columns="columns" :data-source="deviceReportList" :rowKey="(record,index)=>{return index}" :pagination="pagination">
@@ -36,9 +47,46 @@
 </template>
 
 <script>
-import { getDeviceReport } from '@/api/device'
+import { getDeviceReport, groupReport, deviceReport, groupDevice } from '@/api/device'
 import moment from 'moment'
 import EcgDetailVue from './EcgDetail.vue'
+const devicecolumns = [
+{
+    title: '设备ID',
+    dataIndex: 'id',
+    key: 'id'
+  },
+  {
+    title: '设备uuid',
+    dataIndex: 'uuid',
+    key: 'uuid'
+  },
+  {
+    title: '设备名称',
+    dataIndex: 'name',
+    key: 'name'
+  },
+  {
+    title: '家庭名',
+    customRender: (text, record) => record.group ? record.group.name : ''
+  },
+  {
+    title: '设备管理员',
+    customRender: (text, record) => record.deviceManager ? record.deviceManager.nickname : ''
+  },
+  {
+    title: '工作状态',
+    dataIndex: 'workingStatus',
+    key: 'workingStatus',
+    scopedSlots: { customRender: 'workingStatus' }
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createdAt',
+    key: 'createdAt',
+    customRender: (text, record, index) => record ? moment(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+  }
+]
 const columns = [
   {
     title: '创建时间',
@@ -69,8 +117,12 @@ export default {
     return {
       mode: 'all',
       type: '--',
+      groupId: null,
+      deviceId: null,
       deviceReportList: [],
+      groupDevices: [],
       columns,
+      devicecolumns,
       detailVisible: false,
       reportId: null,
       pagination: {
@@ -86,9 +138,18 @@ export default {
     }
   },
   mounted () {
+    this.groupId = this.$route.query.id
+    if (this.groupId) {
+      this.groupDevice()
+    }
     this.getDevice()
   },
   methods: {
+    async groupDevice () {
+      const res = await groupDevice(this.groupId)
+      this.groupDevices = res.data
+      console.log('res', res)
+    },
     handleSearch () {
       this.pagination.current = 1
       this.getDevice()
@@ -108,7 +169,16 @@ export default {
         size: this.pagination.pageSize
       }
       const type = this.type === '--' ? '' : this.type
-      const res = await getDeviceReport(pages, this.mode, type)
+      var res
+      if (this.groupId && this.deviceId) {
+        res = await deviceReport(pages, this.mode, type, this.groupId, this.deviceId)
+        this.groupDevice()
+      } else if (this.groupId) {
+        res = await groupReport(pages, this.mode, type, this.groupId)
+        this.groupDevice()
+      } else {
+        res = await getDeviceReport(pages, this.mode, type)
+      }
       this.deviceReportList = res.data.content
       this.pagination.total = res.data.totalElements
       console.log(res.data.content)
