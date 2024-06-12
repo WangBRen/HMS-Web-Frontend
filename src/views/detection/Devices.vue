@@ -44,16 +44,20 @@
               </a>
               <a>试纸数</a>
             </a-popover>
-            <a-divider v-if="record.bind" type="vertical" />
-            <a-popconfirm
-              v-if="record.bind"
-              title="你确定解绑设备吗?"
-              ok-text="Yes"
-              cancel-text="No"
-              @confirm="unBind(record)"
-            >
-              <a>解绑</a>
-            </a-popconfirm>
+            <span v-if="record.bind">
+              <a-divider type="vertical" />
+              <a @click="getGroupReport(record.group.id)">家庭报告</a>
+              <a-divider type="vertical" />
+              <a-popconfirm
+                v-if="record.bind"
+                title="你确定解绑设备吗?"
+                ok-text="Yes"
+                cancel-text="No"
+                @confirm="unBind(record)"
+              >
+                <a>解绑</a>
+              </a-popconfirm>
+            </span>
           </span>
         </a-table>
       </a-tab-pane>
@@ -85,6 +89,10 @@ const columns = [
     dataIndex: 'bind',
     key: 'bind',
     scopedSlots: { customRender: 'bind' }
+  },
+  {
+    title: '家庭名',
+    customRender: (text, record) => record.group ? record.group.name : ''
   },
   {
     title: '设备管理员',
@@ -143,6 +151,9 @@ export default {
     searchDevice () {
       this.pagination.current = 1
       this.getDevice()
+    },
+    getGroupReport (id) {
+      this.$router.push({ path: '/detection/device-report', query: { id } })
     },
     async unBind (record) {
       const res = await unBindDevice(record.id)
