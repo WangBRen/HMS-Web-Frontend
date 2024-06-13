@@ -1,7 +1,14 @@
 <template>
   <div>
     <a-card v-if="groupId" :title="'家庭设备【' + groupDevices.length + '台】'">
+      <a slot="extra" @click="goGroups" v-if="groupDevices.length>0">
+        <a-tag color="blue">【{{ groupDevices[0].group.name }}】</a-tag>
+        【管理员：{{ groupDevices[0].group.manager.nickname }}】
+      </a>
       <a-table :columns="devicecolumns" :data-source="groupDevices" :rowKey="(record,index)=>{return index}">
+        <span slot="deviceid" slot-scope="text">
+          <a @click="searchDeviceReport(text)">{{ text }}</a>
+        </span>
         <span slot="workingStatus" slot-scope="text">
           <span v-if="text==='offline'">离线</span>
           <a v-if="text==='online'">在线</a>
@@ -9,7 +16,7 @@
         </span>
       </a-table>
     </a-card>
-    <a-card :bordered="false" :title="groupId ? '家庭报告【共' + pagination.total + '个】' : ''">
+    <a-card :bordered="false" :title="groupId ? `家庭报告【共 ${total}个，尿检数：${urineNum}个，心电数：${ecgNum}个】` : ''">
       <!-- <a slot="extra" href="#">more</a> -->
       <div>
         <a-select default-value="--" style="width: 120px" v-model="type">
@@ -54,7 +61,8 @@ const devicecolumns = [
 {
     title: '设备ID',
     dataIndex: 'id',
-    key: 'id'
+    key: 'id',
+    scopedSlots: { customRender: 'deviceid' }
   },
   {
     title: '设备uuid',
@@ -66,10 +74,10 @@ const devicecolumns = [
     dataIndex: 'name',
     key: 'name'
   },
-  {
-    title: '家庭名',
-    customRender: (text, record) => record.group ? record.group.name : ''
-  },
+  // {
+  //   title: '家庭名',
+  //   customRender: (text, record) => record.group ? record.group.name : ''
+  // },
   {
     title: '设备管理员',
     customRender: (text, record) => record.deviceManager ? record.deviceManager.nickname : ''
@@ -125,6 +133,9 @@ export default {
       devicecolumns,
       detailVisible: false,
       reportId: null,
+      ecgNum: 0,
+      urineNum: 0,
+      total: 0,
       pagination: {
         total: 0,
         current: 1,
@@ -142,7 +153,9 @@ export default {
     if (this.groupId) {
       this.groupDevice()
     }
-    this.getDevice()
+    this.getDevice('all')
+    this.getNum('urine').then(a => { this.urineNum = a })
+    this.getNum('ecg').then(a => { this.ecgNum = a })
   },
   methods: {
     async groupDevice () {
@@ -163,7 +176,7 @@ export default {
       this.pagination.pageSize = pageSize
       this.getDevice()
     },
-    async getDevice () {
+    async getDevice (e) {
       const pages = {
         page: this.pagination.current,
         size: this.pagination.pageSize
@@ -181,7 +194,31 @@ export default {
       }
       this.deviceReportList = res.data.content
       this.pagination.total = res.data.totalElements
+      if (e === 'all') {
+        this.total = res.data.totalElements
+      }
       console.log(res.data.content)
+    },
+    searchDeviceReport (text) {
+      console.log('text', text)
+      this.deviceId = text
+      this.handleSearch()
+    },
+    goGroups () {
+      this.$router.push({ path: '/customers/user-manage', query: { id: this.groupId } })
+    },
+    async getNum (type) {
+      var res
+      if (this.groupId && this.deviceId) {
+        res = await deviceReport({ page: 1, size: 1 }, 'all', type, this.groupId, this.deviceId)
+        this.groupDevice()
+      } else if (this.groupId) {
+        res = await groupReport({ page: 1, size: 1 }, 'all', type, this.groupId)
+        this.groupDevice()
+      } else {
+        res = await getDeviceReport({ page: 1, size: 1 }, 'all', type)
+      }
+      return res.data.totalElements
     },
     seeDetail (record) {
       this.detailVisible = true
