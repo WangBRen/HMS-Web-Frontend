@@ -294,10 +294,12 @@ export default {
       dutyIndex: false,
       loginName: null,
       queryData: '',
-      healthIndex: []
+      healthIndex: [],
+      groupId: null
     }
   },
   created () {
+    this.groupId = this.$route.query.id
     this.$setPageDataLoader(this.onSearch)
     this.onSearch()
     getHealthIndex().then(res => {
@@ -392,6 +394,10 @@ export default {
         value = this.queryData
       } else {
         value = null
+      }
+      console.log('this.groupId', this.groupId)
+      if (this.groupId) {
+        pages.groupId = this.groupId
       }
       // console.log(pages)
       apiCustomerSearch(value, pages).then(res => {

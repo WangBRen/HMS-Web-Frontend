@@ -70,6 +70,16 @@ const devicecolumns = [
     key: 'uuid'
   },
   {
+    title: '心电报告数',
+    dataIndex: 'ecgReportCount',
+    key: 'ecgReportCount'
+  },
+  {
+    title: '尿检报告数',
+    dataIndex: 'urineReportCount',
+    key: 'urineReportCount'
+  },
+  {
     title: '设备名称',
     dataIndex: 'name',
     key: 'name'

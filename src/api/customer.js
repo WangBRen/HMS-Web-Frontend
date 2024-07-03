@@ -30,7 +30,8 @@ export function searchCustomerUnderGroup (values, pages) {
             word: values || '',
             createdBy: pages.createdBy || '',
             page: pages.page || 1,
-            size: pages.size || 10
+            size: pages.size || 10,
+            groupId: pages.groupId
         }
     })
 }
