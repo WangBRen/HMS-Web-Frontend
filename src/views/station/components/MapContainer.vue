@@ -172,7 +172,7 @@ export default {
     }
   },
   mounted () {
-    this.initMap()
+    // this.initMap()
     this.form.lng = this.formData.longitude
     this.form.lat = this.formData.latitude
     setTimeout(() => {
