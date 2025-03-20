@@ -27,8 +27,8 @@ jobs:
         uses: manyuanrong/setup-ossutil@v2.0
         with:
           endpoint: oss-cn-shenzhen.aliyuncs.com
-          access-key-id: LTAI5tNw1iosfvrxbsxDf5zk
-          access-key-secret: fdDXe80fbW4xaRHz6kp5DaRsCuMhLI
+          access-key-id: ${{ secrets.KEY }}
+          access-key-secret: ${{ secrets.SECRET }}
 
       - name: Upload files to OSS
         run: |
